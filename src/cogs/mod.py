@@ -1,17 +1,14 @@
 import asyncio
 import discord
-import logging
 from discord.ext import commands
 
-log = logging.getLogger('bot')
 
-
-class Moderation:
+class Mod:
     """Moderation Commands for Guilds. These require appropriate permission to execute."""
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.group('channel')
+    @commands.group()
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
@@ -20,17 +17,32 @@ class Moderation:
 
     @channel.command(name='rename', alias='setname')
     async def set_name(self, ctx, *, new_name: str):
-        """Change the Name for a Channel. Also works using `setname` instead of `rename`.
+        """Change the Name for a Channel.
+        
+        Also works using `setname` instead of `rename`.
         
         **Example:**
         !channel rename announcements - rename the current channel to "announcements"
         """
+        old_name = ctx.message.channel.name
         await ctx.message.channel.edit(name=new_name)
-        await ctx.send(embed=discord.Embed(description=f'Changed Channel Name to <#{ctx.message.channel.id}>.'))
+        await ctx.send(embed=discord.Embed(description=f'Changed Channel Name from `#{old_name}` '
+                                                       f'to <#{ctx.message.channel.id}>.',
+                                           colour=discord.Colour.green()))
 
     @channel.command(name='desc', alias='setdesc')
-    async def set_description(self, ctx, *, new_description):
-        pass
+    async def set_description(self, ctx, *, new_desc):
+        """Set the description for the Channel.
+        
+        Also works using `setdesc` instead of `desc`.
+        
+        **Example:**
+         !channel desc Bot Testing Channel - change the current channel's description to 'Bot Testing Channel'.
+        """
+        old_desc = ctx.message.channel.description
+        await ctx.message.channel.edit(description=new_desc)
+        await ctx.send(embed=discord.Embed(description=f'Changed Channel Description from'
+                                                       f' *"{old_desc}"* to *"{new_desc}"*.'))
 
     @commands.command()
     @commands.guild_only()
@@ -73,7 +85,7 @@ class Moderation:
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_user(self, ctx):
-        """Purge a mentioned User, or a list of Users if multiple mentions are given.
+        """Purge a mentioned User, or a list of mentioned Users.
         
         **Example:**
         !purgeuser @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 100 Messages.
@@ -94,8 +106,8 @@ class Moderation:
 
 
 def setup(bot):
-    bot.add_cog(Moderation(bot))
+    bot.add_cog(Mod(bot))
 
 
 def teardown():
-    print('Unloaded Cog Moderation')
+    print('Unloaded Cog Mod')

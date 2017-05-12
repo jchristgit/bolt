@@ -18,16 +18,13 @@ discord_logger.setLevel(logging.INFO)
 discord_handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
 discord_handler.setFormatter(standard_formatter)
 discord_logger.addHandler(discord_handler)
-bot_logger = logging.getLogger('bot')
-bot_logger.setLevel(logging.INFO)
-bot_handler = logging.FileHandler(filename='logs/bot.log', encoding='utf-8', mode='w')
-bot_handler.setFormatter(standard_formatter)
-bot_logger.addHandler(bot_handler)
+
+DESCRIPTION = 'Hello! I am a Bot made by Volcyy. You can prefix my Commands by either mentioning me, using `?` or `!`.'
 
 
 class Bot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description='beep bop', pm_help=None)
+        super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None)
         self.start_time = datetime.datetime.now()
 
     # Helper function to create and return an Embed with red colour.
@@ -35,14 +32,15 @@ class Bot(commands.Bot):
     def make_error_embed(description):
         return Embed(colour=Colour.red(), description=description)
 
-    async def on_command_error(self, error, ctx):
+    async def on_command_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send(embed=self.make_error_embed('You invoked the Command with the wrong type of arguments.'
-                                                       ' Use `!help command` to get information about its usage.'))
+            await ctx.send(embed=self.make_error_embed(f'**You invoked the Command with the wrong type of arguments.'
+                                                       f' Use `!help command` to get information about its usage.**\n'
+                                                       f'({error})'))
         elif isinstance(error, commands.CommandNotFound):
             pass
         elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send(embed=self.make_error_embed(f'An Error occurred through the invocation of the command: '
+            await ctx.send(embed=self.make_error_embed(f'**An Error occurred through the invocation of the command:**\n'
                                                        f'{error}'))
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send(embed=self.make_error_embed('Sorry, this Command is currently disabled for maintenance.'))
@@ -94,8 +92,7 @@ if __name__ == '__main__':
 
     # Close Logging
     discord_handler.close()
-    bot_handler.close()
     discord_logger.removeHandler(discord_handler)
-    bot_logger.removeHandler(discord_handler)
+
 
 
