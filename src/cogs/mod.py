@@ -7,9 +7,26 @@ log = logging.getLogger('bot')
 
 
 class Moderation:
-    """Contains Moderation Commands for Guilds."""
+    """Moderation Commands for Guilds. These require appropriate permission to execute."""
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @commands.group('channel')
+    @commands.guild_only()
+    @commands.has_permissions(manage_channels=True)
+    async def channel(self):
+        pass
+
+    @channel.command(name='lock')
+    @channel.bot_has_permissions(manage_roles=True)
+    async def lock_channel(self, ctx):
+        """
+        Locks a channel for Members without a Role that explicitly allows them to write in it, for example the Owner,
+        thus denying them the ability to send any Message in the Channel or react to messages.
+        """
+        overwrite = discord.PermissionOverwrite()
+        overwrite.update(send_messages=False, add_reactions=False)
+        await ctx.message.channel.set_permissions(ctx.message.guild.default_role, overwrite=overwrite)
 
     @commands.command()
     @commands.guild_only()
@@ -55,7 +72,8 @@ class Moderation:
         """Purge a mentioned User, or a list of Users if multiple mentions are given.
         
         **Example:**
-        !purgeuser @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 100 Messages."""
+        !purgeuser @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 100 Messages.
+        """
         if len(ctx.message.mentions) == 0:
             await ctx.send(embed=discord.Embed(title='Failed to purge User(s)',
                                                description='You need to mention at least one User to purge.',
