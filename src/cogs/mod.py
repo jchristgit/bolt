@@ -8,6 +8,28 @@ class Mod:
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def ban(self, ctx, member: discord.Member, prune_days: int=1, *, reason: str=''):
+        """Ban a Member with an optional prune of Messages and an optional reason.
+        
+        If the amount of messages to prune is omitted, all his messages of the past day will be deleted.
+        The maximum is 7 and the minimum is 0.
+        
+        **Example:**
+        !ban @Guy#1337 - bans Guy and deletes his messages of the last day
+        !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
+        !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
+        """
+        await ctx.guild.ban(member, reason=f'Command invoked by {ctx.message.author}, reason: '
+                                           f'{"No reason specified" if reason is "" else reason}.',
+                            delete_message_days=prune_days)
+        await ctx.send(embed=discord.Embed(title='Ban successful',
+                                           description=f'Banned {member}{" for {reason}" if reason != "" else "."}'))
+
+
     @commands.group()
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
@@ -79,8 +101,6 @@ class Mod:
         else:
             await ctx.send(embed=discord.Embed(description=response))
 
-
-
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
@@ -97,6 +117,23 @@ class Mod:
         """
         res = await ctx.message.channel.purge(limit=limit, reason=f'Invoked by {ctx.message.author}.')
         info_response = f'Purged a total of **{len(res)} Messages**.'
+        resp = await ctx.send(embed=discord.Embed(title='Purge completed', description=info_response))
+        await asyncio.sleep(5)
+        await resp.delete()
+
+    @commands.command(name='purgeid')
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(manage_messages=True)
+    async def purge_by_id(self, ctx, id_to_prune: int):
+        """Purge up to 500 Messages sent by the User with the given ID.
+        
+        **Example:**
+        !purgeid 290324118665166849 - searches the past 500 messages for messages from the user and purges them.
+        """
+        res = await ctx.message.channel.purge(check=lambda m: m.author.id == id_to_prune,
+                                              reason=f'Invoked by {ctx.message.author} to prune ID {id_to_prune}.')
+        info_response = f'Purged a total of **{len(res)} Messages** sent by `{id_to_prune}`.'
         resp = await ctx.send(embed=discord.Embed(title='Purge completed', description=info_response))
         await asyncio.sleep(5)
         await resp.delete()
