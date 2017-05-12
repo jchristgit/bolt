@@ -26,8 +26,9 @@ class Mod:
         await ctx.guild.ban(member, reason=f'Command invoked by {ctx.message.author}, reason: '
                                            f'{"No reason specified" if reason is "" else reason}.',
                             delete_message_days=prune_days)
+        reason = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(title='Ban successful',
-                                           description=f'Banned {member}{" for {reason}" if reason != "" else "."}'))
+                                           description=f'**Banned {member}**{reason}'))
 
 
     @commands.group()
