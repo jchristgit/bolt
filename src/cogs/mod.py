@@ -14,19 +14,23 @@ class Moderation:
     @commands.group('channel')
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
     async def channel(self):
         pass
 
-    @channel.command(name='lock')
-    @channel.bot_has_permissions(manage_roles=True)
-    async def lock_channel(self, ctx):
+    @channel.command(name='rename', alias='setname')
+    async def set_name(self, ctx, *, new_name: str):
+        """Change the Name for a Channel. Also works using `setname` instead of `rename`.
+        
+        **Example:**
+        !channel rename announcements - rename the current channel to "announcements"
         """
-        Locks a channel for Members without a Role that explicitly allows them to write in it, for example the Owner,
-        thus denying them the ability to send any Message in the Channel or react to messages.
-        """
-        overwrite = discord.PermissionOverwrite()
-        overwrite.update(send_messages=False, add_reactions=False)
-        await ctx.message.channel.set_permissions(ctx.message.guild.default_role, overwrite=overwrite)
+        await ctx.message.channel.edit(name=new_name)
+        await ctx.send(embed=discord.Embed(description=f'Changed Channel Name to <#{ctx.message.channel.id}>.'))
+
+    @channel.command(name='desc', alias='setdesc')
+    async def set_description(self, ctx, *, new_description):
+        pass
 
     @commands.command()
     @commands.guild_only()

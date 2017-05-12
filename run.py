@@ -4,6 +4,7 @@ import logging
 import uvloop
 
 from builtins import ModuleNotFoundError
+from discord import Embed, Colour
 from discord.ext import commands
 from os import environ, makedirs
 
@@ -28,6 +29,25 @@ class Bot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description='beep bop', pm_help=None)
         self.start_time = datetime.datetime.now()
+
+    # Helper function to create and return an Embed with red colour.
+    @staticmethod
+    def make_error_embed(description):
+        return Embed(colour=Colour.red(), description=description)
+
+    async def on_command_error(self, error, ctx):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(embed=self.make_error_embed('You invoked the Command with the wrong type of arguments.'
+                                                       ' Use `!help command` to get information about its usage.'))
+        elif isinstance(error, commands.CommandNotFound):
+            pass
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.send(embed=self.make_error_embed(f'An Error occurred through the invocation of the command: '
+                                                       f'{error}'))
+        elif isinstance(error, commands.DisabledCommand):
+            await ctx.send(embed=self.make_error_embed('Sorry, this Command is currently disabled for maintenance.'))
+        elif isinstance(error, commands.NoPrivateMessage):
+            await ctx.send(embed=self.make_error_embed('This Command cannot be used in private Messages.'))
 
     async def on_ready(self):
         print('= LOGGED IN =')
