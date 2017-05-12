@@ -1,4 +1,4 @@
-from discord import Embed
+from discord import Embed, Game
 from discord.ext import commands
 
 
@@ -17,6 +17,11 @@ class Admin:
         print('Shutting down by owner request...')
         await ctx.send(embed=Embed(description='Shutting down...'))
         await self.bot.close()
+
+    @commands.command(name='setplaying', hidden=True)
+    @commands.is_owner()
+    async def set_playing(self, ctx, *, new_status):
+        await self.bot.change_presence(game=Game(name=new_status))
 
 
 def setup(bot):

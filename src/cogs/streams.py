@@ -28,8 +28,15 @@ class Streams:
         """Contains Sub-Commands for interacting with Twitch Streams."""
 
     @stream.command()
+    @commands.cooldown(rate=3, per=5.0 * 50, type=commands.BucketType.user)
     async def get(self, ctx, stream_name):
-        """Get information about a Twitch stream by its name."""
+        """Get information about a Twitch stream by its name.
+        
+        Yields information about whether the Stream is online, which Game is being played, the viewers,
+        the uptime, and the language spoken.
+        
+        **Example**:
+        !stream get imaqtpie - get Stream information about imaqtpie"""
         response = discord.Embed()
         stream = await self.stream_backend.api.get_stream(stream_name)
         if stream.online:

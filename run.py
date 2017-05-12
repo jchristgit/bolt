@@ -42,6 +42,8 @@ class Bot(commands.Bot):
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.send(embed=self.make_error_embed(f'**An Error occurred through the invocation of the command:**\n'
                                                        f'{error}'))
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send(embed=self.make_error_embed('Sorry, this Command is currently disabled for maintenance.'))
         elif isinstance(error, commands.NoPrivateMessage):
