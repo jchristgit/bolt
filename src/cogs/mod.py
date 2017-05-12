@@ -56,6 +56,30 @@ class Mod:
         """
         await ctx.message.channel.edit(position=ctx.message.channel.position - amount,
                                        reason=f'Invoked by {ctx.message.author}.')
+        await ctx.send(embed=discord.Embed(description=f'**Channel moved {"up" if amount >= 0 else "down"}** by '
+                                                       f'`{amount}` channels.'))
+
+    @channel.command(name='find', alias='search')
+    @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
+    async def channel_search(self, ctx, *, contents: str):
+        """Search for messages (in the past 500) containing the given message.
+        
+        May only be used three times per 2 minutes per channel.
+        
+        **Example:**
+        !channel find hello - returns a list of messages containing "hello" in the past 500 messages.
+        """
+        messages = []
+        async for message in ctx.message.channel.history(limit=500).filter(lambda m: contents in m.content):
+            messages.append(f'{message.author.display_name}: {message.content}\n')
+        response = f'**Messages found ({len(messages)}):**\n{"".join(messages)}'
+        if len(response) >= 2000:
+            await ctx.send(embed=discord.Embed(description='There are too many messages found to display.',
+                                               colour=discord.Colour.red()))
+        else:
+            await ctx.send(embed=discord.Embed(description=response))
+
+
 
     @commands.command()
     @commands.guild_only()
