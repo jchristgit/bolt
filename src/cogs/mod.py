@@ -30,6 +30,23 @@ class Mod:
         await ctx.send(embed=discord.Embed(title='Ban successful',
                                            description=f'**Banned {member}**{reason}'))
 
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(kick_members=True)
+    @commands.bot_has_permissions(kick_members=True)
+    async def kick(self, ctx, member: discord.Member, *, reason: str = ''):
+        """Kick a Member with an optional reason.
+
+        **Example:**
+        !kick @Guy#1337 - kicks Guy
+        !Kick @Guy#1337 be nice - kick Guy and specifies the reason "be nice" for the Audit Log.
+        """
+        await ctx.guild.kick(member, reason=f'Command invoked by {ctx.message.author}, reason: '
+                                            f'{"No reason specified" if reason is "" else reason}.')
+        reason = f' for *"{reason}"*.' if reason != '' else '.'
+        await ctx.send(embed=discord.Embed(title='Kick successful',
+                                           description=f'**Kicked {member}**{reason}'))
+
 
     @commands.group()
     @commands.guild_only()
