@@ -1,6 +1,5 @@
-from discord import Colour, Embed
+from discord import Embed
 from discord.ext import commands
-from run import COGS_BASE_PATH
 
 
 class Admin:
