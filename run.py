@@ -53,7 +53,8 @@ COGS_BASE_PATH = 'src.cogs.'
 
 # Cogs to load on login
 COGS_ON_LOGIN = [
-    'administration'
+    'admin',
+    'mod'
 ]
 
 

@@ -7,6 +7,10 @@ log = logging.getLogger('bot')
 
 
 class Administration:
+    """
+    Contains Commands for the Administration of the Bot.
+    Unloading this Cog may not be a good idea. 
+    """
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -14,6 +18,7 @@ class Administration:
     @commands.command(hidden=True)
     async def shutdown(self, ctx):
         """Shutdown the Bot. Owner only."""
+        logging.info('Shutting down by owner request.')
         await ctx.send(embed=Embed(description='Shutting down...'))
         await self.bot.close()
 
