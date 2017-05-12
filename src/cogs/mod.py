@@ -12,11 +12,11 @@ class Mod:
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
-    async def channel(self):
-        pass
+    async def channel(self, ctx):
+        """Contains Commands for editing a Channel."""
 
     @channel.command(name='rename', alias='setname')
-    async def set_name(self, ctx, *, new_name: str):
+    async def channel_set_name(self, ctx, *, new_name: str):
         """Change the Name for a Channel.
         
         Also works using `setname` instead of `rename`.
@@ -25,24 +25,37 @@ class Mod:
         !channel rename announcements - rename the current channel to "announcements"
         """
         old_name = ctx.message.channel.name
-        await ctx.message.channel.edit(name=new_name)
+        await ctx.message.channel.edit(name=new_name, reason=f'Invoked by {ctx.message.author}.')
         await ctx.send(embed=discord.Embed(description=f'Changed Channel Name from `#{old_name}` '
                                                        f'to <#{ctx.message.channel.id}>.',
                                            colour=discord.Colour.green()))
 
     @channel.command(name='desc', alias='setdesc')
-    async def set_description(self, ctx, *, new_desc):
+    async def channel_set_description(self, ctx, *, new_desc):
         """Set the description for the Channel.
         
         Also works using `setdesc` instead of `desc`.
         
         **Example:**
-         !channel desc Bot Testing Channel - change the current channel's description to 'Bot Testing Channel'.
+        !channel desc Bot Testing Channel - change the current channel's description to 'Bot Testing Channel'.
         """
         old_desc = ctx.message.channel.description
-        await ctx.message.channel.edit(description=new_desc)
+        await ctx.message.channel.edit(description=new_desc, reason=f'Invoked by {ctx.message.author}.')
         await ctx.send(embed=discord.Embed(description=f'Changed Channel Description from'
                                                        f' *"{old_desc}"* to *"{new_desc}"*.'))
+
+    @channel.command(name='move')
+    async def channel_move(self, ctx, amount: int):
+        """Move a channel by the specified amount.
+        
+        Make sure that the channel position stays within the bounds.
+        
+        **Example:**
+        !channel move 2 - moves the Channel up by two channels.
+        !channel move -3 - moves the Channel down by three channels.
+        """
+        await ctx.message.channel.edit(position=ctx.message.channel.position - amount,
+                                       reason=f'Invoked by {ctx.message.author}.')
 
     @commands.command()
     @commands.guild_only()
@@ -58,7 +71,7 @@ class Mod:
         !purge - deletes 100 messages
         !purge 50 - deletes 50 messages
         """
-        res = await ctx.message.channel.purge(limit=limit)
+        res = await ctx.message.channel.purge(limit=limit, reason=f'Invoked by {ctx.message.author}.')
         info_response = f'Purged a total of **{len(res)} Messages**.'
         resp = await ctx.send(embed=discord.Embed(title='Purge completed', description=info_response))
         await asyncio.sleep(5)
@@ -74,7 +87,8 @@ class Mod:
         **Example:**
         !purgemsg bad - deletes up to 100 messages containing 'bad'
         """
-        res = await ctx.message.channel.purge(check=lambda m: message_contents in m.content)
+        res = await ctx.message.channel.purge(check=lambda m: message_contents in m.content,
+                                              reason=f'Invoked by {ctx.message.author}.')
         info_response = f'Purged a total of **{len(res)} Messages** containing `{message_contents}`.'
         resp = await ctx.send(embed=discord.Embed(title='Message purge completed', description=info_response))
         await asyncio.sleep(5)
@@ -97,7 +111,8 @@ class Mod:
             return
         total_purged = 0
         for user in ctx.message.mentions:
-            total_purged += len(await ctx.message.channel.purge(check=lambda m: m.author == user))
+            total_purged += len(await ctx.message.channel.purge(check=lambda m: m.author == user,
+                                                                reason=f'Invoked by {ctx.message.author}.'))
         info_response = f'Purged a total of **{total_purged} Messages** from ' \
                         f'{", ".join([str(x) for x in ctx.message.mentions])}.'
         resp = await ctx.send(embed=discord.Embed(title='User purge completed', description=info_response))
