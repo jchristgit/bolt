@@ -1,6 +1,8 @@
 import asyncio
 import discord
+
 from discord.ext import commands
+from os import environ
 
 
 class Mod:
@@ -78,7 +80,6 @@ class Mod:
         reason = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(title='Kick successful',
                                            description=f'**Kicked {member}**{reason}'))
-
 
     @commands.group()
     @commands.guild_only()
@@ -233,7 +234,3 @@ class Mod:
 
 def setup(bot):
     bot.add_cog(Mod(bot))
-
-
-def teardown():
-    print('Unloaded Cog Mod')

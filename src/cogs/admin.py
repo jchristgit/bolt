@@ -21,7 +21,3 @@ class Admin:
 
 def setup(bot):
     bot.add_cog(Admin(bot))
-
-
-def teardown():
-    print('Unloaded Cog Admin')
