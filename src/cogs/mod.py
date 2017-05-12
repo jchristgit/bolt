@@ -32,6 +32,38 @@ class Mod:
 
     @commands.command()
     @commands.guild_only()
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def unban(self, ctx):
+        """Interactively unban a User."""
+        banned_users = await ctx.message.guild.bans()
+        description = '**The following Users are banned. Specify which User you would like to unban by typing the ' \
+                      'number of the User. This Message will get deleted in 20 seconds automatically.**\n '
+        for idx, ban in enumerate(banned_users):
+            description += f'**`{idx + 1}`**: {ban.user} {f"for *{ban.reason}*" if ban.reason is not None else ""}\n'
+        ban_list = await ctx.send(embed=discord.Embed(title='Banned Members', description=description))
+        try:
+            num = await self.bot.wait_for('message', check=lambda m: m.content.isdigit() and m.author == ctx.message.author,
+                                          timeout=20)
+        except asyncio.TimeoutError:
+            await ctx.send(embed=discord.Embed(description='No User to unban was specified in time.',
+                                               colour=discord.Colour.red()))
+        else:
+            num = int(num.content)
+            if num < 1 or num > len(banned_users) + 1:
+                await ctx.send(embed=discord.Embed(description='Invalid Number specified.'))
+            else:
+                await ctx.message.guild.unban(banned_users[num - 1].user, reason=f'Invoked by {ctx.message.author}.')
+                unban_notification = await ctx.send(embed=discord.Embed(
+                    description=f'Successfully unbanned **{banned_users[num - 1].user}**k')
+                )
+                await asyncio.sleep(5)
+                await unban_notification.delete()
+        finally:
+            await ban_list.delete()
+
+    @commands.command()
+    @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason: str = ''):
