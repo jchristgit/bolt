@@ -1,7 +1,7 @@
-import asyncio
 import datetime
 import discord
 import humanize
+import json
 
 from discord.ext import commands
 from src.twitch_api import TwitchAPI
@@ -11,6 +11,24 @@ from time import strptime, mktime
 def datetime_from_struct_time(struct_time):
     return datetime.datetime.fromtimestamp(mktime(strptime(struct_time, '%Y-%m-%dT%H:%M:%SZ')))
 
+
+class FollowConfig:
+    # Handles reading and writing the configuration file for stream follows
+    def __init__(self):
+        with open('config/streams.json') as f:
+            self._config = json.load(f)
+
+    def save(self):
+        with open('config/streams.json') as f:
+            json.dump(self._config, f, indent=4, sort_keys=True)
+
+    def get_guild_subscriptions(self, guild_id):
+        return self._config['guild_subscriptions'].get(str(guild_id), [])
+
+    def subscribe(self, guild_id, stream_name):
+        guild_id = str(guild_id)
+        if guild_id not in self._config:
+            pass
 
 class StreamBackend:
     # Handles processing Stream data in a human-readable form
@@ -48,7 +66,7 @@ class Streams:
         """Contains Sub-Commands for interacting with Twitch Streams."""
 
     @stream.command()
-    @commands.cooldown(rate=3, per=5.0 * 50, type=commands.BucketType.user)
+    @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.user)
     async def get(self, ctx, stream_name):
         """Get information about a Twitch stream by its name.
         
@@ -66,8 +84,10 @@ class Streams:
             uptime = datetime.datetime.now() - datetime_from_struct_time(stream.creation_date)
             response.description = f'📺 **`Status`**: online\n' \
                                    f'🕹 **`Game`**: {stream.game}\n' \
-                                   f'👀 **`Viewers`**: {stream.viewers}\n' \
-                                   f'⏲ **`Uptime`**: {str(uptime)[:-7]} h\n' \
+                                   f'🗒 **`Description`**: *{stream.channel_status}*\n' \
+                                   f'👁 **`Viewers`**: {stream.viewers}\n' \
+                                   f'👀 **`Followers`**: {stream.followers}\n' \
+                                   f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
                                    f'🗺 **`Language`**: {stream.language}\n'
             response.set_thumbnail(url=stream.preview)
         else:
@@ -76,7 +96,7 @@ class Streams:
         await ctx.send(embed=response)
 
     @stream.command()
-    @commands.cooldown(rate=3, per=5.0 * 50, type=commands.BucketType.user)
+    @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.user)
     async def user(self, ctx, user_name):
         """Get information about a Twitch User by his name.
         
@@ -100,11 +120,10 @@ class Streams:
             response.description = f'🗞 **`Name`**: {user.name}\n' \
                                    f'📺 **`Status`**: {status}\n' \
                                    f'💻 **`Display Name`**: {user.display_name}\n' \
-                                   f'🗒 **`Bio`**: *{user.bio}*\n' \
+                                   f'🗒 **`Bio`**: *{user.bio.strip()}*\n' \
                                    f'🗓 **`Creation Date`**: {creation_date}\n' \
                                    f'📅 **`Last Update`**: {updated_at}\n' \
-                                   f'🔗 **`Link`**: <{user.link}>\n' \
-                                   f'{f"🖼 **`Icon`**: <{user.logo_url}>" if user.logo_url is not None else ""}\n'
+                                   f'🔗 **`Link`**: <{user.link}>\n'
             response.set_footer(text=footer)
             response.colour = 0x6441A5
         else:
@@ -112,6 +131,14 @@ class Streams:
             response.description = f'**{user.status}**: {user.error_message}'
             response.colour = discord.Colour.red()
         await ctx.send(embed=response)
+
+    @stream.command()
+    @commands.cooldown(rate=15, per=30.0 * 60, type=commands.BucketType.guild)
+    async def follow(self, ctx, stream_name):
+        """Follows the given Stream, posting announcements about it in a channel set using !stream set"""
+        if await self.stream_backend.exists(stream_name):
+            pass
+
 
 
 def setup(bot):
