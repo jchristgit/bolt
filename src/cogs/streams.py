@@ -13,7 +13,7 @@ def datetime_from_struct_time(struct_time):
 
 
 class FollowConfig:
-    # Handles reading and writing the configuration file for stream follows
+    # Handles reading and writing the configuration file for stream follows and abstracts away initialization of entries
     def __init__(self):
         with open('config/streams.json') as f:
             self._config = json.load(f)
@@ -32,7 +32,7 @@ class FollowConfig:
     def follow(self, guild_id, guild_name, stream_name):
         guild_id = str(guild_id)
         if guild_id not in self._config['guild_follows']:
-            print(f'[STREAMS] Guild {guild_id} is now following {stream_name}.')
+            print(f'[STREAMS] Guild `{guild_name}` is now following `{stream_name}.')
             # Store this channel in the guild's follows
             self._config['guild_follows'][guild_id] = {
                 'channel': '',
@@ -57,6 +57,18 @@ class FollowConfig:
         self._config['global_follows'][stream_name].remove(guild_id)
         if not self._config['global_follows'][stream_name]:  # no more guilds following
             del self._config['global_follows'][stream_name]
+
+    def set_channel(self, guild_id, guild_name, channel_id):
+        guild_id, channel_id = str(guild_id), str(channel_id)
+        print(f'[STREAMS] Guild `{guild_name}` set channel to `{channel_id}`.')
+        if guild_id not in self._config['guild_follows']:
+            self._config['guild_follows'][guild_id] = {
+                'channel': channel_id,
+                'follows': [],
+                'name': guild_name
+            }
+        else:
+            self._config['guild_follows'][guild_id]['channel'] = channel_id
 
 
 follow_config = FollowConfig()
@@ -94,6 +106,7 @@ class Streams:
         self.stream_backend = StreamBackend()
 
     @commands.group()
+    @commands.guild_only()
     async def stream(self, ctx):
         """Contains Sub-Commands for interacting with Twitch Streams."""
 
@@ -169,7 +182,7 @@ class Streams:
     async def follow(self, ctx, stream_name):
         """Follows the given Stream, posting announcements about it when set.
         
-        To set a channel, use `!stream set`.
+        To set a channel, use `!stream setchannel`.
         """
         if await self.stream_backend.exists(stream_name):
             if stream_name in follow_config.get_guild_subscriptions(ctx.message.guild.id):
@@ -194,6 +207,13 @@ class Streams:
             follow_config.un_follow(ctx.message.guild.id, stream_name)
             await ctx.send(embed=discord.Embed(description=f'Successfully unfollowed `{stream_name}`.',
                                                colour=discord.Colour.green()))
+
+    @stream.command(name='setchannel')
+    async def set_channel(self, ctx):
+        """Sets the current channel as the channel to be used for posting Stream announcements."""
+        follow_config.set_channel(ctx.message.guild.id, ctx.message.guild.name, ctx.message.channel.id)
+        await ctx.send(embed=discord.Embed(description=f'Set the Stream announcement channel to this channel.',
+                                           colour=discord.Colour.green()))
 
 
 def setup(bot):
