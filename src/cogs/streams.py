@@ -51,6 +51,14 @@ class FollowConfig:
         else:
             self._config['global_follows'][stream_name].append(guild_id)
 
+    def un_follow(self, guild_id, stream_name):
+        guild_id = str(guild_id)
+        self._config['guild_follows'][guild_id]['follows'].remove(stream_name)
+        self._config['global_follows'][stream_name].remove(guild_id)
+        if not self._config['global_follows'][stream_name]:  # no more guilds following
+            del self._config['global_follows'][stream_name]
+
+
 follow_config = FollowConfig()
 
 
@@ -175,6 +183,17 @@ class Streams:
         else:
             await ctx.send(embed=discord.Embed(description=f'No Stream named `{stream_name}` found.',
                                                colour=discord.Colour.red()))
+
+    @stream.command()
+    async def unfollow(self, ctx, stream_name):
+        """Unfollows the given Stream."""
+        if stream_name not in follow_config.get_guild_subscriptions(ctx.message.guild.id):
+            await ctx.send(embed=discord.Embed(description=f'This Guild is not following the Channel `{stream_name}`.',
+                                               colour=discord.Colour.red()))
+        else:
+            follow_config.un_follow(ctx.message.guild.id, stream_name)
+            await ctx.send(embed=discord.Embed(description=f'Successfully unfollowed `{stream_name}`.',
+                                               colour=discord.Colour.green()))
 
 
 def setup(bot):
