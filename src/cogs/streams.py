@@ -30,6 +30,9 @@ class FollowConfig:
         if guild_id not in self._config:
             pass
 
+follow_config = FollowConfig()
+
+
 class StreamBackend:
     # Handles processing Stream data in a human-readable form
     def __init__(self):
@@ -137,7 +140,16 @@ class Streams:
     async def follow(self, ctx, stream_name):
         """Follows the given Stream, posting announcements about it in a channel set using !stream set"""
         if await self.stream_backend.exists(stream_name):
-            pass
+            if stream_name in follow_config.get_guild_subscriptions(ctx.message.guild.id):
+                await ctx.send(discord.Embed(description=f'This Guild is already following the Channel {stream_name}.',
+                                             colour=discord.Colour.red()))
+            else:
+                await ctx.send(discord.Embed(description=f'This Guild is now **following the Channel {stream_name}**'
+                                                         f', getting notified about it going online and offline.',
+                                             colour=discord.Colour.green()))
+        else:
+            await ctx.send(discord.Embed(description=f'No Stream named `{stream_name}` found.',
+                                         colour=discord.Colour.red()))
 
 
 
