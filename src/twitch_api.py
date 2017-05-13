@@ -5,12 +5,19 @@ from os import environ
 class TwitchUser:
     # Parses responses from get_user calls
     def __init__(self, data):
-        self.id = data['_id']
-        self.bio = data['bio']
-        self.creation_date = data['created_at']
-        self.display_name = data['display_name']
-        self.logo_url = data['logo']
-        self.updated_at = data['updated_at']
+        if 'error' in data and data['status'] == 404:
+            self.exists = False
+            self.error_message = data['message']
+        else:
+            self.exists = True
+            self.id = data['_id']
+            self.bio = data['bio']
+            self.creation_date = data['created_at']
+            self.name = data['name']
+            self.display_name = data['display_name']
+            self.logo_url = data['logo']
+            self.updated_at = data['updated_at']
+            self.link = 'https://twitch.tv/' + self.name
 
 
 class Stream:
@@ -42,8 +49,14 @@ class TwitchAPI:
     def __init__(self):
         self._api_key = environ['TWITCH_TOKEN']
         self._BASE_URL_STREAMS = 'https://api.twitch.tv/kraken/streams/'
+        self._BASE_URL_USERS = 'https://api.twitch.tv/kraken/users/'
 
     async def get_stream(self, stream_name):
         async with aiohttp.ClientSession() as cs:
             async with cs.get(f'{self._BASE_URL_STREAMS}{stream_name}?client_id={self._api_key}') as r:
                 return Stream(await r.json())
+
+    async def get_user(self, user_name):
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get(f'{self._BASE_URL_USERS}{user_name}?client_id={self._api_key}') as r:
+                return TwitchUser(await r.json())
