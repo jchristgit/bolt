@@ -41,7 +41,6 @@ class FollowConfig:
                 ],
                 'name': guild_name
             }
-            print(self._config)
         else:
             self._config['guild_follows'][guild_id]['follows'].append(stream_name)
         if stream_name not in self._config['global_follows']:
