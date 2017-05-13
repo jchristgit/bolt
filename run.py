@@ -7,6 +7,7 @@ from builtins import ModuleNotFoundError
 from discord import Embed, Colour
 from discord.ext import commands
 from os import environ, makedirs
+from src.cogs.streams import follow_config
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -96,6 +97,9 @@ if __name__ == '__main__':
     # Close Logging
     discord_handler.close()
     discord_logger.removeHandler(discord_handler)
+
+    # Save JSON config
+    follow_config.save()
 
 
 

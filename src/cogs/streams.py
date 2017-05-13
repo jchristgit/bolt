@@ -19,16 +19,38 @@ class FollowConfig:
             self._config = json.load(f)
 
     def save(self):
-        with open('config/streams.json') as f:
+        with open('config/streams.json', 'w') as f:
             json.dump(self._config, f, indent=4, sort_keys=True)
 
     def get_guild_subscriptions(self, guild_id):
-        return self._config['guild_subscriptions'].get(str(guild_id), [])
-
-    def subscribe(self, guild_id, stream_name):
+        # fix
         guild_id = str(guild_id)
-        if guild_id not in self._config:
-            pass
+        if guild_id not in self._config['guild_follows']:
+            return []
+        return self._config['guild_follows'][guild_id]['follows']
+
+    def follow(self, guild_id, guild_name, stream_name):
+        guild_id = str(guild_id)
+        if guild_id not in self._config['guild_follows']:
+            print(f'[STREAMS] Guild {guild_id} is now following {stream_name}.')
+            # Store this channel in the guild's follows
+            self._config['guild_follows'][guild_id] = {
+                'channel': '',
+                'follows': [
+                    stream_name
+                ],
+                'name': guild_name
+            }
+            print(self._config)
+        else:
+            self._config['guild_follows'][guild_id]['follows'].append(stream_name)
+        if stream_name not in self._config['global_follows']:
+            # Store this guild for the followers for the Channel
+            self._config['global_follows'][stream_name] = [
+                guild_id
+            ]
+        else:
+            self._config['global_follows'][stream_name].append(guild_id)
 
 follow_config = FollowConfig()
 
@@ -138,19 +160,22 @@ class Streams:
     @stream.command()
     @commands.cooldown(rate=15, per=30.0 * 60, type=commands.BucketType.guild)
     async def follow(self, ctx, stream_name):
-        """Follows the given Stream, posting announcements about it in a channel set using !stream set"""
+        """Follows the given Stream, posting announcements about it when set.
+        
+        To set a channel, use `!stream set`.
+        """
         if await self.stream_backend.exists(stream_name):
             if stream_name in follow_config.get_guild_subscriptions(ctx.message.guild.id):
-                await ctx.send(discord.Embed(description=f'This Guild is already following the Channel {stream_name}.',
-                                             colour=discord.Colour.red()))
+                await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
+                                                               f'`{stream_name}`.', colour=discord.Colour.red()))
             else:
-                await ctx.send(discord.Embed(description=f'This Guild is now **following the Channel {stream_name}**'
-                                                         f', getting notified about it going online and offline.',
-                                             colour=discord.Colour.green()))
+                follow_config.follow(ctx.message.guild.id, ctx.message.guild.name, stream_name)
+                await ctx.send(embed=discord.Embed(description=f'This Guild is now **following the Channel '
+                                                               f'`{stream_name}`**, getting notified about it going'
+                                                               f' online and offline.', colour=discord.Colour.green()))
         else:
-            await ctx.send(discord.Embed(description=f'No Stream named `{stream_name}` found.',
-                                         colour=discord.Colour.red()))
-
+            await ctx.send(embed=discord.Embed(description=f'No Stream named `{stream_name}` found.',
+                                               colour=discord.Colour.red()))
 
 
 def setup(bot):
