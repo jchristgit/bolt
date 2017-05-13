@@ -25,6 +25,17 @@ class StreamBackend:
     async def get_user(self, name):
         return await self.api.get_user(name)
 
+    # Get information about whether a User is streaming, and if so, what game is being played
+    async def get_status(self, name):
+        user = await self.api.get_stream(name)
+        if user.online:
+            return f'Playing {user.game}'
+        return 'Offline'
+
+    # Check if a User exists
+    async def exists(self, name):
+        return (await self.api.get_user(name)).exists
+
 
 class Streams:
     """Commands for getting notified about Streams, receiving information about them, and more."""
@@ -84,18 +95,21 @@ class Streams:
                 response.set_author(name=f'User Information for {user.display_name}', url=user.link)
             creation_date = humanize.naturaldate(datetime_from_struct_time(user.creation_date))
             updated_at = humanize.naturaldate(datetime_from_struct_time(user.updated_at))
+            footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
+            status = await self.stream_backend.get_status(user_name)
             response.description = f'🗞 **`Name`**: {user.name}\n' \
+                                   f'📺 **`Status`**: {status}\n' \
                                    f'💻 **`Display Name`**: {user.display_name}\n' \
                                    f'🗒 **`Bio`**: *{user.bio}*\n' \
                                    f'🗓 **`Creation Date`**: {creation_date}\n' \
                                    f'📅 **`Last Update`**: {updated_at}\n' \
                                    f'🔗 **`Link`**: <{user.link}>\n' \
                                    f'{f"🖼 **`Icon`**: <{user.logo_url}>" if user.logo_url is not None else ""}\n'
-            response.set_footer(text=f'Use `!stream get {user_name}` to see if the User is streaming!')
+            response.set_footer(text=footer)
             response.colour = 0x6441A5
         else:
             response.title = 'Error trying to get User'
-            response.description = '**404**: ' + user.error_message
+            response.description = f'**{user.status}**: {user.error_message}'
             response.colour = discord.Colour.red()
         await ctx.send(embed=response)
 

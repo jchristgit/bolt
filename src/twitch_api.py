@@ -5,9 +5,17 @@ from os import environ
 class TwitchUser:
     # Parses responses from get_user calls
     def __init__(self, data):
-        if 'error' in data and data['status'] == 404:
-            self.exists = False
+        if 'error' in data:
+            self.status = data['status']
             self.error_message = data['message']
+            self.exists = False
+            if self.status == 404:
+                self.exists = False
+
+            elif self.status == 429:
+                self.exists = False
+                print('Too many Twitch Requests sent! Consider increasing Cooldowns or the request interval.')
+                self.error_message = data['message']
         else:
             self.exists = True
             self.id = data['_id']
