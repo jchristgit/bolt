@@ -42,6 +42,7 @@ class Stream:
             self.creation_date = data['created_at']
             self.preview = data['preview']['medium']
             self.display_name = data['channel']['display_name']
+            self.name = data['channel']['name']
             self.language = data['channel']['broadcaster_language']
             self.partnered = data['channel']['partner']
             self.channel_status = data['channel']['status']

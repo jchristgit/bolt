@@ -33,8 +33,8 @@ class FollowConfig:
 
     def follow(self, guild_id, guild_name, stream_name):
         guild_id = str(guild_id)
+        print(f'[STREAMS] Guild `{guild_name}` is now following `{stream_name}`.')
         if guild_id not in self._config['guild_follows']:
-            print(f'[STREAMS] Guild `{guild_name}` is now following `{stream_name}.')
             # Store this channel in the guild's follows
             self._config['guild_follows'][guild_id] = {
                 'channel': '',
@@ -48,7 +48,7 @@ class FollowConfig:
         if stream_name not in self._config['global_follows']:
             # Store this guild for the followers for the Channel
             self._config['global_follows'][stream_name] = [
-                guild_id
+                int(guild_id)
             ]
         else:
             self._config['global_follows'][stream_name].append(guild_id)
@@ -92,6 +92,7 @@ follow_config = FollowConfig()
 
 class StreamBackend:
     # Handles processing Stream data in a human-readable form
+    # as well as informing Guilds about Stream updates
     def __init__(self, bot: commands.Bot):
         self.api = TwitchAPI()
         self.bot = bot
@@ -115,11 +116,29 @@ class StreamBackend:
     async def exists(self, name):
         return (await self.api.get_user(name)).exists
 
-    async def send_online_announcement(self, stream):
-        pass
+    async def send_stream_announcement(self, stream):
+        following_guilds = follow_config.get_global_follows()[stream.name]
+        for guild_id in following_guilds:
+            channel_id = follow_config.get_channel_id(guild_id)
 
-    async def send_offline_announcement(self, stream):
-        pass
+            if channel_id != '':
+                channel = await self.bot.get_channel(channel_id)
+                response = discord.Embed()
+                response.colour = 0x6441A5
+
+                if stream.online:
+                    response.title = f'{stream.display_name} is now online!'
+                    response.set_thumbnail(url=stream.preview)
+                    response.description = f'Playing **{stream.game}** with currently **{stream.viewers} viewers**:\n' \
+                                           f'*{stream.channel_status}*'
+                    response.set_footer(text=f'Run `!𝚜𝚝𝚛𝚎𝚊𝚖 𝚐𝚎𝚝 <{stream.name}> for detailed information',
+                                        icon_url=stream.channel_logo)
+                else:
+                    response.title = f'{stream.display_name} is now offline.'
+                await channel.send(embed=response)
+
+            else:
+                print(f'[WARN] Guild {guild_id} is following channels, but has not got any channel set.')
 
     async def update_streams(self):
         print('Starting stream updates...')
@@ -140,10 +159,7 @@ class StreamBackend:
                 else:
                     intersections = set(old_streams).intersection(new_streams)
                     for stream in intersections:
-                        if stream.online:
-                            await self.send_online_announcement(stream)
-                        else:
-                            await self.send_offline_announcement(stream)
+                        await self.send_stream_announcement(stream)
                     print(list(intersections))
 
                 old_streams = new_streams
