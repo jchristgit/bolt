@@ -3,14 +3,14 @@ import discord
 import humanize
 
 from discord.ext import commands
-from src.apis.twitch import parse_twitch_time
+from src.apis.twitch import parse_twitch_time, TwitchAPI
 
 
 class Streams:
     """Commands for getting notified about Streams, receiving information about them, and more."""
     def __init__(self, bot):
         self.bot = bot
-        self.stream_backend = StreamBackend(bot)
+        self.twitch_api = TwitchAPI()
         # Create Updater Task which should wait until ready
 
     @commands.group()
@@ -22,7 +22,7 @@ class Streams:
     @commands.is_owner()
     async def activate(self, ctx):
         """Activates the Stream Updater."""
-        self.bot.loop.create_task(self.stream_backend.update_streams())
+        #self.bot.loop.create_task(self.stream_backend.update_streams())
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.user)
@@ -67,31 +67,31 @@ class Streams:
         whether the User exists or not.
         """
         response = discord.Embed()
-        user = await self.stream_backend.api.get_user(user_name)
-        if user.exists:
-            if user.logo_url is not None:
-                response.set_author(name=f'User Information for {user.display_name}', url=user.link,
-                                    icon_url=user.logo_url)
-                response.set_thumbnail(url=user.logo_url)
+        user = await self.twitch_api.get_user(user_name)
+        if user is not None:
+            link = f'https://twitch.tv/{user["name"]}'
+            if user['logo'] is not None:
+                response.set_author(name=f'User Information for {user["name"]}', url=link, icon_url=user['logo'])
+                response.set_thumbnail(url=user['logo'])
             else:
-                response.set_author(name=f'User Information for {user.display_name}', url=user.link)
-            creation_date = humanize.naturaldate(parse_twitch_time(user.creation_date))
-            updated_at = humanize.naturaldate(parse_twitch_time(user.updated_at))
+                response.set_author(name=f'User Information for {user["name"]}', url=link)
+            creation_date = humanize.naturaldate(parse_twitch_time(user["created_at"]))
+            updated_at = humanize.naturaldate(parse_twitch_time(user["updated_at"]))
             footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
-            bio = user.bio.strip() if user.bio is not None else 'No Bio'
-            status = await self.stream_backend.get_status(user_name)
-            response.description = f'🗞 **`Name`**: {user.name}\n' \
-                                   f'📺 **`Status`**: {status}\n' \
-                                   f'💻 **`Display Name`**: {user.display_name}\n' \
+            bio = user["bio"].strip() if user["bio"] is not None else 'No Bio'
+            # status = await self.stream_backend.get_status(user_name)
+            #                     #f'📺 **`Status`**: {status}\n' \
+            response.description = f'🗞 **`Name`**: {user["name"]}\n' \
+                                   f'💻 **`Display Name`**: {user["display_name"]}\n' \
                                    f'🗒 **`Bio`**: *{bio}*\n' \
                                    f'🗓 **`Creation Date`**: {creation_date}\n' \
                                    f'📅 **`Last Update`**: {updated_at}\n' \
-                                   f'🔗 **`Link`**: <{user.link}>\n'
+                                   f'🔗 **`Link`**: <{url}>\n'
             response.set_footer(text=footer)
             response.colour = 0x6441A5
         else:
             response.title = 'Error trying to get User'
-            response.description = f'**{user.status}**: {user.error_message}'
+            response.description = '**User not found!**'
             response.colour = discord.Colour.red()
         await ctx.send(embed=response)
 
@@ -103,7 +103,7 @@ class Streams:
         To set a channel, use `!stream setchannel`.
         """
         if await self.stream_backend.exists(stream_name):
-            if stream_name in follow_config.get_guild_subscriptions(ctx.message.guild.id):
+            if stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
                 await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
                                                                f'`{stream_name}`.', colour=discord.Colour.red()))
             else:
@@ -118,7 +118,7 @@ class Streams:
     @stream.command()
     async def unfollow(self, ctx, stream_name):
         """Unfollows the given Stream."""
-        if stream_name not in follow_config.get_guild_subscriptions(ctx.message.guild.id):
+        if stream_name not in follow_config.get_guild_follows(ctx.message.guild.id):
             await ctx.send(embed=discord.Embed(description=f'This Guild is not following the Channel `{stream_name}`.',
                                                colour=discord.Colour.red()))
         else:

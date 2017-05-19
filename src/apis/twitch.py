@@ -1,3 +1,5 @@
+from typing import Union, Optional, Any
+
 import aiohttp
 import dataset
 import datetime
@@ -7,7 +9,6 @@ from dateutil import parser
 from os import environ
 from src.apis import requester
 from stuf import stuf
-from time import mktime, strptime
 from ..util import create_logger
 
 
@@ -24,7 +25,6 @@ def parse_twitch_time(twitch_time: str):
     parser.parse(twitch_time)
     # return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time[:-8], '%Y-%m-%dT%H:%M:%S')))
 
-
 class FollowConfig:
     # Handles reading and writing the configuration file for stream follows and abstracts away initialization of entries
     def __init__(self):
@@ -35,11 +35,14 @@ class FollowConfig:
         with open('config/streams.json', 'w') as f:
             json.dump(self._config, f, indent=4, sort_keys=True)
 
-    def get_guild_subscriptions(self, guild_id: int) -> [str]:
+    def get_guild_follows(self, guild_id: int) -> [str]:
         guild_id = str(guild_id)
         if guild_id not in self._config['guild_follows']:
             return []
         return self._config['guild_follows'][guild_id]['follows']
+
+    def get_global_follows(self) -> dict:
+        return self._config['global_follows']
 
     def follow(self, guild_id: str, guild_name: str, stream_name: str):
         guild_id = str(guild_id)
@@ -94,9 +97,6 @@ class FollowConfig:
         else:
             return self._config['guild_follows'][guild_id]['channel']
 
-    def get_global_follows(self) -> dict:
-        return self._config['global_follows']
-
 
 follow_config = FollowConfig()
 
@@ -108,10 +108,14 @@ class TwitchAPI:
         self._BASE_URL = 'https://api.twitch.tv/kraken'
 
     @staticmethod
-    async def _query(url):
+    async def _query(url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
         logger.debug(f'Querying `{url}`...')
         return await requester.get(f'{url}?client_id={environ["TWITCH_TOKEN"]}')
+
+    async def _request_user_from_api(self, name: str):
+        # Calls the get Users endpoint to convert a user name to an ID and add it to the Database for requests, later
+        return (await self._query(f'{self._BASE_URL}/users?login={name}'))['users'][0]
 
     @staticmethod
     def _add_user_to_db(user: dict):
@@ -133,24 +137,24 @@ class TwitchAPI:
                           last_db_update=datetime.datetime.utcnow()), ['name'])
         logger.info(f'Updated {user["name"]} on the User Database.')
 
-    async def _request_user_from_api(self, name: str):
-        r = await self._query(f'{self._BASE_URL}/users?login={name}')
-        return r
-
-    async def get_user(self, name: str) -> dict:
-        # Requests a Twitch User. If he's not present in the Database, he is added and returned.
+    async def get_user(self, name: str) -> Union[Optional[dict], Any]:
+        # Requests a Twitch User by his name. If he's not present in the Database, he is added and returned.
         # If he is present, but the last user update surpassed the set interval, he is updated and returned.
-        # Otherwise, if the checks above return False, the user is just returned.
+        # Otherwise, if the checks above return `False`, the user is just returned.
+        # If the User is not found at all, `None` is returned.
         user = table.find_one(name=name)
 
-        # Check if the user exists, if not request it and add it to the DB
-        if user is None:
-            user = await self._request_user_from_api(name)
-            self._add_user_to_db(user)
+        try:
+            # Check if the user exists in the Database, if not request it and add it to the DB
+            if user is None:
+                user = await self._request_user_from_api(name)
+                self._add_user_to_db(user)
 
-        # Check if User needs to be updated
-        elif datetime.datetime.utcnow() - user.last_db_update > datetime.timedelta(hours=USER_UPDATE_INTERVAL):
-            user = await self._request_user_from_api(name)
-            self._update_user_on_db(user)
-
-        return user
+            # Check if User needs to be updated
+            elif datetime.datetime.utcnow() - user.last_db_update > datetime.timedelta(hours=USER_UPDATE_INTERVAL):
+                user = await self._request_user_from_api(name)
+                self._update_user_on_db(user)
+        except requester.NotFoundError:
+            return None
+        else:
+            return user
