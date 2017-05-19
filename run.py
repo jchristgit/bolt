@@ -7,23 +7,20 @@ from builtins import ModuleNotFoundError
 from discord import Embed, Colour
 from discord.ext import commands
 from os import environ, makedirs
-from src.cogs.streams import follow_config
+
+from src.apis import twitch
+from src.util import create_logger
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
-makedirs('logs', exist_ok=True)
-standard_formatter = logging.Formatter('[%(levelname)s] %(asctime)s (%(name)s): %(message)s')
-discord_logger = logging.getLogger('discord')
-discord_logger.setLevel(logging.INFO)
-discord_handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
-discord_handler.setFormatter(standard_formatter)
-discord_logger.addHandler(discord_handler)
+logger = create_logger('discord')
 
-DESCRIPTION = 'Hello! I am a Bot made by Volcyy. You can prefix my Commands by either mentioning me, using `?` or `!`.'
+DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
+              'You can prefix my Commands by either mentioning me, using `?` or `!`.'
 
 
-class Bot(commands.Bot):
+class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None)
         self.start_time = datetime.datetime.now()
@@ -75,8 +72,7 @@ COGS_BASE_PATH = 'src.cogs.'
 # Cogs to load on login
 COGS_ON_LOGIN = [
     'admin',
-    'mod',
-    'streams'
+    'mod'
 ]
 
 
@@ -93,13 +89,5 @@ if __name__ == '__main__':
     print('Logging in...')
     client.run(environ['DISCORD_TOKEN'])
     print('Logged off.')
-
-    # Close Logging
-    discord_handler.close()
-    discord_logger.removeHandler(discord_handler)
-
-    # Save JSON config
-    follow_config.save()
-
 
 

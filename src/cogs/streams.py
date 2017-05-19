@@ -1,168 +1,9 @@
-import aiohttp
-import asyncio
 import datetime
 import discord
 import humanize
-import json
 
 from discord.ext import commands
-from src.twitch_api import TwitchAPI
-from time import strptime, mktime
-
-
-def datetime_from_struct_time(struct_time):
-    return datetime.datetime.fromtimestamp(mktime(strptime(struct_time, '%Y-%m-%dT%H:%M:%SZ')))
-
-
-class FollowConfig:
-    # Handles reading and writing the configuration file for stream follows and abstracts away initialization of entries
-    def __init__(self):
-        with open('config/streams.json') as f:
-            self._config = json.load(f)
-
-    def save(self):
-        with open('config/streams.json', 'w') as f:
-            json.dump(self._config, f, indent=4, sort_keys=True)
-
-    def get_guild_subscriptions(self, guild_id):
-        # fix
-        guild_id = str(guild_id)
-        if guild_id not in self._config['guild_follows']:
-            return []
-        return self._config['guild_follows'][guild_id]['follows']
-
-    def follow(self, guild_id, guild_name, stream_name):
-        guild_id = str(guild_id)
-        print(f'[STREAMS] Guild `{guild_name}` is now following `{stream_name}`.')
-        if guild_id not in self._config['guild_follows']:
-            # Store this channel in the guild's follows
-            self._config['guild_follows'][guild_id] = {
-                'channel': '',
-                'follows': [
-                    stream_name
-                ],
-                'name': guild_name
-            }
-        else:
-            self._config['guild_follows'][guild_id]['follows'].append(stream_name)
-        if stream_name not in self._config['global_follows']:
-            # Store this guild for the followers for the Channel
-            self._config['global_follows'][stream_name] = [
-                int(guild_id)
-            ]
-        else:
-            self._config['global_follows'][stream_name].append(guild_id)
-
-    def un_follow(self, guild_id, stream_name):
-        guild_id = str(guild_id)
-        self._config['guild_follows'][guild_id]['follows'].remove(stream_name)
-        self._config['global_follows'][stream_name].remove(guild_id)
-        if not self._config['global_follows'][stream_name]:  # no more guilds following
-            del self._config['global_follows'][stream_name]
-
-    def set_channel(self, guild_id, guild_name, channel_id):
-        guild_id, channel_id = str(guild_id), str(channel_id)
-        print(f'[STREAMS] Guild `{guild_name}` set channel to `{channel_id}`.')
-        if guild_id not in self._config['guild_follows']:
-            self._config['guild_follows'][guild_id] = {
-                'channel': channel_id,
-                'follows': [],
-                'name': guild_name
-            }
-        else:
-            self._config['guild_follows'][guild_id]['channel'] = channel_id
-
-    def unset_channel(self, guild_id, guild_name):
-        print(f'[STREAMS] Guild `{guild_name}` unset its channel.')
-        self._config['guild_follows'][str(guild_id)]['channel'] = ''
-
-    def get_channel_id(self, guild_id):
-        guild_id = str(guild_id)
-        if guild_id not in self._config['guild_follows']:
-            return ''
-        else:
-            return self._config['guild_follows'][guild_id]['channel']
-
-    def get_global_follows(self):
-        return self._config['global_follows']
-
-
-follow_config = FollowConfig()
-
-
-class StreamBackend:
-    # Handles processing Stream data in a human-readable form
-    # as well as informing Guilds about Stream updates
-    def __init__(self, bot: commands.Bot):
-        self.api = TwitchAPI()
-        self.bot = bot
-
-    # Get a Stream by its name.
-    async def get_stream(self, name):
-        return await self.api.get_stream(name)
-
-    # Get a User by his name.
-    async def get_user(self, name):
-        return await self.api.get_user(name)
-
-    # Get information about whether a User is streaming, and if so, what game is being played
-    async def get_status(self, name):
-        user = await self.api.get_stream(name)
-        if user.online:
-            return f'Playing {user.game}'
-        return 'Offline'
-
-    # Check if a User exists
-    async def exists(self, name):
-        return (await self.api.get_user(name)).exists
-
-    async def send_stream_announcement(self, stream):
-        following_guilds = follow_config.get_global_follows()[stream.name]
-        for guild_id in following_guilds:
-            channel_id = follow_config.get_channel_id(guild_id)
-
-            if channel_id != '':
-                channel = await self.bot.get_channel(channel_id)
-                response = discord.Embed()
-                response.colour = 0x6441A5
-
-                if stream.online:
-                    response.title = f'{stream.display_name} is now online!'
-                    response.set_thumbnail(url=stream.preview)
-                    response.description = f'Playing **{stream.game}** with currently **{stream.viewers} viewers**:\n' \
-                                           f'*{stream.channel_status}*'
-                    response.set_footer(text=f'Run `!𝚜𝚝𝚛𝚎𝚊𝚖 𝚐𝚎𝚝 <{stream.name}> for detailed information',
-                                        icon_url=stream.channel_logo)
-                else:
-                    response.title = f'{stream.display_name} is now offline.'
-                await channel.send(embed=response)
-
-            else:
-                print(f'[WARN] Guild {guild_id} is following channels, but has not got any channel set.')
-
-    async def update_streams(self):
-        print('Starting stream updates...')
-        # Keep Client Session alive
-        with aiohttp.ClientSession() as cs:
-            old_streams = []
-            while not self.bot.is_closed():
-                # Update the old streams list
-                new_streams = []
-                for followed_stream in follow_config.get_global_follows():
-                    new_streams.append(await self.get_stream(followed_stream))
-                    await asyncio.sleep(1.5)
-
-                if not old_streams:
-                    print('Done loading the initial Streams.\nStarting diff checks on next iteration...')
-                elif len(old_streams) != len(new_streams):
-                    print(f'Reloading Streams, length changed from {len(old_streams)} to {len(new_streams)}.')
-                else:
-                    intersections = set(old_streams).intersection(new_streams)
-                    for stream in intersections:
-                        await self.send_stream_announcement(stream)
-                    print(list(intersections))
-
-                old_streams = new_streams
+from src.apis.twitch import parse_twitch_time
 
 
 class Streams:
@@ -170,12 +11,7 @@ class Streams:
     def __init__(self, bot):
         self.bot = bot
         self.stream_backend = StreamBackend(bot)
-
-    async def _get_stream_channel(self, guild_id: str):
-        channel_id = follow_config.get_channel_id(str(guild_id))
-        if channel_id == '':
-            return None
-        return await self.bot.get_channel(channel_id)
+        # Create Updater Task which should wait until ready
 
     @commands.group()
     @commands.guild_only()
@@ -202,9 +38,12 @@ class Streams:
         response = discord.Embed()
         stream = await self.stream_backend.get_stream(stream_name)
         if stream.online:
-            response.set_author(name=f'Stream Information for {stream.display_name}',
-                                url=stream.url, icon_url=stream.channel_logo)
-            uptime = datetime.datetime.now() - datetime_from_struct_time(stream.creation_date)
+            if stream.channel_logo is not None:
+                response.set_author(name=f'Stream Information for {stream.display_name}',
+                                    url=stream.url, icon_url=stream.channel_logo)
+            else:
+                response.set_author(name=f'Stream Information for {stream.display_name}', url=stream.url)
+            uptime = datetime.datetime.utcnow() - parse_twitch_time(stream.creation_date)
             response.description = f'📺 **`Status`**: online\n' \
                                    f'🕹 **`Game`**: {stream.game}\n' \
                                    f'🗒 **`Description`**: *{stream.channel_status.strip()}*\n' \
@@ -236,14 +75,15 @@ class Streams:
                 response.set_thumbnail(url=user.logo_url)
             else:
                 response.set_author(name=f'User Information for {user.display_name}', url=user.link)
-            creation_date = humanize.naturaldate(datetime_from_struct_time(user.creation_date))
-            updated_at = humanize.naturaldate(datetime_from_struct_time(user.updated_at))
+            creation_date = humanize.naturaldate(parse_twitch_time(user.creation_date))
+            updated_at = humanize.naturaldate(parse_twitch_time(user.updated_at))
             footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
+            bio = user.bio.strip() if user.bio is not None else 'No Bio'
             status = await self.stream_backend.get_status(user_name)
             response.description = f'🗞 **`Name`**: {user.name}\n' \
                                    f'📺 **`Status`**: {status}\n' \
                                    f'💻 **`Display Name`**: {user.display_name}\n' \
-                                   f'🗒 **`Bio`**: *{user.bio.strip()}*\n' \
+                                   f'🗒 **`Bio`**: *{bio}*\n' \
                                    f'🗓 **`Creation Date`**: {creation_date}\n' \
                                    f'📅 **`Last Update`**: {updated_at}\n' \
                                    f'🔗 **`Link`**: <{user.link}>\n'
@@ -293,16 +133,6 @@ class Streams:
         await ctx.send(embed=discord.Embed(description=f'Set the Stream announcement channel to this channel.',
                                            colour=discord.Colour.green()))
 
-    @stream.command(name='save', hidden=True)
-    @commands.is_owner()
-    async def save_config(self, ctx):
-        """Save the Follow Configuration. Only usable by the Owner."""
-        follow_config.save()
-        response = await ctx.send(embed=discord.Embed(description='Saved Configuration.',
-                                                      colour=discord.Colour.green()))
-        await asyncio.sleep(2)
-        await response.delete()
-
     @stream.command(name='unsetchannel')
     async def unset_channel(self, ctx):
         """Unset the Guild's stream channel."""
@@ -313,6 +143,11 @@ class Streams:
             follow_config.unset_channel(ctx.message.guild.id, ctx.message.guild.name)
             await ctx.send(embed=discord.Embed(description='Unset this Guild\'s stream announcement channel.',
                                                colour=discord.Colour.green()))
+
+    @stream.command()
+    async def follows(self, ctx):
+        """Lists all channels that this Guild is following."""
+        pass
 
 
 def setup(bot):
