@@ -75,18 +75,28 @@ class Streams:
                 response.set_thumbnail(url=user['logo'])
             else:
                 response.set_author(name=f'User Information for {user["name"]}', url=link)
+
+            # Format dates, create footer and format Bio
             created_at = humanize.naturaldate(user['created_at'])
             updated_at = humanize.naturaldate(user['updated_at'])
             footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
             bio = user['bio'].strip() if user['bio'] is not None else 'No Bio'
-            # status = await self.stream_backend.get_status(user_name)
-            #                     #f'📺 **`Status`**: {status}\n' \
-            response.description = f'🗞 **`Name`**: {user["name"]}\n' \
-                                   f'💻 **`Display Name`**: {user["display_name"]}\n' \
-                                   f'🗒 **`Bio`**: *{bio}*\n' \
-                                   f'🗓 **`Creation Date`**: {created_at}\n' \
-                                   f'📅 **`Last Update`**: {updated_at}\n' \
-                                   f'🔗 **`Link`**: <{link}>\n'
+
+            if user['status'] != '':
+                response.description = f'📺 **`Status`**: {user["status"]}'
+            else:
+                response.description = ''
+            response.description += f'🗞 **`Name`**: {user["name"]}\n' \
+                                    f'💻 **`Display Name`**: {user["display_name"]}\n' \
+                                    f'🗒 **`Bio`**: *{bio}*\n' \
+                                    f'🗓 **`Creation Date`**: {created_at}\n' \
+                                    f'📅 **`Last Update`**: {updated_at}\n'
+
+            if user['followers'] != -1:  # -1 meaning no data was received about this yet
+                response.description += f'👀 **`Views`**: {user["views"]}\n' \
+                                        f'<:meep:232558766782939136> **`Followers`**: {user["followers"]}\n' \
+                                        f'🗺 **`Language`**: {user["language"]}\n' \
+                                        f'🔗 **`Link`**: <{link}>'
             response.set_footer(text=footer)
             response.colour = 0x6441A5
         else:

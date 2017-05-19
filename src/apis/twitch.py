@@ -124,19 +124,30 @@ class TwitchAPI:
     def _add_user_to_db(user: dict):
         # Takes a JSON response of a User from the API and inserts it into the Database,
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
+        followers = user.get('followers', -1)
+        views = user.get('views', -1)
+        language = user.get('language', '')
+        status = user.get('status', '')
+
         table.insert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
                           display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
-                          last_db_update=datetime.datetime.utcnow()))
+                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'], followers=followers,
+                          views=views, language=language, status=status, last_db_update=datetime.datetime.utcnow()))
         logger.info(f'Added {user["name"]} to the User Database.')
 
     @staticmethod
     def _update_user_on_db(user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
+        followers = user.get('followers', -1)
+        views = user.get('views', -1)
+        language = user.get('language', '')
+        status = user.get('status', '')
+
         table.update(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
                           display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
+                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'], followers=followers,
+                          views=views, language=language, status=status,
                           last_db_update=datetime.datetime.utcnow()), ['name'])
         logger.info(f'Updated {user["name"]} on the User Database.')
 
