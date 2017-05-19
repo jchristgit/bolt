@@ -105,11 +105,12 @@ class TwitchAPI:
     # Handles requests to the Twitch API
     def __init__(self):
         self._api_key = environ['TWITCH_TOKEN']
-        self._BASE_URL = 'https://api.twitch.tv/kraken/'
+        self._BASE_URL = 'https://api.twitch.tv/kraken'
 
     @staticmethod
     async def _query(url):
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
+        logger.debug(f'Querying `{url}`...')
         return await requester.get(f'{url}?client_id={environ["TWITCH_TOKEN"]}')
 
     @staticmethod
@@ -133,8 +134,7 @@ class TwitchAPI:
         logger.info(f'Updated {user["name"]} on the User Database.')
 
     async def _request_user_from_api(self, name: str):
-        # TODO: Error handling for non-200 OK status codes
-        r = await self._query(f'{self._BASE_URL}users?login={name}')
+        r = await self._query(f'{self._BASE_URL}/users?login={name}')
         return r
 
     async def get_user(self, name: str) -> dict:
