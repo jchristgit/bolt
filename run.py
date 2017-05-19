@@ -2,6 +2,8 @@ import asyncio
 import datetime
 import logging
 import uvloop
+import sys
+import traceback
 
 from builtins import ModuleNotFoundError
 from discord import Embed, Colour
@@ -38,8 +40,12 @@ class Bot(commands.AutoShardedBot):
         elif isinstance(error, commands.CommandNotFound):
             pass
         elif isinstance(error, commands.CommandInvokeError):
-            await ctx.send(embed=self.make_error_embed(f'**An Error occurred through the invocation of the command:**\n'
-                                                       f'{error}'))
+            await ctx.send(embed=self.make_error_embed(f'**An Error occurred through the invocation of the command**.\n'
+                                                       f'Please contact Volcyy#2359 with a detailed '
+                                                       f'description of the problem and how it was created. Thanks!'))
+            print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
+            traceback.print_tb(error.original.__traceback__)
+            print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
         elif isinstance(error, commands.DisabledCommand):
@@ -72,7 +78,8 @@ COGS_BASE_PATH = 'src.cogs.'
 # Cogs to load on login
 COGS_ON_LOGIN = [
     'admin',
-    'mod'
+    'mod',
+    'streams'
 ]
 
 

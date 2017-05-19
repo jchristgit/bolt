@@ -4,8 +4,7 @@ import asyncio
 from ..util import create_logger
 
 log = create_logger('api')
-
-_cs = aiohttp.ClientSession()
+_cs = None
 
 
 class NotFoundError(Exception):
@@ -13,7 +12,10 @@ class NotFoundError(Exception):
 
 
 async def get(url: str) -> dict:
-    async with _cs.get(url) as r:
+    global _cs
+    if _cs is None:
+        _cs = aiohttp.ClientSession()
+    async with _cs.get(url, headers=[('Accept', 'application/vnd.twitchtv.v5+json')]) as r:
         if r.status == 200:
             return await r.json()
         elif r.status == 404:

@@ -59,7 +59,7 @@ class Streams:
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.user)
-    async def user(self, ctx, user_name):
+    async def user(self, ctx, *, user_name: str):
         """Get information about a Twitch User by his name.
         
         This is different from `!stream get <name>` because it returns information about the *user* instead of
@@ -67,7 +67,7 @@ class Streams:
         whether the User exists or not.
         """
         response = discord.Embed()
-        user = await self.twitch_api.get_user(user_name)
+        user = await self.twitch_api.get_user(user_name.replace(' ', ''))
         if user is not None:
             link = f'https://twitch.tv/{user["name"]}'
             if user['logo'] is not None:
@@ -75,18 +75,18 @@ class Streams:
                 response.set_thumbnail(url=user['logo'])
             else:
                 response.set_author(name=f'User Information for {user["name"]}', url=link)
-            creation_date = humanize.naturaldate(parse_twitch_time(user["created_at"]))
-            updated_at = humanize.naturaldate(parse_twitch_time(user["updated_at"]))
+            created_at = humanize.naturaldate(user['created_at'])
+            updated_at = humanize.naturaldate(user['updated_at'])
             footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
-            bio = user["bio"].strip() if user["bio"] is not None else 'No Bio'
+            bio = user['bio'].strip() if user['bio'] is not None else 'No Bio'
             # status = await self.stream_backend.get_status(user_name)
             #                     #f'📺 **`Status`**: {status}\n' \
             response.description = f'🗞 **`Name`**: {user["name"]}\n' \
                                    f'💻 **`Display Name`**: {user["display_name"]}\n' \
                                    f'🗒 **`Bio`**: *{bio}*\n' \
-                                   f'🗓 **`Creation Date`**: {creation_date}\n' \
+                                   f'🗓 **`Creation Date`**: {created_at}\n' \
                                    f'📅 **`Last Update`**: {updated_at}\n' \
-                                   f'🔗 **`Link`**: <{url}>\n'
+                                   f'🔗 **`Link`**: <{link}>\n'
             response.set_footer(text=footer)
             response.colour = 0x6441A5
         else:
