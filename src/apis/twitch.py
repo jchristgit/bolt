@@ -19,10 +19,11 @@ table = db['twitch_users']
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
 
-# After which amount of time a Twitch Stream should be updated, in minutes
+# After which amount of time a Twitch Stream should be updated in Cache, in minutes
 STREAM_UPDATE_INTERVAL = 2
 
 # The amount of time that the Twitch Stream updater should wait between requesting, in seconds
+# Keep in mind that this also pulls data from Cache.
 BACKGROUND_UPDATE_INTERVAL = 2
 
 
@@ -73,7 +74,7 @@ class FollowConfig:
                 int(guild_id)
             ]
         else:
-            self._config['global_follows'][stream_name].append(guild_id)
+            self._config['global_follows'][stream_name].append(int(guild_id))
 
     def un_follow(self, guild_id: int, stream_name: str):
         self._config['guild_follows'][str(guild_id)]['follows'].remove(stream_name)
@@ -212,7 +213,7 @@ class TwitchAPI:
             channel_id = follow_config.get_channel_id(guild_id)
             if channel_id == '':
                 return
-            stream_channel: discord.TextChannel = await self._bot.get_channel(int(channel_id))
+            stream_channel = self._bot.get_channel(int(channel_id))
             announcement = discord.Embed()
             announcement.colour = 0x6441A5
             if stream["status"]:
@@ -225,6 +226,7 @@ class TwitchAPI:
                 announcement.description = f'Playing **{stream["game"]}** for currently **{stream["viewers"]}** ' \
                                            f'viewers!\n *{stream["channel"]["status"]}*'
                 announcement.set_thumbnail(url=stream['preview']['medium'])
+                announcement.set_footer(text=f'Run `!stream get {stream["name"]}` for detailed information!')
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
             await stream_channel.send(embed=announcement)
@@ -233,21 +235,29 @@ class TwitchAPI:
         # Starts the process of updating Guilds about Streams they follow.
         old_streams = []
         await self._bot.wait_until_ready()
+
         while not self._bot.is_closed():
             # Reset stream list
             new_streams = []
 
             # Check stream states
-            for stream in follow_config.get_global_follows():
+            # Why the list conversion?
+            #   Without the conversion, when a User follows a new Stream, a RuntimeError is raised,
+            #   since the dictionary size changed during the iteration. To prevent this, the dictionary
+            #   is casted to a list to prevent iterating over a reference to the global follows.
+            for stream in list(follow_config.get_global_follows()):
+                print(f'Getting Stream {stream}...')
                 new_streams.append(await self.get_stream(stream))
                 await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
-            # Check if we ran through at least one iteration
-            if old_streams:
+            # Check if we ran through at least one iteration and both lists have the same amount of Streams
+            if old_streams and len(old_streams) == len(new_streams):
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
+                    print(double_streams[0]['name'], double_streams[0]['status'],
+                          double_streams[1]['name'], double_streams[1]['status'])
                     if double_streams[0]['status'] != double_streams[1]['status']:
-                        following_guilds = follow_config.get_global_follows()[double_streams[1]['channel']['name']]
+                        following_guilds = follow_config.get_global_follows()[double_streams[1]['name']]
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
             old_streams = new_streams

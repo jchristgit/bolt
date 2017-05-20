@@ -4,6 +4,7 @@ import humanize
 
 from discord.ext import commands
 from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config
+from src.apis.requester import close as close_requester
 
 
 class Streams:
@@ -11,11 +12,12 @@ class Streams:
     def __init__(self, bot):
         self.bot = bot
         self.twitch_api = TwitchAPI(bot)
-        # Create Updater Task which should wait until ready
+        self.bot.loop.create_task(self.twitch_api.update_streams())
 
     @staticmethod
     def __unload():
         follow_config.save()
+        close_requester()
         print('Unloaded Stream Cog.')
 
     @commands.group()

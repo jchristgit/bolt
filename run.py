@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import logging
 import uvloop
 import sys
 import traceback
@@ -8,9 +7,8 @@ import traceback
 from builtins import ModuleNotFoundError
 from discord import Embed, Colour
 from discord.ext import commands
-from os import environ, makedirs
+from os import environ
 
-from src.apis import twitch
 from src.util import create_logger
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

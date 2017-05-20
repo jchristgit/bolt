@@ -24,3 +24,8 @@ async def get(url: str) -> dict:
             log.warn('Sending too many requests to the Twitch API!')
             await asyncio.sleep(1)
             return await get(url)
+
+
+def close():
+    if _cs is not None:
+        _cs.close()
