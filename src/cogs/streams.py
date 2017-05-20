@@ -36,29 +36,29 @@ class Streams:
         !stream get imaqtpie - get Stream information about imaqtpie
         """
         response = discord.Embed()
-        stream = await self.stream_backend.get_stream(stream_name)
-        if stream.online:
-            if stream.channel_logo is not None:
-                response.set_author(name=f'Stream Information for {stream.display_name}',
-                                    url=stream.url, icon_url=stream.channel_logo)
+        stream = await self.twitch_api.get_stream(stream_name)
+        if stream is not None:
+            link = f'https://twitch.tv/{stream["channel"]["name"]}'
+            if stream['channel']['logo'] is not None:
+                response.set_author(name=f'Stream Information for {stream["channel"]["display_name"]}',
+                                    url=link, icon_url=stream["channel"]['logo'])
             else:
-                response.set_author(name=f'Stream Information for {stream.display_name}', url=stream.url)
-            uptime = datetime.datetime.utcnow() - parse_twitch_time(stream.creation_date)
-            response.description = f'📺 **`Status`**: online\n' \
-                                   f'🕹 **`Game`**: {stream.game}\n' \
-                                   f'🗒 **`Description`**: *{stream.channel_status.strip()}*\n' \
-                                   f'👁 **`Viewers`**: {stream.viewers}\n' \
-                                   f'👀 **`Followers`**: {stream.followers}\n' \
+                response.set_author(name=f'Stream Information for {stream["channel"]["display_name"]}', url=link)
+            uptime = datetime.datetime.utcnow() - parse_twitch_time(stream["created_at"][:-1], truncate=False)
+            response.description = f'🕹 **`Game`**: {stream["game"]}\n' \
+                                   f'🗒 **`Description`**: *{stream["channel"]["status"].strip()}*\n' \
+                                   f'👁 **`Viewers`**: {stream["viewers"]}\n' \
+                                   f'👀 **`Followers`**: {stream["channel"]["followers"]}\n' \
                                    f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
-                                   f'🗺 **`Language`**: {stream.language}\n'
-            response.set_thumbnail(url=stream.preview)
+                                   f'🗺 **`Language`**: {stream["channel"]["language"]}\n'
+            response.set_thumbnail(url=stream["preview"]["medium"])
         else:
             response.description = 'The Stream is currently offline or does not exist.'
         response.colour = 0x6441A5
         await ctx.send(embed=response)
 
     @stream.command()
-    @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.user)
+    @commands.cooldown(rate=15, per=5.0 * 60, type=commands.BucketType.user)
     async def user(self, ctx, *, user_name: str):
         """Get information about a Twitch User by his name.
         
@@ -81,22 +81,13 @@ class Streams:
             updated_at = humanize.naturaldate(user['updated_at'])
             footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
             bio = user['bio'].strip() if user['bio'] is not None else 'No Bio'
+            response.description = f'🗞 **`Name`**: {user["name"]}\n' \
+                                   f'💻 **`Display Name`**: {user["display_name"]}\n' \
+                                   f'🗒 **`Bio`**: *{bio}*\n' \
+                                   f'🗓 **`Creation Date`**: {created_at}\n' \
+                                   f'📅 **`Last Update`**: {updated_at}\n' \
+                                   f'🔗 **`Link`**: <{link}>'
 
-            if user['status'] != '':
-                response.description = f'📺 **`Status`**: {user["status"]}'
-            else:
-                response.description = ''
-            response.description += f'🗞 **`Name`**: {user["name"]}\n' \
-                                    f'💻 **`Display Name`**: {user["display_name"]}\n' \
-                                    f'🗒 **`Bio`**: *{bio}*\n' \
-                                    f'🗓 **`Creation Date`**: {created_at}\n' \
-                                    f'📅 **`Last Update`**: {updated_at}\n'
-
-            if user['followers'] != -1:  # -1 meaning no data was received about this yet
-                response.description += f'👀 **`Views`**: {user["views"]}\n' \
-                                        f'<:meep:232558766782939136> **`Followers`**: {user["followers"]}\n' \
-                                        f'🗺 **`Language`**: {user["language"]}\n' \
-                                        f'🔗 **`Link`**: <{link}>'
             response.set_footer(text=footer)
             response.colour = 0x6441A5
         else:

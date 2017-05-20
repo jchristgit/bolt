@@ -11,18 +11,21 @@ from stuf import stuf
 from time import mktime, strptime
 from ..util import create_logger
 
-
 logger = create_logger('api')
 db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
 table = db['twitch_users']
 
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
+# After which amount of time a Twitch Stream should be updated, in minutes
+STREAM_UPDATE_INTERVAL = 5
 
 
-def parse_twitch_time(twitch_time: str):
+def parse_twitch_time(twitch_time: str, truncate=True):
     # Converts a Twitch API Time to a datetime.datetime object
-    return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time[:-8], '%Y-%m-%dT%H:%M:%S')))
+    if truncate:
+        return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time[:-8], '%Y-%m-%dT%H:%M:%S')))
+    return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time, '%Y-%m-%dT%H:%M:%S')))
 
 
 class FollowConfig:
@@ -104,80 +107,103 @@ follow_config = FollowConfig()
 class TwitchAPI:
     # Handles requests to the Twitch API
     def __init__(self):
-        self._api_key = environ['TWITCH_TOKEN']
+        self._API_KEY = environ['TWITCH_TOKEN']
         self._BASE_URL = 'https://api.twitch.tv/kraken'
+        self._stream_cache = {}
 
-    @staticmethod
-    async def _query(url) -> dict:
+    async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
         logger.debug(f'Querying `{url}`...')
         if '?' not in url:
-            return await requester.get(f'{url}?client_id={environ["TWITCH_TOKEN"]}')
-        return await requester.get(f'{url}&client_id={environ["TWITCH_TOKEN"]}')
+            return await requester.get(f'{url}?client_id={self._API_KEY}')
+        return await requester.get(f'{url}&client_id={self._API_KEY}')
 
     async def _request_user_from_api(self, name: str):
         # Calls the get Users endpoint to convert a user name to an ID and add it to the Database for requests, later
         logger.debug(f'Calling `Get User` endpoint for {name}...')
-        return (await self._query(f'{self._BASE_URL}/users?login={name}'))['users'][0]
+        resp = await self._query(f'{self._BASE_URL}/users?login={name}')
+        if resp['_total'] == 0:
+            raise requester.NotFoundError()
+        return resp['users'][0]
+
+    async def _request_stream_from_api(self, name: str):
+        # Requests a Stream from the API. First, it tries to obtain a User object to translate from a Stream Name
+        # an ID. It then performs the request to the Twitch API. The User Object in the database is also updated
+        # during this process to contain information about followers, language, views, and the status of the User.
+        logger.debug(f'Calling `Get Stream by User` for {name}...')
+
+        # Check if the Stream is present in the Cache
+        if name in self._stream_cache:
+            # Check if channel is offline / does not exist
+            if self._stream_cache[name]["stream"] is None:
+                return None
+
+            # Check if channel should be updated
+            elif datetime.datetime.utcnow() - self._stream_cache[name].last_update \
+                    > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
+                # Update the Stream
+                self._stream_cache[name] = (await self._query(
+                    f'{self._BASE_URL}/streams/{self._stream_cache[name]["channel"]["_id"]}'))['stream']
+
+            # Return Stream from the Cache
+            return self._stream_cache[name]
+
+        try:
+            user = await self.get_user(name)
+        except requester.NotFoundError:
+            return None
+        else:
+            self._stream_cache[name] = (await self._query(f'{self._BASE_URL}/streams/{user["uid"]}'))['stream']
+            return self._stream_cache[name]
 
     @staticmethod
     def _add_user_to_db(user: dict):
         # Takes a JSON response of a User from the API and inserts it into the Database,
-        # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
-        followers = user.get('followers', -1)
-        views = user.get('views', -1)
-        language = user.get('language', '')
-        status = user.get('status', '')
-
+        # returned from `GET https://api.twitch.tv/kraken/users/<user ID>` None)
         table.insert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
                           display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'], followers=followers,
-                          views=views, language=language, status=status, last_db_update=datetime.datetime.utcnow()))
+                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
+                          last_db_update=datetime.datetime.utcnow()))
         logger.info(f'Added {user["name"]} to the User Database.')
 
     @staticmethod
     def _update_user_on_db(user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
-        followers = user.get('followers', -1)
-        views = user.get('views', -1)
-        language = user.get('language', '')
-        status = user.get('status', '')
-
         table.update(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
                           display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'], followers=followers,
-                          views=views, language=language, status=status,
+                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
                           last_db_update=datetime.datetime.utcnow()), ['name'])
         logger.info(f'Updated {user["name"]} on the User Database.')
 
-    async def get_user(self, name: str) -> Union[Optional[dict], Any]:
+    async def get_user(self, name: str) -> Optional[dict]:
         # Requests a Twitch User by his name. If he's not present in the Database, he is added and returned.
         # If he is present, but the last user update surpassed the set interval, he is updated and returned.
         # Otherwise, if the checks above return `False`, the user is just returned.
         # If the User is not found at all, `None` is returned.
-        def parse_times(raw_user):
-            # Helper function to parse the created_at and updated_at attributes of a User
-            raw_user['created_at'] = parse_twitch_time(raw_user['created_at'])
-            raw_user['updated_at'] = parse_twitch_time(raw_user['updated_at'])
-            return raw_user
 
         user = table.find_one(name=name)
 
         try:
             # Check if the user exists in the Database, if not request it and add it to the DB
             if user is None:
-                user = await self._request_user_from_api(name)
-                self._add_user_to_db(user)
-                parse_times(user)
+                self._add_user_to_db(await self._request_user_from_api(name))
+                user = table.find_one(name=name)
 
             # Check if User needs to be updated
             elif datetime.datetime.utcnow() - user.last_db_update > datetime.timedelta(hours=USER_UPDATE_INTERVAL):
-                user = await self._request_user_from_api(name)
-                self._update_user_on_db(user)
-                parse_times(user)
+                self._update_user_on_db(await self._request_user_from_api(name))
+                user = table.find_one(name=name)
 
         except requester.NotFoundError:
             return None
         else:
             return user
+
+    async def get_stream(self, name: str) -> Optional[dict]:
+        # Get a specific Stream by its name. This function is not intended to be used together with the Stream Updater.
+        # Call this function when you want specific information about one stream.
+        stream = await self._request_stream_from_api(name)
+        if stream is None:
+            return None
+        return stream
