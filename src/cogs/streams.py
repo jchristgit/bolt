@@ -10,7 +10,7 @@ class Streams:
     """Commands for getting notified about Streams, receiving information about them, and more."""
     def __init__(self, bot):
         self.bot = bot
-        self.twitch_api = TwitchAPI()
+        self.twitch_api = TwitchAPI(bot)
         # Create Updater Task which should wait until ready
 
     @staticmethod
@@ -27,7 +27,7 @@ class Streams:
     @commands.is_owner()
     async def activate(self, ctx):
         """Activates the Stream Updater."""
-        #self.bot.loop.create_task(self.stream_backend.update_streams())
+        # self.bot.loop.create_task(self.stream_backend.update_streams())
 
     @stream.command()
     @commands.cooldown(rate=10, per=5.0 * 60, type=commands.BucketType.user)
@@ -42,7 +42,8 @@ class Streams:
         """
         response = discord.Embed()
         stream = await self.twitch_api.get_stream(stream_name)
-        if stream is not None:
+        # The status key indicates whether the stream is online or offline.
+        if stream['status']:
             link = f'https://twitch.tv/{stream["channel"]["name"]}'
             if stream['channel']['logo'] is not None:
                 response.set_author(name=f'Stream Information for {stream["channel"]["display_name"]}',
@@ -151,9 +152,9 @@ class Streams:
                                                colour=discord.Colour.green()))
 
     @stream.command()
-    async def follows(self, ctx):
+    async def following(self, ctx):
         """Lists all channels that this Guild is following."""
-        pass
+        follow_config.get_guild_follows()
 
 
 def setup(bot):

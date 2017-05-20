@@ -1,6 +1,6 @@
-from typing import Union, Optional, Any
 
-import aiohttp
+import asyncio
+import discord
 import dataset
 import datetime
 import json
@@ -9,6 +9,7 @@ from os import environ
 from src.apis import requester
 from stuf import stuf
 from time import mktime, strptime
+from typing import Union, Optional, Any
 from ..util import create_logger
 
 logger = create_logger('api')
@@ -20,6 +21,9 @@ USER_UPDATE_INTERVAL = 12
 
 # After which amount of time a Twitch Stream should be updated, in minutes
 STREAM_UPDATE_INTERVAL = 2
+
+# The amount of time that the Twitch Stream updater should wait between requesting, in seconds
+BACKGROUND_UPDATE_INTERVAL = 2
 
 
 def parse_twitch_time(twitch_time: str, truncate=True):
@@ -106,10 +110,11 @@ follow_config = FollowConfig()
 
 class TwitchAPI:
     # Handles requests to the Twitch API
-    def __init__(self):
+    def __init__(self, bot: discord.AutoShardedClient):
         self._API_KEY = environ['TWITCH_TOKEN']
         self._BASE_URL = 'https://api.twitch.tv/kraken'
         self._stream_cache = {}
+        self._bot = bot
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
@@ -125,29 +130,6 @@ class TwitchAPI:
         if resp['_total'] == 0:
             raise requester.NotFoundError()
         return resp['users'][0]
-
-    async def _request_stream_from_api(self, stream_name: str):
-        # Requests a Stream from the API. First, it tries to obtain a User object to translate from a Stream Name
-        # an ID. It then performs the request to the Twitch API. The User Object in the database is also updated
-        # during this process to contain information about followers, language, views, and the status of the User.
-        logger.debug(f'Getting Stream for {stream_name}...')
-        # Updates the given Stream name in Cache.
-        # If the Stream was not present before, it will be added.
-
-        if stream_name not in self._stream_cache or \
-                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
-                > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
-            user_id = (await self.get_user(stream_name))['uid']
-            self._stream_cache[stream_name] = (await self._query(f'{self._BASE_URL}/streams/{user_id}'))['stream']
-            if self._stream_cache[stream_name] is None:
-                self._stream_cache[stream_name] = {
-                    'status': None
-                }
-
-            self._stream_cache[stream_name]['last_update'] = datetime.datetime.utcnow()
-            logger.info(f'Updated or added Stream `{stream_name}` in the Cache.')
-
-        return self._stream_cache[stream_name]
 
     @staticmethod
     def _add_user_to_db(user: dict):
@@ -193,12 +175,80 @@ class TwitchAPI:
         else:
             return user
 
-    async def get_stream(self, name: str) -> Optional[dict]:
-        # Get a specific Stream by its name. This function can be used together with the Stream Updater.
-        # Call this function when you want specific information about one stream.
-        # Returns either None or a Stream entry, as dictionary. Uses a Cache.
-        return await self._request_stream_from_api(name)
+    async def get_stream(self, stream_name: str) -> Optional[dict]:
+        # Requests a Stream from the API. First, it tries to obtain a User object to translate from a Stream Name
+        # an ID. It then performs the request to the Twitch API. The User Object in the database is also updated
+        # during this process to contain information about followers, language, views, and the status of the User.
+        logger.debug(f'Getting Stream for {stream_name}...')
+        # Updates the given Stream name in Cache.
+        # If the Stream was not present before, it will be added.
+
+        if stream_name not in self._stream_cache or \
+                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
+                > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
+            user_id = (await self.get_user(stream_name))['uid']
+            self._stream_cache[stream_name] = (await self._query(f'{self._BASE_URL}/streams/{user_id}'))['stream']
+            if self._stream_cache[stream_name] is None:
+                self._stream_cache[stream_name] = {
+                    'name': stream_name,
+                    'status': None
+                }
+            else:
+                self._stream_cache[stream_name]['name'] = stream_name
+                self._stream_cache[stream_name]['status'] = True
+
+            self._stream_cache[stream_name]['last_update'] = datetime.datetime.utcnow()
+            logger.info(f'Updated or added Stream `{stream_name}` in the Cache.')
+
+        return self._stream_cache[stream_name]
 
     async def user_exists(self, name: str) -> bool:
         # Returns a boolean indicating whether the given User exists or not.
         return await self.get_user(name) is not None
+
+    async def _send_stream_update_announcement(self, stream: dict, guilds_following: list):
+        # Sends an announcement about a Stream updating its state to all following Guilds.
+        for guild_id in guilds_following:
+            channel_id = follow_config.get_channel_id(guild_id)
+            if channel_id == '':
+                return
+            stream_channel: discord.TextChannel = await self._bot.get_channel(int(channel_id))
+            announcement = discord.Embed()
+            announcement.colour = 0x6441A5
+            if stream["status"]:
+                title = f'{stream["name"]} is now online!'
+                link = f'https://twitch.tv/{stream["channel"]["url"]}'
+                if stream['channel']['logo'] is not None:
+                    announcement.set_author(name=title, url=link, icon_url=stream['channel']['logo'])
+                else:
+                    announcement.set_author(name=title, url=link)
+                announcement.description = f'Playing **{stream["game"]}** for currently **{stream["viewers"]}** ' \
+                                           f'viewers!\n *{stream["channel"]["status"]}*'
+                announcement.set_thumbnail(url=stream['preview']['medium'])
+            else:
+                announcement.title = f'{stream["name"]} is now offline.'
+            await stream_channel.send(embed=announcement)
+
+    async def update_streams(self):
+        # Starts the process of updating Guilds about Streams they follow.
+        old_streams = []
+        await self._bot.wait_until_ready()
+        while not self._bot.is_closed():
+            # Reset stream list
+            new_streams = []
+
+            # Check stream states
+            for stream in follow_config.get_global_follows():
+                new_streams.append(await self.get_stream(stream))
+                await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
+
+            # Check if we ran through at least one iteration
+            if old_streams:
+                # Compare streams with each other
+                for double_streams in zip(old_streams, new_streams):
+                    if double_streams[0]['status'] != double_streams[1]['status']:
+                        following_guilds = follow_config.get_global_follows()[double_streams[1]['channel']['name']]
+                        await self._send_stream_update_announcement(double_streams[1], following_guilds)
+
+
+            old_streams = new_streams
