@@ -17,8 +17,9 @@ table = db['twitch_users']
 
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
+
 # After which amount of time a Twitch Stream should be updated, in minutes
-STREAM_UPDATE_INTERVAL = 5
+STREAM_UPDATE_INTERVAL = 2
 
 
 def parse_twitch_time(twitch_time: str, truncate=True):
@@ -208,3 +209,7 @@ class TwitchAPI:
         # Call this function when you want specific information about one stream.
         # Returns either None or a Stream entry, as dictionary. Uses a Cache.
         return await self._request_stream_from_api(name)
+
+    async def user_exists(self, name: str) -> bool:
+        # Returns a boolean indicating whether the given User exists or not.
+        return await self.get_user(name) is not None

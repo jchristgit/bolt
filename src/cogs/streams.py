@@ -3,7 +3,7 @@ import discord
 import humanize
 
 from discord.ext import commands
-from src.apis.twitch import parse_twitch_time, TwitchAPI
+from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config
 
 
 class Streams:
@@ -103,15 +103,15 @@ class Streams:
         
         To set a channel, use `!stream setchannel`.
         """
-        if await self.stream_backend.exists(stream_name):
-            if stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
-                await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
-                                                               f'`{stream_name}`.', colour=discord.Colour.red()))
-            else:
-                follow_config.follow(ctx.message.guild.id, ctx.message.guild.name, stream_name)
-                await ctx.send(embed=discord.Embed(description=f'This Guild is now **following the Channel '
-                                                               f'`{stream_name}`**, getting notified about streaming'
-                                                               f' status changes.', colour=discord.Colour.green()))
+        if stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
+            await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
+                                                           f'`{stream_name}`.', colour=discord.Colour.red()))
+
+        elif await self.twitch_api.user_exists(stream_name):
+            follow_config.follow(ctx.message.guild.id, ctx.message.guild.name, stream_name)
+            await ctx.send(embed=discord.Embed(description=f'This Guild is now **following the Channel '
+                                                           f'`{stream_name}`**, getting notified about streaming'
+                                                           f' status changes.', colour=discord.Colour.green()))
         else:
             await ctx.send(embed=discord.Embed(description=f'No Stream named `{stream_name}` found.',
                                                colour=discord.Colour.red()))
