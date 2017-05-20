@@ -133,17 +133,19 @@ class TwitchAPI:
         logger.debug(f'Calling `Get Stream by User` for {name}...')
 
         # Check if the Stream is present in the Cache
+        print(self._stream_cache)
         if name in self._stream_cache:
             # Check if channel is offline / does not exist
-            if self._stream_cache[name]["stream"] is None:
+            if self._stream_cache[name] is None:
                 return None
 
             # Check if channel should be updated
-            elif datetime.datetime.utcnow() - self._stream_cache[name].last_update \
+            elif datetime.datetime.utcnow() - self._stream_cache[name]['last_update'] \
                     > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
-                # Update the Stream
+                # Update the Stream and set the last updated parameter
                 self._stream_cache[name] = (await self._query(
                     f'{self._BASE_URL}/streams/{self._stream_cache[name]["channel"]["_id"]}'))['stream']
+                self._stream_cache[name]['last_update'] = datetime.datetime.utcnow()
 
             # Return Stream from the Cache
             return self._stream_cache[name]
@@ -154,6 +156,7 @@ class TwitchAPI:
             return None
         else:
             self._stream_cache[name] = (await self._query(f'{self._BASE_URL}/streams/{user["uid"]}'))['stream']
+            self._stream_cache[name]['last_update'] = datetime.datetime.utcnow()
             return self._stream_cache[name]
 
     @staticmethod
