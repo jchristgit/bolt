@@ -126,38 +126,28 @@ class TwitchAPI:
             raise requester.NotFoundError()
         return resp['users'][0]
 
-    async def _request_stream_from_api(self, name: str):
+    async def _request_stream_from_api(self, stream_name: str):
         # Requests a Stream from the API. First, it tries to obtain a User object to translate from a Stream Name
         # an ID. It then performs the request to the Twitch API. The User Object in the database is also updated
         # during this process to contain information about followers, language, views, and the status of the User.
-        logger.debug(f'Getting Stream for {name}...')
+        logger.debug(f'Getting Stream for {stream_name}...')
+        # Updates the given Stream name in Cache.
+        # If the Stream was not present before, it will be added.
 
-        # Check if the Stream is present in the Cache
-        if name in self._stream_cache:
-            # Check if channel is offline / does not exist
-            if self._stream_cache[name] is None:
-                return None
+        if stream_name not in self._stream_cache or \
+                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
+                > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
+            user_id = (await self.get_user(stream_name))['uid']
+            self._stream_cache[stream_name] = (await self._query(f'{self._BASE_URL}/streams/{user_id}'))['stream']
+            if self._stream_cache[stream_name] is None:
+                self._stream_cache[stream_name] = {
+                    'status': None
+                }
 
-            # Check if channel should be updated
-            elif datetime.datetime.utcnow() - self._stream_cache[name]['last_update'] \
-                    > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
-                # Update the Stream and set the last updated parameter
-                self._stream_cache[name] = (await self._query(
-                    f'{self._BASE_URL}/streams/{self._stream_cache[name]["channel"]["_id"]}'))['stream']
-                self._stream_cache[name]['last_update'] = datetime.datetime.utcnow()
+            self._stream_cache[stream_name]['last_update'] = datetime.datetime.utcnow()
+            logger.info(f'Updated or added Stream `{stream_name}` in the Cache.')
 
-            # Return Stream from the Cache
-            logger.debug('Got Stream from Cache.')
-            return self._stream_cache[name]
-
-        try:
-            user = await self.get_user(name)
-        except requester.NotFoundError:
-            return None
-        else:
-            self._stream_cache[name] = (await self._query(f'{self._BASE_URL}/streams/{user["uid"]}'))['stream']
-            self._stream_cache[name]['last_update'] = datetime.datetime.utcnow()
-            return self._stream_cache[name]
+        return self._stream_cache[stream_name]
 
     @staticmethod
     def _add_user_to_db(user: dict):
