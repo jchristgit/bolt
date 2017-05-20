@@ -13,6 +13,11 @@ class Streams:
         self.twitch_api = TwitchAPI()
         # Create Updater Task which should wait until ready
 
+    @staticmethod
+    def __unload():
+        follow_config.save()
+        print('Unloaded Stream Cog.')
+
     @commands.group()
     @commands.guild_only()
     async def stream(self, ctx):
@@ -153,3 +158,8 @@ class Streams:
 
 def setup(bot):
     bot.add_cog(Streams(bot))
+
+
+def teardown():
+    print('Tearing down Stream Cog...')
+    follow_config.save()
