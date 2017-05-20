@@ -204,9 +204,7 @@ class TwitchAPI:
             return user
 
     async def get_stream(self, name: str) -> Optional[dict]:
-        # Get a specific Stream by its name. This function is not intended to be used together with the Stream Updater.
+        # Get a specific Stream by its name. This function can be used together with the Stream Updater.
         # Call this function when you want specific information about one stream.
-        stream = await self._request_stream_from_api(name)
-        if stream is None:
-            return None
-        return stream
+        # Returns either None or a Stream entry, as dictionary. Uses a Cache.
+        return await self._request_stream_from_api(name)
