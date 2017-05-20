@@ -98,7 +98,7 @@ class Streams:
 
     @stream.command()
     @commands.cooldown(rate=15, per=30.0 * 60, type=commands.BucketType.guild)
-    async def follow(self, ctx, stream_name):
+    async def follow(self, ctx, *, stream_name):
         """Follows the given Stream, posting announcements about it when set.
         
         To set a channel, use `!stream setchannel`.
@@ -117,7 +117,7 @@ class Streams:
                                                colour=discord.Colour.red()))
 
     @stream.command()
-    async def unfollow(self, ctx, stream_name):
+    async def unfollow(self, ctx, *, stream_name):
         """Unfollows the given Stream."""
         if stream_name not in follow_config.get_guild_follows(ctx.message.guild.id):
             await ctx.send(embed=discord.Embed(description=f'This Guild is not following the Channel `{stream_name}`.',

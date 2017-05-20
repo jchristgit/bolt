@@ -72,8 +72,7 @@ class FollowConfig:
             self._config['global_follows'][stream_name].append(guild_id)
 
     def un_follow(self, guild_id: int, stream_name: str):
-        guild_id = str(guild_id)
-        self._config['guild_follows'][guild_id]['follows'].remove(stream_name)
+        self._config['guild_follows'][str(guild_id)]['follows'].remove(stream_name)
         self._config['global_follows'][stream_name].remove(guild_id)
         if not self._config['global_follows'][stream_name]:  # no more guilds following
             del self._config['global_follows'][stream_name]
