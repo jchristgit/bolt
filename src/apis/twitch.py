@@ -250,5 +250,4 @@ class TwitchAPI:
                         following_guilds = follow_config.get_global_follows()[double_streams[1]['channel']['name']]
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
-
             old_streams = new_streams
