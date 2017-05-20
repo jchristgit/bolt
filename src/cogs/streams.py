@@ -25,7 +25,7 @@ class Streams:
         #self.bot.loop.create_task(self.stream_backend.update_streams())
 
     @stream.command()
-    @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.user)
+    @commands.cooldown(rate=10, per=5.0 * 60, type=commands.BucketType.user)
     async def get(self, ctx, stream_name):
         """Get information about a Twitch stream by its name.
         
