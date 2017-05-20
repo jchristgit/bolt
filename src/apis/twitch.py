@@ -130,10 +130,9 @@ class TwitchAPI:
         # Requests a Stream from the API. First, it tries to obtain a User object to translate from a Stream Name
         # an ID. It then performs the request to the Twitch API. The User Object in the database is also updated
         # during this process to contain information about followers, language, views, and the status of the User.
-        logger.debug(f'Calling `Get Stream by User` for {name}...')
+        logger.debug(f'Getting Stream for {name}...')
 
         # Check if the Stream is present in the Cache
-        print(self._stream_cache)
         if name in self._stream_cache:
             # Check if channel is offline / does not exist
             if self._stream_cache[name] is None:
@@ -148,6 +147,7 @@ class TwitchAPI:
                 self._stream_cache[name]['last_update'] = datetime.datetime.utcnow()
 
             # Return Stream from the Cache
+            logger.debug('Got Stream from Cache.')
             return self._stream_cache[name]
 
         try:
