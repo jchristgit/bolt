@@ -12,12 +12,12 @@ class Streams:
     def __init__(self, bot):
         self.bot = bot
         self.twitch_api = TwitchAPI(bot)
-        self.bot.loop.create_task(self.twitch_api.update_streams())
+        self.updater_task = self.bot.loop.create_task(self.twitch_api.update_streams())
 
-    @staticmethod
-    def __unload():
+    def __unload(self):
         follow_config.save()
         close_requester()
+        self.updater_task.close()
         print('Unloaded Stream Cog.')
 
     @commands.group()
