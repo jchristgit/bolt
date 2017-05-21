@@ -180,7 +180,7 @@ class Streams:
             response.title = f'- Streams followed on {ctx.message.guild.name} -'
             response.colour = 0x6441A5
             for idx, stream in enumerate(streams):
-                response.add_field(name=follow_config.get_guild_follows(ctx.message.guild.id)[idx], value=stream)
+                response.add_field(name=f'[{follow_config.get_guild_follows(ctx.message.guild.id)[idx]}](https://twitch.tv)', value=stream)
             await ctx.send(embed=response)
 
     @stream.command()
