@@ -211,6 +211,15 @@ class TwitchAPI:
 
         return self._stream_cache[stream_name]
 
+    async def get_status(self, stream_name: str) -> str:
+        # Get a string indicating the Status of the Stream.
+        # The Stream must exist for this function to work.
+        # For example, this could return "offline" or "Playing <game>"
+        stream = await self.get_stream(stream_name)
+        if stream['status'] is None:
+            return 'Offline'
+        return f'Playing {stream["game"]}'
+
     async def user_exists(self, name: str) -> bool:
         # Returns a boolean indicating whether the given User exists or not.
         return await self.get_user(name) is not None

@@ -166,6 +166,21 @@ class Streams:
             await ctx.send(embed=discord.Embed(title='- Guild Follows -', description=info, colour=0x6441A5))
 
     @stream.command()
+    @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
+    async def all(self, ctx):
+        """Shows stream information about all streams this guild is following."""
+        streams = [await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)]
+
+        # Check if no follows are set
+        if not streams:
+            await ctx.send(embed=discord.Embed(title=f'- Streams followed on {ctx.message.guild.name} -',
+                                               description='This Guild is not following any Streams.', colour=0x6441A5))
+        else:
+            response = discord.Embed()
+            for idx, stream in enumerate(streams):
+                response.add_field(name=follow_config.get_guild_follows(ctx.message.guild.id)[idx], value=stream)
+
+    @stream.command()
     async def stats(self, ctx):
         """Gives information about the Stream module."""
         total_follows = len(follow_config.get_global_follows())
