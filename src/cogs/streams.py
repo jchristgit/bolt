@@ -179,9 +179,12 @@ class Streams:
             response = discord.Embed()
             response.title = f'- Streams followed on {ctx.message.guild.name} -'
             response.colour = 0x6441A5
+
             for idx, stream_status in enumerate(streams):
                 stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]
-                response.add_field(name=f'{stream_name}', value=f'[{stream_status}](https://twitch.tv/{stream_name})')
+                stream_link = f'https://twitch.tv/{stream_name}'
+                response.description += f'• [{stream_name}]({stream_link}): *{stream_status}*\n'
+
             await ctx.send(embed=response)
 
     @stream.command()
