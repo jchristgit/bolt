@@ -195,7 +195,11 @@ class TwitchAPI:
                 > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
             user_id = (await self.get_user(stream_name))['uid']
             query_result = await self._query(f'{self._BASE_URL}/streams/{user_id}')
-            print(f'Query resulted in: {query_result}')
+
+            if query_result is None:
+                logger.error(f'Unknown Error occurred trying to query Stream for ID {user_id}, retrying...')
+                return await self.get_stream(stream_name)
+
             self._stream_cache[stream_name] = query_result['stream']
             if self._stream_cache[stream_name] is None:
                 self._stream_cache[stream_name] = {
