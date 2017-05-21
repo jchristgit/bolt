@@ -179,6 +179,7 @@ class Streams:
             response = discord.Embed()
             for idx, stream in enumerate(streams):
                 response.add_field(name=follow_config.get_guild_follows(ctx.message.guild.id)[idx], value=stream)
+            await ctx.send(embed=response)
 
     @stream.command()
     async def stats(self, ctx):
