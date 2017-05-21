@@ -211,7 +211,7 @@ class TwitchAPI:
                 self._stream_cache[stream_name]['status'] = True
 
             self._stream_cache[stream_name]['last_update'] = datetime.datetime.utcnow()
-            logger.info(f'Updated or added Stream `{stream_name}` in the Cache.')
+            logger.debug(f'Updated or added Stream `{stream_name}` in the Cache.')
 
         return self._stream_cache[stream_name]
 
@@ -267,7 +267,6 @@ class TwitchAPI:
             #   since the dictionary size changed during the iteration. To prevent this, the dictionary
             #   is casted to a list to prevent iterating over a reference to the global follows.
             for stream in list(follow_config.get_global_follows()):
-                print(f'Getting Stream {stream}...')
                 new_streams.append(await self.get_stream(stream))
                 await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
@@ -275,8 +274,6 @@ class TwitchAPI:
             if old_streams and len(old_streams) == len(new_streams):
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
-                    print(double_streams[0]['name'], double_streams[0]['status'],
-                          double_streams[1]['name'], double_streams[1]['status'])
                     if double_streams[0]['status'] != double_streams[1]['status']:
                         following_guilds = follow_config.get_global_follows()[double_streams[1]['name']]
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
