@@ -3,7 +3,7 @@ import discord
 import humanize
 
 from discord.ext import commands
-from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config
+from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config, twitch_api_stats
 from src.apis.requester import close as close_requester
 
 
@@ -156,7 +156,25 @@ class Streams:
     @stream.command()
     async def following(self, ctx):
         """Lists all channels that this Guild is following."""
-        follow_config.get_guild_follows()
+        follows = follow_config.get_guild_follows(ctx.message.guild.id)
+        # Empty list -> Guild is not following any channels
+        if not follows:
+            info = 'This Guild is not following any Twitch Streams. Follow some using `!stream follow <name>`!'
+            await ctx.send(embed=discord.Embed(title='- Guild Follows -', description=info, colour=0x6441A5))
+        else:
+            info = f'**This Guild is following these channels ({len(follows)} total)**:\n{", ".join(sorted(follows))}'
+            await ctx.send(embed=discord.Embed(title='- Guild Follows -', description=info, colour=0x6441A5))
+
+    @stream.command()
+    async def stats(self, ctx):
+        """Gives information about the Stream module."""
+        total_follows = len(follow_config.get_global_follows())
+        guild_follows = len(follow_config.get_guild_follows(ctx.message.guild.id))
+        stats = twitch_api_stats()
+        info = f'I\'m tracking a total of **`{total_follows}` Streams**, with `{guild_follows}` being on this Guild.' \
+               f'\nCurrently refreshing Twitch Users in my database after **`{stats[0]}` hours**, and refreshing ' \
+               f'Streams in Cache after **`{stats[1]}` minutes**.'
+        await ctx.send(embed=discord.Embed(title='- Stream Stats -', description=info, colour=0x6441A5))
 
 
 def setup(bot):

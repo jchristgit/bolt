@@ -34,6 +34,12 @@ def parse_twitch_time(twitch_time: str, truncate=True):
     return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time, '%Y-%m-%dT%H:%M:%S')))
 
 
+def twitch_api_stats():
+    # Returns a tuple of the user update interval, the stream update interval, and the sleep time between stream
+    # requests for the background updater.
+    return USER_UPDATE_INTERVAL, STREAM_UPDATE_INTERVAL, BACKGROUND_UPDATE_INTERVAL
+
+
 class FollowConfig:
     # Handles reading and writing the configuration file for stream follows and abstracts away initialization of entries
     def __init__(self):
@@ -188,7 +194,9 @@ class TwitchAPI:
                 datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
                 > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
             user_id = (await self.get_user(stream_name))['uid']
-            self._stream_cache[stream_name] = (await self._query(f'{self._BASE_URL}/streams/{user_id}'))['stream']
+            query_result = await self._query(f'{self._BASE_URL}/streams/{user_id}')
+            print(f'Query resulted in: {query_result}')
+            self._stream_cache[stream_name] = query_result['stream']
             if self._stream_cache[stream_name] is None:
                 self._stream_cache[stream_name] = {
                     'name': stream_name,
@@ -241,7 +249,7 @@ class TwitchAPI:
             new_streams = []
 
             # Check stream states
-            # Why the list conversion?
+            # - Why the list conversion?
             #   Without the conversion, when a User follows a new Stream, a RuntimeError is raised,
             #   since the dictionary size changed during the iteration. To prevent this, the dictionary
             #   is casted to a list to prevent iterating over a reference to the global follows.

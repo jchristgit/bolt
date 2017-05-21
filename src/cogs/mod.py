@@ -2,7 +2,6 @@ import asyncio
 import discord
 
 from discord.ext import commands
-from os import environ
 
 
 class Mod:
