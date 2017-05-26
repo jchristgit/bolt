@@ -111,6 +111,7 @@ class Streams:
         
         To set a channel, use `!stream setchannel`.
         """
+        stream_name = stream_name.replace(' ', '')
         if stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
             await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
                                                            f'`{stream_name}`.', colour=discord.Colour.red()))
@@ -127,6 +128,7 @@ class Streams:
     @stream.command()
     async def unfollow(self, ctx, *, stream_name):
         """Unfollows the given Stream."""
+        stream_name = stream_name.replace(' ', '')
         if stream_name not in follow_config.get_guild_follows(ctx.message.guild.id):
             await ctx.send(embed=discord.Embed(description=f'This Guild is not following the Channel `{stream_name}`.',
                                                colour=discord.Colour.red()))
@@ -179,6 +181,7 @@ class Streams:
             response = discord.Embed()
             response.title = f'- Streams followed on {ctx.message.guild.name} -'
             response.colour = 0x6441A5
+            response.description = ''
 
             for idx, stream_status in enumerate(streams):
                 stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]

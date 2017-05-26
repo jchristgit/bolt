@@ -245,7 +245,7 @@ class TwitchAPI:
                 else:
                     announcement.set_author(name=title, url=link)
                 announcement.description = f'Playing **{stream["game"]}** for currently **{stream["viewers"]}** ' \
-                                           f'viewers!\n *{stream["channel"]["status"]}*'
+                                           f'viewers!\n *{stream["channel"]["status"].strip()}*'
                 announcement.set_thumbnail(url=stream['preview']['medium'])
                 announcement.set_footer(text=f'Run `!stream get {stream["name"]}` for detailed information!')
             else:
@@ -279,6 +279,6 @@ class TwitchAPI:
                         following_guilds = follow_config.get_global_follows()[double_streams[1]['name']]
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
             else:
-                print('Done loading initial Streams.')
+                print('Done loading initial Stream states.')
 
             old_streams = new_streams
