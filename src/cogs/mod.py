@@ -67,7 +67,7 @@ class Mod:
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason: str = ''):
+    async def kick(self, ctx, member: discord.Member, *, reason: str=''):
         """Kick a Member with an optional reason.
 
         **Example:**
@@ -177,6 +177,8 @@ class Mod:
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_by_id(self, ctx, id_to_prune: int):
         """Purge up to 500 Messages sent by the User with the given ID.
+
+        Useful when you want to purge Messages from a User that left the Server.
         
         **Example:**
         !purgeid 290324118665166849 - searches the past 500 messages for messages from the user and purges them.

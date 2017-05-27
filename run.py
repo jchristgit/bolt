@@ -23,7 +23,7 @@ DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
-        game_name = random.choice(['Bard', 'Support', 'League of Legends', 'Thresh', 'stuck in elo hell'])
+        game_name = random.choice(['with Volcyy', 'Support', 'League of Legends', 'Thresh', 'good bot'])
         super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None,
                          game=Game(name=game_name))
         self.start_time = datetime.datetime.now()
@@ -80,7 +80,8 @@ COGS_BASE_PATH = 'src.cogs.'
 COGS_ON_LOGIN = [
     'admin',
     'mod',
-    'streams'
+    'streams',
+    'roles'
 ]
 
 
