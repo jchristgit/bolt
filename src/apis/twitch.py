@@ -1,4 +1,3 @@
-
 import asyncio
 import discord
 import dataset
@@ -100,19 +99,10 @@ class TwitchAPI:
             raise requester.NotFoundError()
         return resp['users'][0]
 
-    def _add_user_to_db(self, user: dict):
-        # Takes a JSON response of a User from the API and inserts it into the Database,
-        # returned from `GET https://api.twitch.tv/kraken/users/<user ID>` None)
-        self._table.insert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
-                                display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                                updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
-                                last_db_update=datetime.datetime.utcnow()))
-        logger.info(f'Added {user["name"]} to the User Database.')
-
     def _update_user_on_db(self, user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
-        self._table.update(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
+        self._table.upsert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
                                 display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
                                 updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
                                 last_db_update=datetime.datetime.utcnow()), ['name'])
@@ -127,20 +117,12 @@ class TwitchAPI:
         user = self._table.find_one(name=name)
 
         try:
-            # Check if the user exists in the Database, if not request it and add it to the DB
-            if user is None:
-                self._add_user_to_db(await self._request_user_from_api(name))
-                user = self._table.find_one(name=name)
-
-            # Check if User needs to be updated
-            elif datetime.datetime.utcnow() - user.last_db_update > datetime.timedelta(hours=USER_UPDATE_INTERVAL):
+            if user is None or datetime.datetime.utcnow() - user.last_db_update > \
+                    datetime.timedelta(hours=USER_UPDATE_INTERVAL):
                 self._update_user_on_db(await self._request_user_from_api(name))
-                user = self._table.find_one(name=name)
-
+                return self._table.find_one(name=name)
         except requester.NotFoundError:
             return None
-        else:
-            return user
 
     async def get_stream(self, stream_name: str) -> Optional[dict]:
         # Requests a Stream from the API. First, it tries to obtain a User object to translate from a Stream Name
@@ -151,8 +133,8 @@ class TwitchAPI:
         # If the Stream was not present before, it will be added.
 
         if stream_name not in self._stream_cache or \
-                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
-                > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
+                                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
+                        > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
             user_id = (await self.get_user(stream_name))['uid']
             query_result = await self._query(f'{self._BASE_URL}/streams/{user_id}')
 
