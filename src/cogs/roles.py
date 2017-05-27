@@ -67,19 +67,25 @@ class Roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'Role `{name}` is not self-assignable.'))
 
+    async def _perform_self_assignable_roles_checks(self, ctx, role):
+        # Checks if a role exist and whether it's not self-assignable
+        if role is None:
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
+                                               title=f'This Guild does not have any role called `{name}`.'))
+            return False
+        elif not self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
+                                               title=f'Role `{role.name}` is not self-assignable.'))
+            return False
+        return True
+
     @commands.command(name='iam', aliases=['assign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
     async def assign(self, ctx, *, name: str):
-        """Assign a self-assignable Role."""
+        """Assign a self-assignable Role to yourself."""
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if role is None:
-            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
-                                               title=f'This Guild does not have any role called `{name}`.'))
-        elif not self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
-            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
-                                               title=f'Role `{role.name}` is not self-assignable.'))
-        else:
+        if self._perform_self_assignable_roles_checks(ctx, role):
             if role in ctx.author.roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'You already have the `{role.name}` Role.'))
@@ -88,7 +94,20 @@ class Roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.green(),
                                                    title=f'Gave you the `{role.name}` Role!'))
 
-    @commands.command(name='iam', alias='unassign')
+    @commands.command(name='iamn', aliases=['unassign'])
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def un_assign(self, ctx, *, name: str):
+        """Remove a self-assignable Role from yourself."""
+        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
+        if self._perform_self_assignable_roles_checks(ctx, role):
+            if role not in ctx.author.roles:
+                await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
+                                                   title=f'You do not have the `{role.name}` Role.'))
+            else:
+                await ctx.author.remove_roles(role, reason='Self-assignable Role')
+                await ctx.send(embed=discord.Embed(colour=discord.Colour.green(),
+                                                   title=f'Removed the `{role.name}` Role from you!'))
         
 
 
