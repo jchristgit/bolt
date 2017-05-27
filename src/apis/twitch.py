@@ -42,74 +42,33 @@ def twitch_api_stats():
 class FollowConfig:
     # Handles reading and writing the configuration file for stream follows and abstracts away initialization of entries
     def __init__(self):
-        self._table = db['follows']
-        with open('config/streams.json') as f:
-            self._config = json.load(f)
-
-    def save(self):
-        with open('config/streams.json', 'w') as f:
-            json.dump(self._config, f, indent=4, sort_keys=True)
+        self._follow_table = db['follows']  # Contains information about the channels that guilds are following
+        self._channel_table = db['channels']  # Contains the Channel IDs that guilds use for the announcements
 
     def get_guild_follows(self, guild_id: int) -> [str]:
-        guild_id = str(guild_id)
-        if guild_id not in self._config['guild_follows']:
-            return []
-        return self._config['guild_follows'][guild_id]['follows']
+        return [r.stream_name for r in self._follow_table.find(guild_id=guild_id)]
 
     def get_global_follows(self) -> dict:
-        return self._config['global_follows']
+        return self._follow_table.distinct('stream_name')
 
-    def follow(self, guild_id: str, guild_name: str, stream_name: str):
-        guild_id = str(guild_id)
-        logger.info(f'Guild `{guild_name}` is now following `{stream_name}`.')
-        if guild_id not in self._config['guild_follows']:
-            # Store this channel in the guild's follows
-            self._config['guild_follows'][guild_id] = {
-                'channel': '',
-                'follows': [
-                    stream_name
-                ],
-                'name': guild_name
-            }
-            logger.debug(f'Created new entry for `{guild_name}`({guild_id}).')
-        else:
-            self._config['guild_follows'][guild_id]['follows'].append(stream_name)
-        if stream_name not in self._config['global_follows']:
-            # Store this guild for the followers for the Channel
-            self._config['global_follows'][stream_name] = [
-                int(guild_id)
-            ]
-        else:
-            self._config['global_follows'][stream_name].append(int(guild_id))
+    def follow(self, guild_id: int, guild_name: str, stream_name: str):
+        self._follow_table.insert(dict(guild_id=guild_id, guild_name=guild_name, stream_name=stream_name))
 
     def un_follow(self, guild_id: int, stream_name: str):
-        self._config['guild_follows'][str(guild_id)]['follows'].remove(stream_name)
-        self._config['global_follows'][stream_name].remove(guild_id)
-        if not self._config['global_follows'][stream_name]:  # no more guilds following
-            del self._config['global_follows'][stream_name]
+        self._follow_table.delete(guild_id=guild_id, stream_name=stream_name)
 
     def set_channel(self, guild_id: int, guild_name: str, channel_id: int):
-        guild_id, channel_id = str(guild_id), str(channel_id)
-        logger.info(f'[STREAMS] Guild `{guild_name}` set channel to `{channel_id}`.')
-        if guild_id not in self._config['guild_follows']:
-            self._config['guild_follows'][guild_id] = {
-                'channel': channel_id,
-                'follows': [],
-                'name': guild_name
-            }
-        else:
-            self._config['guild_follows'][guild_id]['channel'] = channel_id
+        # Update or Insert, view https://dataset.readthedocs.io/en/latest/api.html#dataset.Table.upsert for reference
+        logger.info(f'[STREAMS] Guild `{guild_name}` set its channel to {channel_id}.')
+        self._channel_table.upsert(dict(guild_id=guild_id, guild_name=guild_name, channel_id=channel_id), ['guild_id'])
 
     def unset_channel(self, guild_id: int, guild_name: str):
         logger.info(f'[STREAMS] Guild `{guild_name}` unset its channel.')
-        self._config['guild_follows'][str(guild_id)]['channel'] = ''
+        self._channel_table.delete(guild_id=guild_id)
 
     def get_channel_id(self, guild_id: int):
-        guild_id = str(guild_id)
-        if guild_id not in self._config['guild_follows']:
-            return ''
-        else:
-            return self._config['guild_follows'][guild_id]['channel']
+        channel_id = self._channel_table.find_one(guild_id=guild_id)
+        return channel_id if channel_id is not None else ''
 
 
 follow_config = FollowConfig()
@@ -124,6 +83,7 @@ class TwitchAPI:
         self._bot = bot
         self._headers = [('Accept', 'application/vnd.twitchtv.v5+json')]
         self._table = db['twitch_users']  # contains Twitch User Data
+        self.total_follows = len([x for x in follow_config.get_global_follows()])
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
@@ -261,13 +221,14 @@ class TwitchAPI:
         while not self._bot.is_closed():
             # Reset stream list
             new_streams = []
+            self.total_follows = len(follow_config.get_global_follows())
 
             # Check stream states
-            # - Why the list conversion?
-            #   Without the conversion, when a User follows a new Stream, a RuntimeError is raised,
+            # - Why the list conversion? (needed?)
+            #   Without the conversion, when a User follows a new Stream during the loop, a RuntimeError is raised,
             #   since the dictionary size changed during the iteration. To prevent this, the dictionary
             #   is casted to a list to prevent iterating over a reference to the global follows.
-            for stream in list(follow_config.get_global_follows()):
+            for stream in follow_config.get_global_follows():
                 new_streams.append(await self.get_stream(stream))
                 await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
@@ -278,7 +239,11 @@ class TwitchAPI:
                     if double_streams[0]['status'] != double_streams[1]['status']:
                         following_guilds = follow_config.get_global_follows()[double_streams[1]['name']]
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
-            else:
+
+            elif self.total_follows != 0:
                 print('Done loading initial Stream states.')
+            else:
+                print('Not following any Streams. Sleeping for 15 minutes...')
+                await asyncio.sleep(900)
 
             old_streams = new_streams

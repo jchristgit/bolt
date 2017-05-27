@@ -15,7 +15,6 @@ class Streams:
         self.updater_task = self.bot.loop.create_task(self.twitch_api.update_streams())
 
     def __unload(self):
-        follow_config.save()
         close_requester()
         self.updater_task.close()
         print('Unloaded Stream Cog.')
@@ -162,10 +161,10 @@ class Streams:
         # Empty list -> Guild is not following any channels
         if not follows:
             info = 'This Guild is not following any Twitch Streams. Follow some using `!stream follow <name>`!'
-            await ctx.send(embed=discord.Embed(title='- Guild Follows -', description=info, colour=0x6441A5))
+            await ctx.send(embed=discord.Embed(title='Stream Follows (0 total)', description=info, colour=0x6441A5))
         else:
-            info = f'**This Guild is following these channels ({len(follows)} total)**:\n{", ".join(sorted(follows))}'
-            await ctx.send(embed=discord.Embed(title='- Guild Follows -', description=info, colour=0x6441A5))
+            await ctx.send(embed=discord.Embed(title=f'Stream Follows ({len(follows)} total)',
+                                               description=", ".join(sorted(follows)), colour=0x6441A5))
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
@@ -191,9 +190,10 @@ class Streams:
             await ctx.send(embed=response)
 
     @stream.command()
+    @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
     async def stats(self, ctx):
         """Gives information about the Stream module."""
-        total_follows = len(follow_config.get_global_follows())
+        total_follows = self.twitch_api.total_follows
         guild_follows = len(follow_config.get_guild_follows(ctx.message.guild.id))
         stats = twitch_api_stats()
         info = f'I\'m tracking a total of **`{total_follows}` Streams**, with `{guild_follows}` being on this Guild.' \
