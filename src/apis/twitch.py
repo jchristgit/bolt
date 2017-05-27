@@ -239,7 +239,7 @@ class TwitchAPI:
             announcement.colour = 0x6441A5
             if stream["status"]:
                 title = f'{stream["name"]} is now online!'
-                link = f'https://twitch.tv/{stream["channel"]["url"]}'
+                link = f'{stream["channel"]["url"]}'
                 if stream['channel']['logo'] is not None:
                     announcement.set_author(name=title, url=link, icon_url=stream['channel']['logo'])
                 else:

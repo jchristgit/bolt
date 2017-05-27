@@ -1,11 +1,12 @@
 import asyncio
 import datetime
+import random
 import uvloop
 import sys
 import traceback
 
 from builtins import ModuleNotFoundError
-from discord import Embed, Colour
+from discord import Colour, Embed, Game
 from discord.ext import commands
 from os import environ
 
@@ -22,7 +23,9 @@ DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None)
+        game_name = random.choice(['Bard', 'Support', 'League of Legends', 'Thresh', 'stuck in elo hell'])
+        super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None,
+                         game=Game(name=game_name))
         self.start_time = datetime.datetime.now()
 
     # Helper function to create and return an Embed with red colour.
