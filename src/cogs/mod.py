@@ -87,7 +87,7 @@ class Mod:
     async def channel(self, ctx):
         """Contains Commands for editing a Channel."""
 
-    @channel.command(name='rename', alias='setname')
+    @channel.command(name='rename', aliases=['setname'])
     async def channel_set_name(self, ctx, *, new_name: str):
         """Change the Name for a Channel.
         
@@ -102,7 +102,7 @@ class Mod:
                                                        f'to <#{ctx.message.channel.id}>.',
                                            colour=discord.Colour.green()))
 
-    @channel.command(name='desc', alias='setdesc')
+    @channel.command(name='desc', aliases=['setdesc'])
     async def channel_set_description(self, ctx, *, new_desc):
         """Set the description for the Channel.
         
@@ -131,7 +131,7 @@ class Mod:
         await ctx.send(embed=discord.Embed(description=f'**Channel moved {"up" if amount >= 0 else "down"}** by '
                                                        f'`{amount}` channels.'))
 
-    @channel.command(name='find', alias='search')
+    @channel.command(name='find', aliases=['search'])
     @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
     async def channel_search(self, ctx, *, contents: str):
         """Search for messages (in the past 500) containing the given message.

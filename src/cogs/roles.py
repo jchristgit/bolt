@@ -26,20 +26,23 @@ class Roles:
         if role is None:
             await ctx.send(embed=discord.Embed(colour=discord.Colour.red(), title=f'No role named `{name}` found.'))
             return False
-            # Check if the Bot has proper permissions to modify the Role
-        elif ctx.me.highest_role <= role:
+        elif name == '@everyone':
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(), title='That is not a valid Role name.'))
+            return False
+        # Check if the Bot has proper permissions to modify the Role
+        elif ctx.me.top_role <= role:
             err_msg = 'The Bot cannot modify his own Role or any Roles above him in the hierarchy.'
             await ctx.send(embed=discord.Embed(colour=discord.Colour.red(), title=err_msg))
             return False
         return True
 
-    @role.command(name='asar', alias='msa')
+    @role.command(name='asar', aliases=['msa'])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def make_self_assignable(self, ctx, *, name: str):
         """Makes the given role self-assignable for Members."""
-        role = discord.utils.find(ctx.guild.roles, lambda r: r.name.lower() == name.lower())
-        if self._role_checks(ctx, role, name):
+        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
+        if await self._role_checks(ctx, role, name):
             # Check if role is already self-assignable
             if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
@@ -49,13 +52,13 @@ class Roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.green(),
                                                    title=f'Role `{role.name}` is now self-assignable.'))
 
-    @role.command(name='rsar', alias='usa')
+    @role.command(name='rsar', aliases=['usa'])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def unmake_self_assignable(self, ctx, *, name: str):
         """Removes the given Role from the self-assignable roles."""
-        role = discord.utils.find(ctx.guild.roles, lambda r: r.name.lower() == name.lower())
-        if self._role_checks(ctx, role, name):
+        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
+        if await self._role_checks(ctx, role, name):
             if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
                 self._role_table.delete(guild_id=ctx.guild.id, role_name=role.name)
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.green(),
@@ -63,6 +66,31 @@ class Roles:
             else:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'Role `{name}` is not self-assignable.'))
+
+    @commands.command(name='iam', aliases=['assign'])
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def assign(self, ctx, *, name: str):
+        """Assign a self-assignable Role."""
+        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
+        if role is None:
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
+                                               title=f'This Guild does not have any role called `{name}`.'))
+        elif not self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
+                                               title=f'Role `{role.name}` is not self-assignable.'))
+        else:
+            if role in ctx.author.roles:
+                await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
+                                                   title=f'You already have the `{role.name}` Role.'))
+            else:
+                await ctx.author.add_roles(role, reason='Self-assignable Role')
+                await ctx.send(embed=discord.Embed(colour=discord.Colour.green(),
+                                                   title=f'Gave you the `{role.name}` Role!'))
+
+    @commands.command(name='iam', alias='unassign')
+        
+
 
 
 
