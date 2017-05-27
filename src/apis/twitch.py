@@ -2,13 +2,12 @@ import asyncio
 import discord
 import dataset
 import datetime
-import json
 
 from os import environ
 from src.apis import requester
 from stuf import stuf
 from time import mktime, strptime
-from typing import Union, Optional, Any
+from typing import Optional
 from ..util import create_logger
 
 logger = create_logger('api')
@@ -121,6 +120,7 @@ class TwitchAPI:
                     datetime.timedelta(hours=USER_UPDATE_INTERVAL):
                 self._update_user_on_db(await self._request_user_from_api(name))
                 return self._table.find_one(name=name)
+            return user
         except requester.NotFoundError:
             return None
 
