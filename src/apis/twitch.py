@@ -122,13 +122,14 @@ class TwitchAPI:
         self._BASE_URL = 'https://api.twitch.tv/kraken'
         self._stream_cache = {}
         self._bot = bot
+        self._headers = [('Accept', 'application/vnd.twitchtv.v5+json')]
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
         logger.debug(f'Querying `{url}`...')
         if '?' not in url:
-            return await requester.get(f'{url}?client_id={self._API_KEY}')
-        return await requester.get(f'{url}&client_id={self._API_KEY}')
+            return await requester.get(f'{url}?client_id={self._API_KEY}', headers)
+        return await requester.get(f'{url}&client_id={self._API_KEY}', headers)
 
     async def _request_user_from_api(self, name: str):
         # Calls the get Users endpoint to convert a user name to an ID and add it to the Database for requests, later
@@ -272,7 +273,7 @@ class TwitchAPI:
                 await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
             # Check if we ran through at least one iteration # and both lists have the same amount of Streams
-            if old_streams:
+            if old_streams:  # might have to add `and len(old_streams) == len(new_streams)` here
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
                     if double_streams[0]['status'] != double_streams[1]['status']:

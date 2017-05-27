@@ -11,11 +11,11 @@ class NotFoundError(Exception):
     pass
 
 
-async def get(url: str) -> dict:
+async def get(url: str, headers: list) -> dict:
     global _cs
     if _cs is None:
         _cs = aiohttp.ClientSession()
-    async with _cs.get(url, headers=[('Accept', 'application/vnd.twitchtv.v5+json')]) as r:
+    async with _cs.get(url, headers=headers) as r:
         if r.status == 200:
             return await r.json()
         elif r.status == 404:
