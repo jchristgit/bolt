@@ -14,7 +14,6 @@ from ..util import create_logger
 
 logger = create_logger('api')
 db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
-table = db['twitch_users']
 
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
@@ -43,6 +42,7 @@ def twitch_api_stats():
 class FollowConfig:
     # Handles reading and writing the configuration file for stream follows and abstracts away initialization of entries
     def __init__(self):
+        self._table = db['follows']
         with open('config/streams.json') as f:
             self._config = json.load(f)
 
@@ -123,13 +123,14 @@ class TwitchAPI:
         self._stream_cache = {}
         self._bot = bot
         self._headers = [('Accept', 'application/vnd.twitchtv.v5+json')]
+        self._table = db['twitch_users']  # contains Twitch User Data
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
         logger.debug(f'Querying `{url}`...')
         if '?' not in url:
-            return await requester.get(f'{url}?client_id={self._API_KEY}', headers)
-        return await requester.get(f'{url}&client_id={self._API_KEY}', headers)
+            return await requester.get(f'{url}?client_id={self._API_KEY}', self._headers)
+        return await requester.get(f'{url}&client_id={self._API_KEY}', self._headers)
 
     async def _request_user_from_api(self, name: str):
         # Calls the get Users endpoint to convert a user name to an ID and add it to the Database for requests, later
@@ -139,24 +140,22 @@ class TwitchAPI:
             raise requester.NotFoundError()
         return resp['users'][0]
 
-    @staticmethod
-    def _add_user_to_db(user: dict):
+    def _add_user_to_db(self, user: dict):
         # Takes a JSON response of a User from the API and inserts it into the Database,
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>` None)
-        table.insert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
-                          display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
-                          last_db_update=datetime.datetime.utcnow()))
+        self._table.insert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
+                                display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
+                                updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
+                                last_db_update=datetime.datetime.utcnow()))
         logger.info(f'Added {user["name"]} to the User Database.')
 
-    @staticmethod
-    def _update_user_on_db(user: dict):
+    def _update_user_on_db(self, user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
-        table.update(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
-                          display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                          updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
-                          last_db_update=datetime.datetime.utcnow()), ['name'])
+        self._table.update(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
+                                display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
+                                updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
+                                last_db_update=datetime.datetime.utcnow()), ['name'])
         logger.info(f'Updated {user["name"]} on the User Database.')
 
     async def get_user(self, name: str) -> Optional[dict]:
@@ -165,18 +164,18 @@ class TwitchAPI:
         # Otherwise, if the checks above return `False`, the user is just returned.
         # If the User is not found at all, `None` is returned.
 
-        user = table.find_one(name=name)
+        user = self._table.find_one(name=name)
 
         try:
             # Check if the user exists in the Database, if not request it and add it to the DB
             if user is None:
                 self._add_user_to_db(await self._request_user_from_api(name))
-                user = table.find_one(name=name)
+                user = self._table.find_one(name=name)
 
             # Check if User needs to be updated
             elif datetime.datetime.utcnow() - user.last_db_update > datetime.timedelta(hours=USER_UPDATE_INTERVAL):
                 self._update_user_on_db(await self._request_user_from_api(name))
-                user = table.find_one(name=name)
+                user = self._table.find_one(name=name)
 
         except requester.NotFoundError:
             return None
