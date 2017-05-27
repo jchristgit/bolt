@@ -21,9 +21,9 @@ async def get(url: str, headers: list) -> dict:
         elif r.status == 404:
             raise NotFoundError()
         elif r.status == 429:
-            log.warn('Sending too many requests to the Twitch API!')
+            log.warn(f'Sending too many requests to the queried API, URL: {url}.')
             await asyncio.sleep(1)
-            return await get(url)
+            return await get(url, headers)
 
 
 def close():
