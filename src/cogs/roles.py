@@ -41,6 +41,7 @@ class Roles:
     @commands.bot_has_permissions(manage_roles=True)
     async def make_self_assignable(self, ctx, *, name: str):
         """Makes the given role self-assignable for Members."""
+        # TODO: Add ability to do this with a comma-separated role list
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
         if await self._role_checks(ctx, role, name):
             # Check if role is already self-assignable
@@ -84,6 +85,7 @@ class Roles:
     @commands.bot_has_permissions(manage_roles=True)
     async def assign(self, ctx, *, name: str):
         """Assign a self-assignable Role to yourself."""
+        # TODO: Add ability to do this with a comma-separated role list
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
         if self._perform_self_assignable_roles_checks(ctx, role):
             if role in ctx.author.roles:

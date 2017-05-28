@@ -133,9 +133,19 @@ class TwitchAPI:
         # If the Stream was not present before, it will be added.
 
         if stream_name not in self._stream_cache or \
-                                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
-                        > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
-            user_id = (await self.get_user(stream_name))['uid']
+                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
+                > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
+            user = await self.get_user(stream_name)
+
+            # Check if the User exists
+            if user is None:
+                self._stream_cache[stream_name] = {
+                    'name': stream_name,
+                    'status': None
+                }
+                return self._stream_cache[stream_name]
+
+            user_id = user['uid']
             query_result = await self._query(f'{self._BASE_URL}/streams/{user_id}')
 
             if query_result is None:
@@ -146,7 +156,7 @@ class TwitchAPI:
             if self._stream_cache[stream_name] is None:
                 self._stream_cache[stream_name] = {
                     'name': stream_name,
-                    'status': None
+                    'status': False
                 }
             else:
                 self._stream_cache[stream_name]['name'] = stream_name
@@ -162,7 +172,7 @@ class TwitchAPI:
         # The Stream must exist for this function to work.
         # For example, this could return "offline" or "Playing <game>"
         stream = await self.get_stream(stream_name)
-        if stream['status'] is None:
+        if stream['status'] is False:
             return 'Offline'
         return f'Playing {stream["game"]}'
 

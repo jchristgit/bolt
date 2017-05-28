@@ -59,8 +59,11 @@ class Streams:
                                    f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
                                    f'🗺 **`Language`**: {stream["channel"]["language"]}\n'
             response.set_thumbnail(url=stream["preview"]["medium"])
+        elif stream['status'] is None:
+            response.title = f'No User called `{stream_name}` was found, cannot get Stream information.'
         else:
-            response.description = 'The Stream is currently offline or does not exist.'
+            response.title = f'`{stream_name}` is currently offline.'
+
         response.colour = 0x6441A5
         await ctx.send(embed=response)
 
