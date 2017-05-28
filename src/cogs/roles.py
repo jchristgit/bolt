@@ -13,6 +13,11 @@ class Roles:
     def __init__(self, bot):
         self.bot = bot
         self._role_table = guild_data_table['roles']
+        print('Loaded Cog Roles.')
+
+    @staticmethod
+    def __unload():
+        print('Unloaded Cog Roles.')
 
     @commands.group()
     @commands.guild_only()
@@ -125,8 +130,29 @@ class Roles:
             await ctx.send(embed=discord.Embed(colour=discord.Colour.dark_blue(), title=title,
                                                description=description))
 
+    @commands.command(name='rinfo')
+    @commands.guild_only()
+    async def role_info(self, ctx, role_name: str):
+        """Gives information about a Role."""
+        role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
+        if role is None:
+            await ctx.send(embed=discord.Embed(title=f'No Role named `{role_name}` found', colour=discord.Colour.red()))
+        else:
+            response = discord.Embed()
+            response.title = f'__Role Information for `{role.name}__'
+            response.add_field(name='ID', value=role.id)
+            response.add_field(name='Colour Hex', value=role.colour)
+            response.add_field(name='Position', value=role.position)
+            response.add_field(name='Creation Date', value=role.created_at)
+            response.add_field(name='Permission Bitfield', value=role.permissions.value)
 
-
+            members_in_role = len(role.members)
+            if members_in_role == 0:
+                response.add_field(name='Member Count', value='0')
+            else:
+                response.add_field(name='Member Count', value=str(members_in_role))
+                response.add_field(name='Members', value=', '.join(r.name for r in role.members))
+            await ctx.send(embed=response)
 
 
 def setup(bot):

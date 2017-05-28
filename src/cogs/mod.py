@@ -10,7 +10,8 @@ class Mod:
         self.bot = bot
         print('Loaded Cog Mod.')
 
-    def __unload(self):
+    @staticmethod
+    def __unload():
         print('Unloaded Cog Mod.')
 
     @commands.command()
@@ -18,7 +19,7 @@ class Mod:
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, prune_days: int=1, *, reason: str=''):
-        """Ban a Member with an optional prune of Messages and an optional reason.
+        """Ban a Member with an optional prune and an optional reason.
         
         If the amount of messages to prune is omitted, all his messages of the past day will be deleted.
         The maximum is 7 and the minimum is 0.

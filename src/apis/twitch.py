@@ -46,8 +46,16 @@ class FollowConfig:
     def get_guild_follows(self, guild_id: int) -> [str]:
         return [r.stream_name for r in self._follow_table.find(guild_id=guild_id)]
 
-    def get_global_follows(self) -> dict:
+    def get_global_follows(self):
         return self._follow_table.distinct('stream_name')
+
+    def get_guild_ids_following(self, stream_name):
+        # Get all Guild ID's following the given Stream name
+        return [x.guild_id for x in self._follow_table.find(stream_name=stream_name)]
+
+    def get_guild_names_following(self, stream_name):
+        # Get all Guild Names following the given Stream name
+        return [x.guild_name for x in self._follow_table.find(stream_name=stream_name)]
 
     def follow(self, guild_id: int, guild_name: str, stream_name: str):
         self._follow_table.insert(dict(guild_id=guild_id, guild_name=guild_name, stream_name=stream_name))
@@ -187,22 +195,28 @@ class TwitchAPI:
             channel_id = follow_config.get_channel_id(guild_id)
             if channel_id == '':
                 return
+
             stream_channel = self._bot.get_channel(int(channel_id))
             announcement = discord.Embed()
             announcement.colour = 0x6441A5
+
             if stream["status"]:
                 title = f'{stream["name"]} is now online!'
                 link = f'{stream["channel"]["url"]}'
+
                 if stream['channel']['logo'] is not None:
                     announcement.set_author(name=title, url=link, icon_url=stream['channel']['logo'])
                 else:
                     announcement.set_author(name=title, url=link)
+
                 announcement.description = f'Playing **{stream["game"]}** for currently **{stream["viewers"]}** ' \
                                            f'viewers!\n *{stream["channel"]["status"].strip()}*'
                 announcement.set_thumbnail(url=stream['preview']['medium'])
                 announcement.set_footer(text=f'Run `!stream get {stream["name"]}` for detailed information!')
+
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
+
             await stream_channel.send(embed=announcement)
 
     async def update_streams(self):
@@ -217,7 +231,7 @@ class TwitchAPI:
             self.total_follows = len([x for x in follow_config.get_global_follows()])
 
             # Check stream states
-            # - Why the list conversion? (needed?)
+            # - Why the list conversion? (no longer needed, leaving it here for future reference)
             #   Without the conversion, when a User follows a new Stream during the loop, a RuntimeError is raised,
             #   since the dictionary size changed during the iteration. To prevent this, the dictionary
             #   is casted to a list to prevent iterating over a reference to the global follows.
@@ -231,7 +245,7 @@ class TwitchAPI:
                 for double_streams in zip(old_streams, new_streams):
                     if double_streams[0]['status'] != double_streams[1]['status']:
                         print('needs update:', double_streams[0]['name'])
-                        following_guilds = follow_config.get_global_follows()[double_streams[1]['name']]
+                        following_guilds = follow_config.get_guild_ids_following(double_streams[0]['name'])
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
             elif self.total_follows != 0:

@@ -205,6 +205,24 @@ class Streams:
                f'Streams in Cache after **`{stats[1]}` minutes**.'
         await ctx.send(embed=discord.Embed(title='- Stream Stats -', description=info, colour=0x6441A5))
 
+    @stream.command(name='gfw')
+    async def guilds_following(self, ctx, *, stream_name: str):
+        """Returns a list of Guilds that are following the given Streamer."""
+        response = discord.Embed()
+        response.colour = 0x6441A5
+
+        following_guilds = follow_config.get_guild_names_following(stream_name)
+        if len(following_guilds) == 0:
+            if await self.twitch_api.user_exists(stream_name):
+                response.title = f'There are no Guilds following `{stream_name}`.'
+            else:
+                response.title = f'No User named `{stream_name}` was found.'
+        else:
+            response.title = f'Guilds following {stream_name} ({len(following_guilds)} total)'
+            response.description = ', '.join(following_guilds)
+
+        await ctx.send(embed=response)
+
 
 def setup(bot):
     bot.add_cog(Streams(bot))

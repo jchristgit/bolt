@@ -6,7 +6,7 @@ import sys
 import traceback
 
 from builtins import ModuleNotFoundError
-from discord import Colour, Embed, Game
+from discord import Colour, ConnectionClosed, Embed, Game
 from discord.ext import commands
 from os import environ
 
@@ -23,7 +23,8 @@ DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
-        game_name = random.choice(['with Volcyy', 'Support', 'League of Legends', 'Thresh', 'good bot'])
+        game_name = random.choice(['with Volcyy', 'Support', 'League of Legends', 'Thresh', 'good bot',
+                                   'with itself', 'with a garbo ADC'])
         super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None,
                          game=Game(name=game_name))
         self.start_time = datetime.datetime.now()
@@ -60,6 +61,7 @@ class Bot(commands.AutoShardedBot):
         print(f'ID: {self.user.id}')
         print(f'Connected to {len(self.guilds)} Guilds.')
         print(f'Connected to {len(self.users)} Users.')
+        print(f'Total of {len(self.commands)} Commands in {len(self.cogs)} Cogs.')
         print(f'Invite Link:\nhttps://discordapp.com/oauth2/authorize?&client_id={self.user.id}&scope=bot')
         print('=============')
 
@@ -92,11 +94,12 @@ if __name__ == '__main__':
             client.load_extension(COGS_BASE_PATH + cog)
         except ModuleNotFoundError as err:
             print(f'Could not load Cog \'{cog}\': {err}.')
-        else:
-            print(f'Loaded Cog {cog.title()}.')
 
     print('Logging in...')
-    client.run(environ['DISCORD_TOKEN'])
+    try:
+        client.run(environ['DISCORD_TOKEN'])
+    except ConnectionClosed:
+        pass
     print('Logged off.')
 
 

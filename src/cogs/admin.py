@@ -12,6 +12,11 @@ class Admin:
     """
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        print('Loaded Cog Admin.')
+
+    @staticmethod
+    def __unload():
+        print('Unloaded Cog Admin.')
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -33,6 +38,20 @@ class Admin:
             await asyncio.sleep(delay)
             await reply.delete()
             await ctx.message.delete()
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def reload(self, ctx):
+        """Reloads all Cogs."""
+        # Cast to list to prevent a RuntimeError, since we just want the iteration for the names of the Cogs
+        for extension_name in list(self.bot.extensions):
+            self.bot.unload_extension(extension_name)
+            self.bot.load_extension(extension_name)
+        response = await ctx.send(embed=discord.Embed(title='Reload Complete',
+                                                      description=f'Reloaded {len(self.bot.cogs)} Cogs.',
+                                                      colour=discord.Colour.green()))
+
+        await self._remove_reply_if_not_dm(ctx, response)
 
     @commands.command(hidden=True)
     @commands.is_owner()
