@@ -13,11 +13,12 @@ class Streams:
         self.bot = bot
         self.twitch_api = TwitchAPI(bot)
         self.updater_task = self.bot.loop.create_task(self.twitch_api.update_streams())
+        print('Loaded Cog Streams.')
 
     def __unload(self):
         close_requester()
-        self.updater_task.close()
-        print('Unloaded Stream Cog.')
+        self.updater_task.cancel()
+        print('Unloaded Cog Streams.')
 
     @commands.group()
     @commands.guild_only()
@@ -211,4 +212,3 @@ def setup(bot):
 
 def teardown():
     print('Tearing down Stream Cog...')
-    follow_config.save()

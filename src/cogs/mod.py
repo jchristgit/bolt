@@ -8,6 +8,10 @@ class Mod:
     """Moderation Commands for Guilds. These require appropriate permission to execute."""
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        print('Loaded Cog Mod.')
+
+    def __unload(self):
+        print('Unloaded Cog Mod.')
 
     @commands.command()
     @commands.guild_only()

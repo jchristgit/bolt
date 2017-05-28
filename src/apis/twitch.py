@@ -94,7 +94,7 @@ class TwitchAPI:
         # Calls the get Users endpoint to convert a user name to an ID and add it to the Database for requests, later
         logger.debug(f'Calling `Get User` endpoint for {name}...')
         resp = await self._query(f'{self._BASE_URL}/users?login={name}')
-        if resp['_total'] == 0:
+        if resp is None or resp['_total'] == 0:
             raise requester.NotFoundError()
         return resp['users'][0]
 
@@ -153,6 +153,7 @@ class TwitchAPI:
                 return await self.get_stream(stream_name)
 
             self._stream_cache[stream_name] = query_result['stream']
+
             if self._stream_cache[stream_name] is None:
                 self._stream_cache[stream_name] = {
                     'name': stream_name,
@@ -213,7 +214,7 @@ class TwitchAPI:
         while not self._bot.is_closed():
             # Reset stream list
             new_streams = []
-            self.total_follows = len(follow_config.get_global_follows())
+            self.total_follows = len([x for x in follow_config.get_global_follows()])
 
             # Check stream states
             # - Why the list conversion? (needed?)
@@ -221,7 +222,7 @@ class TwitchAPI:
             #   since the dictionary size changed during the iteration. To prevent this, the dictionary
             #   is casted to a list to prevent iterating over a reference to the global follows.
             for stream in follow_config.get_global_follows():
-                new_streams.append(await self.get_stream(stream))
+                new_streams.append(await self.get_stream(stream.stream_name))
                 await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
             # Check if we ran through at least one iteration # and both lists have the same amount of Streams
@@ -229,6 +230,7 @@ class TwitchAPI:
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
                     if double_streams[0]['status'] != double_streams[1]['status']:
+                        print('needs update:', double_streams[0]['name'])
                         following_guilds = follow_config.get_global_follows()[double_streams[1]['name']]
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
