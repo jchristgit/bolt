@@ -73,8 +73,7 @@ class FollowConfig:
         self._channel_table.delete(guild_id=guild_id)
 
     def get_channel_id(self, guild_id: int):
-        channel_id = self._channel_table.find_one(guild_id=guild_id)
-        return channel_id if channel_id is not None else ''
+        return self._channel_table.find_one(guild_id=guild_id)
 
 
 follow_config = FollowConfig()
@@ -192,8 +191,9 @@ class TwitchAPI:
     async def _send_stream_update_announcement(self, stream: dict, guilds_following: list):
         # Sends an announcement about a Stream updating its state to all following Guilds.
         for guild_id in guilds_following:
-            channel_id = follow_config.get_channel_id(guild_id)
-            if channel_id == '':
+            channel_id = follow_config.get_channel_id(guild_id).channel_id
+            if channel_id is None:
+                logger.warn(f'Guild with ID {guild_id} is following {stream["name"]}, but has no channel set!')
                 return
 
             stream_channel = self._bot.get_channel(int(channel_id))

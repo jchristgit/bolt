@@ -73,6 +73,16 @@ class Roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'Role `{name}` is not self-assignable.'))
 
+    @commands.command()
+    async def colours(self, ctx):
+        """Links to colour pickers for getting role colours."""
+        await ctx.send(embed=discord.Embed(title='Colour Pickers',
+                                           description='Make sure to get the **hex value** of the Colour you want, '
+                                                       'which is usually prefixed with `#`!\n'
+                                                       '• <https://duckduckgo.com/?q=color%20picker&ia=answer>\n'
+                                                       '• <https://www.webpagefx.com/web-design/color-picker/>',
+                                           colour=discord.Colour.blue()))
+
     async def _perform_self_assignable_roles_checks(self, ctx, role):
         # Checks if a role exist and whether it's not self-assignable
         if role is None:
@@ -145,6 +155,7 @@ class Roles:
             response.add_field(name='Position', value=role.position)
             response.add_field(name='Creation Date', value=role.created_at)
             response.add_field(name='Permission Bitfield', value=role.permissions.value)
+            response.colour = role.colour
 
             members_in_role = len(role.members)
             if members_in_role == 0:
