@@ -139,7 +139,7 @@ class Roles:
             await ctx.send(embed=discord.Embed(title=f'No Role named `{role_name}` found', colour=discord.Colour.red()))
         else:
             response = discord.Embed()
-            response.title = f'__Role Information for `{role.name}__'
+            response.title = f'__Role Information for `{role.name}`__'
             response.add_field(name='ID', value=role.id)
             response.add_field(name='Colour Hex', value=role.colour)
             response.add_field(name='Position', value=role.position)
