@@ -132,7 +132,7 @@ class Roles:
 
     @commands.command(name='rinfo')
     @commands.guild_only()
-    async def role_info(self, ctx, role_name: str):
+    async def role_info(self, ctx, *, role_name: str):
         """Gives information about a Role."""
         role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
         if role is None:

@@ -223,7 +223,8 @@ class TwitchAPI:
         # Starts the process of updating Guilds about Streams they follow.
         old_streams = []
         await self._bot.wait_until_ready()
-        print('Started Twitch Stream Background Updater.')
+        print('Started Twitch Stream Background Updater:')
+        print(f'Following a total of {self.total_follows} Streams.')
 
         while not self._bot.is_closed():
             # Reset stream list
