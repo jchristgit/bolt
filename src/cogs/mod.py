@@ -232,7 +232,7 @@ class Mod:
             total_purged += len(await ctx.message.channel.purge(check=lambda m: m.author == user,
                                                                 reason=f'Invoked by {ctx.message.author}.'))
         info_response = f'Purged a total of **{total_purged} Messages** from ' \
-                        f'{", ".join([str(x) for x in ctx.message.mentions])}.'
+                        f'{", ".join(str(x) for x in ctx.message.mentions)}.'
         resp = await ctx.send(embed=discord.Embed(title='User purge completed', description=info_response))
         await asyncio.sleep(5)
         await resp.delete()
