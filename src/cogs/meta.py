@@ -22,7 +22,7 @@ class Meta:
         memory_usage = self.process.memory_full_info().uss / 1024**2 * 1.048576
         average_guild_users = sum(g.member_count for g in self.bot.guilds) / len(self.bot.guilds)
 
-        response = discord.Embed()'
+        response = discord.Embed()
         response.colour = discord.Colour.blue()
         response.set_thumbnail(url=self.bot.user.avatar_url)
         response.set_author(name='Made by Volcyy#2359', url='https://github.com/Volcyy/Bolt',
