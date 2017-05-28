@@ -108,7 +108,20 @@ class Roles:
                 await ctx.author.remove_roles(role, reason='Self-assignable Role')
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.green(),
                                                    title=f'Removed the `{role.name}` Role from you!'))
-        
+
+    @commands.command(name='lsar')
+    @commands.guild_only()
+    async def list_self_assignable(self, ctx):
+        """Show all self-assignable Roles on this Guild."""
+        title = 'Self-Assignable Roles'
+        amount = self._role_table.count(guild_id=ctx.guild.id)
+        if amount == 0:
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.dark_blue(), title=title,
+                                               description='This Guild has no self-assignable Roles set.'))
+        else:
+            description = ', '.join([x.role_name for x in self._role_table.find(guild_id=ctx.guild.id)])
+            await ctx.send(embed=discord.Embed(colour=discord.Colour.dark_blue(), title=title,
+                                               description=description))
 
 
 
