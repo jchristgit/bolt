@@ -81,6 +81,7 @@ COGS_BASE_PATH = 'src.cogs.'
 # Cogs to load on login
 COGS_ON_LOGIN = [
     'admin',
+    'meta',
     'mod',
     'streams',
     'roles'
