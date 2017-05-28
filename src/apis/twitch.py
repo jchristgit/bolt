@@ -245,7 +245,6 @@ class TwitchAPI:
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
                     if double_streams[0]['status'] != double_streams[1]['status']:
-                        print('needs update:', double_streams[0]['name'])
                         following_guilds = follow_config.get_guild_ids_following(double_streams[0]['name'])
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
