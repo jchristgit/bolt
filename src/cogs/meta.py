@@ -33,7 +33,7 @@ class Meta:
                                                f'**Unique**: {len(set(self.bot.get_all_members()))}')
 
         response.add_field(name='Guilds', value=f'**Total**: {sum(1 for g in self.bot.guilds)}\n'
-                                                f'**Avg. Members**: {average_guild_users}\n'
+                                                f'**Avg. Members**: {int(average_guild_users)}\n'
                                                 f'**Shards**: {self.bot.shard_count}')
 
         await ctx.send(embed=response)
