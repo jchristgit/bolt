@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import discord
 import random
 import uvloop
 import sys
@@ -71,6 +72,21 @@ class Bot(commands.AutoShardedBot):
 
         await self.process_commands(msg)
 
+    async def _guild_event_note(self, destination: discord.abc.Messageable, guild: discord.Guild, title: str):
+        note = discord.Embed()
+        note.set_thumbnail(url=guild.icon_url)
+        note.title = title
+        online_members = sum(1 for m in guild.members if m.status != discord.Status.online)
+        note.add_field(name='Members', value=f'Total: {guild.member_count}\nOnline: {online_members}')
+        note.add_field(name='Channels', value=str(sum(1 for _ in guild.channels)))
+        note.add_field(name='Owner', value=f'{guild.owner.name}#{guild.owner.discrim}\nID: `{guild.owner_id}`')
+        await destination.send(embed=note)
+
+    async def on_guild_join(self, guild: discord.Guild):
+        await self._guild_event_note(self.get_user(self.owner_id), guild, f'Joined Guild {guild.name} ({guild.id})')
+
+    async def on_guild_remove(self, guild: discord.Guild):
+        await self._guild_event_note(self.get_user(self.owner_id), guild, f'Left Guild {guild.name} ({guild.id})')
 
 client = Bot()
 
