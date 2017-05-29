@@ -197,7 +197,7 @@ class Streams:
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
     async def stats(self, ctx):
         """Gives information about the Stream module."""
-        total_follows = len([x for x in follow_config.get_global_follows()])
+        total_follows = sum(x for x in follow_config.get_global_follows())
         guild_follows = len(follow_config.get_guild_follows(ctx.message.guild.id))
         stats = twitch_api_stats()
         info = f'I\'m tracking a total of **`{total_follows}` Streams**, with `{guild_follows}` being on this Guild.' \

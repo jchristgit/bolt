@@ -136,7 +136,7 @@ class Roles:
             await ctx.send(embed=discord.Embed(colour=discord.Colour.dark_blue(), title=title,
                                                description='This Guild has no self-assignable Roles set.'))
         else:
-            description = ', '.join([x.role_name for x in self._role_table.find(guild_id=ctx.guild.id)])
+            description = ', '.join(x.role_name for x in self._role_table.find(guild_id=ctx.guild.id))
             await ctx.send(embed=discord.Embed(colour=discord.Colour.dark_blue(), title=title,
                                                description=description))
 

@@ -72,7 +72,8 @@ class Bot(commands.AutoShardedBot):
 
         await self.process_commands(msg)
 
-    async def _guild_event_note(self, destination: discord.abc.Messageable, guild: discord.Guild, title: str):
+    @staticmethod
+    async def _guild_event_note(destination: discord.abc.Messageable, guild: discord.Guild, title: str):
         note = discord.Embed()
         note.set_thumbnail(url=guild.icon_url)
         note.title = title

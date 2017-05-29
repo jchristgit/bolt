@@ -88,7 +88,7 @@ class TwitchAPI:
         self._bot = bot
         self._headers = [('Accept', 'application/vnd.twitchtv.v5+json')]
         self._table = db['twitch_users']  # contains Twitch User Data
-        self.total_follows = len([x for x in follow_config.get_global_follows()])
+        self.total_follows = sum(x for x in follow_config.get_global_follows())
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
@@ -233,7 +233,7 @@ class TwitchAPI:
         while not self._bot.is_closed():
             # Reset stream list
             new_streams = []
-            self.total_follows = len([x for x in follow_config.get_global_follows()])
+            self.total_follows = sum(x for x in follow_config.get_global_follows())
 
             # Check stream states
             # - Why the list conversion? (no longer needed, leaving it here for future reference)
