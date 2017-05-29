@@ -191,7 +191,9 @@ class TwitchAPI:
     async def _send_stream_update_announcement(self, stream: dict, guilds_following: list):
         # Sends an announcement about a Stream updating its state to all following Guilds.
         for guild_id in guilds_following:
+            print('Updating about', stream['name'], 'on', guild_id)
             channel_id = follow_config.get_channel_id(guild_id).channel_id
+            print('Channel ID:', channel_id)
             if channel_id is None:
                 logger.warn(f'Guild with ID {guild_id} is following {stream["name"]}, but has no channel set!')
                 return
@@ -201,6 +203,7 @@ class TwitchAPI:
             announcement.colour = 0x6441A5
 
             if stream["status"]:
+                print('stream went online')
                 title = f'{stream["name"]} is now online!'
                 link = f'{stream["channel"]["url"]}'
 
@@ -215,6 +218,7 @@ class TwitchAPI:
                 announcement.set_footer(text=f'Run `!stream get {stream["name"]}` for detailed information!')
 
             else:
+                print('stream went offline')
                 announcement.title = f'{stream["name"]} is now offline.'
 
             await stream_channel.send(embed=announcement)
@@ -241,7 +245,7 @@ class TwitchAPI:
                 await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
             # Check if we ran through at least one iteration # and both lists have the same amount of Streams
-            if old_streams:  # might have to add `and len(old_streams) == len(new_streams)` here
+            if old_streams and len(old_streams) == len(new_streams):
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
                     if double_streams[0]['status'] != double_streams[1]['status']:
