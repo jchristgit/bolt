@@ -125,7 +125,7 @@ class TwitchAPI:
         user = self._table.find_one(name=name)
 
         try:
-            if user is None or datetime.datetime.utcnow() - user.last_db_update > USER_UPDATE_INTERVAL:
+            if user is None or datetime.datetime.utcnow() - user.last_db_update > USER_UPDATE_DELTA:
                 self._update_user_on_db(await self._request_user_from_api(name))
                 return self._table.find_one(name=name)
             return user
