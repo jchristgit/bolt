@@ -140,7 +140,7 @@ class TwitchAPI:
         # Updates the given Stream name in Cache.
         # If the Stream was not present before, it will be added.
         needs_update = stream_name not in self._stream_cache or \
-                       datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] > USER_UPDATE_DELTA
+                       datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] > STREAM_UPDATE_DELTA
 
         if needs_update:
             user = await self.get_user(stream_name)
