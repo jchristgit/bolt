@@ -27,14 +27,14 @@ class Meta:
         response.set_thumbnail(url=self.bot.user.avatar_url)
         response.set_author(name='Made by Volcyy#2359', url='https://github.com/Volcyy/Bolt',
                             icon_url=(await self.bot.application_info()).owner.avatar_url)
-        response.add_field(name='System Usage', value=f'**CPU**: {self.process.cpu_percent() / psutil.cpu_count()}%\n'
-                                                      f'**Memory**: {str(memory_usage)[:5]} MB')
         response.add_field(name='Users', value=f'**Total**: {sum(1 for m in self.bot.get_all_members())}\n'
                                                f'**Unique**: {len(set(self.bot.get_all_members()))}')
 
         response.add_field(name='Guilds', value=f'**Total**: {sum(1 for g in self.bot.guilds)}\n'
                                                 f'**Avg. Members**: {int(average_guild_users)}\n'
                                                 f'**Shards**: {self.bot.shard_count}')
+        response.add_field(name='System Usage', value=f'**CPU**: {self.process.cpu_percent() / psutil.cpu_count()}%\n'
+                                                      f'**Memory**: {str(memory_usage)[:5]} MB')
 
         await ctx.send(embed=response)
 

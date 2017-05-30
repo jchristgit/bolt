@@ -15,9 +15,11 @@ db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
 
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
+USER_UPDATE_DELTA = datetime.timedelta(hours=USER_UPDATE_INTERVAL)
 
 # After which amount of time a Twitch Stream should be updated in Cache, in minutes
-STREAM_UPDATE_INTERVAL = 2
+STREAM_UPDATE_INTERVAL = 1
+STREAM_UPDATE_DELTA = datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL)
 
 # The amount of time that the Twitch Stream updater should wait between requesting, in seconds
 # Keep in mind that this also pulls data from Cache.
@@ -88,7 +90,7 @@ class TwitchAPI:
         self._bot = bot
         self._headers = [('Accept', 'application/vnd.twitchtv.v5+json')]
         self._table = db['twitch_users']  # contains Twitch User Data
-        self.total_follows = sum(1 for x in follow_config.get_global_follows())
+        self.total_follows = sum(1 for _ in follow_config.get_global_follows())
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
@@ -123,8 +125,7 @@ class TwitchAPI:
         user = self._table.find_one(name=name)
 
         try:
-            if user is None or datetime.datetime.utcnow() - user.last_db_update > \
-                    datetime.timedelta(hours=USER_UPDATE_INTERVAL):
+            if user is None or datetime.datetime.utcnow() - user.last_db_update > USER_UPDATE_INTERVAL:
                 self._update_user_on_db(await self._request_user_from_api(name))
                 return self._table.find_one(name=name)
             return user
@@ -138,10 +139,10 @@ class TwitchAPI:
         logger.debug(f'Getting Stream for {stream_name}...')
         # Updates the given Stream name in Cache.
         # If the Stream was not present before, it will be added.
+        needs_update = stream_name not in self._stream_cache or \
+                       datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] > USER_UPDATE_DELTA
 
-        if stream_name not in self._stream_cache or \
-                datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] \
-                > datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL):
+        if needs_update:
             user = await self.get_user(stream_name)
 
             # Check if the User exists
@@ -167,6 +168,7 @@ class TwitchAPI:
                     'status': False
                 }
             else:
+                # Result is already a dictionary
                 self._stream_cache[stream_name]['name'] = stream_name
                 self._stream_cache[stream_name]['status'] = True
 
@@ -233,7 +235,7 @@ class TwitchAPI:
         while not self._bot.is_closed():
             # Reset stream list
             new_streams = []
-            self.total_follows = sum(1 for x in follow_config.get_global_follows())
+            self.total_follows = sum(1 for _ in follow_config.get_global_follows())
 
             # Check stream states
             # - Why the list conversion? (no longer needed, leaving it here for future reference)
@@ -249,6 +251,7 @@ class TwitchAPI:
                 # Compare streams with each other
                 for double_streams in zip(old_streams, new_streams):
                     if double_streams[0]['status'] != double_streams[1]['status']:
+                        print(double_streams[0]['name'], 'is now', double_streams[1]['status'])
                         following_guilds = follow_config.get_guild_ids_following(double_streams[0]['name'])
                         await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
