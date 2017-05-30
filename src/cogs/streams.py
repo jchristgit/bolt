@@ -7,6 +7,9 @@ from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config, twitch_
 from src.apis.requester import close as close_requester
 
 
+TWITCH_COLOUR_HEX = 0x6441A5
+
+
 class Streams:
     """Commands for getting notified about Streams, receiving information about them, and more."""
     def __init__(self, bot):
@@ -24,12 +27,6 @@ class Streams:
     @commands.guild_only()
     async def stream(self, ctx):
         """Contains Sub-Commands for interacting with Twitch Streams."""
-
-    @stream.command(hidden=True)
-    @commands.is_owner()
-    async def activate(self, ctx):
-        """Activates the Stream Updater."""
-        # self.bot.loop.create_task(self.stream_backend.update_streams())
 
     @stream.command()
     @commands.cooldown(rate=10, per=5.0 * 60, type=commands.BucketType.user)
@@ -65,7 +62,7 @@ class Streams:
         else:
             response.title = f'`{stream_name}` is currently offline.'
 
-        response.colour = 0x6441A5
+        response.colour = TWITCH_COLOUR_HEX
         await ctx.send(embed=response)
 
     @stream.command()
@@ -100,7 +97,7 @@ class Streams:
                                    f'🔗 **`Link`**: <{link}>'
 
             response.set_footer(text=footer)
-            response.colour = 0x6441A5
+            response.colour = TWITCH_COLOUR_HEX
         else:
             response.title = 'Error trying to get User'
             response.description = '**User not found!**'
@@ -115,7 +112,13 @@ class Streams:
         To set a channel, use `!stream setchannel`.
         """
         stream_name = stream_name.replace(' ', '')
-        if stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
+        if follow_config.get_channel_id(ctx.message.guild.id) is None:
+            await ctx.send(embed=discord.Embed(description='A channel for posting announcements must be set before'
+                                                           'you can follow any Streams. Contact someone with the `'
+                                                           'Manage Channels` permission to set it using `!stream '
+                                                           'setchannel`.', colour=discord.Colour.red()))
+
+        elif stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
             await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
                                                            f'`{stream_name}`.', colour=discord.Colour.red()))
 
@@ -141,6 +144,7 @@ class Streams:
                                                colour=discord.Colour.green()))
 
     @stream.command(name='setchannel')
+    @commands.has_permissions(manage_channels=True)
     async def set_channel(self, ctx):
         """Sets the current channel as the channel to be used for posting Stream announcements."""
         follow_config.set_channel(ctx.message.guild.id, ctx.message.guild.name, ctx.message.channel.id)
@@ -148,9 +152,10 @@ class Streams:
                                            colour=discord.Colour.green()))
 
     @stream.command(name='unsetchannel')
+    @commands.has_permissions(manage_channels=True)
     async def unset_channel(self, ctx):
         """Unset the Guild's stream channel."""
-        if follow_config.get_channel_id(ctx.message.guild.id) == '':
+        if follow_config.get_channel_id(ctx.message.guild.id) is None:
             await ctx.send(embed=discord.Embed(description='This Guild has no stream announcement channel set.',
                                                colour=discord.Colour.red()))
         else:
@@ -174,6 +179,7 @@ class Streams:
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
     async def all(self, ctx):
         """Shows stream information about all streams this guild is following."""
+        initial = await ctx.send(embed=discord.Embed(title='Getting information...', colour=0x6441A5))
         streams = [await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)]
 
         # Check if no follows are set
@@ -191,6 +197,7 @@ class Streams:
                 stream_link = f'https://twitch.tv/{stream_name}'
                 response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
 
+            await initial.delete()
             await ctx.send(embed=response)
 
     @stream.command()
