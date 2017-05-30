@@ -46,7 +46,7 @@ class FollowConfig:
         self._channel_table = db['channels']  # Contains the Channel IDs that guilds use for the announcements
 
     def get_guild_follows(self, guild_id: int) -> [str]:
-        return [r.stream_name for r in self._follow_table.find(guild_id=guild_id)]
+        return [r.stream_name for r in self._follow_table.find(guild_id=guild_id, order_by=['guild_id', 'stream_name'])]
 
     def get_global_follows(self):
         return self._follow_table.distinct('stream_name')

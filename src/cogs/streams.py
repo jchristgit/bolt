@@ -170,10 +170,11 @@ class Streams:
         # Empty list -> Guild is not following any channels
         if not follows:
             info = 'This Guild is not following any Twitch Streams. Follow some using `!stream follow <name>`!'
-            await ctx.send(embed=discord.Embed(title='Stream Follows (0 total)', description=info, colour=0x6441A5))
+            await ctx.send(embed=discord.Embed(title='Stream Follows (0 total)', description=info,
+                                               colour=TWITCH_COLOUR_HEX))
         else:
-            await ctx.send(embed=discord.Embed(title=f'Stream Follows ({len(follows)} total)',
-                                               description=", ".join(sorted(follows)), colour=0x6441A5))
+            await ctx.send(embed=discord.Embed(title=f'Stream Follows on this Guild ({len(follows)} total)',
+                                               description=", ".join(sorted(follows)), colour=TWITCH_COLOUR_HEX))
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
@@ -185,7 +186,8 @@ class Streams:
         # Check if no follows are set
         if not streams:
             await ctx.send(embed=discord.Embed(title=f'- Streams followed on {ctx.message.guild.name} -',
-                                               description='This Guild is not following any Streams.', colour=0x6441A5))
+                                               description='This Guild is not following any Streams.',
+                                               colour=TWITCH_COLOUR_HEX))
         else:
             response = discord.Embed()
             response.title = f'- Streams followed on {ctx.message.guild.name} -'
@@ -210,13 +212,13 @@ class Streams:
         info = f'I\'m tracking a total of **`{total_follows}` Streams**, with `{guild_follows}` being on this Guild.' \
                f'\nCurrently refreshing Twitch Users in my database after **`{stats[0]}` hours**, and refreshing ' \
                f'Streams in Cache after **`{stats[1]}` minutes**.'
-        await ctx.send(embed=discord.Embed(title='- Stream Stats -', description=info, colour=0x6441A5))
+        await ctx.send(embed=discord.Embed(title='- Stream Stats -', description=info, colour=TWITCH_COLOUR_HEX))
 
     @stream.command(name='gfw')
     async def guilds_following(self, ctx, *, stream_name: str):
         """Returns a list of Guilds that are following the given Streamer."""
         response = discord.Embed()
-        response.colour = 0x6441A5
+        response.colour = TWITCH_COLOUR_HEX
 
         following_guilds = follow_config.get_guild_names_following(stream_name)
         if len(following_guilds) == 0:
