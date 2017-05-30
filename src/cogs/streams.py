@@ -189,7 +189,7 @@ class Streams:
             for idx, stream_status in enumerate(streams):
                 stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]
                 stream_link = f'https://twitch.tv/{stream_name}'
-                response.description += f'• [{stream_name}]({stream_link}): *{stream_status}*\n'
+                response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
 
             await ctx.send(embed=response)
 
