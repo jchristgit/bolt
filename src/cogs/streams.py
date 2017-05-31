@@ -112,8 +112,9 @@ class Streams:
         To set a channel, use `!stream setchannel`.
         """
         stream_name = stream_name.replace(' ', '')
+
         if follow_config.get_channel_id(ctx.message.guild.id) is None:
-            await ctx.send(embed=discord.Embed(description='A channel for posting announcements must be set before'
+            await ctx.send(embed=discord.Embed(description='**A channel for posting announcements must be set** before '
                                                            'you can follow any Streams. Contact someone with the `'
                                                            'Manage Channels` permission to set it using `!stream '
                                                            'setchannel`.', colour=discord.Colour.red()))

@@ -102,7 +102,7 @@ class Roles:
         """Assign a self-assignable Role to yourself."""
         # TODO: Add ability to do this with a comma-separated role list
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if self._perform_self_assignable_roles_checks(ctx, role):
+        if await self._perform_self_assignable_roles_checks(ctx, role):
             if role in ctx.author.roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'You already have the `{role.name}` Role.'))
@@ -117,7 +117,7 @@ class Roles:
     async def un_assign(self, ctx, *, name: str):
         """Remove a self-assignable Role from yourself."""
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if self._perform_self_assignable_roles_checks(ctx, role):
+        if await self._perform_self_assignable_roles_checks(ctx, role):
             if role not in ctx.author.roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'You do not have the `{role.name}` Role.'))
