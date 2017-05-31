@@ -83,7 +83,7 @@ class Roles:
                                                        '• <https://www.webpagefx.com/web-design/color-picker/>',
                                            colour=discord.Colour.blue()))
 
-    async def _perform_self_assignable_roles_checks(self, ctx, role):
+    async def _perform_self_assignable_roles_checks(self, ctx, role, name):
         # Checks if a role exist and whether it's not self-assignable
         if role is None:
             await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
@@ -102,7 +102,7 @@ class Roles:
         """Assign a self-assignable Role to yourself."""
         # TODO: Add ability to do this with a comma-separated role list
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if await self._perform_self_assignable_roles_checks(ctx, role):
+        if await self._perform_self_assignable_roles_checks(ctx, role, name):
             if role in ctx.author.roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'You already have the `{role.name}` Role.'))
@@ -114,7 +114,7 @@ class Roles:
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def un_assign(self, ctx, *, name: str):
+    async def un_assign(self, ctx, *, name: str, name):
         """Remove a self-assignable Role from yourself."""
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
         if await self._perform_self_assignable_roles_checks(ctx, role):
