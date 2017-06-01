@@ -114,10 +114,10 @@ class Roles:
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def un_assign(self, ctx, *, name: str, name):
+    async def un_assign(self, ctx, *, name: str):
         """Remove a self-assignable Role from yourself."""
         role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if await self._perform_self_assignable_roles_checks(ctx, role):
+        if await self._perform_self_assignable_roles_checks(ctx, role, name):
             if role not in ctx.author.roles:
                 await ctx.send(embed=discord.Embed(colour=discord.Colour.red(),
                                                    title=f'You do not have the `{role.name}` Role.'))

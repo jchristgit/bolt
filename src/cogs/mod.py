@@ -1,11 +1,15 @@
 import asyncio
+import dataset
 import discord
 
 from discord.ext import commands
 
+db = dataset.connect('sqlite:///data/guilds.db')
+guild_prefixes = db['prefixes']
+
 
 class Mod:
-    """Moderation Commands for Guilds. These require appropriate permission to execute."""
+    """Moderation Commands for Guilds, such as kicking / banning or changing configuration."""
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         print('Loaded Cog Mod.')
