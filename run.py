@@ -1,4 +1,5 @@
 import asyncio
+import dataset
 import datetime
 import discord
 import random
@@ -10,6 +11,7 @@ from builtins import ModuleNotFoundError
 from discord import Colour, ConnectionClosed, Embed, Game
 from discord.ext import commands
 from os import environ
+from stuf import stuf
 
 from src.util import create_logger
 
@@ -17,17 +19,31 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
 logger = create_logger('discord')
+db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
+prefixes = db['prefixes']
 
 DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
-              'You can prefix my Commands by either mentioning me, using `?` or `!`.'
+              'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
+              'In Direct Messages, you don\'t need to use any prefix.'
+STATUSES = ['with Volcyy', 'Support', 'League of Legends', 'Thresh', 'good bot', 'with itself', 'with a garbo ADC']
+
+
+def get_prefix(bot, msg):
+    # No Prefix in DM's
+    if isinstance(msg.channel, discord.abc.PrivateChannel):
+        return commands.when_mentioned_or('!', '?', '')(bot, msg)
+
+    # Check for custom per-guild prefix
+    entry = prefixes.find_one(guild_id=msg.guild.id)
+    if entry is not None:
+        return commands.when_mentioned_or(entry.prefix)(bot, msg)
+    return commands.when_mentioned_or('!', '?')(bot, msg)
 
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
-        game_name = random.choice(['with Volcyy', 'Support', 'League of Legends', 'Thresh', 'good bot',
-                                   'with itself', 'with a garbo ADC'])
-        super().__init__(command_prefix=commands.when_mentioned_or('!', '?'), description=DESCRIPTION, pm_help=None,
-                         game=Game(name=game_name))
+        game_name = random.choice(STATUSES)
+        super().__init__(command_prefix=get_prefix, description=DESCRIPTION, pm_help=None, game=Game(name=game_name))
         self.start_time = datetime.datetime.now()
 
     # Helper function to create and return an Embed with red colour.

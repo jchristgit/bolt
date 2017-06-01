@@ -3,8 +3,9 @@ import dataset
 import discord
 
 from discord.ext import commands
+from stuf import stuf
 
-db = dataset.connect('sqlite:///data/guilds.db')
+db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
 guild_prefixes = db['prefixes']
 
 
@@ -17,6 +18,22 @@ class Mod:
     @staticmethod
     def __unload():
         print('Unloaded Cog Mod.')
+
+    @commands.command(name='setprefix')
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def set_prefix(self, ctx, new_prefix: str):
+        """Change the prefix of this Guild to the given Prefix
+
+        To use a prefix with a space, e.g. `botty lsar`, use `_` to set it, since spaces will get truncated
+        by Discord automatically, for example:
+        `setprefix botty_`
+        `botty help`
+        """
+        new_prefix = new_prefix.replace('_', ' ')
+        guild_prefixes.upsert(dict(guild_id=ctx.guild.id, prefix=new_prefix), ['guild_id'])
+        info = f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.'
+        await ctx.send(embed=discord.Embed(title=info, colour=discord.Colour.green()))
 
     @commands.command()
     @commands.guild_only()

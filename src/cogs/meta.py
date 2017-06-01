@@ -2,6 +2,7 @@ import discord
 import psutil
 
 from discord.ext import commands
+from run import prefixes
 
 
 class Meta:
@@ -16,8 +17,28 @@ class Meta:
         print('Unloaded Cog Meta.')
 
     @commands.command()
-    async def stats(self, ctx):
-        """Displays statistics about the Bot."""
+    async def prefix(self, ctx):
+        """Get the prefix which you can use with the Bot."""
+        if isinstance(ctx.message.channel, discord.abc.PrivateChannel):
+            await ctx.send(embed=discord.Embed(title='You can use my commands without any prefixes, since we are '
+                                                     'talking in private here. <:poyuW:309409724351119360>',
+                                               colour=discord.Colour.blue()))
+            return
+
+        entry = prefixes.find_one(guild_id=ctx.guild.id)
+        if entry is None:
+            await ctx.send(embed=discord.Embed(title='There is no special prefix configured for this Guild, so you '
+                                                     'can use my default prefixes `?`, `!`, or mention me.',
+                                               colour=discord.Colour.blue()))
+        else:
+            await ctx.send(embed=discord.Embed(title=f'My Prefix for this Guild is set to `{entry.prefix}`. Somebody '
+                                                     f'with the `Manage Messages` permission can change it using '
+                                                     f'`{entry.prefix}setprefix`.',
+                                               colour=discord.Colour.blue()))
+
+    @commands.command()
+    async def info(self, ctx):
+        """Displays information and statistics about the Bot."""
 
         memory_usage = self.process.memory_full_info().uss / 1024**2 * 1.048576
         average_guild_users = sum(g.member_count for g in self.bot.guilds) / len(self.bot.guilds)
