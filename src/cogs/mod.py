@@ -22,13 +22,19 @@ class Mod:
     @commands.command(name='setprefix')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def set_prefix(self, ctx, new_prefix: str):
-        """Change the prefix of this Guild to the given Prefix
+    async def set_prefix(self, ctx, *, new_prefix: str):
+        """Change the prefix of this Guild for me to the given Prefix.
 
-        To use a prefix with a space, e.g. `botty lsar`, use `_` to set it, since spaces will get truncated
-        by Discord automatically, for example:
+        To use a prefix that ends with a space, e.g. `botty lsar`, use `_` to set it,
+        since spaces will get truncated by Discord automatically, for example:
         `setprefix botty_`
         `botty help`
+
+        If you prefer being polite, you could use the following:
+        `setprefix botty pls_`
+        `botty pls help`
+
+        Keep in mind that if you ever forget the prefix, I also react to mentions, so just mention me if you need help.
         """
         new_prefix = new_prefix.replace('_', ' ')
         guild_prefixes.upsert(dict(guild_id=ctx.guild.id, prefix=new_prefix), ['guild_id'])

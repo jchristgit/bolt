@@ -31,7 +31,8 @@ class Meta:
                                                      'can use my default prefixes `?`, `!`, or mention me.',
                                                colour=discord.Colour.blue()))
         else:
-            await ctx.send(embed=discord.Embed(title=f'My Prefix for this Guild is set to `{entry.prefix}`. Somebody '
+            await ctx.send(embed=discord.Embed(title=f'My Prefix for this Guild is set to `{entry.prefix}`. Alterna'
+                                                     f'tively, you can mention me with your Command. Somebody '
                                                      f'with the `Manage Messages` permission can change it using '
                                                      f'`{entry.prefix}setprefix`.',
                                                colour=discord.Colour.blue()))
