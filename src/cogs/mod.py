@@ -22,7 +22,7 @@ class Mod:
     @commands.command(name='setprefix')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def set_prefix(self, ctx, *, new_prefix: str):
+    async def set_prefix(self, ctx, *, new_prefix: str=''):
         """Change the prefix of this Guild for me to the given Prefix.
 
         To use a prefix that ends with a space, e.g. `botty lsar`, use `_` to set it,
@@ -35,11 +35,16 @@ class Mod:
         `botty pls help`
 
         Keep in mind that if you ever forget the prefix, I also react to mentions, so just mention me if you need help.
+        Alternatively, to reset the prefix, just use this command
+        without specifying a new prefix you wish to use, like `setprefix`.
         """
-        new_prefix = new_prefix.replace('_', ' ')
-        guild_prefixes.upsert(dict(guild_id=ctx.guild.id, prefix=new_prefix), ['guild_id'])
-        info = f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.'
-        await ctx.send(embed=discord.Embed(title=info, colour=discord.Colour.green()))
+        if new_prefix == '':
+            guild_prefixes.delete(guild_id=ctx.guild.id)
+        else:
+            new_prefix = new_prefix.replace('_', ' ')
+            guild_prefixes.upsert(dict(guild_id=ctx.guild.id, prefix=new_prefix), ['guild_id'])
+            info = f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.'
+            await ctx.send(embed=discord.Embed(title=info, colour=discord.Colour.green()))
 
     @commands.command()
     @commands.guild_only()
