@@ -231,7 +231,7 @@ class TwitchAPI:
         print('Started Twitch Stream Background Updater:')
         print(f'Following a total of {self.total_follows} Streams.')
 
-        while not self._bot.is_closed():
+        while True:
             # Reset stream list
             new_streams = []
             self.total_follows = sum(1 for _ in follow_config.get_global_follows())

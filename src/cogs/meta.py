@@ -2,7 +2,8 @@ import discord
 import psutil
 
 from discord.ext import commands
-from run import prefixes
+
+import run
 
 
 class Meta:
@@ -25,7 +26,7 @@ class Meta:
                                                colour=discord.Colour.blue()))
             return
 
-        entry = prefixes.find_one(guild_id=ctx.guild.id)
+        entry = run.prefixes.find_one(guild_id=ctx.guild.id)
         if entry is None:
             await ctx.send(embed=discord.Embed(title='There is no special prefix configured for this Guild, so you '
                                                      'can use my default prefixes `?`, `!`, or mention me.',
