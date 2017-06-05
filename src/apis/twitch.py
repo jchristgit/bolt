@@ -197,12 +197,12 @@ class TwitchAPI:
     async def _send_stream_update_announcement(self, stream: dict, guilds_following: list):
         # Sends an announcement about a Stream updating its state to all following Guilds.
         for guild_id in guilds_following:
-            channel_id = follow_config.get_channel_id(guild_id).channel_id
-            if channel_id is None:
+            channel_row = follow_config.get_channel_id(guild_id)
+            if channel_row is None:
                 logger.warn(f'Guild with ID {guild_id} is following {stream["name"]}, but has no channel set!')
                 return
 
-            stream_channel = self._bot.get_channel(int(channel_id))
+            stream_channel = self._bot.get_channel(int(channel_row.channel_id))
             announcement = discord.Embed()
             announcement.colour = 0x6441A5
 
@@ -273,4 +273,4 @@ class TwitchAPI:
         except Exception as e:
             logger.error(e)
         else:
-            logger.info('Twitch Stream Updtaer exited, for some reason.')
+            logger.info('Twitch Stream Updater exited, for some reason.')
