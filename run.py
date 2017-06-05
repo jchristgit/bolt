@@ -47,6 +47,7 @@ class Bot(commands.AutoShardedBot):
         super().__init__(command_prefix=get_prefix, description=DESCRIPTION, pm_help=None, game=Game(name=game_name))
         self.start_time = datetime.datetime.now()
         self.owner = None
+        self.error_channel = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
@@ -61,6 +62,19 @@ class Bot(commands.AutoShardedBot):
         elif isinstance(error, commands.CommandNotFound):
             pass
         elif isinstance(error, commands.CommandInvokeError):
+            # Check if it was "Forbidden" (no direct messages), notify and exit early
+            if isinstance(error.original, discord.errors.Forbidden):
+                return await ctx.send(embed=discord.Embed(
+                    title='<:sadpanda:319417001485533188> You have Direct Messages disabled.',
+                    description=(f'The Command you invoked requires me to send you a *Direct Message*. This is often '
+                                 f'necessary to ensure that other people do not receive information that is intended '
+                                 f'for you, or to prevent spam. Please disable this by doing the following:\n'
+                                 f'- Right click on this Server and choose **Server Settings**\n'
+                                 f'- Tick **Allow direct messages from server members**.\n'
+                                 f'That\'s all, thank you!'),
+                    colour=discord.Colour.blue()
+                ))
+
             await ctx.send(embed=self.make_error_embed(
                 (f'**An Error occurred through the invocation of the command**.\n'
                  f'Please contact Volcyy#2359 with a detailed '
@@ -69,11 +83,23 @@ class Bot(commands.AutoShardedBot):
             # print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
             # traceback.print_tb(error.original.__traceback__)
             # print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
-            await self.owner.send(embed=discord.Embed(
+            readable_tb = '```py\n' \
+                         + '\n'.join(traceback.format_list(traceback.extract_tb(error.original.__traceback__))) \
+                         + f'```\n```py\n{error.original}```'
+
+            await self.error_channel.send(embed=discord.Embed(
                 title=f'Exception occurred in Command `{ctx.command.qualified_name}`:',
-                description=error.original.__traceback__ + f'\n{error.original.__class__.__name__}: {error.original}',
                 colour=discord.Colour.red(),
                 timestamp=datetime.datetime.now()
+            ).add_field(
+                name='Invocation',
+                value=(f'**By**: {ctx.author} ({ctx.author.id})\n'
+                       f'**Channel**: {f"{ctx.channel.name} ({ctx.channel.id})" if ctx.channel is not None else "DM"}\n'
+                       f'**Guild**: {f"{ctx.guild.name} ({ctx.guild.id})" if ctx.guild is not None else "DM"}\n'
+                       f'**Message**: {ctx.message.content}')
+            ).add_field(
+                name='Traceback',
+                value=readable_tb
             ))
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
@@ -92,6 +118,7 @@ class Bot(commands.AutoShardedBot):
         print(f'Invite Link:\nhttps://discordapp.com/oauth2/authorize?&client_id={self.user.id}&scope=bot')
         print('=============')
         self.owner = self.get_user(self.owner_id)
+        self.error_channel = self.get_channel(321301897220980739)
 
     async def on_message(self, msg):
         if msg.author.bot:

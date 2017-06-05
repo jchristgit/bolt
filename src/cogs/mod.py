@@ -10,7 +10,12 @@ guild_prefixes = db['prefixes']
 
 
 class Mod:
-    """Moderation Commands for Guilds, such as kicking / banning or changing configuration."""
+    """
+    Moderation Commands for Guilds, such as kicking / banning or changing configuration.
+
+    Keep in mind that although I'm not primarily intended for Moderation Commands,
+    I still provide a bunch of them in case you will ever need it.
+    """
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         print('Loaded Cog Mod.')
@@ -61,6 +66,8 @@ class Mod:
         !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
         !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
         """
+        if prune_days > 7 or prune_days < 1:
+            pass
         await ctx.guild.ban(member, reason=f'Command invoked by {ctx.message.author}, reason: '
                                            f'{"No reason specified" if reason == "" else reason}.',
                             delete_message_days=prune_days)
