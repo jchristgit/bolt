@@ -46,7 +46,6 @@ class Meta:
     async def stats(self, ctx):
         """Displays information and statistics about the Bot."""
 
-        memory_usage = self.process.memory_full_info().uss / 1024**2 * 1.048576
         average_guild_users = sum(g.member_count for g in self.bot.guilds) // len(self.bot.guilds)
 
         response = discord.Embed()
@@ -69,7 +68,7 @@ class Meta:
         ).add_field(
             name='System Usage',
             value=(f'**CPU**: {self.process.cpu_percent() / psutil.cpu_count()}%\n'
-                   f'**Memory**: {str(memory_usage)[:5]} MB')
+                   f'**Memory**: {str(self.process.memory_full_info().uss / 1024**2 * 1.048576)[:5]} MB')
         )
 
         await ctx.send(embed=response)
