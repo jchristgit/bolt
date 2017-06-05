@@ -62,7 +62,7 @@ class Mod:
         !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
         """
         await ctx.guild.ban(member, reason=f'Command invoked by {ctx.message.author}, reason: '
-                                           f'{"No reason specified" if reason is "" else reason}.',
+                                           f'{"No reason specified" if reason == "" else reason}.',
                             delete_message_days=prune_days)
         reason = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(title='Ban successful',
