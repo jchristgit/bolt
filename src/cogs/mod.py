@@ -81,8 +81,10 @@ class Mod:
             description += f'**`{idx + 1}`**: {ban.user} {f"for *{ban.reason}*" if ban.reason is not None else ""}\n'
         ban_list = await ctx.send(embed=discord.Embed(title='Banned Members', description=description))
         try:
-            num = await self.bot.wait_for('message', check=lambda m: m.content.isdigit() and m.author == ctx.message.author,
-                                          timeout=20)
+            num = await self.bot.wait_for('message',
+                                            check=lambda m: m.content.isdigit() and m.author == ctx.message.author,
+                                            timeout=20
+                                          )
         except asyncio.TimeoutError:
             await ctx.send(embed=discord.Embed(description='No User to unban was specified in time.',
                                                colour=discord.Colour.red()))
@@ -112,7 +114,7 @@ class Mod:
         !Kick @Guy#1337 be nice - kick Guy and specifies the reason "be nice" for the Audit Log.
         """
         await ctx.guild.kick(member, reason=f'Command invoked by {ctx.message.author}, reason: '
-                                            f'{"No reason specified" if reason is "" else reason}.')
+                                            f'{"No reason specified" if reason == "" else reason}.')
         reason = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(title='Kick successful',
                                            description=f'**Kicked {member}**{reason}'))
