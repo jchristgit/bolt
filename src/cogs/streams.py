@@ -185,8 +185,11 @@ class Streams:
     async def all(self, ctx):
         """Shows stream information about all streams this guild is following."""
         initial = await ctx.send(embed=discord.Embed(title='Getting information...', colour=0x6441A5))
-        streams = [await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)]
-
+        streams = [
+            await self.twitch_api.get_status(s) async for s in follow_config.get_guild_follows(ctx.message.guild.id)
+        ]
+f
+        await initial.delete()
         # Check if no follows are set
         if not streams:
             await ctx.send(embed=discord.Embed(title=f'- Streams followed on {ctx.message.guild.name} -',
@@ -203,7 +206,6 @@ class Streams:
                 stream_link = f'https://twitch.tv/{stream_name}'
                 response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
 
-            await initial.delete()
             await ctx.send(embed=response)
 
     @stream.command()

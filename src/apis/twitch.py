@@ -18,7 +18,7 @@ USER_UPDATE_INTERVAL = 12
 USER_UPDATE_DELTA = datetime.timedelta(hours=USER_UPDATE_INTERVAL)
 
 # After which amount of time a Twitch Stream should be updated in Cache, in minutes
-STREAM_UPDATE_INTERVAL = 1
+STREAM_UPDATE_INTERVAL = 2
 STREAM_UPDATE_DELTA = datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL)
 
 # The amount of time that the Twitch Stream updater should wait between requesting, in seconds
@@ -107,6 +107,38 @@ class TwitchAPI:
             raise requester.NotFoundError()
         return resp['users'][0]
 
+    async def _request_stream_from_api(self, stream_name: str):
+        # Get a Stream from the API
+        user = await self.get_user(stream_name)
+        if user is None:
+            self._stream_cache[stream_name] = {
+                'name': stream_name,
+                'status': None
+            }
+            return self._stream_cache[stream_name]
+
+        user_id = user['uid']
+        query_result = await self._query(f'{self._BASE_URL}/streams/{user_id}')
+
+        if query_result is None:
+            logger.error(f'Unknown Error occurred trying to query Stream for ID {user_id}, retrying...')
+            return await self.get_stream(stream_name)
+
+        self._stream_cache[stream_name] = query_result['stream']
+
+        if self._stream_cache[stream_name] is None:
+            self._stream_cache[stream_name] = {
+                'name': stream_name,
+                'status': False
+            }
+        else:
+            # Result is already a dictionary
+            self._stream_cache[stream_name]['name'] = stream_name
+            self._stream_cache[stream_name]['status'] = True
+
+        return self._stream_cache[stream_name]
+
+
     def _update_user_on_db(self, user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
@@ -143,35 +175,7 @@ class TwitchAPI:
                        datetime.datetime.utcnow() - self._stream_cache[stream_name]['last_update'] > STREAM_UPDATE_DELTA
 
         if needs_update:
-            user = await self.get_user(stream_name)
-
-            # Check if the User exists
-            if user is None:
-                self._stream_cache[stream_name] = {
-                    'name': stream_name,
-                    'status': None
-                }
-                return self._stream_cache[stream_name]
-
-            user_id = user['uid']
-            query_result = await self._query(f'{self._BASE_URL}/streams/{user_id}')
-
-            if query_result is None:
-                logger.error(f'Unknown Error occurred trying to query Stream for ID {user_id}, retrying...')
-                return await self.get_stream(stream_name)
-
-            self._stream_cache[stream_name] = query_result['stream']
-
-            if self._stream_cache[stream_name] is None:
-                self._stream_cache[stream_name] = {
-                    'name': stream_name,
-                    'status': False
-                }
-            else:
-                # Result is already a dictionary
-                self._stream_cache[stream_name]['name'] = stream_name
-                self._stream_cache[stream_name]['status'] = True
-
+            await self._request_stream_from_api(stream_name)
             self._stream_cache[stream_name]['last_update'] = datetime.datetime.utcnow()
             logger.debug(f'Updated or added Stream `{stream_name}` in the Cache.')
 
