@@ -14,6 +14,7 @@ from os import environ
 from stuf import stuf
 
 from src.util import create_logger
+from src.apis.requester import close as close_requester
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -134,6 +135,7 @@ if __name__ == '__main__':
         client.run(environ['DISCORD_TOKEN'])
     except ConnectionClosed:
         pass
+    close_requester()
     print('Logged off.')
 
 

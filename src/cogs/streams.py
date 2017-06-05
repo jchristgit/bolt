@@ -4,7 +4,6 @@ import humanize
 
 from discord.ext import commands
 from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config, twitch_api_stats
-from src.apis.requester import close as close_requester
 
 
 TWITCH_COLOUR_HEX = 0x6441A5
@@ -19,7 +18,6 @@ class Streams:
         print('Loaded Cog Streams.')
 
     def __unload(self):
-        close_requester()
         self.updater_task.cancel()
         print('Unloaded Cog Streams.')
 
@@ -188,7 +186,7 @@ class Streams:
         streams = [
             await self.twitch_api.get_status(s) async for s in follow_config.get_guild_follows(ctx.message.guild.id)
         ]
-f
+
         await initial.delete()
         # Check if no follows are set
         if not streams:
