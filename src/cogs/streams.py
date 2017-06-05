@@ -39,6 +39,9 @@ class Streams:
         **Example**:
         !stream get imaqtpie - get Stream information about imaqtpie
         """
+        if self.updater_task.done():
+            self.updater_task = self.bot.loop.create_task(self.twitch_api.update_streams())
+
         response = discord.Embed()
         stream = await self.twitch_api.get_stream(stream_name)
         # The status key indicates whether the stream is online or offline.
