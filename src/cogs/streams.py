@@ -106,6 +106,7 @@ class Streams:
         await ctx.send(embed=response)
 
     @stream.command()
+    @commands.has_permissions(manage_channels=True)
     @commands.cooldown(rate=15, per=30.0 * 60, type=commands.BucketType.guild)
     async def follow(self, ctx, *, stream_name):
         """Follows the given Stream, posting announcements about it when set.
@@ -134,6 +135,7 @@ class Streams:
                                                colour=discord.Colour.red()))
 
     @stream.command()
+    @commands.has_permissions(manage_channel=True)
     async def unfollow(self, ctx, *, stream_name):
         """Unfollows the given Stream."""
         stream_name = stream_name.replace(' ', '')
@@ -184,7 +186,7 @@ class Streams:
         """Shows stream information about all streams this guild is following."""
         initial = await ctx.send(embed=discord.Embed(title='Getting information...', colour=0x6441A5))
         streams = [
-            await self.twitch_api.get_status(s) async for s in follow_config.get_guild_follows(ctx.message.guild.id)
+            await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)
         ]
 
         await initial.delete()

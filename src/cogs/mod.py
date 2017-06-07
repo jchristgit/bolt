@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from stuf import stuf
 
-db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
+db = dataset.connect('sqlite:///data/guilds.guild_db', row_type=stuf)
 guild_prefixes = db['prefixes']
 
 

@@ -4,7 +4,6 @@ import datetime
 import discord
 import random
 import uvloop
-import sys
 import traceback
 
 from builtins import ModuleNotFoundError
@@ -15,13 +14,16 @@ from stuf import stuf
 
 from src.util import create_logger
 from src.apis.requester import close as close_requester
+from src.cogs.wormhole import Mode
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
 logger = create_logger('discord')
-db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
-prefixes = db['prefixes']
+guild_db = dataset.connect('sqlite:///data/guilds.guild_db', row_type=stuf)
+
+prefixes = guild_db['prefixes']
+wormhole = guild_db['wormhole']
 
 DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
               'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
@@ -48,6 +50,7 @@ class Bot(commands.AutoShardedBot):
         self.start_time = datetime.datetime.now()
         self.owner = None
         self.error_channel = None
+        self.guild_channel = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
@@ -119,11 +122,27 @@ class Bot(commands.AutoShardedBot):
         print('=============')
         self.owner = self.get_user(self.owner_id)
         self.error_channel = self.get_channel(321301897220980739)
+        self.guild_channel = self.get_channel(321341062721306624)
 
     async def on_message(self, msg):
         if msg.author.bot:
             return
 
+        wh_guild = wormhole.find_one(guild_id=msg.guild.id)
+        if wh_guild is not None and wh_guild.linked_to is not None and wh_guild.mode == Mode.IMPLICIT:
+            channel = self.get_channel(wh_guild.linked_to)
+            if channel is None:
+                await msg.channel.send(embed=discord.Embed(
+                    title='Failed to send Wormhole Message implicitly',
+                    description='Destination channel was not found.',
+                    colour=discord.Colour.red()
+                ))
+            else:
+                await channel.send(embed=discord.Embed(
+                    title=f'Wormhole Message from {wh_guild.guild_name}',
+                    description=msg.content,
+                    colour=discord.Colour.blue()
+                ))
         await self.process_commands(msg)
 
     @staticmethod
@@ -138,10 +157,10 @@ class Bot(commands.AutoShardedBot):
         await destination.send(embed=note)
 
     async def on_guild_join(self, guild: discord.Guild):
-        await self._guild_event_note(self.get_user(self.owner_id), guild, f'Joined Guild {guild.name} ({guild.id})')
+        await self._guild_event_note(self.guild_channel, guild, f'Joined Guild {guild.name} ({guild.id})')
 
     async def on_guild_remove(self, guild: discord.Guild):
-        await self._guild_event_note(self.get_user(self.owner_id), guild, f'Left Guild {guild.name} ({guild.id})')
+        await self._guild_event_note(self.guild_channel, guild, f'Left Guild {guild.name} ({guild.id})')
 
 client = Bot()
 

@@ -45,9 +45,6 @@ class Meta:
     @commands.command()
     async def stats(self, ctx):
         """Displays information and statistics about the Bot."""
-
-        average_guild_users = sum(g.member_count for g in self.bot.guilds) // len(self.bot.guilds)
-
         response = discord.Embed()
         response.colour = discord.Colour.blue()
         response.set_thumbnail(
@@ -59,7 +56,7 @@ class Meta:
         ).add_field(
             name='Guilds',
             value=(f'**Total**: {sum(1 for _ in self.bot.guilds)}\n'
-                   f'**Avg. Members**: {average_guild_users}\n'
+                   f'**Avg. Members**: {sum(g.member_count for g in self.bot.guilds) // len(self.bot.guilds)}\n'
                    f'**Shards**: {self.bot.shard_count}')
         ).add_field(
             name='Users',

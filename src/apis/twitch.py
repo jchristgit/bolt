@@ -11,7 +11,7 @@ from typing import Optional
 from ..util import create_logger
 
 logger = create_logger('api')
-db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
+db = dataset.connect('sqlite:///data/api.guild_db', row_type=stuf)
 
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
@@ -28,9 +28,10 @@ BACKGROUND_UPDATE_INTERVAL = 2
 
 def parse_twitch_time(twitch_time: str, truncate=True):
     # Converts a Twitch API Time to a datetime.datetime object
+    time_format = '%Y-%m-%dT%H:%M:%S'
     if truncate:
-        return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time[:-8], '%Y-%m-%dT%H:%M:%S')))
-    return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time, '%Y-%m-%dT%H:%M:%S')))
+        return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time[:twitch_time.find('.')], time_format)))
+    return datetime.datetime.fromtimestamp(mktime(strptime(twitch_time, time_format)))
 
 
 def twitch_api_stats():
@@ -138,7 +139,6 @@ class TwitchAPI:
 
         return self._stream_cache[stream_name]
 
-
     def _update_user_on_db(self, user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
@@ -217,6 +217,8 @@ class TwitchAPI:
 
                 game = stream["game"] if stream["game"] is not '' else '?'
 
+                print(stream)
+
                 announcement.description = f'Playing **{game}** for currently **{stream["viewers"]}** ' \
                                            f'viewer{"s" if stream["viewers"] != 1 else ""}!\n' \
                                            f'*{stream["channel"]["status"].strip()}*'
@@ -235,37 +237,42 @@ class TwitchAPI:
         print('Started Twitch Stream Background Updater:')
         print(f'Following a total of {self.total_follows} Streams.')
         while True:
-            # Reset stream list
-            new_streams = []
-            self.total_follows = sum(1 for _ in follow_config.get_global_follows())
+            try:
+                # Reset stream list
+                new_streams = []
+                self.total_follows = sum(1 for _ in follow_config.get_global_follows())
 
-            # Check stream states
-            # - Why the list conversion? (no longer needed, leaving it here for future reference)
-            #   Without the conversion, when a User follows a new Stream during the loop, a RuntimeError is raised,
-            #   since the dictionary size changed during the iteration. To prevent this, the dictionary
-            #   is casted to a list to prevent iterating over a reference to the global follows.
-            for stream in follow_config.get_global_follows():
-                new_streams.append(await self.get_stream(stream.stream_name))
-                await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
+                # Check stream states
+                # - Why the list conversion? (no longer needed, leaving it here for future reference)
+                #   Without the conversion, when a User follows a new Stream during the loop, a RuntimeError is raised,
+                #   since the dictionary size changed during the iteration. To prevent this, the dictionary
+                #   is casted to a list to prevent iterating over a reference to the global follows.
+                for stream in follow_config.get_global_follows():
+                    new_streams.append(await self.get_stream(stream.stream_name))
+                    await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
 
-            # Check if we ran through at least one iteration # and both lists have the same amount of Streams
-            if old_streams:
-                # Compare streams with each other
-                for double_streams in zip(old_streams, new_streams):
-                    # Check if we the lists did not get mixed up. This happens if new_streams contains
-                    # new data which the first one does not, for example after a new global stream has been followed.
-                    # However, a part of the list will be processable. After the first difference between Stream names
-                    # occurs, we break out of the loop to ensure that we're not updating about the wrong Stream.
-                    if double_streams[0]['name'] != double_streams[1]['name']:
-                        break
-                    elif double_streams[0]['status'] != double_streams[1]['status']:
-                        following_guilds = follow_config.get_guild_ids_following(double_streams[0]['name'])
-                        await self._send_stream_update_announcement(double_streams[1], following_guilds)
+                # Check if we ran through at least one iteration # and both lists have the same amount of Streams
+                if old_streams:
+                    # Compare streams with each other
+                    for double_streams in zip(old_streams, new_streams):
+                        # Check if we the lists did not get mixed up. This happens if new_streams contains
+                        # new data which the first one does not, for example after a new global stream has been followed.
+                        # However, a part of the list will be processable. After the first difference between Stream names
+                        # occurs, we break out of the loop to ensure that we're not updating about the wrong Stream.
+                        if double_streams[0]['name'] != double_streams[1]['name']:
+                            break
+                        elif double_streams[0]['status'] != double_streams[1]['status']:
+                            following_guilds = follow_config.get_guild_ids_following(double_streams[0]['name'])
+                            await self._send_stream_update_announcement(double_streams[1], following_guilds)
 
-            elif self.total_follows != 0:
-                print('Done loading initial Stream states.')
-            else:
-                print('Not following any Streams. Sleeping for 15 minutes...')
-                await asyncio.sleep(900)
+                elif self.total_follows != 0:
+                    print('Done loading initial Stream states.')
+                else:
+                    print('Not following any Streams. Sleeping for 15 minutes...')
+                    await asyncio.sleep(900)
 
-            old_streams = new_streams
+                old_streams = new_streams
+            except Exception as e:
+                print(e)
+                logger.error(e)
+
