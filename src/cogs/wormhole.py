@@ -36,6 +36,7 @@ class Wormhole:
         print('Unloaded Cog Wormhole.')
 
     def get_channel_token(self) -> str:
+        # Returns a unique token used for linking between channels
         token = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(10))
 
         if token in (guild_row.token for guild_row in self.table.all()):
@@ -152,7 +153,7 @@ class Wormhole:
                 guild_id=ctx.guild.id,
                 guild_name=ctx.guild.name,
                 locked=True,
-                token=None,
+                token=self.get_channel_token(),
                 mode=Mode.EXPLICIT.value,
                 channel_id=ctx.message.channel.id,
                 linked_to=row.channel_id,
@@ -201,6 +202,69 @@ class Wormhole:
                 colour=discord.Colour.blue()
             ))
             logger.info(f'Guild {ctx.guild.name} unlinked its Wormhole to {linked_guild_row.guild_name}.')
+
+    @wormhole.command()
+    @commands.has_permissions(manage_channels=True)
+    async def lock(self, ctx):
+        """Lock this Guild's Token if applicable."""
+        guild_row = self.table.find_one(guild_id=ctx.guild.id)
+        if guild_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to lock token',
+                description='No Wormhole is active on this Guild.',
+                colour=discord.Colour.red()
+            ))
+        elif guild_row.locked:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to lock token',
+                description='This Guild\'s token is already locked.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            self.table.update(dict(
+                guild_id=ctx.guild.id,
+                locked=True
+            ), ['guild_id'])
+            await ctx.send(embed=discord.Embed(
+                title='Token lock successful',
+                description='This Guild\'s wormhole token has successfully been locked.',
+                colour=discord.Colour.green()
+            ))
+
+    @wormhole.command()
+    @commands.has_permissions(manage_channels=True)
+    async def unlock(self, ctx):
+        """Unlock this Guild's Token if applicable."""
+        guild_row = self.table.find_one(guild_id=ctx.guild.id)
+        if guild_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to unlock token',
+                description='No Wormhole is active on this Guild.',
+                colour=discord.Colour.red()
+            ))
+        elif not guild_row.locked:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to unlock token',
+                description='This Guild\'s token is already unlocked.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            if guild_row.linked_to is not None:
+                await ctx.send(embed=discord.Embed(
+                    title='Failed to unlock token',
+                    description='This Guild currently has a link active, unlocking the token is not possible.',
+                    colour=discord.Colour.red()
+                ))
+            else:
+                self.table.update(dict(
+                    guild_id=ctx.guild.id,
+                    locked=False
+                ), ['guild_id'])
+                await ctx.send(embed=discord.Embed(
+                    title='Token unlock successful',
+                    description='This Guild\'s token is now unlocked, meaning other Guilds can link to it.',
+                    colour=discord.Colour.green()
+                ))
 
     @wormhole.command()
     @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
@@ -267,7 +331,7 @@ class Wormhole:
                 value=f'{"#" + self.bot.get_channel(guild_row.channel_id).name}'
             ).add_field(
                 name='Mode',
-                value=f'**{"Explicit Invocation" if guild_row.mode == 2 else "Implicit Sending"}**'
+                value=f'{"Explicit Invocation" if guild_row.mode == 2 else "Implicit Sending"}'
             ))
 
     @wormhole.command()
@@ -283,11 +347,11 @@ class Wormhole:
         else:
             state = '**Locked**' if guild_row.locked else "**Unlocked**"
             if guild_row.linked_to is not None:
-                state += f' and linked to **{self.table.find_one(channel_id=guild_row.linked_to).guild_name}**.'
+                state += f' and **linked to {self.table.find_one(channel_id=guild_row.linked_to).guild_name}**.'
             await ctx.send(embed=discord.Embed(
                 title='Wormhole Token',
                 description=(f'The token for channel #{self.bot.get_channel(guild_row.channel_id).name} is '
-                             f'`{guild_row.token}.`'),
+                             f'`{guild_row.token}`.'),
                 colour=discord.Colour.blue()
             ).add_field(
                 name='State',
