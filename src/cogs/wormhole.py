@@ -157,7 +157,7 @@ class Wormhole:
                     description=content,
                     colour=discord.Colour.blue()
                 ).set_author(
-                    name=str(ctx.author),
+                    name=f'{ctx.author}({ctx.author.top_role.name}',
                     icon_url=ctx.author.avatar_url
                 ).set_footer(
                     text=ctx.guild.name,

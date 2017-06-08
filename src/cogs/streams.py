@@ -40,39 +40,40 @@ class Streams:
         if self.updater_task.done():
             self.updater_task = self.bot.loop.create_task(self.twitch_api.update_streams())
 
-        response = discord.Embed()
-        stream = await self.twitch_api.get_stream(stream_name)
-        # The status key indicates whether the stream is online or offline.
-        if stream['status']:
-            link = f'https://twitch.tv/{stream["channel"]["name"]}'
-            if stream['channel']['logo'] is not None:
-                response.set_author(
-                    name=f'Stream Information for {stream["channel"]["display_name"]}',
-                    url=link,
-                    icon_url=stream["channel"]['logo']
+        with ctx.typing():
+            response = discord.Embed()
+            stream = await self.twitch_api.get_stream(stream_name)
+            # The status key indicates whether the stream is online or offline.
+            if stream['status']:
+                link = f'https://twitch.tv/{stream["channel"]["name"]}'
+                if stream['channel']['logo'] is not None:
+                    response.set_author(
+                        name=f'Stream Information for {stream["channel"]["display_name"]}',
+                        url=link,
+                        icon_url=stream["channel"]['logo']
+                    )
+                else:
+                    response.set_author(
+                        name=f'Stream Information for {stream["channel"]["display_name"]}',
+                        url=link
+                    )
+                uptime = datetime.datetime.utcnow() - parse_twitch_time(stream["created_at"][:-1], truncate=False)
+                response.description = f'🕹 **`Game`**: {stream["game"]}\n' \
+                                       f'🗒 **`Description`**: *{stream["channel"]["status"].strip()}*\n' \
+                                       f'👁 **`Viewers`**: {stream["viewers"]}\n' \
+                                       f'👀 **`Followers`**: {stream["channel"]["followers"]}\n' \
+                                       f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
+                                       f'🗺 **`Language`**: {stream["channel"]["language"]}\n'
+                response.set_thumbnail(
+                    url=stream["preview"]["medium"]
                 )
+            elif stream['status'] is None:
+                response.title = f'No User called `{stream_name}` was found, cannot get Stream information.'
             else:
-                response.set_author(
-                    name=f'Stream Information for {stream["channel"]["display_name"]}',
-                    url=link
-                )
-            uptime = datetime.datetime.utcnow() - parse_twitch_time(stream["created_at"][:-1], truncate=False)
-            response.description = f'🕹 **`Game`**: {stream["game"]}\n' \
-                                   f'🗒 **`Description`**: *{stream["channel"]["status"].strip()}*\n' \
-                                   f'👁 **`Viewers`**: {stream["viewers"]}\n' \
-                                   f'👀 **`Followers`**: {stream["channel"]["followers"]}\n' \
-                                   f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
-                                   f'🗺 **`Language`**: {stream["channel"]["language"]}\n'
-            response.set_thumbnail(
-                url=stream["preview"]["medium"]
-            )
-        elif stream['status'] is None:
-            response.title = f'No User called `{stream_name}` was found, cannot get Stream information.'
-        else:
-            response.title = f'`{stream_name}` is currently offline.'
+                response.title = f'`{stream_name}` is currently offline.'
 
-        response.colour = TWITCH_COLOUR_HEX
-        await ctx.send(embed=response)
+            response.colour = TWITCH_COLOUR_HEX
+            await ctx.send(embed=response)
 
     @stream.command()
     @commands.cooldown(rate=15, per=5.0 * 60, type=commands.BucketType.user)
@@ -83,44 +84,45 @@ class Streams:
         a Stream. If a User is not streaming, `!stream get <name>` will not return any data, regardless of 
         whether the User exists or not.
         """
-        response = discord.Embed()
-        user = await self.twitch_api.get_user(user_name.replace(' ', ''))
-        if user is not None:
-            link = f'https://twitch.tv/{user["name"]}'
-            if user['logo'] is not None:
-                response.set_author(
-                    name=f'User Information for {user["name"]}',
-                    url=link,
-                    icon_url=user['logo']
-                )
-                response.set_thumbnail(
-                    url=user['logo']
-                )
+        with ctx.typing():
+            response = discord.Embed()
+            user = await self.twitch_api.get_user(user_name.replace(' ', ''))
+            if user is not None:
+                link = f'https://twitch.tv/{user["name"]}'
+                if user['logo'] is not None:
+                    response.set_author(
+                        name=f'User Information for {user["name"]}',
+                        url=link,
+                        icon_url=user['logo']
+                    )
+                    response.set_thumbnail(
+                        url=user['logo']
+                    )
+                else:
+                    response.set_author(
+                        name=f'User Information for {user["name"]}',
+                        url=link
+                    )
+
+                # Format dates, create footer and format Bio
+                created_at = humanize.naturaldate(user['created_at'])
+                updated_at = humanize.naturaldate(user['updated_at'])
+                footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
+                bio = user['bio'].strip() if user['bio'] is not None else 'No Bio'
+                response.description = f'🗞 **`Name`**: {user["name"]}\n' \
+                                       f'💻 **`Display Name`**: {user["display_name"]}\n' \
+                                       f'🗒 **`Bio`**: *{bio}*\n' \
+                                       f'🗓 **`Creation Date`**: {created_at}\n' \
+                                       f'📅 **`Last Update`**: {updated_at}\n' \
+                                       f'🔗 **`Link`**: <{link}>'
+
+                response.set_footer(text=footer)
+                response.colour = TWITCH_COLOUR_HEX
             else:
-                response.set_author(
-                    name=f'User Information for {user["name"]}',
-                    url=link
-                )
-
-            # Format dates, create footer and format Bio
-            created_at = humanize.naturaldate(user['created_at'])
-            updated_at = humanize.naturaldate(user['updated_at'])
-            footer = f'Use `!stream get {user_name}` to see detailed information if the User is streaming!'
-            bio = user['bio'].strip() if user['bio'] is not None else 'No Bio'
-            response.description = f'🗞 **`Name`**: {user["name"]}\n' \
-                                   f'💻 **`Display Name`**: {user["display_name"]}\n' \
-                                   f'🗒 **`Bio`**: *{bio}*\n' \
-                                   f'🗓 **`Creation Date`**: {created_at}\n' \
-                                   f'📅 **`Last Update`**: {updated_at}\n' \
-                                   f'🔗 **`Link`**: <{link}>'
-
-            response.set_footer(text=footer)
-            response.colour = TWITCH_COLOUR_HEX
-        else:
-            response.title = 'Error trying to get User'
-            response.description = '**User not found!**'
-            response.colour = discord.Colour.red()
-        await ctx.send(embed=response)
+                response.title = 'Error trying to get User'
+                response.description = '**User not found!**'
+                response.colour = discord.Colour.red()
+            await ctx.send(embed=response)
 
     @stream.command()
     @commands.has_permissions(manage_channels=True)
@@ -224,31 +226,30 @@ class Streams:
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
     async def all(self, ctx):
         """Shows stream information about all streams this guild is following."""
-        initial = await ctx.send(embed=discord.Embed(title='Getting information...', colour=0x6441A5))
-        streams = [
-            await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)
-        ]
+        with ctx.typing():
+            streams = [
+                await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)
+            ]
 
-        await initial.delete()
-        # Check if no follows are set
-        if not streams:
-            await ctx.send(embed=discord.Embed(
-                title=f'- Streams followed on {ctx.message.guild.name} -',
-                description='This Guild is not following any Streams.',
-                colour=TWITCH_COLOUR_HEX
-            ))
-        else:
-            response = discord.Embed()
-            response.title = f'- Streams followed on {ctx.message.guild.name} -'
-            response.colour = 0x6441A5
-            response.description = ''
+            # Check if no follows are set
+            if not streams:
+                await ctx.send(embed=discord.Embed(
+                    title=f'- Streams followed on {ctx.message.guild.name} -',
+                    description='This Guild is not following any Streams.',
+                    colour=TWITCH_COLOUR_HEX
+                ))
+            else:
+                response = discord.Embed()
+                response.title = f'- Streams followed on {ctx.message.guild.name} -'
+                response.colour = 0x6441A5
+                response.description = ''
 
-            for idx, stream_status in enumerate(streams):
-                stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]
-                stream_link = f'https://twitch.tv/{stream_name}'
-                response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
+                for idx, stream_status in enumerate(streams):
+                    stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]
+                    stream_link = f'https://twitch.tv/{stream_name}'
+                    response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
 
-            await ctx.send(embed=response)
+                await ctx.send(embed=response)
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
@@ -273,7 +274,7 @@ class Streams:
         response.colour = TWITCH_COLOUR_HEX
 
         following_guilds = follow_config.get_guild_names_following(stream_name)
-        if len(following_guilds) == 0:
+        if not following_guilds:
             if await self.twitch_api.user_exists(stream_name):
                 response.title = f'There are no Guilds following `{stream_name}`.'
             else:

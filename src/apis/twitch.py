@@ -231,17 +231,11 @@ class TwitchAPI:
 
                 game = stream["game"] if stream["game"] is not '' else '?'
 
-                print(stream)
-
-                announcement.description = f'Playing **{game}** for currently **{stream["viewers"]}** ' \
-                                           f'viewer{"s" if stream["viewers"] != 1 else ""}!\n' \
-                                           f'*{stream["channel"]["status"].strip()}*'
                 announcement.set_thumbnail(
                     url=stream['preview']['medium']
-                )
-                announcement.set_footer(
+                ).set_footer(
                     text=f'Run `!stream get {stream["name"]}` for detailed information!'
-                )
+                ).description = f'Now playing **{game}**!\n*{stream["channel"]["status"].strip()}*'
 
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
