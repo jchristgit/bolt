@@ -118,7 +118,7 @@ class Wormhole:
                 colour=discord.Colour.red()
             ))
         else:
-            await self.table.delete(channel_id=ctx.message.channel.id)
+            self.table.delete(channel_id=ctx.message.channel.id)
             await ctx.send(embed=discord.Embed(
                 title='Closing wormhole successful',
                 description='The Wormhole of this Guild has successfully been closed.',
@@ -172,10 +172,10 @@ class Wormhole:
             ))
             await self.bot.get_channel(row.channel_id).send(embed=discord.Embed(
                 title='Wormhole linked',
-                description=(f'The Guild {ctx.guild.name} owned by {ctx.guild.owner} has linked wormhole channel '
-                             f'#{ctx.message.channel.name} to this channel. The command was invoked by '
-                             f'{ctx.message.author}. Your token is now **locked**. Use `wormhole unlink` to undo this '
-                             f'action.'),
+                description=(f'The Guild `{ctx.guild.name} owned by `{ctx.guild.owner}` has linked wormhole channel '
+                             f'`#{ctx.message.channel.name}` to this channel. The command was invoked by '
+                             f'`{ctx.message.author}`. Your token is now **locked**. Use `wormhole unlink` to undo this'
+                             f' action.'),
                 colour=discord.Colour.blue()
             ))
             logger.info(f'Guild {ctx.guild.name} and {row.guild_name} have established a wormhole link.')
