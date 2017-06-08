@@ -169,6 +169,14 @@ class Wormhole:
                 description=f'A link between this Guild and `{row.guild_name}` has been established!',
                 colour=discord.Colour.blue()
             ))
+            await self.bot.get_channel(row.channel_id).send(embed=discord.Embed(
+                title='Wormhole linked',
+                description=(f'The Guild {ctx.guild.name} owned by {ctx.guild.owner} has linked wormhole channel '
+                             f'#{ctx.message.channel.name} to this channel. The command was invoked by '
+                             f'{ctx.message.author}. Your token is now **locked**. Use `wormhole unlink` to undo this '
+                             f'action.'),
+                colour=discord.Colour.blue()
+            ))
             logger.info(f'Guild {ctx.guild.name} and {row.guild_name} have established a wormhole link.')
 
     @wormhole.command()
@@ -199,6 +207,11 @@ class Wormhole:
                 description=(f'The wormhole between this Guild and `{linked_guild_row.guild_name}` has been unlinked. '
                              f'The tokens of both guilds are now **unlocked**. If you wish to prevent the token from '
                              f'being used, use `wormhole lock`.'),
+                colour=discord.Colour.blue()
+            ))
+            await self.bot.get_channel(linked_guild_row.channel_id).send(embed=discord.Embed(
+                title='Wormhole unlinked',
+                description=f'{ctx.guild.name} has unlinked its wormhole from this Guild. Your token is now *unlocked*.',
                 colour=discord.Colour.blue()
             ))
             logger.info(f'Guild {ctx.guild.name} unlinked its Wormhole to {linked_guild_row.guild_name}.')
@@ -297,7 +310,7 @@ class Wormhole:
                     description=content,
                     colour=discord.Colour.blue()
                 ).set_author(
-                    name=f'{ctx.author} ({ctx.author.top_role.name})',
+                    name=f'"{ctx.author.display_name}" ({ctx.author} [{ctx.author.top_role.name}])',
                     icon_url=ctx.author.avatar_url
                 ).set_footer(
                     text=ctx.guild.name,
