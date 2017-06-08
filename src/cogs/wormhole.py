@@ -280,10 +280,15 @@ class Wormhole:
                     colour=discord.Colour.green()
                 ))
 
-    @wormhole.command()
+    @wormhole.command(aliases=['s'])
     @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
     async def send(self, ctx, *, content: str):
-        """Sends a message through the wormhole."""
+        """
+        Sends a message through the wormhole.
+
+        Single attachments are set as message thumbnail,
+        multiple attachments will be specified in their own field.
+        """
         row = self.table.find_one(linked_to=ctx.message.channel.id)
         if row is None:
             await ctx.send(embed=discord.Embed(
@@ -307,7 +312,7 @@ class Wormhole:
                     colour=discord.Colour.red()
                 ))
             else:
-                await target_channel.send(embed=discord.Embed(
+                wormhole_message = discord.Embed(
                     description=content,
                     colour=discord.Colour.blue()
                 ).set_author(
@@ -316,7 +321,12 @@ class Wormhole:
                 ).set_footer(
                     text=ctx.guild.name,
                     icon_url=ctx.guild.icon_url
-                ))
+                )
+                if ctx.message.attachments:
+                    wormhole_message.set_thumbnail(
+                        url=ctx.message.attachments.pop().url
+                    )
+                await target_channel.send(embed=wormhole_message)
                 try:
                     await ctx.message.add_reaction('✅')
                 except discord.errors.Forbidden:

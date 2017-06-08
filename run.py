@@ -156,7 +156,7 @@ class Bot(commands.AutoShardedBot):
         online_members = sum(1 for m in guild.members if m.status != discord.Status.online)
         note.add_field(name='Members', value=f'Total: {guild.member_count}\nOnline: {online_members}')
         note.add_field(name='Channels', value=str(sum(1 for _ in guild.channels)))
-        note.add_field(name='Owner', value=f'{guild.owner.name}#{guild.owner.discrim}\nID: `{guild.owner_id}`')
+        note.add_field(name='Owner', value=f'{guild.owner.name}#{guild.owner.discriminator}\nID: `{guild.owner_id}`')
         await destination.send(embed=note)
 
     async def on_guild_join(self, guild: discord.Guild):
