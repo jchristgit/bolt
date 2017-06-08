@@ -137,6 +137,37 @@ class Wormhole:
             ))
 
     @wormhole.command()
+    @commands.has_permissions(manage_channels=True)
+    async def unlink(self, ctx):
+        """Unlinks this channel if it is linked to another Guild."""
+        linked_guild_row = self.table.find_one(linked_to=ctx.message.channel.id)
+        if linked_guild_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to unlink',
+                description='No Guild has its wormhole channel linked to this channel.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            current_guild_row = self.table.find_one(guild_id=ctx.guild.id)
+            self.table.update(dict(
+                guild_id=linked_guild_row.guild_id,
+                linked_to=None,
+                locked=False
+            ), ['guild_id'])
+            self.table.update(dict(
+                guild_id=current_guild_row.guild_id,
+                linked_to=None,
+                locked=False
+            ), ['guild_id'])
+            await ctx.send(embed=discord.Embed(
+                title='Unlink successful',
+                description=(f'The wormhole between this Guild and `{linked_guild_row.guild_name}` has been unlinked. '
+                             f'The tokens of both guilds are now **unlocked**. If you wish to prevent the token from '
+                             f'being used, use `wormhole lock`.'),
+                colour=discord.Colour.blue()
+            ))
+
+    @wormhole.command()
     @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
     async def send(self, ctx, *, content: str):
         """Sends a message through the wormhole."""
@@ -177,8 +208,8 @@ class Wormhole:
     @wormhole.command(hidden=True)
     @commands.is_owner()
     async def drop(self, ctx):
-        """Drops the wormhole table."""
-        self.table.drop()
+        """Removes all entries from the wormhole table."""
+        self.table.delete()
         await ctx.send(embed=discord.Embed(
             title='Dropped the Wormhole table.',
             colour=discord.Colour.green()
