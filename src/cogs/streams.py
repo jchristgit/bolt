@@ -46,10 +46,16 @@ class Streams:
         if stream['status']:
             link = f'https://twitch.tv/{stream["channel"]["name"]}'
             if stream['channel']['logo'] is not None:
-                response.set_author(name=f'Stream Information for {stream["channel"]["display_name"]}',
-                                    url=link, icon_url=stream["channel"]['logo'])
+                response.set_author(
+                    name=f'Stream Information for {stream["channel"]["display_name"]}',
+                    url=link,
+                    icon_url=stream["channel"]['logo']
+                )
             else:
-                response.set_author(name=f'Stream Information for {stream["channel"]["display_name"]}', url=link)
+                response.set_author(
+                    name=f'Stream Information for {stream["channel"]["display_name"]}',
+                    url=link
+                )
             uptime = datetime.datetime.utcnow() - parse_twitch_time(stream["created_at"][:-1], truncate=False)
             response.description = f'🕹 **`Game`**: {stream["game"]}\n' \
                                    f'🗒 **`Description`**: *{stream["channel"]["status"].strip()}*\n' \
@@ -57,7 +63,9 @@ class Streams:
                                    f'👀 **`Followers`**: {stream["channel"]["followers"]}\n' \
                                    f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
                                    f'🗺 **`Language`**: {stream["channel"]["language"]}\n'
-            response.set_thumbnail(url=stream["preview"]["medium"])
+            response.set_thumbnail(
+                url=stream["preview"]["medium"]
+            )
         elif stream['status'] is None:
             response.title = f'No User called `{stream_name}` was found, cannot get Stream information.'
         else:
@@ -80,10 +88,19 @@ class Streams:
         if user is not None:
             link = f'https://twitch.tv/{user["name"]}'
             if user['logo'] is not None:
-                response.set_author(name=f'User Information for {user["name"]}', url=link, icon_url=user['logo'])
-                response.set_thumbnail(url=user['logo'])
+                response.set_author(
+                    name=f'User Information for {user["name"]}',
+                    url=link,
+                    icon_url=user['logo']
+                )
+                response.set_thumbnail(
+                    url=user['logo']
+                )
             else:
-                response.set_author(name=f'User Information for {user["name"]}', url=link)
+                response.set_author(
+                    name=f'User Information for {user["name"]}',
+                    url=link
+                )
 
             # Format dates, create footer and format Bio
             created_at = humanize.naturaldate(user['created_at'])
@@ -116,23 +133,30 @@ class Streams:
         stream_name = stream_name.replace(' ', '')
 
         if follow_config.get_channel_id(ctx.message.guild.id) is None:
-            await ctx.send(embed=discord.Embed(description='**A channel for posting announcements must be set** before '
-                                                           'you can follow any Streams. Contact someone with the `'
-                                                           'Manage Channels` permission to set it using `!stream '
-                                                           'setchannel`.', colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description='**A channel for posting announcements must be set** before you can follow Streams. Contact'
+                            ' someone with the `Manage Channels` permission to set it using `stream setchannel`.',
+                colour=discord.Colour.red()
+            ))
 
         elif stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
-            await ctx.send(embed=discord.Embed(description=f'This Guild is already following the Channel '
-                                                           f'`{stream_name}`.', colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description=f'This Guild is already following the Channel `{stream_name}`.',
+                colour=discord.Colour.red()
+            ))
 
         elif await self.twitch_api.user_exists(stream_name):
             follow_config.follow(ctx.message.guild.id, ctx.message.guild.name, stream_name)
-            await ctx.send(embed=discord.Embed(description=f'This Guild is now **following the Channel '
-                                                           f'`{stream_name}`**, getting notified about streaming'
-                                                           f' status changes.', colour=discord.Colour.green()))
+            await ctx.send(embed=discord.Embed(
+                description=f'This Guild is now **following the Channel `{stream_name}`**, getting notified about '
+                            ' streaming status changes.',
+                colour=discord.Colour.green()
+            ))
         else:
-            await ctx.send(embed=discord.Embed(description=f'No Stream named `{stream_name}` found.',
-                                               colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description=f'No Stream named `{stream_name}` found.',
+                colour=discord.Colour.red()
+            ))
 
     @stream.command()
     @commands.has_permissions(manage_channel=True)
@@ -140,32 +164,42 @@ class Streams:
         """Unfollows the given Stream."""
         stream_name = stream_name.replace(' ', '')
         if stream_name not in follow_config.get_guild_follows(ctx.message.guild.id):
-            await ctx.send(embed=discord.Embed(description=f'This Guild is not following the Channel `{stream_name}`.',
-                                               colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description=f'This Guild is not following the Channel `{stream_name}`.',
+                colour=discord.Colour.red()
+            ))
         else:
             follow_config.un_follow(ctx.message.guild.id, stream_name)
-            await ctx.send(embed=discord.Embed(description=f'Successfully unfollowed `{stream_name}`.',
-                                               colour=discord.Colour.green()))
+            await ctx.send(embed=discord.Embed(
+                description=f'Successfully unfollowed `{stream_name}`.',
+                colour=discord.Colour.green()
+            ))
 
     @stream.command(name='setchannel')
     @commands.has_permissions(manage_channels=True)
     async def set_channel(self, ctx):
         """Sets the current channel as the channel to be used for posting Stream announcements."""
         follow_config.set_channel(ctx.message.guild.id, ctx.message.guild.name, ctx.message.channel.id)
-        await ctx.send(embed=discord.Embed(description=f'Set the Stream announcement channel to this channel.',
-                                           colour=discord.Colour.green()))
+        await ctx.send(embed=discord.Embed(
+            description=f'Set the Stream announcement channel to this channel.',
+            colour=discord.Colour.green()
+        ))
 
     @stream.command(name='unsetchannel')
     @commands.has_permissions(manage_channels=True)
     async def unset_channel(self, ctx):
         """Unset the Guild's stream channel."""
         if follow_config.get_channel_id(ctx.message.guild.id) is None:
-            await ctx.send(embed=discord.Embed(description='This Guild has no stream announcement channel set.',
-                                               colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description='This Guild has no stream announcement channel set.',
+                colour=discord.Colour.red()
+            ))
         else:
             follow_config.unset_channel(ctx.message.guild.id, ctx.message.guild.name)
-            await ctx.send(embed=discord.Embed(description='Unset this Guild\'s stream announcement channel.',
-                                               colour=discord.Colour.green()))
+            await ctx.send(embed=discord.Embed(
+                description='Unset this Guild\'s stream announcement channel.',
+                colour=discord.Colour.green()
+            ))
 
     @stream.command()
     async def following(self, ctx):
@@ -174,11 +208,17 @@ class Streams:
         # Empty list -> Guild is not following any channels
         if not follows:
             info = 'This Guild is not following any Twitch Streams. Follow some using `!stream follow <name>`!'
-            await ctx.send(embed=discord.Embed(title='Stream Follows (0 total)', description=info,
-                                               colour=TWITCH_COLOUR_HEX))
+            await ctx.send(embed=discord.Embed(
+                title='Stream Follows (0 total)',
+                description=info,
+                colour=TWITCH_COLOUR_HEX
+            ))
         else:
-            await ctx.send(embed=discord.Embed(title=f'Stream Follows on this Guild ({len(follows)} total)',
-                                               description=", ".join(sorted(follows)), colour=TWITCH_COLOUR_HEX))
+            await ctx.send(embed=discord.Embed(
+                title=f'Stream Follows on this Guild ({len(follows)} total)',
+                description=", ".join(sorted(follows)),
+                colour=TWITCH_COLOUR_HEX
+            ))
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
@@ -192,9 +232,11 @@ class Streams:
         await initial.delete()
         # Check if no follows are set
         if not streams:
-            await ctx.send(embed=discord.Embed(title=f'- Streams followed on {ctx.message.guild.name} -',
-                                               description='This Guild is not following any Streams.',
-                                               colour=TWITCH_COLOUR_HEX))
+            await ctx.send(embed=discord.Embed(
+                title=f'- Streams followed on {ctx.message.guild.name} -',
+                description='This Guild is not following any Streams.',
+                colour=TWITCH_COLOUR_HEX
+            ))
         else:
             response = discord.Embed()
             response.title = f'- Streams followed on {ctx.message.guild.name} -'
@@ -215,10 +257,14 @@ class Streams:
         total_follows = sum(1 for _ in follow_config.get_global_follows())
         guild_follows = len(follow_config.get_guild_follows(ctx.message.guild.id))
         stats = twitch_api_stats()
-        info = f'I\'m tracking a total of **`{total_follows}` Streams**, with `{guild_follows}` being on this Guild.' \
-               f'\nCurrently refreshing Twitch Users in my database after **`{stats[0]}` hours**, and refreshing ' \
-               f'Streams in Cache after **`{stats[1]}` minutes**.'
-        await ctx.send(embed=discord.Embed(title='- Stream Stats -', description=info, colour=TWITCH_COLOUR_HEX))
+        info = (f'I\'m tracking a total of **`{total_follows}` Streams**, with `{guild_follows}` being on this Guild.'
+                f'\nCurrently refreshing Twitch Users in my database after **`{stats[0]}` hours**, and refreshing '
+                f'Streams in Cache after **`{stats[1]}` minutes**.')
+        await ctx.send(embed=discord.Embed(
+            title='- Stream Stats -',
+            description=info,
+            colour=TWITCH_COLOUR_HEX
+        ))
 
     @stream.command(name='gfw')
     async def guilds_following(self, ctx, *, stream_name: str):

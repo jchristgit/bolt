@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from stuf import stuf
 
-db = dataset.connect('sqlite:///data/guilds.guild_db', row_type=stuf)
+db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
 guild_prefixes = db['prefixes']
 
 
@@ -45,11 +45,18 @@ class Mod:
         """
         if new_prefix == '':
             guild_prefixes.delete(guild_id=ctx.guild.id)
+            await ctx.send(embed=discord.Embed(
+                title='Reset this Guild\'s prefix',
+                description='My prefix is now reset to `?` and `!`. Alternatively, you can mention me.',
+                colour=discord.Colour.green()
+            ))
         else:
             new_prefix = new_prefix.replace('_', ' ')
             guild_prefixes.upsert(dict(guild_id=ctx.guild.id, prefix=new_prefix), ['guild_id'])
-            info = f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.'
-            await ctx.send(embed=discord.Embed(title=info, colour=discord.Colour.green()))
+            await ctx.send(embed=discord.Embed(
+                title=f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.',
+                colour=discord.Colour.green()
+            ))
 
     @commands.command()
     @commands.guild_only()
@@ -72,8 +79,10 @@ class Mod:
                                            f'{"No reason specified" if reason == "" else reason}.',
                             delete_message_days=prune_days)
         reason = f' for *"{reason}"*.' if reason != '' else '.'
-        await ctx.send(embed=discord.Embed(title='Ban successful',
-                                           description=f'**Banned {member}**{reason}'))
+        await ctx.send(embed=discord.Embed(
+            title='Ban successful',
+            description=f'**Banned {member}**{reason}'
+        ))
 
     @commands.command()
     @commands.guild_only()
@@ -88,13 +97,16 @@ class Mod:
             description += f'**`{idx + 1}`**: {ban.user} {f"for *{ban.reason}*" if ban.reason is not None else ""}\n'
         ban_list = await ctx.send(embed=discord.Embed(title='Banned Members', description=description))
         try:
-            num = await self.bot.wait_for('message',
-                                            check=lambda m: m.content.isdigit() and m.author == ctx.message.author,
-                                            timeout=20
-                                          )
+            num = await self.bot.wait_for(
+                'message',
+                check=lambda m: m.content.isdigit() and m.author == ctx.message.author,
+                timeout=20
+            )
         except asyncio.TimeoutError:
-            await ctx.send(embed=discord.Embed(description='No User to unban was specified in time.',
-                                               colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description='No User to unban was specified in time.',
+                colour=discord.Colour.red()
+            ))
         else:
             num = int(num.content)
             if num < 1 or num > len(banned_users) + 1:
@@ -123,8 +135,10 @@ class Mod:
         await ctx.guild.kick(member, reason=f'Command invoked by {ctx.message.author}, reason: '
                                             f'{"No reason specified" if reason == "" else reason}.')
         reason = f' for *"{reason}"*.' if reason != '' else '.'
-        await ctx.send(embed=discord.Embed(title='Kick successful',
-                                           description=f'**Kicked {member}**{reason}'))
+        await ctx.send(embed=discord.Embed(
+            title='Kick successful',
+            description=f'**Kicked {member}**{reason}'
+        ))
 
     @commands.group()
     @commands.guild_only()
@@ -144,9 +158,10 @@ class Mod:
         """
         old_name = ctx.message.channel.name
         await ctx.message.channel.edit(name=new_name, reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(description=f'Changed Channel Name from `#{old_name}` '
-                                                       f'to <#{ctx.message.channel.id}>.',
-                                           colour=discord.Colour.green()))
+        await ctx.send(embed=discord.Embed(
+            description=f'Changed Channel Name from `#{old_name}` to <#{ctx.message.channel.id}>.',
+            colour=discord.Colour.green()
+        ))
 
     @channel.command(name='desc', aliases=['setdesc'])
     async def channel_set_description(self, ctx, *, new_desc):
@@ -159,8 +174,9 @@ class Mod:
         """
         old_desc = ctx.message.channel.description
         await ctx.message.channel.edit(description=new_desc, reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(description=f'Changed Channel Description from'
-                                                       f' *"{old_desc}"* to *"{new_desc}"*.'))
+        await ctx.send(embed=discord.Embed(
+            description=f'Changed Channel Description from *"{old_desc}"* to *"{new_desc}"*.'
+        ))
 
     @channel.command(name='move')
     async def channel_move(self, ctx, amount: int):
@@ -172,10 +188,13 @@ class Mod:
         !channel move 2 - moves the Channel up by two channels.
         !channel move -3 - moves the Channel down by three channels.
         """
-        await ctx.message.channel.edit(position=ctx.message.channel.position - amount,
-                                       reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(description=f'**Channel moved {"up" if amount >= 0 else "down"}** by '
-                                                       f'`{amount}` channels.'))
+        await ctx.message.channel.edit(
+            position=ctx.message.channel.position - amount,
+            reason=f'Invoked by {ctx.message.author}.'
+        )
+        await ctx.send(embed=discord.Embed(
+            description=f'**Channel moved {"up" if amount >= 0 else "down"}** by `{amount}` channels.'
+       ))
 
     @channel.command(name='find', aliases=['search'])
     @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
@@ -192,10 +211,15 @@ class Mod:
             messages.append(f'{message.author.display_name}: {message.content}\n')
         response = f'**Messages found ({len(messages)}):**\n{"".join(messages)}'
         if len(response) >= 2000:
-            await ctx.send(embed=discord.Embed(description='There are too many messages found to display.',
-                                               colour=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(
+                description='There are too many messages found to display.',
+                colour=discord.Colour.red()
+            ))
         else:
-            await ctx.send(embed=discord.Embed(description=response))
+            await ctx.send(embed=discord.Embed(
+                description=response,
+                colour=discord.Colour.blue()
+            ))
 
     @commands.command()
     @commands.guild_only()
@@ -211,9 +235,15 @@ class Mod:
         !purge - deletes 100 messages
         !purge 50 - deletes 50 messages
         """
-        res = await ctx.message.channel.purge(limit=limit, reason=f'Invoked by {ctx.message.author}.')
+        res = await ctx.message.channel.purge(
+            limit=limit,
+            reason=f'Invoked by {ctx.message.author}.'
+        )
         info_response = f'Purged a total of **{len(res)} Messages**.'
-        resp = await ctx.send(embed=discord.Embed(title='Purge completed', description=info_response))
+        resp = await ctx.send(embed=discord.Embed(
+            title='Purge completed',
+            description=info_response
+        ))
         await asyncio.sleep(5)
         await resp.delete()
 
@@ -229,10 +259,16 @@ class Mod:
         **Example:**
         !purgeid 290324118665166849 - searches the past 500 messages for messages from the user and purges them.
         """
-        res = await ctx.message.channel.purge(check=lambda m: m.author.id == id_to_prune,
-                                              reason=f'Invoked by {ctx.message.author} to prune ID {id_to_prune}.')
+        res = await ctx.message.channel.purge(
+            check=lambda m: m.author.id == id_to_prune,
+            reason=f'Invoked by {ctx.message.author} to prune ID {id_to_prune}.'
+        )
         info_response = f'Purged a total of **{len(res)} Messages** sent by `{id_to_prune}`.'
-        resp = await ctx.send(embed=discord.Embed(title='Purge completed', description=info_response))
+        resp = await ctx.send(embed=discord.Embed(
+            title='Purge completed',
+            description=info_response,
+            colour=discord.Colour.green()
+        ))
         await asyncio.sleep(5)
         await resp.delete()
 
@@ -246,10 +282,16 @@ class Mod:
         **Example:**
         !purgemsg bad - deletes up to 100 messages containing 'bad'
         """
-        res = await ctx.message.channel.purge(check=lambda m: message_contents in m.content,
-                                              reason=f'Invoked by {ctx.message.author}.')
+        res = await ctx.message.channel.purge(
+            check=lambda m: message_contents in m.content,
+            reason=f'Invoked by {ctx.message.author}.'
+        )
         info_response = f'Purged a total of **{len(res)} Messages** containing `{message_contents}`.'
-        resp = await ctx.send(embed=discord.Embed(title='Message purge completed', description=info_response))
+        resp = await ctx.send(embed=discord.Embed(
+            title='Message purge completed',
+            description=info_response,
+            colour=discord.Colour.green()
+        ))
         await asyncio.sleep(5)
         await resp.delete()
 
@@ -263,18 +305,23 @@ class Mod:
         **Example:**
         !purgeuser @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 100 Messages.
         """
-        if len(ctx.message.mentions) == 0:
-            await ctx.send(embed=discord.Embed(title='Failed to purge User(s)',
-                                               description='You need to mention at least one User to purge.',
-                                               color=discord.Colour.red()))
-            return
+        if not ctx.message.mentions:
+            return await ctx.send(embed=discord.Embed(
+                title='Failed to purge User(s)',
+                description='You need to mention at least one User to purge.',
+                color=discord.Colour.red()
+            ))
         total_purged = 0
         for user in ctx.message.mentions:
-            total_purged += len(await ctx.message.channel.purge(check=lambda m: m.author == user,
-                                                                reason=f'Invoked by {ctx.message.author}.'))
-        info_response = f'Purged a total of **{total_purged} Messages** from ' \
+            total_purged += len(await ctx.message.channel.purge(
+                check=lambda m: m.author == user,
+                reason=f'Invoked by {ctx.message.author}.'
+            ))
+        resp = await ctx.send(embed=discord.Embed(
+            title='User purge completed',
+            description=f'Purged a total of **{total_purged} Messages** from ' 
                         f'{", ".join(str(x) for x in ctx.message.mentions)}.'
-        resp = await ctx.send(embed=discord.Embed(title='User purge completed', description=info_response))
+        ))
         await asyncio.sleep(5)
         await resp.delete()
 

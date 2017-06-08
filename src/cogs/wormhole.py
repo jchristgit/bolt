@@ -10,7 +10,7 @@ from stuf import stuf
 from ..util import create_logger
 
 logger = create_logger('wormhole')
-db = dataset.connect('sqlite:///data/guilds.guild_db', row_type=stuf)
+db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
 
 
 class Mode(Enum):
@@ -68,7 +68,7 @@ class Wormhole:
                 guild_name=ctx.guild.name,
                 locked=False,
                 token=token,
-                mode=Mode.EXPLICIT,
+                mode=Mode.EXPLICIT.value,
                 channel_id=ctx.message.channel.id,
                 linked_to=None,
                 open_since=datetime.datetime.utcnow()
@@ -78,12 +78,12 @@ class Wormhole:
                 description='A Wormhole has successfully been opened for this Guild.'
             ).add_field(
                 name='Connecting the Wormhole',
-                value=(f'Another Guild can connect to this Wormhole by using `wormhole link {token}`. After another '
-                       f'Guild has connected, no other Guild can connect to it. To unlink the other Guild from the '
-                       f'Wormhole, use `wormhole unlink`.')
+                value=(f'Another Guild can connect to this Wormhole by using `wormhole link {token}`. After a '
+                        'Guild has connected, no other Guild can connect to it. To unlink the other Guild from the '
+                        'Wormhole, use `wormhole unlink`.')
             ).add_field(
                 name='Token',
-                value=token
+                value=f'`{token}`'
             ))
 
     @wormhole.command()
@@ -115,7 +115,7 @@ class Wormhole:
                 guild_name=ctx.guild.name,
                 locked=True,
                 token=None,
-                mode=Mode.EXPLICIT,
+                mode=Mode.EXPLICIT.value,
                 channel_id=ctx.message.channel.id,
                 linked_to=row.channel_id,
                 open_since=datetime.datetime.utcnow()
@@ -125,6 +125,46 @@ class Wormhole:
                 description=f'A link between this Guild and `{row.guild_name}` has been established!',
                 colour=discord.Colour.blue()
             ))
+
+    @wormhole.command()
+    @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
+    async def send(self, ctx, *, content: str):
+        """Sends a message through the wormhole."""
+        row = self.table.find_one(channel_id=ctx.message.channel.id)
+        if row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to send Message',
+                description=('No Wormhole connection has been set up yet. Ask somebody with the `Manage Channels` '
+                             'permission to open one using `wormhole open`.'),
+                colour=discord.Colour.red()
+            ))
+        elif row.linked_to is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to send Message',
+                description='A Wormhole was opened, but no other Guild has linked itself towards this wormhole yet.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            target_channel = self.bot.get_channel(row.channel_id)
+            if target_channel is None:
+                await ctx.send(embed=discord.Embed(
+                    title='Failed to Send Message',
+                    description='Destination channel was not found',
+                    colour=discord.Colour.red()
+                ))
+            else:
+                await target_channel.send(embed=discord.Embed(
+                    description=content,
+                    colour=discord.Colour.blue()
+                ).set_author(
+                    name=str(ctx.author),
+                    icon_url=ctx.author.avatar_url
+                ).set_footer(
+                    text=ctx.guild.name,
+                    icon_url=ctx.guild.icon_url
+                ))
+
+
 
 
 def setup(bot):

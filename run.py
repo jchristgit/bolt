@@ -20,7 +20,7 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
 logger = create_logger('discord')
-guild_db = dataset.connect('sqlite:///data/guilds.guild_db', row_type=stuf)
+guild_db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
 
 prefixes = guild_db['prefixes']
 wormhole = guild_db['wormhole']
@@ -102,7 +102,7 @@ class Bot(commands.AutoShardedBot):
                        f'**Message**: {ctx.message.content}')
             ).add_field(
                 name='Traceback',
-                value=readable_tb
+                value=readable_tb if len(readable_tb) < 1024 else f'Too long to display, original:\n`{error.original}`'
             ))
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
@@ -128,8 +128,8 @@ class Bot(commands.AutoShardedBot):
         if msg.author.bot:
             return
 
-        wh_guild = wormhole.find_one(guild_id=msg.guild.id)
-        if wh_guild is not None and wh_guild.linked_to is not None and wh_guild.mode == Mode.IMPLICIT:
+        wh_guild = wormhole.find_one(guild_id=msg.guild.id) if msg.guild is not None else None
+        if wh_guild is not None and wh_guild.linked_to is not None and wh_guild.mode == Mode.IMPLICIT.value:
             channel = self.get_channel(wh_guild.linked_to)
             if channel is None:
                 await msg.channel.send(embed=discord.Embed(
@@ -142,7 +142,10 @@ class Bot(commands.AutoShardedBot):
                     title=f'Wormhole Message from {wh_guild.guild_name}',
                     description=msg.content,
                     colour=discord.Colour.blue()
-                ))
+                ).set_author(
+                    name=str(msg.author),
+                    icon_url=msg.author.avatar_url)
+                )
         await self.process_commands(msg)
 
     @staticmethod
@@ -174,7 +177,8 @@ COGS_ON_LOGIN = [
     'meta',
     'mod',
     'streams',
-    'roles'
+    'roles',
+    'wormhole'
 ]
 
 

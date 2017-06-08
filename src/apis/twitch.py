@@ -11,7 +11,7 @@ from typing import Optional
 from ..util import create_logger
 
 logger = create_logger('api')
-db = dataset.connect('sqlite:///data/api.guild_db', row_type=stuf)
+db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
 
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
@@ -142,10 +142,17 @@ class TwitchAPI:
     def _update_user_on_db(self, user: dict):
         # Takes a JSON response of a User and updates the Database accordingly
         # returned from `GET https://api.twitch.tv/kraken/users/<user ID>`
-        self._table.upsert(dict(name=user['name'], logo=user['logo'], bio=user['bio'], uid=user['_id'],
-                                display_name=user['display_name'], created_at=parse_twitch_time(user['created_at']),
-                                updated_at=parse_twitch_time(user['updated_at']), user_type=user['type'],
-                                last_db_update=datetime.datetime.utcnow()), ['name'])
+        self._table.upsert(dict(
+            name=user['name'],
+            logo=user['logo'],
+            bio=user['bio'],
+            uid=user['_id'],
+            display_name=user['display_name'],
+            created_at=parse_twitch_time(user['created_at']),
+            updated_at=parse_twitch_time(user['updated_at']),
+            user_type=user['type'],
+            last_db_update=datetime.datetime.utcnow()), ['name']
+        )
         logger.info(f'Updated {user["name"]} on the User Database.')
 
     async def get_user(self, name: str) -> Optional[dict]:
@@ -211,9 +218,16 @@ class TwitchAPI:
                 link = f'{stream["channel"]["url"]}'
 
                 if stream['channel']['logo'] is not None:
-                    announcement.set_author(name=title, url=link, icon_url=stream['channel']['logo'])
+                    announcement.set_author(
+                        name=title,
+                        url=link,
+                        icon_url=stream['channel']['logo']
+                    )
                 else:
-                    announcement.set_author(name=title, url=link)
+                    announcement.set_author(
+                        name=title,
+                        url=link
+                    )
 
                 game = stream["game"] if stream["game"] is not '' else '?'
 
@@ -222,8 +236,12 @@ class TwitchAPI:
                 announcement.description = f'Playing **{game}** for currently **{stream["viewers"]}** ' \
                                            f'viewer{"s" if stream["viewers"] != 1 else ""}!\n' \
                                            f'*{stream["channel"]["status"].strip()}*'
-                announcement.set_thumbnail(url=stream['preview']['medium'])
-                announcement.set_footer(text=f'Run `!stream get {stream["name"]}` for detailed information!')
+                announcement.set_thumbnail(
+                    url=stream['preview']['medium']
+                )
+                announcement.set_footer(
+                    text=f'Run `!stream get {stream["name"]}` for detailed information!'
+                )
 
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
@@ -256,7 +274,7 @@ class TwitchAPI:
                     # Compare streams with each other
                     for double_streams in zip(old_streams, new_streams):
                         # Check if we the lists did not get mixed up. This happens if new_streams contains
-                        # new data which the first one does not, for example after a new global stream has been followed.
+                        # new data which the first one does not, for example after a new global stream has been followed
                         # However, a part of the list will be processable. After the first difference between Stream names
                         # occurs, we break out of the loop to ensure that we're not updating about the wrong Stream.
                         if double_streams[0]['name'] != double_streams[1]['name']:
