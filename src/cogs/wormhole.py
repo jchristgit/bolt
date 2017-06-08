@@ -80,7 +80,8 @@ class Wormhole:
             ))
             await ctx.send(embed=discord.Embed(
                 title='Wormhole Opened',
-                description='A Wormhole has successfully been opened for this Guild.'
+                description='A Wormhole has successfully been opened for this Guild.',
+                colour=discord.Colour.green()
             ).add_field(
                 name='Connecting the Wormhole',
                 value=(f'Another Guild can connect to this Wormhole by using `wormhole link {token}`. After a '
@@ -91,6 +92,36 @@ class Wormhole:
                 value=f'`{token}`'
             ))
             logger.info(f'Guild {ctx.guild.name} has opened a Wormhole in channel {ctx.message.channel.id}.')
+
+    @wormhole.command()
+    @commands.has_permissions(manage_channels=True)
+    async def close(self, ctx):
+        """
+        Closes the Wormhole in this Channel if it is present.
+
+        If the Wormhole is linked to another Guild, it must first be unlinked.
+        """
+        guild_row = self.table.find_one(channel_id=ctx.message.channel.id)
+        if guild_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to close Wormhole',
+                description='No Wormhole has been set up in this channel yet.',
+                colour=discord.Colour.red()
+            ))
+        elif guild_row.linked_to is not None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to close Wormhole',
+                description='A Link through this Wormhole is still active. Use `wormhole unlink` to unlink it.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            await self.table.delete(channel_id=ctx.message.channel.id)
+            await ctx.send(embed=discord.Embed(
+                title='Closing wormhole successful',
+                description='The Wormhole of this Guild has successfully been closed.',
+                colour=discord.Colour.green()
+            ))
+            logger.info(f'Guild {ctx.guild.name} has closed its Wormhole in channel {ctx.message.channel.id}.')
 
     @wormhole.command()
     @commands.has_permissions(manage_channels=True)
@@ -218,8 +249,6 @@ class Wormhole:
             colour=discord.Colour.green()
         ))
         logger.warning('Deleted all entries from the wormhole table.')
-
-
 
 
 def setup(bot):
