@@ -350,7 +350,7 @@ class Wormhole:
                 state += f' and **linked to {self.table.find_one(channel_id=guild_row.linked_to).guild_name}**.'
             await ctx.send(embed=discord.Embed(
                 title='Wormhole Token',
-                description=(f'The token for channel #{self.bot.get_channel(guild_row.channel_id).name} is '
+                description=(f'The token for channel <#{guild_row.channel_id}> is '
                              f'`{guild_row.token}`.'),
                 colour=discord.Colour.blue()
             ).add_field(

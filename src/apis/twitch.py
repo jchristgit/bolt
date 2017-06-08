@@ -248,7 +248,7 @@ class TwitchAPI:
         await self._bot.wait_until_ready()
         print('Started Twitch Stream Background Updater:')
         print(f'Following a total of {self.total_follows} Streams.')
-        while True:
+        while not self._bot.is_closed():
             try:
                 # Reset stream list
                 new_streams = []
@@ -287,4 +287,5 @@ class TwitchAPI:
             except Exception as e:
                 print(e)
                 logger.error(e)
+        print('Stopped Twitch Stream Background Updater.')
 
