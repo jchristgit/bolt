@@ -1,3 +1,4 @@
+import asyncio
 import dataset
 import datetime
 import discord
@@ -316,6 +317,13 @@ class Wormhole:
                     text=ctx.guild.name,
                     icon_url=ctx.guild.icon_url
                 ))
+                try:
+                    await ctx.message.add_reaction('✅')
+                except discord.errors.Forbidden:
+                    await ctx.send(embed=discord.Embed(
+                        title=f'Sent Message to {target_channel.name}!',
+                        colour=discord.Colour.green()
+                    ))
 
     @wormhole.command()
     async def info(self, ctx):
