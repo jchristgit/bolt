@@ -90,6 +90,7 @@ class Wormhole:
                 name='Token',
                 value=f'`{token}`'
             ))
+            logger.info(f'Guild {ctx.guild.name} has opened a Wormhole in channel {ctx.message.channel.id}.')
 
     @wormhole.command()
     @commands.has_permissions(manage_channels=True)
@@ -135,6 +136,7 @@ class Wormhole:
                 description=f'A link between this Guild and `{row.guild_name}` has been established!',
                 colour=discord.Colour.blue()
             ))
+            logger.info(f'Guild {ctx.guild.name} and {row.guild_name} have established a wormhole link.')
 
     @wormhole.command()
     @commands.has_permissions(manage_channels=True)
@@ -166,6 +168,7 @@ class Wormhole:
                              f'being used, use `wormhole lock`.'),
                 colour=discord.Colour.blue()
             ))
+            logger.info(f'Guild {ctx.guild.name} unlinked its Wormhole to {linked_guild_row.guild_name}.')
 
     @wormhole.command()
     @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
@@ -214,6 +217,7 @@ class Wormhole:
             title='Dropped the Wormhole table.',
             colour=discord.Colour.green()
         ))
+        logger.warning('Deleted all entries from the wormhole table.')
 
 
 
