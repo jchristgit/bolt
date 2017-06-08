@@ -264,7 +264,34 @@ class Wormhole:
                 value=f'{linked_to.guild_name if linked_to is not None else "No Link established"}'
             ).add_field(
                 name='Channel',
-                value=f'{"#" + self.bot.get_channel(guild_row.channel_id)}'
+                value=f'{"#" + self.bot.get_channel(guild_row.channel_id).name}'
+            ).add_field(
+                name='Mode',
+                value=f'**{"Explicit Invocation" if guild_row.mode == 2 else "Implicit Sending"}**'
+            ))
+
+    @wormhole.command()
+    async def token(self, ctx):
+        """Get this Guild's wormhole token, used for linking wormholes."""
+        guild_row = self.table.find_one(guild_id=ctx.guild.id)
+        if guild_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to get Token',
+                description='No wormhole is opened in this Guild.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            state = '**Locked**' if guild_row.locked else "**Unlocked**"
+            if guild_row.linked_to is not None:
+                state += f' and linked to **{self.table.find_one(channel_id=guild_row.linked_to).guild_name}**.'
+            await ctx.send(embed=discord.Embed(
+                title='Wormhole Token',
+                description=(f'The token for channel #{self.bot.get_channel(guild_row.channel_id).name} is '
+                             f'`{guild_row.token}.`'),
+                colour=discord.Colour.blue()
+            ).add_field(
+                name='State',
+                value=state
             ))
 
     @wormhole.command(hidden=True)
