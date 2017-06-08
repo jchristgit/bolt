@@ -1,6 +1,7 @@
 import dataset
 import datetime
 import discord
+import humanize
 import random
 import string
 
@@ -238,6 +239,33 @@ class Wormhole:
                     text=ctx.guild.name,
                     icon_url=ctx.guild.icon_url
                 ))
+
+    @wormhole.command()
+    async def info(self, ctx):
+        """Displays information about the current wormhole, if present."""
+        guild_row = self.table.find_one(guild_id=ctx.guild.id)
+        if guild_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Failed to display stats',
+                description='No Wormhole has been opened in this Guild yet.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            open_delta = datetime.datetime.utcnow() - guild_row.open_since
+            linked_to = self.table.find_one(linked_to=ctx.message.channel.id)
+            await ctx.send(embed=discord.Embed(
+                title='Wormhole Information',
+                colour=discord.Colour.blue()
+            ).add_field(
+                name='Open since',
+                value=f'{humanize.naturaldate(guild_row.open_since)} ({humanize.naturaldelta(open_delta)})'
+            ).add_field(
+                name='Linked to',
+                value=f'{linked_to.guild_name if linked_to is not None else "No Link established"}'
+            ).add_field(
+                name='Channel',
+                value=f'{"#" + self.bot.get_channel(guild_row.channel_id)}'
+            ))
 
     @wormhole.command(hidden=True)
     @commands.is_owner()
