@@ -24,9 +24,6 @@ class Mode(Enum):
 class Wormhole:
     """
     Commands for communicating between two Guilds.
-
-    Wormholes redirect Messages between two Guilds, allowing Guilds with
-    similiar interests to easily communicate.
     """
     def __init__(self, bot: discord.AutoShardedClient):
         self.bot = bot
@@ -48,7 +45,15 @@ class Wormhole:
     @commands.group(aliases=['wh'])
     @commands.guild_only()
     async def wormhole(self, ctx):
-        """Subcommands for interacting with Wormholes. Aliased to `wh`."""
+        """
+        Subcommands for interacting with Wormholes. Aliased to `wh`.
+
+
+        Wormholes redirect Messages between two Guilds, allowing Guilds with
+        similiar interests to easily communicate. To manage wormholes, the
+        `Manage Channels` permission is required. If you have this permission,
+        use `wormhole open`.
+        """
 
     @wormhole.command(name='open')
     @commands.has_permissions(manage_channels=True)
@@ -120,6 +125,11 @@ class Wormhole:
                 linked_to=row.channel_id,
                 open_since=datetime.datetime.utcnow()
             ))
+            self.table.update(dict(
+                guild_id=row.guild_id,
+                locked=True,
+                linked_to=ctx.message.channel.id
+            ), ['guild_id'])
             await ctx.send(embed=discord.Embed(
                 title='Link established',
                 description=f'A link between this Guild and `{row.guild_name}` has been established!',
@@ -130,7 +140,7 @@ class Wormhole:
     @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
     async def send(self, ctx, *, content: str):
         """Sends a message through the wormhole."""
-        row = self.table.find_one(channel_id=ctx.message.channel.id)
+        row = self.table.find_one(linked_to=ctx.message.channel.id)
         if row is None:
             await ctx.send(embed=discord.Embed(
                 title='Failed to send Message',
@@ -157,12 +167,22 @@ class Wormhole:
                     description=content,
                     colour=discord.Colour.blue()
                 ).set_author(
-                    name=f'{ctx.author}({ctx.author.top_role.name}',
+                    name=f'{ctx.author} ({ctx.author.top_role.name})',
                     icon_url=ctx.author.avatar_url
                 ).set_footer(
                     text=ctx.guild.name,
                     icon_url=ctx.guild.icon_url
                 ))
+
+    @wormhole.command(hidden=True)
+    @commands.is_owner()
+    async def drop(self, ctx):
+        """Drops the wormhole table."""
+        self.table.drop()
+        await ctx.send(embed=discord.Embed(
+            title='Dropped the Wormhole table.',
+            colour=discord.Colour.green()
+        ))
 
 
 

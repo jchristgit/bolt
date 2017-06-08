@@ -311,12 +311,10 @@ class Mod:
                 description='You need to mention at least one User to purge.',
                 color=discord.Colour.red()
             ))
-        total_purged = 0
-        for user in ctx.message.mentions:
-            total_purged += len(await ctx.message.channel.purge(
-                check=lambda m: m.author == user,
-                reason=f'Invoked by {ctx.message.author}.'
-            ))
+        total_purged = len(await ctx.message.channel.purge(
+            check=lambda m: m.author in ctx.message.mentions,
+            reason=f'Invoked by {ctx.message.author}.'
+        ))
         resp = await ctx.send(embed=discord.Embed(
             title='User purge completed',
             description=f'Purged a total of **{total_purged} Messages** from ' 
