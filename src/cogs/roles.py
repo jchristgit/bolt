@@ -132,7 +132,7 @@ class Roles:
         This supports passing a comma-separated List of Roles, for example
         `iam Blue, Member, Guest`.
         """
-        success, failed = [], []
+        success, failed, to_remove = [], [], []
         for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
             checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
@@ -140,11 +140,12 @@ class Roles:
                 if role in ctx.author.roles:
                     failed.append(f'• You already have the `{role.name}` Role.')
                 else:
-                    await ctx.author.add_roles(role, reason='Self-assignable Role')
+                    to_remove.append(role)
                     success.append(role.name)
             else:
                 failed.append(checks[1])
 
+        await ctx.author.add_roles(to_remove, reason='Self-assignable Roles')
         await ctx.send(embed=discord.Embed(
             title=f'Updated Roles for {ctx.author}',
             colour=discord.Colour.blue()
@@ -163,7 +164,7 @@ class Roles:
     @commands.bot_has_permissions(manage_roles=True)
     async def un_assign(self, ctx, *, role_names: str):
         """Remove self-assignable Roles from yourself."""
-        success, failed = [], []
+        success, failed, to_remove = [], [], []
         for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
             checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
@@ -171,11 +172,12 @@ class Roles:
                 if role not in ctx.author.roles:
                     failed.append(f'• You do not have the `{role.name}` Role.')
                 else:
-                    await ctx.author.remove_roles(role, reason='Self-assignable Role')
+                    to_remove.append(role)
                     success.append(role.name)
             else:
                 failed.append(checks[1])
 
+        await ctx.author.remove_roles(to_remove, reason='Self-assignable Roles')
         await ctx.send(embed=discord.Embed(
             title=f'Updated Roles for {ctx.author}',
             colour=discord.Colour.blue()
