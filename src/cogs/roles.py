@@ -269,6 +269,22 @@ class Roles:
                 )
             await ctx.send(embed=response)
 
+    @commands.command(name='roles', aliases=['aroles'])
+    @commands.guild_only()
+    async def all_roles(self, ctx):
+        """Lists all Roles on this Server in the order of hierarchy."""
+        await ctx.send(embed=discord.Embed(
+            title=f'All Roles on {ctx.guild.name}',
+            description='\n'.join(
+                f'{r.mention} ({sum(1 for _ in r.members)} Members)' for r in sorted(
+                    ctx.guild.roles, key=lambda r: r.position, reverse=True
+                )
+            ),
+            colour=discord.Colour.blue()
+        ).set_thumbnail(
+            url=ctx.guild.icon_url
+        ))
+
 
 def setup(bot):
     bot.add_cog(Roles(bot))
