@@ -40,14 +40,17 @@ class Roles:
     @role.command(name='asar', aliases=['msa'])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def make_self_assignable(self, ctx, *, name: str):
-        """Makes the given role self-assignable for Members."""
-        success = []
-        failed = []
-        for role_name in name.split(', '):
+    async def make_self_assignable(self, ctx, *, role_names: str):
+        """Makes the given role self-assignable for Members.
+
+        This also works with a comma-separated list of Roles, for example
+        `role asar Member, Guest, Blue
+        """
+        success, failed = [], []
+        for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-            check_result = await self._role_checks(ctx, role, name)
-            if check_result:
+            check_result = await self._role_checks(ctx, role, role_name)
+            if check_result[0]:
                 # Check if role is already self-assignable
                 if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
                     failed.append(f'• Role `{role.name}` is already self-assignable.')
@@ -105,38 +108,44 @@ class Roles:
     async def _perform_self_assignable_roles_checks(self, ctx, role, name):
         # Checks if a role exist and whether it's not self-assignable
         if role is None:
-            await ctx.send(embed=discord.Embed(
-                title=f'This Guild does not have any role called `{name}`.',
-                colour=discord.Colour.red()
-            ))
-            return False
+            return False, f'• This Guild does not have any role called `{name}`.'
         elif not self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
-            await ctx.send(embed=discord.Embed(
-                title=f'Role `{role.name}` is not self-assignable.',
-                colour=discord.Colour.red()
-            ))
-            return False
+            return False, f'• Role `{role.name}` is not self-assignable.'
         return True
 
     @commands.command(name='iam', aliases=['assign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def assign(self, ctx, *, name: str):
-        """Assign a self-assignable Role to yourself."""
-        # TODO: Add ability to do this with a comma-separated role list
-        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if await self._perform_self_assignable_roles_checks(ctx, role, name):
-            if role in ctx.author.roles:
-                await ctx.send(embed=discord.Embed(
-                    title=f'You already have the `{role.name}` Role.',
-                    colour=discord.Colour.red()
-                ))
+    async def assign(self, ctx, *, role_names: str):
+        """Assign self-assignable Roles to yourself.
+
+        This supports passing a comma-separated List of Roles, for example
+        `iam Blue, Member, Guest`.
+        """
+        success, failed = [], []
+        for role_name in role_names.split(', ')
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
+            checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
+            if checks[0]:
+                if role in ctx.author.roles:
+                    failed.append('• You already have the `{role.name}` Role.')
+                else:
+                    await ctx.author.add_roles(role, reason='Self-assignable Role')
+                    success.append(f'• Gave you the `{role.name}` Role!')
             else:
-                await ctx.author.add_roles(role, reason='Self-assignable Role')
-                await ctx.send(embed=discord.Embed(
-                    title=f'Gave you the `{role.name}` Role!',
-                    colour=discord.Colour.green()
-                ))
+                failed.append(checks[1])
+
+        await ctx.send(embed=discord.Embed(
+            title=f'Updated Roles for {ctx.author}',
+            colour=discord.Colour.blue()
+        ).add_field(
+            name='Success:',
+            value='\n'.join(success)
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed)
+        ))
+
 
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
