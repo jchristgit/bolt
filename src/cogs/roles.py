@@ -1,7 +1,6 @@
 import dataset
 import datetime
 import discord
-import humanize
 
 from discord.ext import commands
 from stuf import stuf
@@ -251,7 +250,7 @@ class Roles:
                 value=role.position
             ).add_field(
                 name='Creation Date',
-                value=humanize.naturaldate(role.created_at)
+                value=role.created_at.strftime('%d %B %Y')
             ).add_field(
                 name='Permission Bitfield',
                 value=role.permissions.value
