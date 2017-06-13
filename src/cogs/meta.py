@@ -90,7 +90,7 @@ class Meta:
             colour=member.top_role.colour
         ).add_field(
             name='Roles',
-            value=', '.join(member.roles[1:])  # First Role is the @everyone Role
+            value=', '.join(m.mention for m in member.roles[1:])  # First Role is the @everyone Role
         ).add_field(
             name='Joined this Guild',
             value=str(member.joined_at)[:-7]
