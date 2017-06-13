@@ -145,10 +145,8 @@ class Roles:
             else:
                 failed.append(checks[1])
 
-        errors = '\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
         await ctx.send(embed=discord.Embed(
             title=f'Updated Roles for {ctx.author}',
-            description=f'**__Success__**:\n{success}\n**__Errors__**:\n{errors}',
             colour=discord.Colour.blue()
         ).set_thumbnail(
             url=ctx.author.avatar_url
@@ -163,21 +161,33 @@ class Roles:
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def un_assign(self, ctx, *, name: str):
-        """Remove a self-assignable Role from yourself."""
-        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if await self._perform_self_assignable_roles_checks(ctx, role, name):
-            if role not in ctx.author.roles:
-                await ctx.send(embed=discord.Embed(
-                    title=f'You do not have the `{role.name}` Role.',
-                    colour=discord.Colour.red()
-                ))
+    async def un_assign(self, ctx, *, role_names: str):
+        """Remove self-assignable Roles from yourself."""
+        success, failed = [], []
+        for role_name in role_names.split(', '):
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
+            checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
+            if checks[0]:
+                if role not in ctx.author.roles:
+                    failed.append(f'• You do not have the `{role.name}` Role.')
+                else:
+                    await ctx.author.remove_roles(role, reason='Self-assignable Role')
+                    success.append(role.name)
             else:
-                await ctx.author.remove_roles(role, reason='Self-assignable Role')
-                await ctx.send(embed=discord.Embed(
-                    title=f'Removed the `{role.name}` Role from you!',
-                    colour=discord.Colour.green()
-                ))
+                failed.append(checks[1])
+
+        await ctx.send(embed=discord.Embed(
+            title=f'Updated Roles for {ctx.author}',
+            colour=discord.Colour.blue()
+        ).set_thumbnail(
+            url=ctx.author.avatar_url
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
+        ).add_field(
+            name='Gave you the following Roles:',
+            value=', '.join(success) or 'None <:sadpanda:319417001485533188>'
+        ))
 
     @commands.command(name='lsar')
     @commands.guild_only()
