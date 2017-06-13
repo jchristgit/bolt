@@ -234,9 +234,12 @@ class Roles:
                 colour=discord.Colour.red()
             ))
         else:
-            response = discord.Embed()
-            response.title = f'__Role Information for `{role.name}`__'
-            response.add_field(
+            members = ', '.join(r.name for r in role.members)
+            response = discord.Embed(
+                title=f'__Role Information for `{role.name}`__',
+                description=f'Members:\n{members if len(members) < 2038 else "Too many Members to display."}',
+                colour=role.colour
+            ).add_field(
                 name='ID',
                 value=role.id
             ).add_field(
@@ -251,22 +254,10 @@ class Roles:
             ).add_field(
                 name='Permission Bitfield',
                 value=role.permissions.value
-            ).colour = role.colour
-
-            members_in_role = len(role.members)
-            if members_in_role == 0:
-                response.add_field(
-                    name='Member Count',
-                    value='0'
-                )
-            else:
-                response.add_field(
-                    name='Member Count',
-                    value=str(members_in_role)
-                ).add_field(
-                    name='Members',
-                    value=', '.join(r.name for r in role.members)
-                )
+            ).add_field(
+                name='Member Count',
+                value=len(role.members)
+            )
             await ctx.send(embed=response)
 
     @commands.command(name='roles', aliases=['aroles'])
@@ -276,7 +267,7 @@ class Roles:
         await ctx.send(embed=discord.Embed(
             title=f'All Roles on {ctx.guild.name}',
             description='\n'.join(
-                f'{r.mention} ({sum(1 for _ in r.members)} Members)' for r in sorted(
+                f'{r.mention} ({sum(1 for _ in r.members)})' for r in sorted(
                     ctx.guild.roles, key=lambda r: r.position, reverse=True
                 )
             ),
