@@ -60,8 +60,8 @@ class Streams:
                 uptime = datetime.datetime.utcnow() - parse_twitch_time(stream["created_at"][:-1], truncate=False)
                 response.description = f'🕹 **`Game`**: {stream["game"]}\n' \
                                        f'🗒 **`Description`**: *{stream["channel"]["status"].strip()}*\n' \
-                                       f'👁 **`Viewers`**: {stream["viewers"]}\n' \
-                                       f'👀 **`Followers`**: {stream["channel"]["followers"]}\n' \
+                                       f'👁 **`Viewers`**: {stream["viewers"]:,}\n' \
+                                       f'👀 **`Followers`**: {stream["channel"]["followers"]:,}\n' \
                                        f'⌛ **`Uptime`**: {str(uptime)[:-7]} h\n' \
                                        f'🗺 **`Language`**: {stream["channel"]["language"]}\n'
                 response.set_thumbnail(
@@ -161,7 +161,7 @@ class Streams:
             ))
 
     @stream.command()
-    @commands.has_permissions(manage_channel=True)
+    @commands.has_permissions(manage_channels=True)
     async def unfollow(self, ctx, *, stream_name):
         """Unfollows the given Stream."""
         stream_name = stream_name.replace(' ', '')

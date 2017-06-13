@@ -234,7 +234,7 @@ class TwitchAPI:
                 announcement.set_thumbnail(
                     url=stream['preview']['medium']
                 ).set_footer(
-                    text=f'Run `!stream get {stream["name"]}` for detailed information!'
+                    text=f'Followers: {stream["channel"]["followers"]:,} | {link}'
                 ).description = f'Now playing **{game}**!\n*{stream["channel"]["status"].strip()}*'
 
             else:

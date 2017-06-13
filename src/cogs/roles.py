@@ -68,7 +68,7 @@ class Roles:
                 self._role_table.insert(dict(guild_id=ctx.guild.id, role_name=role.name, role_id=role.id))
                 await ctx.send(embed=discord.Embed(
                     title=f'Role `{role.name}` is now self-assignable.',
-                    colour=discord.Colour.red()
+                    colour=discord.Colour.green()
                 ))
 
     @role.command(name='rsar', aliases=['usa'])
