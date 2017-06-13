@@ -269,10 +269,10 @@ class Roles:
         """Lists all Roles on this Server in the order of hierarchy."""
         await ctx.send(embed=discord.Embed(
             title=f'All Roles on {ctx.guild.name}',
-            description='\n'.join(
+            description=', '.join(
                 f'{r.mention} ({sum(1 for _ in r.members)})' for r in sorted(
                     ctx.guild.roles, key=lambda r: r.position, reverse=True
-                )
+                ) if r.name != '@everyone'
             ),
             colour=discord.Colour.blue()
         ).set_thumbnail(
