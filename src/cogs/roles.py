@@ -65,12 +65,12 @@ class Roles:
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
         ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ).add_field(
             name='Now self-assignable:',
             value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>',
+            inline=False
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
             inline=False
         ))
 
@@ -100,12 +100,12 @@ class Roles:
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
         ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ).add_field(
             name='No longer self-assignable:',
             value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>',
+            inline=False
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
             inline=False
         ))
 
@@ -159,12 +159,12 @@ class Roles:
         ).set_thumbnail(
             url=ctx.author.avatar_url
         ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ).add_field(
             name='Gave you the following Roles:',
             value=', '.join(success) or 'None <:sadpanda:319417001485533188>',
+            inline=False
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
             inline=False
         ))
 
@@ -194,12 +194,12 @@ class Roles:
         ).set_thumbnail(
             url=ctx.author.avatar_url
         ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ).add_field(
             name='Removed the following Roles from you:',
             value=', '.join(success) or 'None <:sadpanda:319417001485533188>',
+            inline=False
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
             inline=False
         ))
 
