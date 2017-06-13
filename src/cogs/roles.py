@@ -123,7 +123,7 @@ class Roles:
         `iam Blue, Member, Guest`.
         """
         success, failed = [], []
-        for role_name in role_names.split(', ')
+        for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
             checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
             if checks[0]:
