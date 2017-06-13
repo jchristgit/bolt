@@ -1,5 +1,5 @@
-import asyncio
 import dataset
+import datetime
 import discord
 
 from discord.ext import commands
@@ -62,13 +62,16 @@ class Roles:
 
         await ctx.send(embed=discord.Embed(
             title=f'Updated Self-Assignable Roles',
+            timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
         ).add_field(
             name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
+            inline=False
         ).add_field(
             name='Now self-assignable:',
-            value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>'
+            value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>',
+            inline=False
         ))
 
     @role.command(name='rsar', aliases=['usa'])
@@ -94,13 +97,16 @@ class Roles:
 
         await ctx.send(embed=discord.Embed(
             title=f'Updated Self-Assignable Roles',
+            timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
         ).add_field(
             name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
+            inline=False
         ).add_field(
             name='No longer self-assignable:',
-            value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>'
+            value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>',
+            inline=False
         ))
 
     @commands.command()
@@ -145,18 +151,21 @@ class Roles:
             else:
                 failed.append(checks[1])
 
-        await ctx.author.add_roles(to_remove, reason='Self-assignable Roles')
+        await ctx.author.add_roles(*to_remove, reason='Self-assignable Roles')
         await ctx.send(embed=discord.Embed(
             title=f'Updated Roles for {ctx.author}',
+            timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
         ).set_thumbnail(
             url=ctx.author.avatar_url
         ).add_field(
             name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
+            inline=False
         ).add_field(
             name='Gave you the following Roles:',
-            value=', '.join(success) or 'None <:sadpanda:319417001485533188>'
+            value=', '.join(success) or 'None <:sadpanda:319417001485533188>',
+            inline=False
         ))
 
     @commands.command(name='iamn', aliases=['unassign'])
@@ -177,18 +186,21 @@ class Roles:
             else:
                 failed.append(checks[1])
 
-        await ctx.author.remove_roles(to_remove, reason='Self-assignable Roles')
+        await ctx.author.remove_roles(*to_remove, reason='Self-assignable Roles')
         await ctx.send(embed=discord.Embed(
             title=f'Updated Roles for {ctx.author}',
+            timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
         ).set_thumbnail(
             url=ctx.author.avatar_url
         ).add_field(
             name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
+            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
+            inline=False
         ).add_field(
             name='Removed the following Roles from you:',
-            value=', '.join(success) or 'None <:sadpanda:319417001485533188>'
+            value=', '.join(success) or 'None <:sadpanda:319417001485533188>',
+            inline=False
         ))
 
     @commands.command(name='lsar')
