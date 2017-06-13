@@ -283,6 +283,8 @@ class Roles:
             colour=discord.Colour.blue()
         ).set_thumbnail(
             url=ctx.guild.icon_url
+        ).set_footer(
+            text='Run `rinfo <name>` to get detailed information about a Role'
         ))
 
 
