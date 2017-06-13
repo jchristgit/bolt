@@ -210,8 +210,9 @@ class TwitchAPI:
                 return
 
             stream_channel = self._bot.get_channel(int(channel_row.channel_id))
-            announcement = discord.Embed()
-            announcement.colour = 0x6441A5
+            announcement = discord.Embed(
+                colour=0x6441A5
+            )
 
             if stream["status"]:
                 title = f'{stream["name"]} is now online!'
@@ -234,8 +235,8 @@ class TwitchAPI:
                 announcement.set_thumbnail(
                     url=stream['preview']['medium']
                 ).set_footer(
-                    text=f'Followers: {stream["channel"]["followers"]:,} | {link}'
-                ).description = f'Now playing **{game}**!\n*{stream["channel"]["status"].strip()}*'
+                    text=f'Followers: {stream["channel"]["followers"]:,}',
+                ).description = f'[Now playing **{game}**!]({link})\n*{stream["channel"]["status"].strip()}*'
 
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
