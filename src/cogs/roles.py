@@ -29,25 +29,12 @@ class Roles:
         # Helper function to perform some checks before modifying a Role
         # Returns False is the Role does not exist or cannot be modified by the Bot, True otherwise.
         if role is None:
-            await ctx.send(embed=discord.Embed(
-                title=f'No role named `{name}` found.',
-                colour=discord.Colour.red()
-            ))
-            return False
+            return False, f'• No Role named `{name}` found.'
         elif name == '@everyone' or name == '@here':
-            await ctx.send(embed=discord.Embed(
-                title='That is not a valid Role name.',
-                colour=discord.Colour.red()
-            ))
-            return False
+            return False, '• `{name}` is not a valid Role name.'
         # Check if the Bot has proper permissions to modify the Role
         elif ctx.me.top_role <= role:
-            err_msg = 'The Bot cannot modify his own Role or any Roles above him in the hierarchy.'
-            await ctx.send(embed=discord.Embed(
-                title=err_msg,
-                colour=discord.Colour.red()
-            ))
-            return False
+            return False, '• Cannot modify `{name}` since it his his own Role or above him in the hierarchy.'
         return True
 
     @role.command(name='asar', aliases=['msa'])
@@ -55,21 +42,31 @@ class Roles:
     @commands.bot_has_permissions(manage_roles=True)
     async def make_self_assignable(self, ctx, *, name: str):
         """Makes the given role self-assignable for Members."""
-        # TODO: Add ability to do this with a comma-separated role list
-        role = discord.utils.find(lambda r: r.name.lower() == name.lower(), ctx.guild.roles)
-        if await self._role_checks(ctx, role, name):
-            # Check if role is already self-assignable
-            if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
-                await ctx.send(embed=discord.Embed(
-                    title=f'Role `{role.name}` is already self-assignable.',
-                    colour=discord.Colour.red()
-                ))
+        success = []
+        failed = []
+        for role_name in name.split(', '):
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
+            check_result = await self._role_checks(ctx, role, name)
+            if check_result:
+                # Check if role is already self-assignable
+                if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
+                    failed.append(f'• Role `{role.name}` is already self-assignable.')
+                else:
+                    self._role_table.insert(dict(guild_id=ctx.guild.id, role_name=role.name, role_id=role.id))
+                    success.append(f'• Role `{role.name}` is now self-assignable.')
             else:
-                self._role_table.insert(dict(guild_id=ctx.guild.id, role_name=role.name, role_id=role.id))
-                await ctx.send(embed=discord.Embed(
-                    title=f'Role `{role.name}` is now self-assignable.',
-                    colour=discord.Colour.green()
-                ))
+                failed.append(check_result[1])
+
+        await ctx.send(embed=discord.Embed(
+            title='Updated Self-Assignable Roles',
+            colour=discord.Colour.blue()
+        ).add_field(
+            name='Success:',
+            value='\n'.join(success)
+        ).add_field(
+            name='Errors:',
+            value='\n'.join(failed)
+        ))
 
     @role.command(name='rsar', aliases=['usa'])
     @commands.has_permissions(manage_roles=True)
