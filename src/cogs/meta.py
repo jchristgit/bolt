@@ -7,7 +7,7 @@ import run
 
 
 class Meta:
-    """Meta Commands, providing information about the Bot, and more."""
+    """Meta Commands, providing information about various things."""
     def __init__(self, bot):
         self.bot: discord.AutoShardedClient = bot
         self.process = psutil.Process()
@@ -77,6 +77,32 @@ class Meta:
             title=f'Guilds ({sum(1 for _ in self.bot.guilds)} total)',
             description=', '.join(g.name for g in self.bot.guilds),
             colour=discord.Colour.blue()
+        ))
+
+    @commands.command(aliases=['member'])
+    @commands.guild_only()
+    async def minfo(self, ctx, member: discord.Member=None):
+        """Displays Information about yourself or a tagged Member."""
+        if member is None:
+            member = ctx.message.author
+        await ctx.send(embed=discord.Embed(
+            title=f'User Information for {member}',
+            colour=member.top_role.colour
+        ).add_field(
+            name='Roles',
+            value=', '.join(member.roles[1:])  # First Role is the @everyone Role
+        ).add_field(
+            name='Joined this Guild',
+            value=str(member.joined_at)[:-7]
+        ).add_field(
+            name='Joined Discord',
+            value=str(member.created_at)[:-7]
+        ).add_field(
+            name='User ID',
+            value=member.id
+        ).add_field(
+            name='Avatar URL',
+            value=member.avatar_url
         ))
 
 
