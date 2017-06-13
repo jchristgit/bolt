@@ -103,6 +103,8 @@ class Meta:
         ).add_field(
             name='Avatar URL',
             value=member.avatar_url
+        ).set_thumbnail(
+            url=member.avatar_url
         ))
 
 
