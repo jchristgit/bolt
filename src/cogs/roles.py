@@ -1,6 +1,7 @@
 import dataset
 import datetime
 import discord
+import humanize
 
 from discord.ext import commands
 from stuf import stuf
@@ -237,7 +238,7 @@ class Roles:
             members = ', '.join(r.name for r in role.members)
             response = discord.Embed(
                 title=f'__Role Information for `{role.name}`__',
-                description=f'Members:\n{members if len(members) < 2038 else "Too many Members to display."}',
+
                 colour=role.colour
             ).add_field(
                 name='ID',
@@ -250,13 +251,16 @@ class Roles:
                 value=role.position
             ).add_field(
                 name='Creation Date',
-                value=role.created_at
+                value=humanize.naturaldate(role.created_at)
             ).add_field(
                 name='Permission Bitfield',
                 value=role.permissions.value
             ).add_field(
                 name='Member Count',
                 value=len(role.members)
+            ).add_field(
+                name='Members',
+                value=members if len(members) < 1024 else 'Too many Members to display.'
             )
             await ctx.send(embed=response)
 
