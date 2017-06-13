@@ -187,7 +187,7 @@ class Roles:
             name='Errors:',
             value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>'
         ).add_field(
-            name='Gave you the following Roles:',
+            name='Removed the following Roles from you:',
             value=', '.join(success) or 'None <:sadpanda:319417001485533188>'
         ))
 
