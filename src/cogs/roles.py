@@ -38,16 +38,16 @@ class Roles:
         return True,
 
     @staticmethod
-    def _maybe_add_success_error(embed: discord.Embed, success: list, success_desc: str, error: list, error_desc: str) -> discord.Embed:
+    def _maybe_add_success_error(embed: discord.Embed, success: list, success_desc: str, error: list, error_desc: str, sep=', ') -> discord.Embed:
         if success:
             embed.add_field(
                 name=success_desc,
-                value=', '.join(success)
+                value=sep.join(success)
             )
         if error:
             embed.add_field(
                 name=error_desc,
-                value=', '.join(error)
+                value=sep.join(error)
             )
         return embed
 
@@ -156,7 +156,7 @@ class Roles:
             colour=discord.Colour.blue()
         ).set_thumbnail(
             url=ctx.author.avatar_url
-        ), success, 'Gave you the following Roles:', failed, 'Errors:'))
+        ), success, 'Gave you the following Roles:', failed, 'Errors:', sep='\n'))
 
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
@@ -183,7 +183,7 @@ class Roles:
             colour=discord.Colour.blue()
         ).set_thumbnail(
             url=ctx.author.avatar_url
-        ), success, 'Removed the following Roles from you:', failed, 'Errors:'))
+        ), success, 'Removed the following Roles from you:', failed, 'Errors:', sep='\n'))
 
     @commands.command(name='lsar')
     @commands.guild_only()
