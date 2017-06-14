@@ -154,6 +154,8 @@ class Roles:
             title=f'Updated Roles for {ctx.author}',
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
+        ).set_thumbnail(
+            url=ctx.author.avatar_url
         ), success, 'Gave you the following Roles:', failed, 'Errors:'))
 
     @commands.command(name='iamn', aliases=['unassign'])
@@ -179,6 +181,8 @@ class Roles:
             title=f'Updated Roles for {ctx.author}',
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
+        ).set_thumbnail(
+            url=ctx.author.avatar_url
         ), success, 'Removed the following Roles from you:', failed, 'Errors:'))
 
     @commands.command(name='lsar')
