@@ -25,7 +25,7 @@ class Roles:
         """Contains sub-commands for modifying Roles."""
 
     @staticmethod
-    async def _role_checks(ctx, role, name):
+    def _role_checks(ctx, role, name):
         # Helper function to perform some checks before modifying a Role
         # Returns False is the Role does not exist or cannot be modified by the Bot, True otherwise.
         if role is None:
@@ -34,7 +34,29 @@ class Roles:
             return False, '• `{name}` is not a valid Role name.'
         # Check if the Bot has proper permissions to modify the Role
         elif ctx.me.top_role <= role:
-            return False, '• Cannot modify `{name}` since it his his own Role or above him in the hierarchy.'
+            return False, f'• Cannot modify `{name}` since it his his own Role or above him in the hierarchy.'
+        return True,
+
+    @staticmethod
+    def _maybe_add_success_error(embed: discord.Embed, success: list, success_desc: str, error: list, error_desc: str) -> discord.Embed:
+        if success:
+            embed.add_field(
+                name=success_desc,
+                value=', '.join(success)
+            )
+        if error:
+            embed.add_field(
+                name=error_desc,
+                value=', '.join(error)
+            )
+        return embed
+
+    def _perform_self_assignable_roles_checks(self, ctx, role, name):
+        # Checks if a role exist and whether it's not self-assignable
+        if role is None:
+            return False, f'• This Guild does not have any role called `{name}`.'
+        elif not self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
+            return False, f'• Role `{role.name}` is not self-assignable.'
         return True,
 
     @role.command(name='asar', aliases=['msa'])
@@ -49,7 +71,7 @@ class Roles:
         success, failed = [], []
         for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-            check_result = await self._role_checks(ctx, role, role_name)
+            check_result = self._role_checks(ctx, role, role_name)
             if check_result[0]:
                 # Check if role is already self-assignable
                 if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
@@ -60,19 +82,11 @@ class Roles:
             else:
                 failed.append(check_result[1])
 
-        await ctx.send(embed=discord.Embed(
+        await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
             title=f'Updated Self-Assignable Roles',
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
-        ).add_field(
-            name='Now self-assignable:',
-            value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>',
-            inline=False
-        ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ))
+        ), success, 'Now Self-Assignable:', failed, 'Errors:'))
 
     @role.command(name='rsar', aliases=['usa'])
     @commands.has_permissions(manage_roles=True)
@@ -82,7 +96,7 @@ class Roles:
         success, failed = [], []
         for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-            check_result = await self._role_checks(ctx, role, role_name)
+            check_result = self._role_checks(ctx, role, role_name)
             if check_result[0]:
                 if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
                     self._role_table.delete(
@@ -95,19 +109,11 @@ class Roles:
             else:
                 failed.append(check_result[1])
 
-        await ctx.send(embed=discord.Embed(
+        await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
             title=f'Updated Self-Assignable Roles',
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
-        ).add_field(
-            name='No longer self-assignable:',
-            value=', '.join(success) or 'No Roles updated here <:sadpanda:319417001485533188>',
-            inline=False
-        ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ))
+        ), success, 'No longer self-assignable:', failed, 'Errors:'))
 
     @commands.command()
     async def colours(self, ctx):
@@ -121,14 +127,6 @@ class Roles:
             colour=discord.Colour.blue()
         ))
 
-    async def _perform_self_assignable_roles_checks(self, ctx, role, name):
-        # Checks if a role exist and whether it's not self-assignable
-        if role is None:
-            return False, f'• This Guild does not have any role called `{name}`.'
-        elif not self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
-            return False, f'• Role `{role.name}` is not self-assignable.'
-        return True,
-
     @commands.command(name='iam', aliases=['assign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
@@ -141,7 +139,7 @@ class Roles:
         success, failed, to_remove = [], [], []
         for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-            checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
+            checks = self._perform_self_assignable_roles_checks(ctx, role, role_name)
             if checks[0]:
                 if role in ctx.author.roles:
                     failed.append(f'• You already have the `{role.name}` Role.')
@@ -152,21 +150,11 @@ class Roles:
                 failed.append(checks[1])
 
         await ctx.author.add_roles(*to_remove, reason='Self-assignable Roles')
-        await ctx.send(embed=discord.Embed(
+        await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
             title=f'Updated Roles for {ctx.author}',
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
-        ).set_thumbnail(
-            url=ctx.author.avatar_url
-        ).add_field(
-            name='Gave you the following Roles:',
-            value=', '.join(success) or 'None <:sadpanda:319417001485533188>',
-            inline=False
-        ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ))
+        ), success, 'Gave you the following Roles:', failed, 'Errors:'))
 
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
@@ -176,7 +164,7 @@ class Roles:
         success, failed, to_remove = [], [], []
         for role_name in role_names.split(', '):
             role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-            checks = await self._perform_self_assignable_roles_checks(ctx, role, role_name)
+            checks = self._perform_self_assignable_roles_checks(ctx, role, role_name)
             if checks[0]:
                 if role not in ctx.author.roles:
                     failed.append(f'• You do not have the `{role.name}` Role.')
@@ -187,21 +175,11 @@ class Roles:
                 failed.append(checks[1])
 
         await ctx.author.remove_roles(*to_remove, reason='Self-assignable Roles')
-        await ctx.send(embed=discord.Embed(
+        await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
             title=f'Updated Roles for {ctx.author}',
             timestamp=datetime.datetime.now(),
             colour=discord.Colour.blue()
-        ).set_thumbnail(
-            url=ctx.author.avatar_url
-        ).add_field(
-            name='Removed the following Roles from you:',
-            value=', '.join(success) or 'None <:sadpanda:319417001485533188>',
-            inline=False
-        ).add_field(
-            name='Errors:',
-            value='\n'.join(failed) or 'No Errors <:chimp:314710560279232512>',
-            inline=False
-        ))
+        ), success, 'Removed the following Roles from you:', failed, 'Errors:'))
 
     @commands.command(name='lsar')
     @commands.guild_only()
