@@ -38,16 +38,18 @@ class Roles:
         return True,
 
     @staticmethod
-    def _maybe_add_success_error(embed: discord.Embed, success: list, success_desc: str, error: list, error_desc: str, sep=', ') -> discord.Embed:
+    def _maybe_add_success_error(embed, success, success_desc, error, error_desc, sep=', '):
         if success:
             embed.add_field(
                 name=success_desc,
-                value=sep.join(success)
+                value=sep.join(success),
+                inline=True
             )
         if error:
             embed.add_field(
                 name=error_desc,
-                value=sep.join(error)
+                value=sep.join(error),
+                inline=True
             )
         return embed
 
