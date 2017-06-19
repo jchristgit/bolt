@@ -81,7 +81,7 @@ class Meta:
 
     @commands.command(aliases=['member'])
     @commands.guild_only()
-    async def minfo(self, ctx, member: discord.Member=None):
+    async def minfo(self, ctx, *, member: discord.Member=None):
         """Displays Information about yourself or a tagged Member."""
         if member is None:
             member = ctx.message.author
