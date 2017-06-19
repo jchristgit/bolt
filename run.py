@@ -57,7 +57,7 @@ class Bot(commands.AutoShardedBot):
     def make_error_embed(description):
         return Embed(colour=Colour.red(), description=description)
 
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):
             await ctx.send(embed=self.make_error_embed(f'**You invoked the Command with the wrong type of arguments.'
                                                        f' Use `!help command` to get information about its usage.**\n'

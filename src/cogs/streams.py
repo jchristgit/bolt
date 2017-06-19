@@ -203,6 +203,19 @@ class Streams:
                 colour=discord.Colour.green()
             ))
 
+    @follow.error
+    @unfollow.error
+    @set_channel.error
+    @unset_channel.error
+    async def err_stream(self, ctx, error):
+        if not isinstance(error, commands.NoPrivateMessage):
+            await ctx.send(embed=discord.Embed(
+                title='Failed to modify Streams:',
+                description=('You need the **`Manage Channels`** permission to use this Command. If you want a Stream '
+                             'to be followed, contact somebody who has the permission.'),
+                colour=discord.Colour.red()
+            ))
+
     @stream.command()
     async def following(self, ctx):
         """Lists all channels that this Guild is following."""

@@ -291,6 +291,20 @@ class Wormhole:
                         colour=discord.Colour.green()
                     ))
 
+    @open_.error
+    @close.error
+    @link.error
+    @unlink.error
+    @lock.error
+    @unlock.error
+    async def err_wormhole(self, ctx: commands.Context, err: commands.CommandError):
+        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.CommandOnCooldown):
+            await ctx.send(embed=discord.Embed(
+                title='Failed to modify Wormhole:',
+                description='You need the **`Manage Channels`** permission to use this Command.',
+                colour=discord.Colour.red()
+            ))
+
     @wormhole.command(aliases=['s'])
     @commands.cooldown(rate=5, per=60., type=commands.BucketType.user)
     async def send(self, ctx, *, content: str='*no content sent*'):
