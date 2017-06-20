@@ -133,7 +133,7 @@ class Mod:
     @ban.error
     @unban.error
     async def err_bans(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage):
+        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.BadArgument):
             await ctx.send(embed=discord.Embed(
                 title='Error while banning or unbanning',
                 description=('The Bot as well as the command invoker (you) need to have the permission '
@@ -163,7 +163,7 @@ class Mod:
 
     @kick.error
     async def err_kick(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage):
+        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.BadArgument):
             await ctx.send(embed=discord.Embed(
                 title='Error while modifying Channels:',
                 description=('The Bot as well as the command invoker (you) need to have the permission '
