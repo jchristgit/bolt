@@ -28,7 +28,7 @@ wormhole = guild_db['wormhole']
 DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
               'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
               'In Direct Messages, you don\'t need to use any prefix.'
-STATUSES = ['with Volcyy', 'Support', 'League of Legends', 'Thresh', 'good bot', 'with itself', 'with a garbo ADC']
+STATUSES = ['with Bjarne Stroustrup', 'with Striking', ]
 
 
 def get_prefix(bot, msg):
@@ -110,6 +110,8 @@ class Bot(commands.AutoShardedBot):
             await ctx.send(embed=self.make_error_embed('Sorry, this Command is currently disabled for maintenance.'))
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send(embed=self.make_error_embed('This Command cannot be used in private Messages.'))
+        else:
+            pass
 
     async def on_ready(self):
         print('= LOGGED IN =')

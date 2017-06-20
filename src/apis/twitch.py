@@ -269,7 +269,7 @@ class TwitchAPI:
                 if old_streams:
                     # Compare streams with each other
                     for double_streams in zip(old_streams, new_streams):
-                        # Check if we the lists did not get mixed up. This happens if new_streams contains
+                        # Check if the lists did not get mixed up. This happens if new_streams contains
                         # new data which the first one does not, for example after a new global stream has been followed
                         # However, a part of the list will be processable. After the first difference between Stream names
                         # occurs, we break out of the loop to ensure that we're not updating about the wrong Stream.
@@ -287,7 +287,6 @@ class TwitchAPI:
 
                 old_streams = new_streams
             except Exception as e:
-                print(e)
                 logger.error(e)
                 logger.error(e.__traceback__)
                 logger.error(e.__dict__)
