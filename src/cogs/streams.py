@@ -192,7 +192,7 @@ class Streams:
                 colour=discord.Colour.green()
             ))
         except discord.errors.Forbidden:
-            ctx.guild.default_channel.send(embed=discord.Embed(
+            await ctx.guild.default_channel.send(embed=discord.Embed(
                 title='Failed to set Stream Channel',
                 description=(f'Hello, {ctx.message.author}!\n You tried to set my stream announcement Channel to '
                              f'{ctx.message.channel}, but I do not have permissions to send Messages in that '
