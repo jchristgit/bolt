@@ -51,6 +51,7 @@ class Bot(commands.AutoShardedBot):
         self.owner = None
         self.error_channel = None
         self.guild_channel = None
+        self.stream_warn_channel = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
@@ -125,6 +126,7 @@ class Bot(commands.AutoShardedBot):
         self.owner = self.get_user(self.owner_id)
         self.error_channel = self.get_channel(321301897220980739)
         self.guild_channel = self.get_channel(321341062721306624)
+        self.stream_warn_channel = self.get_channel(326653829737349120)
 
     async def on_message(self, msg):
         if msg.author.bot:

@@ -1,7 +1,7 @@
 import logging
 
 
-def create_logger(name, filemode='a', level=logging.WARN):
+def create_logger(name, filemode='a', level=logging.INFO):
     logger = logging.getLogger(name)
     if not logger.handlers:
         logger.setLevel(level)
