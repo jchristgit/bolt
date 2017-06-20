@@ -28,7 +28,7 @@ wormhole = guild_db['wormhole']
 DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
               'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
               'In Direct Messages, you don\'t need to use any prefix.'
-STATUSES = ['with Bjarne Stroustrup', 'with Striking', ]
+STATUSES = ['with Bjarne Stroustrup', 'with Striking']
 ERROR_CHANNEL_ID = 321301897220980739
 GUILD_CHANNEL_ID = 321341062721306624
 STREAM_WARN_CHANNEL_ID = 326653829737349120
