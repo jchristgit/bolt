@@ -132,33 +132,34 @@ class Streams:
         
         To set a channel, use `!stream setchannel`.
         """
-        stream_name = stream_name.replace(' ', '')
+        with ctx.typing():
+            stream_name = stream_name.replace(' ', '')
+            if follow_config.get_channel_id(ctx.message.guild.id) is None:
+                await ctx.send(embed=discord.Embed(
+                    description=('**A channel for posting announcements must be set** before you can follow Streams. '
+                                 'Contact someone with the `Manage Channels` permission to set '
+                                 'it using `stream setchannel`.'),
+                    colour=discord.Colour.red()
+                ))
 
-        if follow_config.get_channel_id(ctx.message.guild.id) is None:
-            await ctx.send(embed=discord.Embed(
-                description='**A channel for posting announcements must be set** before you can follow Streams. Contact'
-                            ' someone with the `Manage Channels` permission to set it using `stream setchannel`.',
-                colour=discord.Colour.red()
-            ))
+            elif stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
+                await ctx.send(embed=discord.Embed(
+                    description=f'This Guild is already following the Channel `{stream_name}`.',
+                    colour=discord.Colour.red()
+                ))
 
-        elif stream_name in follow_config.get_guild_follows(ctx.message.guild.id):
-            await ctx.send(embed=discord.Embed(
-                description=f'This Guild is already following the Channel `{stream_name}`.',
-                colour=discord.Colour.red()
-            ))
-
-        elif await self.twitch_api.user_exists(stream_name):
-            follow_config.follow(ctx.message.guild.id, ctx.message.guild.name, stream_name)
-            await ctx.send(embed=discord.Embed(
-                description=f'This Guild is now **following the Channel `{stream_name}`**, getting notified about '
-                            ' streaming status changes.',
-                colour=discord.Colour.green()
-            ))
-        else:
-            await ctx.send(embed=discord.Embed(
-                description=f'No Stream named `{stream_name}` found.',
-                colour=discord.Colour.red()
-            ))
+            elif await self.twitch_api.user_exists(stream_name):
+                follow_config.follow(ctx.message.guild.id, ctx.message.guild.name, stream_name)
+                await ctx.send(embed=discord.Embed(
+                    description=(f'This Guild is now **following the Channel `{stream_name}`**, getting notified about '
+                                 ' streaming status changes.'),
+                    colour=discord.Colour.green()
+                ))
+            else:
+                await ctx.send(embed=discord.Embed(
+                    description=f'No Stream named `{stream_name}` found.',
+                    colour=discord.Colour.red()
+                ))
 
     @stream.command()
     @commands.has_permissions(manage_channels=True)
