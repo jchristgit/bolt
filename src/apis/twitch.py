@@ -245,7 +245,7 @@ class TwitchAPI:
             try:
                 await stream_channel.send(embed=announcement)
             except discord.errors.Forbidden as e:
-                admins = (m for m in stream_channel.guild.members if m.top_role.permissions.manage_channels)
+                admins = [m for m in stream_channel.guild.members if m.top_role.permissions.manage_channels]
                 random_admin = random.choice(admins)
                 while True:
                     try:
