@@ -339,19 +339,23 @@ class Mod:
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge_messages(self, ctx, amount=100, *, message_contents: str):
-        """Purges Messages with the specified content in them.
-
-        It is possible to specify a limit of Messages to be purged as the second argument.
+    async def purge_messages(self, ctx, amount: str, *, message_contents: str):
+        """Purges up to `amount` Messages with the specified content in them.
         
         **Example:**
-        !purgemsg bad - deletes messages in the last 100 messages containing 'bad'
         !purgemsg 30 evil - deletes messages in the last 30 messages containing 'evil'
+        !purgemsg 80 zalgo comes - deletes messages in the last 80 messages containing 'zalgo comes'
         """
+        if not amount.isdigit():
+            return await ctx.send(embed=discord.Embed(
+                title='Failed to Purge Messages:',
+                description='You need to specify the amount of Messages to be purged for example `purge 30 evil`.',
+                colour=discord.Colour.red()
+            ))
         res = await ctx.message.channel.purge(
             check=lambda m: message_contents in m.content,
             reason=f'Invoked by {ctx.message.author}.',
-            limit=amount
+            limit=int(amount)
         )
         info_response = f'Purged a total of **{len(res)} Messages** containing `{message_contents}`.'
         resp = await ctx.send(embed=discord.Embed(
@@ -366,13 +370,20 @@ class Mod:
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge_user(self, ctx, amount: int=100, *to_purge: discord.Member):
+    async def purge_user(self, ctx, amount: str, *to_purge: discord.Member):
         """Purge a mentioned User, or a list of mentioned Users. The amount defaults to 100, but can be set manually.
         
         **Example:**
-        purgeuser @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 100 Messages.
+        purgeuser 300 @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 300 Messages.
         purgeuser 40 @Person#1337 - purges messages from Person in the past 40 Messages.
         """
+        if not amount.isdigit():
+            return await ctx.send(embed=discord.Embed(
+                title='Failed to Purge Messages:',
+                description=('You need to specify the amount of Messages to be purged for example '
+                             '`purgeuser 30 @Guy#1337`.'),
+                colour=discord.Colour.red()
+            ))
         if not to_purge:
             return await ctx.send(embed=discord.Embed(
                 title='Failed to purge User(s)',
@@ -382,7 +393,7 @@ class Mod:
         total_purged = sum(1 for _ in await ctx.message.channel.purge(
             check=lambda m: m.author in to_purge,
             reason=f'Invoked by {ctx.message.author}.',
-            limit=amount
+            limit=int(amount)
         ))
         resp = await ctx.send(embed=discord.Embed(
             title='User purge completed',
