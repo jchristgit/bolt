@@ -183,9 +183,8 @@ class Streams:
     async def set_channel(self, ctx):
         """Sets the current channel as the channel to be used for posting Stream announcements.
 
-        If the Bot hasn't got the permissions necessary to send a Message in the Channel, he will attempt to react
-        to your Message to indicate failure. If this fails, the Command sends a Message to the default channel of
-        your Guild, so make sure to give the Bot proper Permissions.
+        If the Bot hasn't got the permissions necessary to send a Message in the Channel, he will
+        send a Message to the default channel of your Guild, so make sure to give the Bot proper Permissions.
         """
         try:
             await ctx.send(embed=discord.Embed(
@@ -193,17 +192,13 @@ class Streams:
                 colour=discord.Colour.green()
             ))
         except discord.errors.Forbidden:
-            try:
-                _ = (await ctx.message.add_reaction(x) for x in '⚠🇳🇴🇵🇪🇷🇲🇸')
-            except discord.errors.Forbidden:
-                ctx.guild.default_channel.send(embed=discord.Embed(
-                    title='Failed to set Stream Channel',
-                    description=(f'Hello, {ctx.message.author}!\n You tried to set my stream announcement Channel to '
-                                 f'{ctx.message.channel}, but I do not have permissions to send Messages in that '
-                                 f'Channel. I tried reacting to your Command invocation, but I don\'t have permission '
-                                 f'to do that either. Please give me the appropriate permissions and retry!'),
-                    colour=discord.Colour.red()
-                ))
+            ctx.guild.default_channel.send(embed=discord.Embed(
+                title='Failed to set Stream Channel',
+                description=(f'Hello, {ctx.message.author}!\n You tried to set my stream announcement Channel to '
+                             f'{ctx.message.channel}, but I do not have permissions to send Messages in that '
+                             f'Channel. Please give me the appropriate permissions and retry!'),
+                colour=discord.Colour.red()
+            ))
         else:
             follow_config.set_channel(ctx.message.guild.id, ctx.message.guild.name, ctx.message.channel.id)
 
