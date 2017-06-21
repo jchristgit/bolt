@@ -76,7 +76,7 @@ class Bot(commands.AutoShardedBot):
                     description=(f'The Command you invoked requires me to send you a *Direct Message*. This is often '
                                  f'necessary to ensure that other people do not receive information that is intended '
                                  f'for you, or to prevent spam. Please disable this by doing the following:\n'
-                                 f'- Right click on this Server and choose **Server Settings**\n'
+                                 f'- Right click on this Server and choose **Privacy Settings**\n'
                                  f'- Tick **Allow direct messages from server members**.\n'
                                  f'That\'s all, thank you!'),
                     colour=discord.Colour.blue()
