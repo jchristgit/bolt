@@ -83,7 +83,18 @@ class Mod:
         !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
         """
         if prune_days > 7 or prune_days < 1:
-            pass
+            return await ctx.send(embed=discord.Embed(
+                title='Failed to Ban:',
+                description='The amount of days to prune Messages for must be within 0 and 7.',
+                colour=discord.Colour.red()
+            ))
+        elif ctx.message.guild.me.top_role.position <= member.top_role.position:
+            return await ctx.send(embed=discord.Embed(
+                title='Cannot ban:',
+                description=('I cannot ban any Members that are in the same or higher position in the role hierarchy '
+                             'as I am.'),
+                colour=discord.Colour.red()
+            ))
         await ctx.guild.ban(member, reason=f'Command invoked by {ctx.message.author}, reason: '
                                            f'{"No reason specified" if reason == "" else reason}.',
                             delete_message_days=prune_days)
@@ -153,12 +164,20 @@ class Mod:
         !kick @Guy#1337 - kicks Guy
         !Kick @Guy#1337 be nice - kick Guy and specifies the reason "be nice" for the Audit Log.
         """
+        if ctx.message.guild.me.top_role.position <= member.top_role.position:
+            return await ctx.send(embed=discord.Embed(
+                title='Cannot kick:',
+                description=('I cannot kick any Members that are in the same or higher position in the role hierarchy '
+                             'as I am.'),
+                colour=discord.Colour.red()
+            ))
         await ctx.guild.kick(member, reason=f'Command invoked by {ctx.message.author}, reason: '
                                             f'{"No reason specified" if reason == "" else reason}.')
         reason = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(
             title='Kick successful',
-            description=f'**Kicked {member}**{reason}'
+            description=f'**Kicked {member}**{reason}',
+            colour=discord.Colour.green()
         ))
 
     @kick.error
