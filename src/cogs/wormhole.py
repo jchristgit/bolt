@@ -185,7 +185,7 @@ class Wormhole:
                 ))
                 await self.bot.get_channel(row.channel_id).send(embed=discord.Embed(
                     title='Wormhole linked',
-                    description=(f'The Guild `{ctx.guild.name} owned by `{ctx.guild.owner}` has linked wormhole '
+                    description=(f'The Guild `{ctx.guild.name}` owned by `{ctx.guild.owner}` has linked wormhole '
                                  f'`channel #{ctx.message.channel.name}` to this channel. The command was invoked by '
                                  f'`{ctx.message.author}`. Your token is now **locked**. Use `wormhole unlink` to undo '
                                  f'this action.'),
