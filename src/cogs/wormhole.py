@@ -134,7 +134,7 @@ class Wormhole:
 
     @wormhole.command()
     @commands.has_permissions(manage_channels=True)
-    async def link(self, ctx, *, token: str):
+    async def link(self, ctx, *, token: str=None):
         """
         Links this channel to the specified wormhole token.
 
@@ -143,6 +143,12 @@ class Wormhole:
         If you wish to act as a host for a wormhole, use `wormhole open` instead of connecting to one.
         """
         with ctx.typing():
+            if token is None:
+                await ctx.send(embed=discord.Embed(
+                    title='Failed to link',
+                    description='You need to specify a token to link to.',
+                    colour=discord.Colour.red()
+                ))
             row = self.table.find_one(token=token)
             if row is None:
                 await ctx.send(embed=discord.Embed(

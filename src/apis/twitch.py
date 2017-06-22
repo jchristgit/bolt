@@ -18,7 +18,6 @@ db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
 # After which amount of time a Twitch User should be updated, in hours
 USER_UPDATE_INTERVAL = 12
 USER_UPDATE_DELTA = datetime.timedelta(hours=USER_UPDATE_INTERVAL)
-
 # After which amount of time a Twitch Stream should be updated in Cache, in minutes
 STREAM_UPDATE_INTERVAL = 2
 STREAM_UPDATE_DELTA = datetime.timedelta(minutes=STREAM_UPDATE_INTERVAL)
@@ -245,7 +244,12 @@ class TwitchAPI:
             try:
                 await stream_channel.send(embed=announcement)
             except discord.errors.Forbidden as e:
-                admins = [m for m in stream_channel.guild.members if m.top_role.permissions.manage_channels]
+                admins = [
+                    m for m in stream_channel.guild.members \
+                    if m.top_role.permissions.manage_channels \
+                    or m.top_role.permissions.administrator \
+                    and not m.bot
+                ]
                 random_admin = random.choice(admins)
                 while True:
                     try:
@@ -307,8 +311,11 @@ class TwitchAPI:
             #   since the dictionary size changed during the iteration. To prevent this, the dictionary
             #   is casted to a list to prevent iterating over a reference to the global follows.
             for stream in follow_config.get_global_follows():
-                new_streams.append(await self.get_stream(stream.stream_name))
-                await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
+                try:
+                    new_streams.append(await self.get_stream(stream.stream_name))
+                    await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
+                except ConnectionResetError:
+                    continue
 
             # Check if we ran through at least one iteration # and both lists have the same amount of Streams
             if old_streams:
