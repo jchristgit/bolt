@@ -71,53 +71,51 @@ class Roles:
         `role asar Member, Guest, Blue
         """
         success, failed = [], []
-        with ctx.typing():
-            for role_name in role_names.split(', '):
-                role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-                check_result = self._role_checks(ctx, role, role_name)
-                if check_result[0]:
-                    # Check if role is already self-assignable
-                    if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
-                        failed.append(f'• Role `{role.name}` is already self-assignable.')
-                    else:
-                        self._role_table.insert(dict(guild_id=ctx.guild.id, role_name=role.name, role_id=role.id))
-                        success.append(role.name)
+        for role_name in role_names.split(', '):
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
+            check_result = self._role_checks(ctx, role, role_name)
+            if check_result[0]:
+                # Check if role is already self-assignable
+                if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
+                    failed.append(f'• Role `{role.name}` is already self-assignable.')
                 else:
-                    failed.append(check_result[1])
+                    self._role_table.insert(dict(guild_id=ctx.guild.id, role_name=role.name, role_id=role.id))
+                    success.append(role.name)
+            else:
+                failed.append(check_result[1])
 
-            await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
-                title=f'Updated Self-Assignable Roles',
-                timestamp=datetime.datetime.now(),
-                colour=discord.Colour.blue()
-            ), success, 'Now Self-Assignable:', failed, 'Errors:'))
+        await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
+            title=f'Updated Self-Assignable Roles',
+            timestamp=datetime.datetime.now(),
+            colour=discord.Colour.blue()
+        ), success, 'Now Self-Assignable:', failed, 'Errors:'))
 
     @role.command(name='rsar', aliases=['usa'])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def unmake_self_assignable(self, ctx, *, role_names: str):
         """Removes the given Role from the self-assignable roles."""
-        with ctx.typing():
-            success, failed = [], []
-            for role_name in role_names.split(', '):
-                role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
-                check_result = self._role_checks(ctx, role, role_name)
-                if check_result[0]:
-                    if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
-                        self._role_table.delete(
-                            guild_id=ctx.guild.id,
-                            role_name=role.name
-                        )
-                        success.append(role.name)
-                    else:
-                        failed.append(f'• Role `{role.name}` is not self-assignable.')
+        success, failed = [], []
+        for role_name in role_names.split(', '):
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.strip().lower(), ctx.guild.roles)
+            check_result = self._role_checks(ctx, role, role_name)
+            if check_result[0]:
+                if self._role_table.find_one(guild_id=ctx.guild.id, role_name=role.name):
+                    self._role_table.delete(
+                        guild_id=ctx.guild.id,
+                        role_name=role.name
+                    )
+                    success.append(role.name)
                 else:
-                    failed.append(check_result[1])
+                    failed.append(f'• Role `{role.name}` is not self-assignable.')
+            else:
+                failed.append(check_result[1])
 
-            await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
-                title=f'Updated Self-Assignable Roles',
-                timestamp=datetime.datetime.now(),
-                colour=discord.Colour.blue()
-            ), success, 'No longer self-assignable:', failed, 'Errors:'))
+        await ctx.send(embed=self._maybe_add_success_error(discord.Embed(
+            title=f'Updated Self-Assignable Roles',
+            timestamp=datetime.datetime.now(),
+            colour=discord.Colour.blue()
+        ), success, 'No longer self-assignable:', failed, 'Errors:'))
 
     @make_self_assignable.error
     @unmake_self_assignable.error
