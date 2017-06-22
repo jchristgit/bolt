@@ -135,7 +135,7 @@ class Bot(commands.AutoShardedBot):
         if msg.author.bot:
             return
 
-        await msg.channel.trigger_typing()
+        # await msg.channel.trigger_typing()
         await self.process_commands(msg)
 
         wh_guild = wormhole.find_one(guild_id=msg.guild.id) if msg.guild is not None else None
