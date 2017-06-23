@@ -315,6 +315,7 @@ class TwitchAPI:
                     new_streams.append(await self.get_stream(stream.stream_name))
                     await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
                 except ConnectionResetError:
+                    old_streams = []
                     continue
 
             # Check if we ran through at least one iteration # and both lists have the same amount of Streams

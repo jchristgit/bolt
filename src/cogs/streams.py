@@ -251,29 +251,30 @@ class Streams:
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
     async def all(self, ctx):
         """Shows stream information about all streams this guild is following."""
-        streams = [
-            await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)
-        ]
+        async with ctx.typing():
+            streams = [
+                await self.twitch_api.get_status(s) for s in follow_config.get_guild_follows(ctx.message.guild.id)
+            ]
 
-        # Check if no follows are set
-        if not streams:
-            await ctx.send(embed=discord.Embed(
-                title=f'- Streams followed on {ctx.message.guild.name} -',
-                description='This Guild is not following any Streams.',
-                colour=TWITCH_COLOUR_HEX
-            ))
-        else:
-            response = discord.Embed()
-            response.title = f'- Streams followed on {ctx.message.guild.name} -'
-            response.colour = 0x6441A5
-            response.description = ''
+            # Check if no follows are set
+            if not streams:
+                await ctx.send(embed=discord.Embed(
+                    title=f'- Streams followed on {ctx.message.guild.name} -',
+                    description='This Guild is not following any Streams.',
+                    colour=TWITCH_COLOUR_HEX
+                ))
+            else:
+                response = discord.Embed()
+                response.title = f'- Streams followed on {ctx.message.guild.name} -'
+                response.colour = 0x6441A5
+                response.description = ''
 
-            for idx, stream_status in enumerate(streams):
-                stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]
-                stream_link = f'https://twitch.tv/{stream_name}'
-                response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
+                for idx, stream_status in enumerate(streams):
+                    stream_name = follow_config.get_guild_follows(ctx.message.guild.id)[idx]
+                    stream_link = f'https://twitch.tv/{stream_name}'
+                    response.description += f'• [{stream_name}]({stream_link}): *{stream_status.strip()}*\n'
 
-            await ctx.send(embed=response)
+                await ctx.send(embed=response)
 
     @stream.command()
     @commands.cooldown(rate=3, per=5.0 * 60, type=commands.BucketType.guild)
