@@ -306,17 +306,18 @@ class TwitchAPI:
             self.total_follows = sum(1 for _ in follow_config.get_global_follows())
 
             # Check stream states
-            # - Why the list conversion? (no longer needed, leaving it here for future reference)
-            #   Without the conversion, when a User follows a new Stream during the loop, a RuntimeError is raised,
-            #   since the dictionary size changed during the iteration. To prevent this, the dictionary
-            #   is casted to a list to prevent iterating over a reference to the global follows.
+            # Needed to signal the outer loop to continue if an error occurred in the inner loop
+            should_reset = False
             for stream in follow_config.get_global_follows():
                 try:
                     new_streams.append(await self.get_stream(stream.stream_name))
                     await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
                 except ConnectionResetError:
                     old_streams = []
-                    continue
+                    should_reset = True
+                    break
+            if should_reset:
+                continue
 
             # Check if we ran through at least one iteration # and both lists have the same amount of Streams
             if old_streams:
