@@ -312,7 +312,7 @@ class TwitchAPI:
                 try:
                     new_streams.append(await self.get_stream(stream.stream_name))
                     await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
-                except ConnectionResetError:
+                except (ConnectionResetError, asyncio.client_exceptions.ClientOSError):
                     old_streams = []
                     should_reset = True
                     break
