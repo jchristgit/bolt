@@ -33,7 +33,7 @@ class Admin:
 
     @commands.command(name='setnick', hidden=True)
     @commands.is_owner()
-    async def set_nick(self, ctx, nick):
+    async def set_nick(self, ctx, *, nick):
         await ctx.guild.me.edit(nick=nick)
 
     @commands.command(name='getc', hidden=True)
