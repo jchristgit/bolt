@@ -31,6 +31,11 @@ class Admin:
     async def set_playing(self, _, *, new_status):
         await self.bot.change_presence(game=discord.Game(name=new_status))
 
+    @commands.command(name='setnick', hidden=True)
+    @commands.is_owner()
+    async def set_nick(self, ctx, nick):
+        await ctx.guild.me.change_presence(nick=nick)
+
     @commands.command(name='getc', hidden=True)
     async def get_channel(self, ctx, channel_id: int):
         chan = self.bot.get_channel(channel_id)
