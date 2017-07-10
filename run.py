@@ -52,6 +52,8 @@ class Bot(commands.AutoShardedBot):
         super().__init__(command_prefix=get_prefix, description=DESCRIPTION, pm_help=None, game=Game(name=game_name))
         self.start_time = datetime.datetime.now()
         self.owner = None
+        self.voice_client = None
+        self.old_nick = None
         self.error_channel = None
         self.guild_channel = None
         self.stream_warn_channel = None
@@ -156,6 +158,21 @@ class Bot(commands.AutoShardedBot):
                     name=str(msg.author),
                     icon_url=msg.author.avatar_url)
                 )
+
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        # Only do anything if it's kerrhau and it's a channel join
+        if member.id != 76043245804589056 or before.channel == after.channel:
+            return
+
+        if before.channel is None:
+            # User connected
+            self.voice_client = await before.channel.connect()
+            self.old_nick = member.guild.me.display_name
+            await member.guild.me.edit(nick="Anti-Commie Infiltrator Bot")
+        else:
+            # User disconnected, so we do the same
+            await self.voice_client.disconnect()
+            await member.guild.me.edit(nick=self.old_nick)
 
     @staticmethod
     async def _guild_event_note(destination: discord.abc.Messageable, guild: discord.Guild, title: str):
