@@ -34,6 +34,7 @@ class Admin:
     @commands.command(name='getc', hidden=True)
     async def get_channel(self, ctx, channel_id: int):
         chan = self.bot.get_channel(channel_id)
+        topic = (chan.topic if hasattr(chan, 'topic') else '') or 'None'
         if chan is None:
             await ctx.send(embed=discord.Embed(
                 title='Channel was not found.',
@@ -45,7 +46,7 @@ class Admin:
                 colour=discord.Colour.blue()
             ).add_field(
                 name='Channel',
-                value=f'**Name**: {chan.mention}\n**ID**: `{chan.id}`\n**Description**: {chan.topic or "None"}',
+                value=f'**Name**: {chan.mention}\n**ID**: `{chan.id}`\n**Description**: {topic}',
                 inline=False,
             ).add_field(
                 name='Guild',

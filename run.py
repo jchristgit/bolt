@@ -160,7 +160,7 @@ class Bot(commands.AutoShardedBot):
                 )
 
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        # Only do anything if it's kerrhau and it's a channel join
+        # Only do anything if it's kerrhau and it's not a channel join
         if member.id != 76043245804589056 or before.channel == after.channel:
             return
 
