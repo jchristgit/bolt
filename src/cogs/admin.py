@@ -34,7 +34,7 @@ class Admin:
     @commands.command(name='setnick', hidden=True)
     @commands.is_owner()
     async def set_nick(self, ctx, nick):
-        await ctx.guild.me.change_presence(nick=nick)
+        await ctx.guild.me.edit(nick=nick)
 
     @commands.command(name='getc', hidden=True)
     async def get_channel(self, ctx, channel_id: int):
