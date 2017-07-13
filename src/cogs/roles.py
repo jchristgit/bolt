@@ -264,7 +264,7 @@ class Roles:
                 value=len(role.members)
             ).add_field(
                 name='Members',
-                value=members if len(members) < 1024 else 'Too many Members to display.'
+                value=(members if len(members) < 1024 else 'Too many Members to display.') or 'None'
             )
             await ctx.send(embed=response)
 
