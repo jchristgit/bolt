@@ -165,7 +165,7 @@ class Bot(commands.AutoShardedBot):
 
         if before.channel is None:
             # User connected
-            self.voice_client = await before.channel.connect()
+            self.voice_client = await after.channel.connect()
             self.get_user(76043245804589056).send('I\'m watching your actions, commie.')
         else:
             # User disconnected, so we do the same
