@@ -53,7 +53,6 @@ class Bot(commands.AutoShardedBot):
         self.start_time = datetime.datetime.now()
         self.owner = None
         self.voice_client = None
-        self.old_nick = None
         self.error_channel = None
         self.guild_channel = None
         self.stream_warn_channel = None
@@ -167,12 +166,10 @@ class Bot(commands.AutoShardedBot):
         if before.channel is None:
             # User connected
             self.voice_client = await before.channel.connect()
-            self.old_nick = member.guild.me.display_name
-            await member.guild.me.edit(nick="Anti-Commie Infiltrator Bot")
+            self.get_user(76043245804589056).send('I\'m watching your actions, commie.')
         else:
             # User disconnected, so we do the same
             await self.voice_client.disconnect()
-            await member.guild.me.edit(nick=self.old_nick)
 
     @staticmethod
     async def _guild_event_note(destination: discord.abc.Messageable, guild: discord.Guild, title: str):
