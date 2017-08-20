@@ -51,7 +51,7 @@ class FollowConfig:
         return [r.stream_name for r in self._follow_table.find(guild_id=guild_id, order_by=['guild_id', 'stream_name'])]
 
     def get_global_follows(self):
-        return self._follow_table.distinct('stream_name')
+        return [r.stream_name for r in self._follow_table.distinct('stream_name')]
 
     def get_guild_ids_following(self, stream_name):
         # Get all Guild ID's following the given Stream name
@@ -295,51 +295,28 @@ class TwitchAPI:
 
     async def update_streams(self):
         # Starts the process of updating Guilds about Streams they follow.
-        old_streams = []
         await self._bot.wait_until_ready()
+        streams = dict()
         print('Started Twitch Stream Background Updater:')
         logger.info('Started Twitch Stream Background Updater.')
         print(f'Following a total of {self.total_follows} Streams.')
         while not self._bot.is_closed():
-            # Reset stream list
-            new_streams = []
+            # Update instance variable
             self.total_follows = sum(1 for _ in follow_config.get_global_follows())
 
-            # Check stream states
-            # Needed to signal the outer loop to continue if an error occurred in the inner loop
-            should_reset = False
-            for stream in follow_config.get_global_follows():
-                try:
-                    new_streams.append(await self.get_stream(stream.stream_name))
-                    await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
-                except (ConnectionResetError, asyncio.client_exceptions.ClientOSError):
-                    old_streams = []
-                    should_reset = True
-                    break
-            if should_reset:
-                continue
+            for stream_name in follow_config.get_global_follows():
+                stream = await self.get_stream(stream_name)
+                stream_online = stream['status']
+                if streams.get(stream_name, stream_online) != stream_online:
+                    following_guilds = follow_config.get_guild_ids_following(stream_name)
+                    await self._send_stream_update_announcement(stream, following_guilds)
+                await asyncio.sleep(BACKGROUND_UPDATE_INTERVAL)
+                streams[stream_name] = stream_online
 
-            # Check if we ran through at least one iteration # and both lists have the same amount of Streams
-            if old_streams:
-                # Compare streams with each other
-                for double_streams in zip(old_streams, new_streams):
-                    # Check if the lists did not get mixed up. This happens if new_streams contains
-                    # new data which the first one does not, for example after a new global stream has been followed
-                    # However, a part of the list will be processable. After the first difference between Stream names
-                    # occurs, we break out of the loop to ensure that we're not updating about the wrong Stream.
-                    if double_streams[0]['name'] != double_streams[1]['name']:
-                        break
-                    elif double_streams[0]['status'] != double_streams[1]['status']:
-                        following_guilds = follow_config.get_guild_ids_following(double_streams[0]['name'])
-                        await self._send_stream_update_announcement(double_streams[1], following_guilds)
+            if self.total_follows == 0:
+                print('Not following any Streams. Sleeping for 5 minutes...')
+                await asyncio.sleep(300)
 
-            elif self.total_follows != 0:
-                print('Done loading initial Stream states.')
-            else:
-                print('Not following any Streams. Sleeping for 15 minutes...')
-                await asyncio.sleep(900)
-
-            old_streams = new_streams
         print('Stopped Twitch Stream Background Updater.')
         logger.info('Stopped Twitch Stream Background Updater.')
 
