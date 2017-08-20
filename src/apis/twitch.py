@@ -1,16 +1,16 @@
 import asyncio
 import discord
-import dataset
 import datetime
-import random
-
 from os import environ
-from src.apis import requester
-from stuf import stuf
 from time import mktime, strptime
 from typing import Optional
-from ..util import create_logger
+
+import dataset
+from stuf import stuf
+
 from run import Bot
+from src.apis import requester
+from ..util import create_logger
 
 logger = create_logger('api')
 db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
@@ -92,14 +92,15 @@ class TwitchAPI:
         self._bot = bot
         self._headers = [('Accept', 'application/vnd.twitchtv.v5+json')]
         self._table = db['twitch_users']  # contains Twitch User Data
+        self._requester = requester.Requester()
         self.total_follows = sum(1 for _ in follow_config.get_global_follows())
 
     async def _query(self, url) -> dict:
         # Queries the given URL and returns it's JSON response, also appends the TWITCH_TOKEN environment variable.
         logger.debug(f'Querying `{url}`...')
         if '?' not in url:
-            return await requester.get(f'{url}?client_id={self._API_KEY}', self._headers)
-        return await requester.get(f'{url}&client_id={self._API_KEY}', self._headers)
+            return await self._requester.get(f'{url}?client_id={self._API_KEY}', self._headers)
+        return await self._requester.get(f'{url}&client_id={self._API_KEY}', self._headers)
 
     async def _request_user_from_api(self, name: str):
         # Calls the get Users endpoint to convert a user name to an ID and add it to the Database for requests, later
@@ -224,7 +225,7 @@ class TwitchAPI:
                     url=stream['preview']['medium']
                 ).set_footer(
                     text=f'Followers: {stream["channel"]["followers"]:,}',
-                ).description = f"[Now playing **{stream['game'] or '?'}**!]({link})\n"\
+                ).description = f"[Now playing **{stream['game'] or '?'}**!]({stream['channel']['url']})\n" \
                                 f"*{stream['channel']['status'].strip()}*"
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
@@ -260,4 +261,3 @@ class TwitchAPI:
 
         print('Stopped Twitch Stream Background Updater.')
         logger.info('Stopped Twitch Stream Background Updater.')
-
