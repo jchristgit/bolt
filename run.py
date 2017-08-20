@@ -137,19 +137,6 @@ class Bot(commands.AutoShardedBot):
         # await msg.channel.trigger_typing()
         await self.process_commands(msg)
 
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        # Only do anything if it's kerrhau and it's not a channel join
-        if member.id != 76043245804589056 or before.channel == after.channel:
-            return
-
-        if before.channel is None:
-            # User connected
-            self.voice_client = await after.channel.connect()
-            self.get_user(76043245804589056).send('I\'m watching your actions, commie.')
-        else:
-            # User disconnected, so we do the same
-            await self.voice_client.disconnect()
-
     @staticmethod
     async def _guild_event_note(destination: discord.abc.Messageable, guild: discord.Guild, title: str):
         note = discord.Embed()
