@@ -211,87 +211,28 @@ class TwitchAPI:
                 break
 
             stream_channel = self._bot.get_channel(int(channel_row.channel_id))
-            announcement = discord.Embed(
-                colour=0x6441A5
-            )
+            announcement = discord.Embed(colour=0x6441A5)
 
             if stream["status"]:
-                title = f'{stream["name"]} is now online!'
-                link = f'{stream["channel"]["url"]}'
-
-                if stream['channel']['logo'] is not None:
-                    announcement.set_author(
-                        name=title,
-                        url=link,
-                        icon_url=stream['channel']['logo']
-                    )
-                else:
-                    announcement.set_author(
-                        name=title,
-                        url=link
-                    )
-
-                game = stream["game"] if stream["game"] is not '' else '?'
+                announcement.set_author(
+                    name=f'{stream["name"]} is now online!',
+                    url=f'{stream["channel"]["url"]}',
+                    icon_url=stream['channel']['logo'] or discord.Embed.Empty
+                )
 
                 announcement.set_thumbnail(
                     url=stream['preview']['medium']
                 ).set_footer(
                     text=f'Followers: {stream["channel"]["followers"]:,}',
-                ).description = f'[Now playing **{game}**!]({link})\n*{stream["channel"]["status"].strip()}*'
-
+                ).description = f"[Now playing **{stream['game'] or '?'}**!]({link})\n"\
+                                f"*{stream['channel']['status'].strip()}*"
             else:
                 announcement.title = f'{stream["name"]} is now offline.'
+
             try:
                 await stream_channel.send(embed=announcement)
-            except discord.errors.Forbidden as e:
-                admins = [
-                    m for m in stream_channel.guild.members \
-                    if m.top_role.permissions.manage_channels \
-                    or m.top_role.permissions.administrator \
-                    and not m.bot
-                ]
-                random_admin = random.choice(admins)
-                while True:
-                    try:
-                        await random_admin.send(embed=discord.Embed(
-                            title='Error with sending Stream update',
-                            description=(f'I tried to update about the Stream `{stream["name"]}` in '
-                                         f'{stream_channel.mention}, but I do not have the permissions necessary '
-                                         f'to send a Message there. Please make sure that I have the proper '
-                                         f'permissions to send my announcements there, otherwise I might remove the '
-                                         f'Streams set on your Guild from my polling list.'),
-                            colour=discord.Colour.blue()
-                        ).add_field(
-                            name='Original Error:',
-                            value=str(e)
-                        ).set_image(url=self._bot.user.avatar_url))
-
-                        await self._bot.stream_warn_channel.send(embed=discord.Embed(
-                            title='Stream Delivery Warning',
-                            colour=discord.Colour.gold(),
-                            timestamp=datetime.datetime.now()
-                        ).add_field(
-                            name='Guild',
-                            value=f'**Name**: `{stream_channel.guild.name}`\n**ID**: `{stream_channel.guild.id}`'
-                        ).add_field(
-                            name='Owner',
-                            value=f'**User**: `{stream_channel.guild.owner}`\n**ID**: `{stream_channel.guild.owner_id}`'
-                        ).add_field(
-                            name='Notice sent to:',
-                            value=f'**User**: `{random_admin}`\n**ID**: `{random_admin.id}`'
-                        ).add_field(
-                            name='Members with Manage Channels permission:',
-                            value=', '.join(str(a) for a in admins)
-                        ).set_footer(
-                            icon_url=stream_channel.guild.icon_url
-                        ))
-
-                    except discord.errors.Forbidden:
-                        if sum(1 for _ in admins) == 1:
-                            break
-                        random_admin = random.choice(admins)
-                    else:
-                        break
+            except discord.errors.Forbidden:
+                logger.warn(f"Guild {guild_id} is following streams, but the bot cannot send messages in the channel.")
 
     async def update_streams(self):
         # Starts the process of updating Guilds about Streams they follow.
