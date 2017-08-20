@@ -1,15 +1,15 @@
 import asyncio
-import dataset
 import datetime
-import discord
 import random
-import uvloop
 import traceback
-
 from builtins import ModuleNotFoundError
-from discord import Colour, ConnectionClosed, Embed, Game
-from discord.ext import commands
 from os import environ
+
+import dataset
+import discord
+import uvloop
+from discord import Colour, Embed, Game
+from discord.ext import commands
 from stuf import stuf
 
 from src.util import create_logger
