@@ -4,7 +4,7 @@ import discord
 import humanize
 from discord.ext import commands
 
-from src.apis.twitch import parse_twitch_time, TwitchAPI, follow_config, twitch_api_stats
+from ..apis.twitch import parse_twitch_time, TwitchAPI, follow_config, twitch_api_stats
 
 
 TWITCH_COLOUR_HEX = 0x6441A5

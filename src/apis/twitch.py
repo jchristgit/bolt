@@ -9,7 +9,7 @@ import dataset
 from stuf import stuf
 
 from run import Bot
-from src.apis import requester
+from . import requester
 from ..util import create_logger
 
 logger = create_logger('api')
