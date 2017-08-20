@@ -193,10 +193,7 @@ if __name__ == '__main__':
             print(f'Could not load Cog \'{cog}\': {err}.')
 
     print('Logging in...')
-    try:
-        client.run(environ['DISCORD_TOKEN'])
-    except ConnectionClosed:
-        pass
+    client.run(environ['DISCORD_TOKEN'])
     print('Logged off.')
 
 
