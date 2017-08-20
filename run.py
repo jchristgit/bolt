@@ -13,7 +13,6 @@ from os import environ
 from stuf import stuf
 
 from src.util import create_logger
-from src.cogs.wormhole import Mode
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -137,25 +136,6 @@ class Bot(commands.AutoShardedBot):
 
         # await msg.channel.trigger_typing()
         await self.process_commands(msg)
-
-        wh_guild = wormhole.find_one(guild_id=msg.guild.id) if msg.guild is not None else None
-        if wh_guild is not None and wh_guild.linked_to is not None and wh_guild.mode == Mode.IMPLICIT.value:
-            channel = self.get_channel(wh_guild.linked_to)
-            if channel is None:
-                await msg.channel.send(embed=discord.Embed(
-                    title='Failed to send Wormhole Message implicitly',
-                    description='Destination channel was not found.',
-                    colour=discord.Colour.red()
-                ))
-            else:
-                await channel.send(embed=discord.Embed(
-                    title=f'Wormhole Message from {wh_guild.guild_name}',
-                    description=msg.content,
-                    colour=discord.Colour.blue()
-                ).set_author(
-                    name=str(msg.author),
-                    icon_url=msg.author.avatar_url)
-                )
 
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         # Only do anything if it's kerrhau and it's not a channel join
