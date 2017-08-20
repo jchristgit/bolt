@@ -316,8 +316,7 @@ class Mod:
         purge 50 - deletes 50 messages
         """
         total = sum(1 for _ in await ctx.message.channel.purge(
-            limit=limit,
-            reason=f'Invoked by {ctx.message.author}.'
+            limit=limit
         ))
         info_response = f'Purged a total of **{total} Messages**.'
         resp = await ctx.send(embed=discord.Embed(
@@ -341,8 +340,7 @@ class Mod:
         purgeid 129301 128195 - searches the past 500 messages for messages from these ID's and purges them.
         """
         total = sum(1 for _ in await ctx.message.channel.purge(
-            check=lambda m: m.author.id in ids_to_prune,
-            reason=f'Invoked by {ctx.message.author} to prune ID {", ".join(str(x) for x in ids_to_prune)}.'
+            check=lambda m: m.author.id in ids_to_prune
         ))
         pruned = f'`{"`, `".join(str(x) for x in ids_to_prune)}`'
         info_response = f'Purged a total of **{total} Messages** sent by {pruned}.'
@@ -373,7 +371,6 @@ class Mod:
             ))
         res = await ctx.message.channel.purge(
             check=lambda m: message_contents in m.content,
-            reason=f'Invoked by {ctx.message.author}.',
             limit=int(amount)
         )
         info_response = f'Purged a total of **{len(res)} Messages** containing `{message_contents}`.'
@@ -411,7 +408,6 @@ class Mod:
             ))
         total_purged = sum(1 for _ in await ctx.message.channel.purge(
             check=lambda m: m.author in to_purge,
-            reason=f'Invoked by {ctx.message.author}.',
             limit=int(amount)
         ))
         resp = await ctx.send(embed=discord.Embed(
