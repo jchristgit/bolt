@@ -27,7 +27,7 @@ class Meta:
                 colour=discord.Colour.blue()
             ))
 
-        entry = run.prefixes.find_one(guild_id=ctx.guild.id)
+        entry = run.prefix_table.find_one(guild_id=ctx.guild.id)
         if entry is None:
             await ctx.send(embed=discord.Embed(
                 title=('There is no special prefix configured for this Guild, so you '

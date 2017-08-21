@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import random
 import traceback
-from builtins import ModuleNotFoundError
 
 import dataset
 import discord
@@ -17,21 +16,21 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
 logger = create_logger('discord')
-guild_db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
+guild_db = dataset.connect(f"sqlite:///{CONFIG['database']['guild_db_path']}", row_type=stuf)
 
-prefixes = guild_db['prefixes']
+prefix_table = guild_db['prefixes']
 
 
 def get_prefix(bot, msg):
     # Works without prefix in DM's
     if isinstance(msg.channel, discord.abc.PrivateChannel):
-        return commands.when_mentioned_or('!', '?', '')(bot, msg)
+        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
 
     # Check for custom per-guild prefix
-    entry = prefixes.find_one(guild_id=msg.guild.id)
+    entry = prefix_table.find_one(guild_id=msg.guild.id)
     if entry is not None:
         return commands.when_mentioned_or(entry.prefix)(bot, msg)
-    return commands.when_mentioned_or('!', '?')(bot, msg)
+    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
 
 
 class Bot(commands.AutoShardedBot):

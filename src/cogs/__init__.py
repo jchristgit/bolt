@@ -1,9 +1,9 @@
 from . import (
     admin, meta, mod,
-    roles, streams, tickets,
+    roles, streams
 )
 
 __all__ = [
     'admin', 'meta', 'mod',
-    'roles', 'streams', 'tickets'
+    'roles', 'streams'
 ]

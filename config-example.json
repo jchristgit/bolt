@@ -4,6 +4,9 @@
     "playing_states": [
       "beep bop"
     ],
+    "prefixes": [
+      "?"
+    ],
     "error_channel_id": 0,
     "guild_channel_id": 0,
     "description": ""
