@@ -166,8 +166,7 @@ COGS_ON_LOGIN = [
     'meta',
     'mod',
     'streams',
-    'roles',
-    'wormhole'
+    'roles'
 ]
 
 
