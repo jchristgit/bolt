@@ -11,12 +11,15 @@ class NotFoundError(Exception):
 
 class Requester:
     def __init__(self):
-        self._cs = aiohttp.ClientSession()
+        self._cs = None
 
     def __del__(self):
-        self._cs.close()
+        if self._cs is not None:
+            self._cs.close()
 
     async def get(self, url: str, headers: list) -> dict:
+        if self._cs is None:
+            self._cs = aiohttp.ClientSession()
         async with self._cs.get(url, headers=headers) as r:
             r.raise_for_status()
             if r.status == 200:
