@@ -21,13 +21,6 @@ guild_db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
 
 prefixes = guild_db['prefixes']
 
-DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
-              'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
-              'In Direct Messages, you don\'t need to use any prefix.'
-ERROR_CHANNEL_ID = 321301897220980739
-GUILD_CHANNEL_ID = 321341062721306624
-STREAM_WARN_CHANNEL_ID = 326653829737349120
-
 
 def get_prefix(bot, msg):
     # Works without prefix in DM's
@@ -45,7 +38,7 @@ class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(
             command_prefix=get_prefix,
-            description=DESCRIPTION,
+            description=CONFIG['discord']['description'],
             pm_help=None,
             game=Game(name=random.choice(CONFIG['discord']['playing_states']))
         )
@@ -54,7 +47,6 @@ class Bot(commands.AutoShardedBot):
         self.voice_client = None
         self.error_channel = None
         self.guild_channel = None
-        self.stream_warn_channel = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
@@ -127,9 +119,8 @@ class Bot(commands.AutoShardedBot):
         print(f'Invite Link:\nhttps://discordapp.com/oauth2/authorize?&client_id={self.user.id}&scope=bot')
         print('=============')
         self.owner = self.get_user(self.owner_id)
-        self.error_channel = self.get_channel(ERROR_CHANNEL_ID)
-        self.guild_channel = self.get_channel(GUILD_CHANNEL_ID)
-        self.stream_warn_channel = self.get_channel(STREAM_WARN_CHANNEL_ID)
+        self.error_channel = self.get_channel(CONFIG['discord']['error_channel_id'])
+        self.guild_channel = self.get_channel(CONFIG['discord']['guild_channel_id'])
 
     async def on_message(self, msg):
         if msg.author.bot:
