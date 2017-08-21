@@ -1,0 +1,11 @@
+{
+  "discord": {
+    "token": "",
+    "playing_states": [
+      "beep bop"
+    ]
+  },
+  "twitch": {
+    "client_id": ""
+  }
+}

@@ -2,3 +2,5 @@
 data/*.db
 logs/*.log
 venv/
+
+config.json

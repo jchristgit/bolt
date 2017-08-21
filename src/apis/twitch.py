@@ -1,7 +1,6 @@
 import asyncio
 import discord
 import datetime
-from os import environ
 from time import mktime, strptime
 from typing import Optional
 
@@ -10,7 +9,7 @@ from stuf import stuf
 
 from run import Bot
 from . import requester
-from ..util import create_logger
+from ..util import CONFIG, create_logger
 
 logger = create_logger('api')
 db = dataset.connect('sqlite:///data/api.db', row_type=stuf)
@@ -86,7 +85,7 @@ follow_config = FollowConfig()
 class TwitchAPI:
     # Handles requests to the Twitch API
     def __init__(self, bot: Bot):
-        self._API_KEY = environ['TWITCH_TOKEN']
+        self._API_KEY = CONFIG['twitch']['client_id']
         self._BASE_URL = 'https://api.twitch.tv/kraken'
         self._stream_cache = {}
         self._bot = bot

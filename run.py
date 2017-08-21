@@ -3,7 +3,6 @@ import datetime
 import random
 import traceback
 from builtins import ModuleNotFoundError
-from os import environ
 
 import dataset
 import discord
@@ -12,7 +11,7 @@ from discord import Colour, Embed, Game
 from discord.ext import commands
 from stuf import stuf
 
-from src.util import create_logger
+from src.util import CONFIG, create_logger
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -21,19 +20,17 @@ logger = create_logger('discord')
 guild_db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
 
 prefixes = guild_db['prefixes']
-wormhole = guild_db['wormhole']
 
 DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
               'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
               'In Direct Messages, you don\'t need to use any prefix.'
-STATUSES = ['with Bjarne Stroustrup', 'with Striking']
 ERROR_CHANNEL_ID = 321301897220980739
 GUILD_CHANNEL_ID = 321341062721306624
 STREAM_WARN_CHANNEL_ID = 326653829737349120
 
 
 def get_prefix(bot, msg):
-    # No Prefix in DM's
+    # Works without prefix in DM's
     if isinstance(msg.channel, discord.abc.PrivateChannel):
         return commands.when_mentioned_or('!', '?', '')(bot, msg)
 
@@ -46,8 +43,12 @@ def get_prefix(bot, msg):
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
-        game_name = random.choice(STATUSES)
-        super().__init__(command_prefix=get_prefix, description=DESCRIPTION, pm_help=None, game=Game(name=game_name))
+        super().__init__(
+            command_prefix=get_prefix,
+            description=DESCRIPTION,
+            pm_help=None,
+            game=Game(name=random.choice(CONFIG['discord']['playing_states']))
+        )
         self.start_time = datetime.datetime.now()
         self.owner = None
         self.voice_client = None
@@ -179,7 +180,7 @@ if __name__ == '__main__':
             print(f'Could not load Cog \'{cog}\': {err}.')
 
     print('Logging in...')
-    client.run(environ['DISCORD_TOKEN'])
+    client.run(CONFIG['discord']['token'])
     print('Logged off.')
 
 
