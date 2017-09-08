@@ -5,14 +5,12 @@ import traceback
 
 import dataset
 import discord
-import uvloop
 from discord import Colour, Embed, Game
 from discord.ext import commands
 from stuf import stuf
 
 from src.util import CONFIG, create_logger
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
 logger = create_logger('discord')
@@ -171,6 +169,7 @@ if __name__ == '__main__':
 
     print('Logging in...')
     client.run(CONFIG['discord']['token'])
+    client.close()
     print('Logged off.')
 
 
