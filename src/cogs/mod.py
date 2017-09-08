@@ -82,7 +82,7 @@ class Mod:
         !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
         !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
         """
-        if prune_days > 7 or prune_days < 1:
+        if prune_days > 7 or prune_days < 0:
             return await ctx.send(embed=discord.Embed(
                 title='Failed to Ban:',
                 description='The amount of days to prune Messages for must be within 0 and 7.',
