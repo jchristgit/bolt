@@ -1,3 +1,5 @@
+config/*
+__pycache__
 .idea/
 data/*.db
 logs/*.log
