@@ -154,7 +154,6 @@ COGS_ON_LOGIN = [
     'admin',
     'meta',
     'mod',
-    'streams',
     'roles'
 ]
 

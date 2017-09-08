@@ -1,3 +1,3 @@
-from . import requester, twitch
+from . import requester
 
-__all__ = ['requester', 'twitch']
+__all__ = ['requester']
