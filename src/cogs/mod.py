@@ -58,15 +58,6 @@ class Mod:
                 colour=discord.Colour.green()
             ))
 
-    @set_prefix.error
-    async def err_set_prefix(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Failed to set prefix:',
-                description='You need the permission **`Manage Messages`** to use this Command.',
-                colour=discord.Colour.red()
-            ))
-
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
@@ -141,18 +132,6 @@ class Mod:
         finally:
             await ban_list.delete()
 
-    @ban.error
-    @unban.error
-    async def err_bans(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.BadArgument):
-            await ctx.send(embed=discord.Embed(
-                title='Error while banning or unbanning',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Ban Members`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
@@ -180,17 +159,6 @@ class Mod:
             colour=discord.Colour.green()
         ))
 
-    @kick.error
-    async def err_kick(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.BadArgument):
-            await ctx.send(embed=discord.Embed(
-                title='Error while modifying Channels:',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Kick Members`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
     @commands.group()
     @commands.guild_only()
     async def channel(self, ctx):
@@ -201,9 +169,9 @@ class Mod:
     @commands.bot_has_permissions(manage_channels=True)
     async def channel_set_name(self, ctx, *, new_name: str):
         """Change the Name for a Channel.
-        
+
         Also works using `setname` instead of `rename`.
-        
+
         **Example:**
         !channel rename announcements - rename the current channel to "announcements"
         """
@@ -219,9 +187,9 @@ class Mod:
     @commands.bot_has_permissions(manage_channels=True)
     async def channel_set_description(self, ctx, *, new_desc):
         """Set the description for the Channel.
-        
+
         Also works using `setdesc` instead of `desc`.
-        
+
         **Example:**
         !channel desc Bot Testing Channel - change the current channel's description to 'Bot Testing Channel'.
         """
@@ -265,24 +233,11 @@ class Mod:
                 colour=discord.Colour.green()
             ))
 
-    @channel_set_name.error
-    @channel_set_description.error
-    @channel_move.error
-    async def err_channel_modify(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Error while modifying Channels:',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Manage Channels`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
     @channel.command(name='find', aliases=['search'])
     @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
     async def channel_search(self, ctx, *, contents: str):
         """Search for messages (in the past 500) containing the given message.
-        
+
         **Example:**
         !channel find hello - returns a list of messages containing "hello" in the past 500 messages.
         """
@@ -307,10 +262,10 @@ class Mod:
     @commands.bot_has_permissions(manage_messages=True)
     async def purge(self, ctx, limit: int=100):
         """Purge a given amount of messages. Defaults to 100.
-        
+
         Requires the `manage_messages` permission on both the Bot and the User that invokes the Command.
         Only works on Guilds.
-        
+
         **Example:**
         purge - deletes 100 messages
         purge 50 - deletes 50 messages
@@ -388,7 +343,7 @@ class Mod:
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_user(self, ctx, amount: str, *to_purge: discord.Member):
         """Purge a mentioned User, or a list of mentioned Users. The amount defaults to 100, but can be set manually.
-        
+
         **Example:**
         purgeuser 300 @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 300 Messages.
         purgeuser 40 @Person#1337 - purges messages from Person in the past 40 Messages.
@@ -418,21 +373,6 @@ class Mod:
         ))
         await asyncio.sleep(5)
         await resp.delete()
-
-    @purge.error
-    @purge_by_id.error
-    @purge_messages.error
-    @purge_user.error
-    async def err_purge(self, ctx: commands.Context, error: commands.CommandError):
-        if not isinstance(error, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Failed to purge Messages:',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Manage Messages`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
 
 def setup(bot):
     bot.add_cog(Mod(bot))
