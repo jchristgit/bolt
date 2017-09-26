@@ -128,18 +128,6 @@ class Roles:
             colour=discord.Colour.red()
         ))
 
-    @commands.command()
-    async def colours(self, ctx):
-        """Links to colour pickers for getting role colours."""
-        await ctx.send(embed=discord.Embed(
-            title='Colour Pickers',
-            description='Make sure to get the **hex value** of the Colour you want, '
-                        'which is usually prefixed with `#`!\n'
-                        '• <https://duckduckgo.com/?q=color%20picker&ia=answer>\n'
-                        '• <https://www.webpagefx.com/web-design/color-picker/>',
-            colour=discord.Colour.blue()
-        ))
-
     @commands.command(name='iam', aliases=['assign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
