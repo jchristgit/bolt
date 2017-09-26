@@ -4,5 +4,5 @@ __pycache__
 data/*.db
 logs/*.log
 venv/
-
+Pipfile.lock
 config.json
