@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import random
 import traceback
@@ -147,7 +146,7 @@ client = Bot()
 
 
 # Base path where cogs house
-COGS_BASE_PATH = 'bolt.cogs.'
+COGS_BASE_PATH = 'bolt.'
 
 # Cogs to load on login
 COGS_ON_LOGIN = [
