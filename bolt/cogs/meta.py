@@ -1,5 +1,4 @@
 import discord
-import psutil
 
 from discord.ext import commands
 
@@ -62,10 +61,6 @@ class Meta:
             name='Users',
             value=(f'**Total**: {sum(1 for _ in self.bot.get_all_members())}\n'
                    f'**Unique**: {len(set(self.bot.get_all_members()))}')
-        ).add_field(
-            name='System Usage',
-            value=(f'**CPU**: {self.process.cpu_percent() / psutil.cpu_count()}%\n'
-                   f'**Memory**: {str(self.process.memory_full_info().uss / 1024**2 * 1.048576)[:5]} MB')
         )
 
         await ctx.send(embed=response)
