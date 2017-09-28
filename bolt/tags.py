@@ -83,3 +83,7 @@ class Tags:
                 title=f"Created the tag {tag_name!r}!",
                 colour=discord.Colour.green()
             ))
+
+
+def setup(bot):
+    bot.add_cog(Tags(bot))
