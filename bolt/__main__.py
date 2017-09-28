@@ -151,7 +151,7 @@ COGS_ON_LOGIN = [
     'meta',
     'mod',
     'roles',
-    'tag'
+    'tags'
 ]
 
 
