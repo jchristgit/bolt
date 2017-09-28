@@ -35,6 +35,11 @@ class Admin:
     async def set_nick(self, ctx, *, nick):
         await ctx.guild.me.edit(nick=nick)
 
+    @commands.command(name='setuname', hidden=True)
+    @commands.is_owner()
+    async def set_user_name(self, ctx, *, username):
+        await self.bot.user.edit(username=username)
+
     @commands.command(name='getc', hidden=True)
     async def get_channel(self, ctx, channel_id: int):
         chan = self.bot.get_channel(channel_id)
