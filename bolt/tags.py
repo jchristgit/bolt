@@ -3,6 +3,7 @@ import datetime
 import dataset
 import discord
 from discord.ext import commands
+from fuzzyfinder import fuzzyfinder
 from stuf import stuf
 
 
@@ -30,7 +31,13 @@ class Tags:
         """
 
         tag_name = tag_name.title()
-        tag = self._tag_table.find_one(guild_id=ctx.guild.id, name=tag_name)
+        all_tag_names = (t.name for t in self._tag_table.all())
+        try:
+            found_tag_name = next(fuzzyfinder(tag_name, all_tag_names))
+            tag = self._tag_table.find_one(guild_id=ctx.guild.id, name=found_tag_name)
+        except StopIteration:
+            tag = None
+
         if tag is None:
             await ctx.send(embed=discord.Embed(
                 title=f"No tag named {tag_name!r} found.",
