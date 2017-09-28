@@ -3,6 +3,7 @@ import datetime
 import dataset
 import discord
 from discord.ext import commands
+from stuf import stuf
 
 
 guild_db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
