@@ -58,15 +58,6 @@ class Mod:
                 colour=discord.Colour.green()
             ))
 
-    @set_prefix.error
-    async def err_set_prefix(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Failed to set prefix:',
-                description='You need the permission **`Manage Messages`** to use this Command.',
-                colour=discord.Colour.red()
-            ))
-
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
@@ -82,7 +73,7 @@ class Mod:
         !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
         !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
         """
-        if prune_days > 7 or prune_days < 1:
+        if prune_days > 7 or prune_days < 0:
             return await ctx.send(embed=discord.Embed(
                 title='Failed to Ban:',
                 description='The amount of days to prune Messages for must be within 0 and 7.',
@@ -141,18 +132,6 @@ class Mod:
         finally:
             await ban_list.delete()
 
-    @ban.error
-    @unban.error
-    async def err_bans(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.BadArgument):
-            await ctx.send(embed=discord.Embed(
-                title='Error while banning or unbanning',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Ban Members`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
@@ -180,111 +159,14 @@ class Mod:
             colour=discord.Colour.green()
         ))
 
-    @kick.error
-    async def err_kick(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage) and not isinstance(err, commands.BadArgument):
-            await ctx.send(embed=discord.Embed(
-                title='Error while modifying Channels:',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Kick Members`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
-    @commands.group()
-    @commands.guild_only()
-    async def channel(self, ctx):
-        """Contains Commands for editing a Channel."""
-
-    @channel.command(name='rename', aliases=['setname'])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def channel_set_name(self, ctx, *, new_name: str):
-        """Change the Name for a Channel.
-        
-        Also works using `setname` instead of `rename`.
-        
-        **Example:**
-        !channel rename announcements - rename the current channel to "announcements"
-        """
-        old_name = ctx.message.channel.name
-        await ctx.message.channel.edit(name=new_name, reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(
-            description=f'Changed Channel Name from `#{old_name}` to <#{ctx.message.channel.id}>.',
-            colour=discord.Colour.green()
-        ))
-
-    @channel.command(name='desc', aliases=['setdesc'])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def channel_set_description(self, ctx, *, new_desc):
-        """Set the description for the Channel.
-        
-        Also works using `setdesc` instead of `desc`.
-        
-        **Example:**
-        !channel desc Bot Testing Channel - change the current channel's description to 'Bot Testing Channel'.
-        """
-        old_desc = ctx.message.channel.description
-        await ctx.message.channel.edit(description=new_desc, reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(
-            description=f'Changed Channel Description from *"{old_desc}"* to *"{new_desc}"*.',
-            colour=discord.Colour.green()
-        ))
-
-    @channel.command(name='move')
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def channel_move(self, ctx, amount: int):
-        """Move a channel by the specified amount.
-        
-        Make sure that the channel position stays within the bounds.
-        
-        **Example:**
-        !channel move 2 - moves the Channel up by two channels.
-        !channel move -3 - moves the Channel down by three channels.
-        """
-        curr_pos = ctx.message.channel.position
-        offset = curr_pos - amount
-        maximum = sum(1 for _ in ctx.message.guild.text_channels)
-        if offset < 0 or offset > maximum:
-            await ctx.send(embed=discord.Embed(
-                title='Failed to move Channel:',
-                description=(f'The channel must not be moved below `{maximum}` or above `0`, this channel\'s position '
-                             f'is `{curr_pos}`, so this Command can be used with arguments ranging from '
-                             f'`-{maximum - curr_pos - 1}` to `{curr_pos}`.'),
-                colour=discord.Colour.red()
-            ))
-        else:
-            await ctx.message.channel.edit(
-                position=ctx.message.channel.position - amount,
-                reason=f'Invoked by {ctx.message.author}.'
-            )
-            await ctx.send(embed=discord.Embed(
-                description=f'**Channel moved {"up" if amount >= 0 else "down"}** by `{amount}` channels.',
-                colour=discord.Colour.green()
-            ))
-
-    @channel_set_name.error
-    @channel_set_description.error
-    @channel_move.error
-    async def err_channel_modify(self, ctx: commands.Context, err: commands.CommandError):
-        if not isinstance(err, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Error while modifying Channels:',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Manage Channels`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
-
-    @channel.command(name='find', aliases=['search'])
+    @commands.command(name='find', aliases=['search'])
     @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
     async def channel_search(self, ctx, *, contents: str):
         """Search for messages (in the past 500) containing the given message.
-        
+
         **Example:**
-        !channel find hello - returns a list of messages containing "hello" in the past 500 messages.
+        !find hello
+            returns a list of messages containing "hello" in the past 500 messages.
         """
         messages = []
         async for message in ctx.message.channel.history(limit=500).filter(lambda m: contents in m.content):
@@ -307,10 +189,10 @@ class Mod:
     @commands.bot_has_permissions(manage_messages=True)
     async def purge(self, ctx, limit: int=100):
         """Purge a given amount of messages. Defaults to 100.
-        
-        Requires the `manage_messages` permission on both the Bot and the User that invokes the Command.
-        Only works on Guilds.
-        
+
+        Requires the `manage_messages` permission on both the Bot and
+        the User that invokes the Command. Only works on Guilds.
+
         **Example:**
         purge - deletes 100 messages
         purge 50 - deletes 50 messages
@@ -334,10 +216,12 @@ class Mod:
         """Purge up to 500 Messages sent by the User with the given ID.
 
         Useful when you want to purge Messages from a User that left the Server.
-        
+
         **Example:**
-        purgeid 129301 - searches the past 500 messages for messages from the user and purges them.
-        purgeid 129301 128195 - searches the past 500 messages for messages from these ID's and purges them.
+        purgeid 129301
+            searches the past 500 messages for messages from the user and purges them.
+        purgeid 129301 128195
+            searches the past 500 messages for messages from these ID's and purges them.
         """
         total = sum(1 for _ in await ctx.message.channel.purge(
             check=lambda m: m.author.id in ids_to_prune
@@ -358,10 +242,12 @@ class Mod:
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_messages(self, ctx, amount: str, *, message_contents: str):
         """Purges up to `amount` Messages with the specified content in them.
-        
+
         **Example:**
-        !purgemsg 30 evil - deletes messages in the last 30 messages containing 'evil'
-        !purgemsg 80 zalgo comes - deletes messages in the last 80 messages containing 'zalgo comes'
+        !purgemsg 30 evil
+            deletes messages in the last 30 messages containing 'evil'
+        !purgemsg 80 zalgo comes
+            deletes messages in the last 80 messages containing 'zalgo comes'
         """
         if not amount.isdigit():
             return await ctx.send(embed=discord.Embed(
@@ -387,11 +273,15 @@ class Mod:
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_user(self, ctx, amount: str, *to_purge: discord.Member):
-        """Purge a mentioned User, or a list of mentioned Users. The amount defaults to 100, but can be set manually.
-        
+        """Purge a mentioned User, or a list of mentioned Users.
+
+        The amount defaults to 100, but can be set manually.
+
         **Example:**
-        purgeuser 300 @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 300 Messages.
-        purgeuser 40 @Person#1337 - purges messages from Person in the past 40 Messages.
+        purgeuser 300 @Person#1337 @Robot#7331
+            purges messages from Person and Robot in the past 300 Messages.
+        purgeuser 40 @Person#1337
+            purges messages from Person in the past 40 Messages.
         """
         if not amount.isdigit():
             return await ctx.send(embed=discord.Embed(
@@ -418,20 +308,6 @@ class Mod:
         ))
         await asyncio.sleep(5)
         await resp.delete()
-
-    @purge.error
-    @purge_by_id.error
-    @purge_messages.error
-    @purge_user.error
-    async def err_purge(self, ctx: commands.Context, error: commands.CommandError):
-        if not isinstance(error, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Failed to purge Messages:',
-                description=('The Bot as well as the command invoker (you) need to have the permission '
-                             '**`Manage Messages`**. Please make sure the permission is given and '
-                             'retry the Command if so.'),
-                colour=discord.Colour.red()
-            ))
 
 
 def setup(bot):

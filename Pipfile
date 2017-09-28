@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+"discord.py" = {git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
+dataset = "*"
+stuf = "*"
+
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"

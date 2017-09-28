@@ -1,61 +1,46 @@
-import asyncio
-import dataset
 import datetime
-import discord
 import random
-import uvloop
 import traceback
 
-from builtins import ModuleNotFoundError
-from discord import Colour, ConnectionClosed, Embed, Game
+import dataset
+import discord
+from discord import Colour, Embed, Game
 from discord.ext import commands
-from os import environ
 from stuf import stuf
 
-from src.util import create_logger
-from src.apis.requester import close as close_requester
-from src.cogs.wormhole import Mode
+from bolt.util import CONFIG, create_logger
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 # Set up Logging
 logger = create_logger('discord')
-guild_db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
+guild_db = dataset.connect(f"sqlite:///{CONFIG['database']['guild_db_path']}", row_type=stuf)
 
-prefixes = guild_db['prefixes']
-wormhole = guild_db['wormhole']
-
-DESCRIPTION = 'Hello! I am a Bot made by Volcyy#2359. ' \
-              'You can prefix my Commands by either mentioning me, using `?` or `!`. ' \
-              'In Direct Messages, you don\'t need to use any prefix.'
-STATUSES = ['with Bjarne Stroustrup', 'with Striking']
-ERROR_CHANNEL_ID = 321301897220980739
-GUILD_CHANNEL_ID = 321341062721306624
-STREAM_WARN_CHANNEL_ID = 326653829737349120
+prefix_table = guild_db['prefixes']
 
 
 def get_prefix(bot, msg):
-    # No Prefix in DM's
+    # Works without prefix in DM's
     if isinstance(msg.channel, discord.abc.PrivateChannel):
-        return commands.when_mentioned_or('!', '?', '')(bot, msg)
+        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
 
     # Check for custom per-guild prefix
-    entry = prefixes.find_one(guild_id=msg.guild.id)
+    entry = prefix_table.find_one(guild_id=msg.guild.id)
     if entry is not None:
         return commands.when_mentioned_or(entry.prefix)(bot, msg)
-    return commands.when_mentioned_or('!', '?')(bot, msg)
+    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
 
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
-        game_name = random.choice(STATUSES)
-        super().__init__(command_prefix=get_prefix, description=DESCRIPTION, pm_help=None, game=Game(name=game_name))
+        super().__init__(
+            command_prefix=get_prefix,
+            description=CONFIG['discord']['description'],
+            pm_help=None,
+            game=Game(name=random.choice(CONFIG['discord']['playing_states']))
+        )
         self.start_time = datetime.datetime.now()
-        self.owner = None
-        self.voice_client = None
         self.error_channel = None
         self.guild_channel = None
-        self.stream_warn_channel = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
@@ -74,7 +59,7 @@ class Bot(commands.AutoShardedBot):
             if isinstance(error.original, discord.errors.Forbidden):
                 return await ctx.send(embed=discord.Embed(
                     title='<:sadpanda:319417001485533188> You have Direct Messages disabled.',
-                    description=(f'The Command you invoked requires me to send you a *Direct Message*. This is often '
+                    description=(f'The Command you invoked requires me to send you a Direct Message. This is often '
                                  f'necessary to ensure that other people do not receive information that is intended '
                                  f'for you, or to prevent spam. Please disable this by doing the following:\n'
                                  f'- Right click on this Server and choose **Privacy Settings**\n'
@@ -127,49 +112,14 @@ class Bot(commands.AutoShardedBot):
         print(f'Total of {len(self.commands)} Commands in {len(self.cogs)} Cogs.')
         print(f'Invite Link:\nhttps://discordapp.com/oauth2/authorize?&client_id={self.user.id}&scope=bot')
         print('=============')
-        self.owner = self.get_user(self.owner_id)
-        self.error_channel = self.get_channel(ERROR_CHANNEL_ID)
-        self.guild_channel = self.get_channel(GUILD_CHANNEL_ID)
-        self.stream_warn_channel = self.get_channel(STREAM_WARN_CHANNEL_ID)
+        self.error_channel = self.get_channel(CONFIG['discord']['error_channel_id'])
+        self.guild_channel = self.get_channel(CONFIG['discord']['guild_channel_id'])
 
     async def on_message(self, msg):
         if msg.author.bot:
             return
 
-        # await msg.channel.trigger_typing()
         await self.process_commands(msg)
-
-        wh_guild = wormhole.find_one(guild_id=msg.guild.id) if msg.guild is not None else None
-        if wh_guild is not None and wh_guild.linked_to is not None and wh_guild.mode == Mode.IMPLICIT.value:
-            channel = self.get_channel(wh_guild.linked_to)
-            if channel is None:
-                await msg.channel.send(embed=discord.Embed(
-                    title='Failed to send Wormhole Message implicitly',
-                    description='Destination channel was not found.',
-                    colour=discord.Colour.red()
-                ))
-            else:
-                await channel.send(embed=discord.Embed(
-                    title=f'Wormhole Message from {wh_guild.guild_name}',
-                    description=msg.content,
-                    colour=discord.Colour.blue()
-                ).set_author(
-                    name=str(msg.author),
-                    icon_url=msg.author.avatar_url)
-                )
-
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        # Only do anything if it's kerrhau and it's not a channel join
-        if member.id != 76043245804589056 or before.channel == after.channel:
-            return
-
-        if before.channel is None:
-            # User connected
-            self.voice_client = await after.channel.connect()
-            self.get_user(76043245804589056).send('I\'m watching your actions, commie.')
-        else:
-            # User disconnected, so we do the same
-            await self.voice_client.disconnect()
 
     @staticmethod
     async def _guild_event_note(destination: discord.abc.Messageable, guild: discord.Guild, title: str):
@@ -188,20 +138,19 @@ class Bot(commands.AutoShardedBot):
     async def on_guild_remove(self, guild: discord.Guild):
         await self._guild_event_note(self.guild_channel, guild, f'Left Guild {guild.name} ({guild.id})')
 
+
 client = Bot()
 
 
 # Base path where cogs house
-COGS_BASE_PATH = 'src.cogs.'
+COGS_BASE_PATH = 'bolt.'
 
 # Cogs to load on login
 COGS_ON_LOGIN = [
     'admin',
     'meta',
     'mod',
-    'streams',
-    'roles',
-    'wormhole'
+    'roles'
 ]
 
 
@@ -214,11 +163,6 @@ if __name__ == '__main__':
             print(f'Could not load Cog \'{cog}\': {err}.')
 
     print('Logging in...')
-    try:
-        client.run(environ['DISCORD_TOKEN'])
-    except ConnectionClosed:
-        pass
-    close_requester()
+    client.run(CONFIG['discord']['token'])
+    client.close()
     print('Logged off.')
-
-

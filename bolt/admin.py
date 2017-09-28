@@ -2,7 +2,6 @@ import asyncio
 import discord
 
 from discord.ext import commands
-from run import COGS_BASE_PATH
 
 
 class Admin:
@@ -68,51 +67,6 @@ class Admin:
             await asyncio.sleep(delay)
             await reply.delete()
             await ctx.message.delete()
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def reload(self, ctx):
-        """Reloads all Cogs."""
-        # Cast to list to prevent a RuntimeError, since we just want the iteration for the names of the Cogs
-        for extension_name in list(self.bot.extensions):
-            self.bot.unload_extension(extension_name)
-            self.bot.load_extension(extension_name)
-        response = await ctx.send(embed=discord.Embed(title='Reload Complete',
-                                                      description=f'Reloaded {len(self.bot.cogs)} Cogs.',
-                                                      colour=discord.Colour.green()))
-
-        await self._remove_reply_if_not_dm(ctx, response)
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def load(self, ctx, *, cog_name: str):
-        """Load a Cog."""
-        cog_name = cog_name.title()
-        if cog_name in self.bot.cogs:
-            response = await ctx.send(embed=discord.Embed(title=f'Cog `{cog_name}` is already loaded.',
-                                                          colour=discord.Colour.red()))
-        else:
-            self.bot.load_extension(COGS_BASE_PATH + cog_name.lower())
-            response = await ctx.send(embed=discord.Embed(title=f'Loaded the {cog_name} Cog.',
-                                                          colour=discord.Colour.green()))
-
-        # Delete reply and command invocation Message if it wasn't invoked in a DM
-        await self._remove_reply_if_not_dm(ctx, response)
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def unload(self, ctx, *, cog_name: str):
-        """Unload a Cog."""
-        cog_name = cog_name.title()
-        if cog_name not in self.bot.cogs:
-            response = await ctx.send(embed=discord.Embed(title=f'No Cog named `{cog_name}` currently loaded or found.',
-                                                          colour=discord.Colour.red()))
-        else:
-            self.bot.remove_cog(cog_name)
-            response = await ctx.send(embed=discord.Embed(title=f'Unloaded the {cog_name} Cog.',
-                                                          colour=discord.Colour.green()))
-
-        await self._remove_reply_if_not_dm(ctx, response)
 
     @commands.command(hidden=True)
     @commands.is_owner()

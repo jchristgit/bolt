@@ -117,29 +117,6 @@ class Roles:
             colour=discord.Colour.blue()
         ), success, 'No longer self-assignable:', failed, 'Errors:'))
 
-    @make_self_assignable.error
-    @unmake_self_assignable.error
-    async def err_msa(self, ctx, _):
-        """Error handler for the `role asar` and `role rsar` Commands."""
-        await ctx.send(embed=discord.Embed(
-            title='Failed to modify self-assignable Roles:',
-            description=('The Bot as well as the command invoker (you) need to have the permission **`Manage Roles`**. '
-                         'Please make sure the permission is given and retry the Command if so.'),
-            colour=discord.Colour.red()
-        ))
-
-    @commands.command()
-    async def colours(self, ctx):
-        """Links to colour pickers for getting role colours."""
-        await ctx.send(embed=discord.Embed(
-            title='Colour Pickers',
-            description='Make sure to get the **hex value** of the Colour you want, '
-                        'which is usually prefixed with `#`!\n'
-                        '• <https://duckduckgo.com/?q=color%20picker&ia=answer>\n'
-                        '• <https://www.webpagefx.com/web-design/color-picker/>',
-            colour=discord.Colour.blue()
-        ))
-
     @commands.command(name='iam', aliases=['assign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
@@ -197,16 +174,6 @@ class Roles:
         ).set_thumbnail(
             url=ctx.author.avatar_url
         ), success, 'Removed the following Roles from you:', failed, 'Errors:'))
-
-    @assign.error
-    @un_assign.error
-    async def err_self_assignment(self, ctx, error: commands.CommandError):
-        if not isinstance(error, commands.NoPrivateMessage):
-            await ctx.send(embed=discord.Embed(
-                title='Failed to modify your roles:',
-                description='The Bot requires the permission `Manage Roles` to execute this Command.',
-                colour=discord.Colour.red()
-            ))
 
     @commands.command(name='lsar')
     @commands.guild_only()
