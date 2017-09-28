@@ -9,7 +9,7 @@ from discord import Colour, Embed, Game
 from discord.ext import commands
 from stuf import stuf
 
-from src.util import CONFIG, create_logger
+from bolt.util import CONFIG, create_logger
 
 
 # Set up Logging
@@ -123,7 +123,6 @@ class Bot(commands.AutoShardedBot):
         if msg.author.bot:
             return
 
-        # await msg.channel.trigger_typing()
         await self.process_commands(msg)
 
     @staticmethod
@@ -143,11 +142,12 @@ class Bot(commands.AutoShardedBot):
     async def on_guild_remove(self, guild: discord.Guild):
         await self._guild_event_note(self.guild_channel, guild, f'Left Guild {guild.name} ({guild.id})')
 
+
 client = Bot()
 
 
 # Base path where cogs house
-COGS_BASE_PATH = 'src.cogs.'
+COGS_BASE_PATH = 'bolt.cogs.'
 
 # Cogs to load on login
 COGS_ON_LOGIN = [
@@ -170,5 +170,3 @@ if __name__ == '__main__':
     client.run(CONFIG['discord']['token'])
     client.close()
     print('Logged off.')
-
-
