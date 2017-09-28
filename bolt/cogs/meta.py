@@ -1,45 +1,16 @@
 import discord
-
 from discord.ext import commands
-
-import run
 
 
 class Meta:
     """Meta Commands, providing information about various things."""
     def __init__(self, bot):
-        self.bot: discord.AutoShardedClient = bot
-        self.process = psutil.Process()
+        self.bot = bot
         print('Loaded Cog Meta.')
 
     @staticmethod
     def __unload():
         print('Unloaded Cog Meta.')
-
-    @commands.command()
-    async def prefix(self, ctx):
-        """Get the prefix which you can use with the Bot."""
-        if isinstance(ctx.message.channel, discord.abc.PrivateChannel):
-            return await ctx.send(embed=discord.Embed(
-                title=('You can use my commands without any prefixes, since we are '
-                       'talking in private here. <:poyuW:309409724351119360>'),
-                colour=discord.Colour.blue()
-            ))
-
-        entry = run.prefix_table.find_one(guild_id=ctx.guild.id)
-        if entry is None:
-            await ctx.send(embed=discord.Embed(
-                title=('There is no special prefix configured for this Guild, so you '
-                       'can use my default prefixes `?`, `!`, or mention me.'),
-                colour=discord.Colour.blue()
-            ))
-        else:
-            await ctx.send(embed=discord.Embed(
-                title=(f'My Prefix for this Guild is set to `{entry.prefix}`. Alternatively, you can mention me with '
-                       f'your Command. Somebody with the `Manage Messages` permission can change it using '
-                       f'`{entry.prefix}setprefix`.'),
-                colour=discord.Colour.blue()
-            ))
 
     @commands.command()
     async def stats(self, ctx):
