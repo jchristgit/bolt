@@ -15,6 +15,7 @@ class Tags:
     def __init__(self, bot):
         self.bot = bot
         self._tag_table = guild_db['tag']
+        print("Loaded Cog Tags.")
 
     @staticmethod
     def __unload():
