@@ -39,8 +39,6 @@ class Bot(commands.AutoShardedBot):
             game=Game(name=random.choice(CONFIG['discord']['playing_states']))
         )
         self.start_time = datetime.datetime.now()
-        self.owner = None
-        self.voice_client = None
         self.error_channel = None
         self.guild_channel = None
 
@@ -61,7 +59,7 @@ class Bot(commands.AutoShardedBot):
             if isinstance(error.original, discord.errors.Forbidden):
                 return await ctx.send(embed=discord.Embed(
                     title='<:sadpanda:319417001485533188> You have Direct Messages disabled.',
-                    description=(f'The Command you invoked requires me to send you a *Direct Message*. This is often '
+                    description=(f'The Command you invoked requires me to send you a Direct Message. This is often '
                                  f'necessary to ensure that other people do not receive information that is intended '
                                  f'for you, or to prevent spam. Please disable this by doing the following:\n'
                                  f'- Right click on this Server and choose **Privacy Settings**\n'
@@ -114,7 +112,6 @@ class Bot(commands.AutoShardedBot):
         print(f'Total of {len(self.commands)} Commands in {len(self.cogs)} Cogs.')
         print(f'Invite Link:\nhttps://discordapp.com/oauth2/authorize?&client_id={self.user.id}&scope=bot')
         print('=============')
-        self.owner = self.get_user(self.owner_id)
         self.error_channel = self.get_channel(CONFIG['discord']['error_channel_id'])
         self.guild_channel = self.get_channel(CONFIG['discord']['guild_channel_id'])
 
