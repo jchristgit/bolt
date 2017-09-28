@@ -28,7 +28,7 @@ class Tags:
         To view a tag, simply use this command along with a tag name.
         """
 
-        tag = self._tag_table.find_one(guild_id=ctx.gulid.id, name=tag_name)
+        tag = self._tag_table.find_one(guild_id=ctx.guild.id, name=tag_name)
         if tag is None:
             await ctx.send(embed=discord.Embed(
                 title=f"No tag named {tag_name!r} found.",
