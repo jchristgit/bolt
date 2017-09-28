@@ -114,7 +114,7 @@ class Tags:
             else:
                 self._tag_table.delete(
                     guild_id=ctx.guild.id,
-                    tag_name=tag_name
+                    name=tag_name
                 )
                 await ctx.send(embed=discord.Embed(
                     title=f"Deleted the tag {tag_name!r}.",
