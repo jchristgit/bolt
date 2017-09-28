@@ -45,9 +45,10 @@ class Tags:
             ))
         else:
             tag_embed = discord.Embed(
-                title=tag_name,
+                title=f"{tag.name} (from {tag_name!r})",
                 colour=discord.Colour.blue(),
-                description=tag.content
+                description=tag.content,
+                timestamp=tag.created_on
             )
             author = self.bot.get_user(tag.author_id)
             if author is not None:
