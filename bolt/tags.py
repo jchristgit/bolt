@@ -99,9 +99,8 @@ class Tags:
         """
 
         tag_name = tag_name.title()
-        print("Deleting tag", tag_name)
-        tag = self._tag_table.find_one(guild_id=ctx.guild.id,
-                                       tag_name=tag_name)
+        tag = self._tag_table.find_one(guild_id=ctx.guild.id, name=tag_name)
+
         if tag is not None:
             if ctx.author.id != tag.author_id \
                and not ctx.author.permissions_in(ctx.channel).manage_messages:
