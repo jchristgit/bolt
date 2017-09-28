@@ -159,87 +159,14 @@ class Mod:
             colour=discord.Colour.green()
         ))
 
-    @commands.group()
-    @commands.guild_only()
-    async def channel(self, ctx):
-        """Contains Commands for editing a Channel."""
-
-    @channel.command(name='rename', aliases=['setname'])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def channel_set_name(self, ctx, *, new_name: str):
-        """Change the Name for a Channel.
-
-        Also works using `setname` instead of `rename`.
-
-        **Example:**
-        !channel rename announcements - rename the current channel to "announcements"
-        """
-        old_name = ctx.message.channel.name
-        await ctx.message.channel.edit(name=new_name, reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(
-            description=f'Changed Channel Name from `#{old_name}` to <#{ctx.message.channel.id}>.',
-            colour=discord.Colour.green()
-        ))
-
-    @channel.command(name='desc', aliases=['setdesc'])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def channel_set_description(self, ctx, *, new_desc):
-        """Set the description for the Channel.
-
-        Also works using `setdesc` instead of `desc`.
-
-        **Example:**
-        !channel desc Bot Testing Channel - change the current channel's description to 'Bot Testing Channel'.
-        """
-        old_desc = ctx.message.channel.description
-        await ctx.message.channel.edit(description=new_desc, reason=f'Invoked by {ctx.message.author}.')
-        await ctx.send(embed=discord.Embed(
-            description=f'Changed Channel Description from *"{old_desc}"* to *"{new_desc}"*.',
-            colour=discord.Colour.green()
-        ))
-
-    @channel.command(name='move')
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def channel_move(self, ctx, amount: int):
-        """Move a channel by the specified amount.
-        
-        Make sure that the channel position stays within the bounds.
-        
-        **Example:**
-        !channel move 2 - moves the Channel up by two channels.
-        !channel move -3 - moves the Channel down by three channels.
-        """
-        curr_pos = ctx.message.channel.position
-        offset = curr_pos - amount
-        maximum = sum(1 for _ in ctx.message.guild.text_channels)
-        if offset < 0 or offset > maximum:
-            await ctx.send(embed=discord.Embed(
-                title='Failed to move Channel:',
-                description=(f'The channel must not be moved below `{maximum}` or above `0`, this channel\'s position '
-                             f'is `{curr_pos}`, so this Command can be used with arguments ranging from '
-                             f'`-{maximum - curr_pos - 1}` to `{curr_pos}`.'),
-                colour=discord.Colour.red()
-            ))
-        else:
-            await ctx.message.channel.edit(
-                position=ctx.message.channel.position - amount,
-                reason=f'Invoked by {ctx.message.author}.'
-            )
-            await ctx.send(embed=discord.Embed(
-                description=f'**Channel moved {"up" if amount >= 0 else "down"}** by `{amount}` channels.',
-                colour=discord.Colour.green()
-            ))
-
-    @channel.command(name='find', aliases=['search'])
+    @commands.command(name='find', aliases=['search'])
     @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
     async def channel_search(self, ctx, *, contents: str):
         """Search for messages (in the past 500) containing the given message.
 
         **Example:**
-        !channel find hello - returns a list of messages containing "hello" in the past 500 messages.
+        !find hello
+            returns a list of messages containing "hello" in the past 500 messages.
         """
         messages = []
         async for message in ctx.message.channel.history(limit=500).filter(lambda m: contents in m.content):
@@ -263,8 +190,8 @@ class Mod:
     async def purge(self, ctx, limit: int=100):
         """Purge a given amount of messages. Defaults to 100.
 
-        Requires the `manage_messages` permission on both the Bot and the User that invokes the Command.
-        Only works on Guilds.
+        Requires the `manage_messages` permission on both the Bot and
+        the User that invokes the Command. Only works on Guilds.
 
         **Example:**
         purge - deletes 100 messages
@@ -289,10 +216,12 @@ class Mod:
         """Purge up to 500 Messages sent by the User with the given ID.
 
         Useful when you want to purge Messages from a User that left the Server.
-        
+
         **Example:**
-        purgeid 129301 - searches the past 500 messages for messages from the user and purges them.
-        purgeid 129301 128195 - searches the past 500 messages for messages from these ID's and purges them.
+        purgeid 129301
+            searches the past 500 messages for messages from the user and purges them.
+        purgeid 129301 128195
+            searches the past 500 messages for messages from these ID's and purges them.
         """
         total = sum(1 for _ in await ctx.message.channel.purge(
             check=lambda m: m.author.id in ids_to_prune
@@ -313,10 +242,12 @@ class Mod:
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_messages(self, ctx, amount: str, *, message_contents: str):
         """Purges up to `amount` Messages with the specified content in them.
-        
+
         **Example:**
-        !purgemsg 30 evil - deletes messages in the last 30 messages containing 'evil'
-        !purgemsg 80 zalgo comes - deletes messages in the last 80 messages containing 'zalgo comes'
+        !purgemsg 30 evil
+            deletes messages in the last 30 messages containing 'evil'
+        !purgemsg 80 zalgo comes
+            deletes messages in the last 80 messages containing 'zalgo comes'
         """
         if not amount.isdigit():
             return await ctx.send(embed=discord.Embed(
@@ -342,11 +273,15 @@ class Mod:
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_user(self, ctx, amount: str, *to_purge: discord.Member):
-        """Purge a mentioned User, or a list of mentioned Users. The amount defaults to 100, but can be set manually.
+        """Purge a mentioned User, or a list of mentioned Users.
+
+        The amount defaults to 100, but can be set manually.
 
         **Example:**
-        purgeuser 300 @Person#1337 @Robot#7331 - purges messages from Person and Robot in the past 300 Messages.
-        purgeuser 40 @Person#1337 - purges messages from Person in the past 40 Messages.
+        purgeuser 300 @Person#1337 @Robot#7331
+            purges messages from Person and Robot in the past 300 Messages.
+        purgeuser 40 @Person#1337
+            purges messages from Person in the past 40 Messages.
         """
         if not amount.isdigit():
             return await ctx.send(embed=discord.Embed(
@@ -373,6 +308,7 @@ class Mod:
         ))
         await asyncio.sleep(5)
         await resp.delete()
+
 
 def setup(bot):
     bot.add_cog(Mod(bot))
