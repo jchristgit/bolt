@@ -87,7 +87,7 @@ class Tags:
                 colour=discord.Colour.green()
             ))
 
-    @tag.command()
+    @tag.command(aliases=("del", "rm"))
     @commands.guild_only()
     async def delete(self, ctx, *, tag_name: str):
         """Delete the specified tag.
@@ -99,6 +99,7 @@ class Tags:
         """
 
         tag_name = tag_name.title()
+        print("Deleting tag", tag_name)
         tag = self._tag_table.find_one(guild_id=ctx.guild.id,
                                        tag_name=tag_name)
         if tag is not None:
