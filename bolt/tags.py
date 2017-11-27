@@ -142,7 +142,7 @@ class Tags:
 
         await ctx.send(embed=discord.Embed(
             title=f"Tags on {ctx.guild.name}:",
-            description=', '.join(repr(t.name) for t in self._tag_table.all()),
+            description=', '.join(repr(t.name) for t in self._tag_table.find(guild_id=ctx.guild.id)),
             colour=discord.Color.blue()
         ))
 
