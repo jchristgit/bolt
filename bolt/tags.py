@@ -135,6 +135,17 @@ class Tags:
                 colour=discord.Colour.red()
             ))
 
+    @tag.command(aliases=("all",), name="list")
+    @commands.guild_only()
+    async def list_(self, ctx):
+        """Lists all tags on the guild."""
+
+        await ctx.send(embed=discord.Embed(
+            title=f"Tags on {ctx.guild.name}:",
+            description=', '.join(repr(t.name) for t in self._tag_table.all()),
+            colour=discord.Color.blue()
+        ))
+
 
 def setup(bot):
     bot.add_cog(Tags(bot))
