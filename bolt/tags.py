@@ -77,7 +77,7 @@ class Tags:
 
         tag_name = tag_name.title()
         if self._tag_table.find_one(guild_id=ctx.guild.id,
-                                    tag_name=tag_name) is not None:
+                                    name=tag_name) is not None:
             await ctx.send(embed=discord.Embed(
                 title="A Tag with the given name already exists.",
                 colour=discord.Colour.red()
