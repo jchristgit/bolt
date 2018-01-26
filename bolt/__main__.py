@@ -1,39 +1,37 @@
+import asyncio
 import datetime
 import random
 import traceback
 
-import dataset
 import discord
 from discord import Colour, Embed, Game
 from discord.ext import commands
-from stuf import stuf
 
-from bolt.util import CONFIG, create_logger
+from .database import engine
+from .util import CONFIG, create_logger
 
 
 # Set up Logging
 logger = create_logger('discord')
-guild_db = dataset.connect(f"sqlite:///{CONFIG['database']['guild_db_path']}", row_type=stuf)
-
-prefix_table = guild_db['prefixes']
 
 
-def get_prefix(bot, msg):
+
+# def get_prefix(bot, msg):
     # Works without prefix in DM's
-    if isinstance(msg.channel, discord.abc.PrivateChannel):
-        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
+#     if isinstance(msg.channel, discord.abc.PrivateChannel):
+#        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
 
     # Check for custom per-guild prefix
-    entry = prefix_table.find_one(guild_id=msg.guild.id)
-    if entry is not None:
-        return commands.when_mentioned_or(entry.prefix)(bot, msg)
-    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
+#     entry = prefix_table.find_one(guild_id=msg.guild.id)
+#     if entry is not None:
+#         return commands.when_mentioned_or(entry.prefix)(bot, msg)
+#    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
 
 
 class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(
-            command_prefix=get_prefix,
+            command_prefix='bjarne pls ',
             description=CONFIG['discord']['description'],
             pm_help=None,
             game=Game(name=random.choice(CONFIG['discord']['playing_states']))
@@ -41,11 +39,23 @@ class Bot(commands.AutoShardedBot):
         self.start_time = datetime.datetime.now()
         self.error_channel = None
         self.guild_channel = None
+        self.db = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
     def make_error_embed(description):
         return Embed(colour=Colour.red(), description=description)
+
+    async def on_connect(self):
+        await self.init()
+
+    async def init(self):
+        if self.db is None:
+            self.db = await engine.connect()
+
+    async def cleanup(self):
+        if self.db is not None:
+            await self.db.close()
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):
@@ -166,4 +176,5 @@ if __name__ == '__main__':
     print('Logging in...')
     client.run(CONFIG['discord']['token'])
     client.close()
+    asyncio.get_event_loop().run_until_complete(client.cleanup())
     print('Logged off.')
