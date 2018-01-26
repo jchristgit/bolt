@@ -1,7 +1,9 @@
 [[source]]
+
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
+
 
 [packages]
 
@@ -9,9 +11,14 @@ name = "pypi"
 dataset = "*"
 stuf = "*"
 fuzzyfinder = "*"
+sqlalchemy = "*"
+sqlalchemy-aio = "*"
 
 
 [dev-packages]
 
+
+
 [requires]
+
 python_version = "3.6"
