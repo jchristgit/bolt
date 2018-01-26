@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import random
 import traceback
@@ -7,7 +6,7 @@ import discord
 from discord import Colour, Embed, Game
 from discord.ext import commands
 
-from .database import engine
+from . import database
 from .util import CONFIG, create_logger
 
 
@@ -51,7 +50,8 @@ class Bot(commands.AutoShardedBot):
 
     async def init(self):
         if self.db is None:
-            self.db = await engine.connect()
+            await database.setup()
+            self.db = await database.engine.connect()
 
     async def cleanup(self):
         if self.db is not None:
@@ -83,27 +83,8 @@ class Bot(commands.AutoShardedBot):
                  f'Please contact Volcyy#2359 with a detailed '
                  f'description of the problem and how it was created. Thanks!')
             ))
-            # print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
-            # traceback.print_tb(error.original.__traceback__)
-            # print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
-            readable_tb = '```py\n' \
-                         + '\n'.join(traceback.format_list(traceback.extract_tb(error.original.__traceback__))) \
-                         + f'```\n```py\n{error.original}```'
 
-            await self.error_channel.send(embed=discord.Embed(
-                title=f'Exception occurred in Command `{ctx.command.qualified_name}`:',
-                colour=discord.Colour.red(),
-                timestamp=datetime.datetime.now()
-            ).add_field(
-                name='Invocation',
-                value=(f'**By**: {ctx.author} ({ctx.author.id})\n'
-                       f'**Channel**: {f"{ctx.channel.name} ({ctx.channel.id})" if ctx.channel is not None else "DM"}\n'
-                       f'**Guild**: {f"{ctx.guild.name} ({ctx.guild.id})" if ctx.guild is not None else "DM"}\n'
-                       f'**Message**: {ctx.message.content}')
-            ).add_field(
-                name='Traceback',
-                value=readable_tb if len(readable_tb) < 1024 else f'Too long to display, original:\n`{error.original}`'
-            ))
+            await super(Bot, self).on_command_error(ctx, error)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
         elif isinstance(error, commands.DisabledCommand):
@@ -176,5 +157,5 @@ if __name__ == '__main__':
     print('Logging in...')
     client.run(CONFIG['discord']['token'])
     client.close()
-    asyncio.get_event_loop().run_until_complete(client.cleanup())
+    # asyncio.get_event_loop().run_until_complete(client.cleanup())
     print('Logged off.')
