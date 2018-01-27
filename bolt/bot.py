@@ -54,16 +54,19 @@ class Bot(commands.AutoShardedBot):
                 ))
 
             await ctx.send(embed=self.make_error_embed(
-                (f'**An Error occurred through the invocation of the command**.\n'
-                 f'Please contact Volcyy#2359 with a detailed '
-                 f'description of the problem and how it was created. Thanks!')
+                ('**An Error occurred through the invocation of the command**.\n'
+                 'Please contact Volcyy#2359 with a detailed '
+                 'description of the problem and how it was created. Thanks!')
             ))
 
             await super(Bot, self).on_command_error(ctx, error)
+
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
+
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send(embed=self.make_error_embed('Sorry, this Command is currently disabled for maintenance.'))
+
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send(embed=self.make_error_embed('This Command cannot be used in private Messages.'))
 

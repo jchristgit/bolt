@@ -135,6 +135,7 @@ class Mod:
         !kick @Guy#1337 - kicks Guy
         !Kick @Guy#1337 be nice - kick Guy and specifies the reason "be nice" for the Audit Log.
         """
+
         if ctx.message.guild.me.top_role.position <= member.top_role.position:
             return await ctx.send(embed=discord.Embed(
                 title='Cannot kick:',
@@ -165,6 +166,7 @@ class Mod:
         purge - deletes 100 messages
         purge 50 - deletes 50 messages
         """
+
         total = sum(1 for _ in await ctx.message.channel.purge(
             limit=limit
         ))
@@ -191,6 +193,7 @@ class Mod:
         purgeid 129301 128195
             searches the past 500 messages for messages from these ID's and purges them.
         """
+
         total = sum(1 for _ in await ctx.message.channel.purge(
             check=lambda m: m.author.id in ids_to_prune
         ))
@@ -217,6 +220,7 @@ class Mod:
         !purgemsg 80 zalgo comes
             deletes messages in the last 80 messages containing 'zalgo comes'
         """
+
         if not amount.isdigit():
             return await ctx.send(embed=discord.Embed(
                 title='Failed to Purge Messages:',
@@ -251,6 +255,7 @@ class Mod:
         purgeuser 40 @Person#1337
             purges messages from Person in the past 40 Messages.
         """
+
         if not amount.isdigit():
             return await ctx.send(embed=discord.Embed(
                 title='Failed to Purge Messages:',
