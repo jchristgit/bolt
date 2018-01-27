@@ -1,6 +1,5 @@
 import datetime
 import random
-import traceback
 
 import discord
 from discord import Colour, Embed, Game
@@ -12,19 +11,6 @@ from .util import CONFIG, create_logger
 
 # Set up Logging
 logger = create_logger('discord')
-
-
-
-# def get_prefix(bot, msg):
-    # Works without prefix in DM's
-#     if isinstance(msg.channel, discord.abc.PrivateChannel):
-#        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
-
-    # Check for custom per-guild prefix
-#     entry = prefix_table.find_one(guild_id=msg.guild.id)
-#     if entry is not None:
-#         return commands.when_mentioned_or(entry.prefix)(bot, msg)
-#    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
 
 
 class Bot(commands.AutoShardedBot):
