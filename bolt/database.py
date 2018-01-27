@@ -9,7 +9,7 @@ from . import models
 
 
 engine = create_engine(
-    'sqlite:///data/guilds.db', strategy=ASYNCIO_STRATEGY
+    'sqlite:///data/bolt.db', strategy=ASYNCIO_STRATEGY
 )
 inspector = Inspector.from_engine(engine)
 
