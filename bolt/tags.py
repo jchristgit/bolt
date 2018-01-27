@@ -38,7 +38,7 @@ class Tags:
                 title=f"{tag.title} (from {tag_name!r})",
                 colour=discord.Colour.blue(),
                 description=tag.content,
-                timestamp=tag.creation
+                timestamp=tag.created_on
             )
             author = self.bot.get_user(tag.author_id)
             if author is not None:
