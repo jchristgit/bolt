@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from .models import sar as sar_model
+from ..models import sar as sar_model
 
 
 class Roles:

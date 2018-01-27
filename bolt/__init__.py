@@ -1,13 +1,9 @@
 from . import (
-    admin, database,
-    meta, mod,
-    models, roles,
-    tags, util
+    cogs,
+    bot, database, models, util
 )
 
 __all__ = [
-    'admin', 'database',
-    'meta', 'mod',
-    'models', 'roles',
-    'tags', 'util'
+    'cogs',
+    'bot', 'database', 'models', 'util'
 ]

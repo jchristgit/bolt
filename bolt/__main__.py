@@ -1,11 +1,12 @@
 from bolt.bot import Bot
 from .util import CONFIG, create_logger
 
+
 # Set up Logging
 logger = create_logger('discord')
 
 # Base path where cogs house
-COGS_BASE_PATH = 'bolt.'
+COGS_BASE_PATH = 'bolt.cogs.'
 
 # Cogs to load on login
 COGS_ON_LOGIN = [
@@ -29,4 +30,5 @@ if __name__ == '__main__':
     print('Logging in...')
     client.run(CONFIG['discord']['token'])
     client.close()
+    # asyncio.get_event_loop().run_until_complete(client.cleanup())
     print('Logged off.')
