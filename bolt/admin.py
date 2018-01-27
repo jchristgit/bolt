@@ -5,11 +5,9 @@ from discord.ext import commands
 
 
 class Admin:
-    """
-    Contains Commands for the Administration of the Bot.
-    Unloading this Cog may not be a good idea. 
-    """
-    def __init__(self, bot: commands.Bot):
+    """Contains Commands for the Administration of the Bot."""
+
+    def __init__(self, bot):
         self.bot = bot
         print('Loaded Cog Admin.')
 
@@ -21,8 +19,10 @@ class Admin:
     @commands.is_owner()
     async def shutdown(self, ctx):
         """Shutdown the Bot. Owner only."""
+
         print('Shutting down by owner request...')
         await ctx.send(embed=discord.Embed(description='Shutting down...'))
+        await self.bot.cleanup()
         await self.bot.close()
 
     @commands.command(name='setplaying', hidden=True)
