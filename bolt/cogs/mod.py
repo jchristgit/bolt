@@ -62,7 +62,7 @@ class Mod:
                 colour=discord.Colour.green()
             ))
 
-    @commands.command(name='getprefix')
+    @commands.command(name='getprefix', aliases=['prefix'])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def get_prefix(self, ctx):
@@ -101,6 +101,7 @@ class Mod:
         !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
         !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
         """
+
         if prune_days > 7 or prune_days < 0:
             return await ctx.send(embed=discord.Embed(
                 title='Failed to Ban:',
@@ -122,43 +123,6 @@ class Mod:
             title='Ban successful',
             description=f'**Banned {member}**{reason}'
         ))
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
-    async def unban(self, ctx):
-        """Interactively unban a User."""
-        banned_users = await ctx.message.guild.bans()
-        description = '**The following Users are banned. Specify which User you would like to unban by typing the ' \
-                      'number of the User. This Message will get deleted in 20 seconds automatically.**\n '
-        for idx, ban in enumerate(banned_users):
-            description += f'**`{idx + 1}`**: {ban.user} {f"for *{ban.reason}*" if ban.reason is not None else ""}\n'
-        ban_list = await ctx.send(embed=discord.Embed(title='Banned Members', description=description))
-        try:
-            num = await self.bot.wait_for(
-                'message',
-                check=lambda m: m.content.isdigit() and m.author == ctx.message.author,
-                timeout=20
-            )
-        except asyncio.TimeoutError:
-            await ctx.send(embed=discord.Embed(
-                description='No User to unban was specified in time.',
-                colour=discord.Colour.red()
-            ))
-        else:
-            num = int(num.content)
-            if num < 1 or num > len(banned_users) + 1:
-                await ctx.send(embed=discord.Embed(description='Invalid Number specified.'))
-            else:
-                await ctx.message.guild.unban(banned_users[num - 1].user, reason=f'Invoked by {ctx.message.author}.')
-                unban_notification = await ctx.send(embed=discord.Embed(
-                    description=f'Successfully unbanned **{banned_users[num - 1].user}**k')
-                )
-                await asyncio.sleep(5)
-                await unban_notification.delete()
-        finally:
-            await ban_list.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -186,30 +150,6 @@ class Mod:
             description=f'**Kicked {member}**{reason}',
             colour=discord.Colour.green()
         ))
-
-    @commands.command(name='find', aliases=['search'])
-    @commands.cooldown(rate=3, per=120, type=commands.BucketType.channel)
-    async def channel_search(self, ctx, *, contents: str):
-        """Search for messages (in the past 500) containing the given message.
-
-        **Example:**
-        !find hello
-            returns a list of messages containing "hello" in the past 500 messages.
-        """
-        messages = []
-        async for message in ctx.message.channel.history(limit=500).filter(lambda m: contents in m.content):
-            messages.append(f'{message.author.display_name}: {message.content}\n')
-        response = f'**Messages found ({len(messages)}):**\n{"".join(messages)}'
-        if len(response) >= 2000:
-            await ctx.send(embed=discord.Embed(
-                description='There are too many messages found to display. Try a more specific search term.',
-                colour=discord.Colour.red()
-            ))
-        else:
-            await ctx.send(embed=discord.Embed(
-                description=response,
-                colour=discord.Colour.blue()
-            ))
 
     @commands.command()
     @commands.guild_only()
