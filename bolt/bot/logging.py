@@ -1,8 +1,4 @@
-import json
 import logging
-
-with open("config.json") as f:
-    CONFIG = json.load(f)
 
 
 def create_logger(name, filemode='a', level=logging.INFO):

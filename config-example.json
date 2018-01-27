@@ -7,11 +7,6 @@
     "prefixes": [
       "?"
     ],
-    "error_channel_id": 0,
-    "guild_channel_id": 0,
     "description": ""
-  },
-  "twitch": {
-    "client_id": ""
   }
 }

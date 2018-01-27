@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from .models import tag as tag_model
+from ..models import tag as tag_model
 
 
 class Tags:
@@ -40,6 +40,7 @@ class Tags:
                 description=tag.content,
                 timestamp=tag.created_on
             )
+
             author = self.bot.get_user(tag.author_id)
             if author is not None:
                 tag_embed.set_footer(
