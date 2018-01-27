@@ -5,12 +5,10 @@ from bolt.bot.logging import create_logger
 # Set up Logging
 logger = create_logger('discord')
 
-# Base path where cogs house
-COGS_BASE_PATH = 'bolt.cogs.'
-
-# Cogs to load on login
-COGS_ON_LOGIN = [
+MAIN_COGS_BASE_PATH = 'bolt.cogs.'
+MAIN_COGS = [
     'admin',
+    'config',
     'meta',
     'mod',
     'roles',
@@ -18,12 +16,24 @@ COGS_ON_LOGIN = [
 ]
 
 
+OPTIONAL_COGS_BASE_PATH = 'bolt.optional_cogs.'
+OPTIONAL_COGS = [
+    'example',
+    'slowmode'
+]
+
+
 if __name__ == '__main__':
     client = Bot()
     print('Loading Cogs...')
-    for cog in COGS_ON_LOGIN:
+    for cog in MAIN_COGS:
         try:
-            client.load_extension(COGS_BASE_PATH + cog)
+            client.load_extension(MAIN_COGS_BASE_PATH + cog)
+        except ModuleNotFoundError as err:
+            print(f'Could not load Cog \'{cog}\': {err}.')
+    for cog in OPTIONAL_COGS:
+        try:
+            client.load_extension(OPTIONAL_COGS_BASE_PATH + cog)
         except ModuleNotFoundError as err:
             print(f'Could not load Cog \'{cog}\': {err}.')
 
