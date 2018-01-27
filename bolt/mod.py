@@ -1,12 +1,9 @@
 import asyncio
-import dataset
 import discord
 
 from discord.ext import commands
-from stuf import stuf
 
-db = dataset.connect('sqlite:///data/guilds.db', row_type=stuf)
-guild_prefixes = db['prefixes']
+from .models import prefix as prefix_model
 
 
 class Mod:
@@ -16,7 +13,7 @@ class Mod:
     Keep in mind that although I'm not primarily intended for Moderation Commands,
     I still provide a bunch of them in case you will ever need it.
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot):
         self.bot = bot
         print('Loaded Cog Mod.')
 
@@ -27,35 +24,66 @@ class Mod:
     @commands.command(name='setprefix')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def set_prefix(self, ctx, *, new_prefix: str=''):
+    async def set_prefix(self, ctx, *, new_prefix: str=None):
         """Change the prefix of this Guild for me to the given Prefix.
 
+        All `_` will be replaced with a space, which allows you to do some nice things:
         To use a prefix that ends with a space, e.g. `botty lsar`, use `_` to set it,
         since spaces will get truncated by Discord automatically, for example:
         `setprefix botty_`
         `botty help`
 
-        If you prefer being polite, you could use the following:
+        Another example: If you prefer being polite, you could use the following:
         `setprefix botty pls_`
         `botty pls help`
+
 
         Keep in mind that if you ever forget the prefix, I also react to mentions, so just mention me if you need help.
         Alternatively, to reset the prefix, just use this command
         without specifying a new prefix you wish to use, like `setprefix`.
         """
-        if new_prefix == '':
-            guild_prefixes.delete(guild_id=ctx.guild.id)
+
+        # This command always has to delete an existing prefix if it is present.
+        query = prefix_model.delete().where(prefix_model.c.guild_id == ctx.guild.id)
+        await self.bot.db.execute(query)
+
+        if new_prefix is None:
             await ctx.send(embed=discord.Embed(
                 title='Reset this Guild\'s prefix',
-                description='My prefix is now reset to `?` and `!`. Alternatively, you can mention me.',
+                description='My prefix is now reset to the default. Alternatively, you can mention me.',
                 colour=discord.Colour.green()
             ))
         else:
             new_prefix = new_prefix.replace('_', ' ')
-            guild_prefixes.upsert(dict(guild_id=ctx.guild.id, prefix=new_prefix), ['guild_id'])
+            query = prefix_model.insert().values(guild_id=ctx.guild.id, prefix=new_prefix)
+            await self.bot.db.execute(query)
             await ctx.send(embed=discord.Embed(
                 title=f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.',
                 colour=discord.Colour.green()
+            ))
+
+    @commands.command(name='getprefix')
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def get_prefix(self, ctx):
+        """Tells you which prefix is currently active on this guild."""
+
+        query = prefix_model.select().where(prefix_model.c.guild_id == ctx.guild.id)
+        res = await self.bot.db.execute(query)
+        prefix_row = await res.first()
+
+        if prefix_row is None:
+            await ctx.send(embed=discord.Embed(
+                title='Custom Guild Prefix',
+                description='This Guild has no custom prefix set.',
+                colour=discord.Colour.blue()
+            ))
+        else:
+            humanized_prefix = f'`{prefix_row.prefix}`{", with a space" if prefix_row.prefix[-1] == " " else ""}'
+            await ctx.send(embed=discord.Embed(
+                title='Custom Guild Prefix',
+                description=f'The custom prefix for this guild is {humanized_prefix}.',
+                colour=discord.Colour.blue()
             ))
 
     @commands.command()

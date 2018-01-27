@@ -1,32 +1,30 @@
 import datetime
 import random
-import traceback
 
-import dataset
 import discord
 from discord import Colour, Embed, Game
 from discord.ext import commands
-from stuf import stuf
 
-from bolt.util import CONFIG, create_logger
+from . import database
+from .models import prefix as prefix_model
+from .util import CONFIG, create_logger
 
 
 # Set up Logging
 logger = create_logger('discord')
-guild_db = dataset.connect(f"sqlite:///{CONFIG['database']['guild_db_path']}", row_type=stuf)
-
-prefix_table = guild_db['prefixes']
 
 
-def get_prefix(bot, msg):
-    # Works without prefix in DM's
+async def get_prefix(bot, msg):
+    # Works without prefix in DMs
     if isinstance(msg.channel, discord.abc.PrivateChannel):
         return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
 
     # Check for custom per-guild prefix
-    entry = prefix_table.find_one(guild_id=msg.guild.id)
-    if entry is not None:
-        return commands.when_mentioned_or(entry.prefix)(bot, msg)
+    query = prefix_model.select().where(prefix_model.c.guild_id == msg.guild.id)
+    res = await bot.db.execute(query)
+    prefix_row = await res.first()
+    if prefix_row is not None:
+        return commands.when_mentioned_or(prefix_row.prefix)(bot, msg)
     return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
 
 
@@ -41,11 +39,24 @@ class Bot(commands.AutoShardedBot):
         self.start_time = datetime.datetime.now()
         self.error_channel = None
         self.guild_channel = None
+        self.db = None
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
     def make_error_embed(description):
         return Embed(colour=Colour.red(), description=description)
+
+    async def on_connect(self):
+        await self.init()
+
+    async def init(self):
+        if self.db is None:
+            await database.setup()
+            self.db = await database.engine.connect()
+
+    async def cleanup(self):
+        if self.db is not None:
+            await self.db.close()
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):
@@ -73,27 +84,8 @@ class Bot(commands.AutoShardedBot):
                  f'Please contact Volcyy#2359 with a detailed '
                  f'description of the problem and how it was created. Thanks!')
             ))
-            # print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
-            # traceback.print_tb(error.original.__traceback__)
-            # print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
-            readable_tb = '```py\n' \
-                         + '\n'.join(traceback.format_list(traceback.extract_tb(error.original.__traceback__))) \
-                         + f'```\n```py\n{error.original}```'
 
-            await self.error_channel.send(embed=discord.Embed(
-                title=f'Exception occurred in Command `{ctx.command.qualified_name}`:',
-                colour=discord.Colour.red(),
-                timestamp=datetime.datetime.now()
-            ).add_field(
-                name='Invocation',
-                value=(f'**By**: {ctx.author} ({ctx.author.id})\n'
-                       f'**Channel**: {f"{ctx.channel.name} ({ctx.channel.id})" if ctx.channel is not None else "DM"}\n'
-                       f'**Guild**: {f"{ctx.guild.name} ({ctx.guild.id})" if ctx.guild is not None else "DM"}\n'
-                       f'**Message**: {ctx.message.content}')
-            ).add_field(
-                name='Traceback',
-                value=readable_tb if len(readable_tb) < 1024 else f'Too long to display, original:\n`{error.original}`'
-            ))
+            await super(Bot, self).on_command_error(ctx, error)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
         elif isinstance(error, commands.DisabledCommand):
@@ -166,4 +158,5 @@ if __name__ == '__main__':
     print('Logging in...')
     client.run(CONFIG['discord']['token'])
     client.close()
+    # asyncio.get_event_loop().run_until_complete(client.cleanup())
     print('Logged off.')
