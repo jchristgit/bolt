@@ -16,7 +16,7 @@ class OptionalCog:
     # bot owner. This is useful for cogs that
     # were made for a single guild and are not
     # intended to be used on other guilds.
-    RESTRICTED: bool
+    RESTRICTED: bool = False
 
     def __init__(self, bot):
         self.bot = bot

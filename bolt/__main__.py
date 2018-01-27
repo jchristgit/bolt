@@ -18,7 +18,8 @@ MAIN_COGS = [
 
 OPTIONAL_COGS_BASE_PATH = 'bolt.optional_cogs.'
 OPTIONAL_COGS = [
-    'example'
+    'example',
+    'slowmode'
 ]
 
 
