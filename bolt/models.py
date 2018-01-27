@@ -24,3 +24,9 @@ sar = Table('self_assignable_role', metadata,
     Column('name', String(150), index=True, nullable=False),
     Column('guild_id', BigInteger(), nullable=False)
 )
+
+
+prefix = Table('prefix', metadata,
+    Column('guild_id', BigInteger(), primary_key=True),
+    Column('prefix', String(50), nullable=False)
+)

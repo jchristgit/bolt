@@ -6,6 +6,7 @@ from discord import Colour, Embed, Game
 from discord.ext import commands
 
 from . import database
+from .models import prefix as prefix_model
 from .util import CONFIG, create_logger
 
 
@@ -13,10 +14,24 @@ from .util import CONFIG, create_logger
 logger = create_logger('discord')
 
 
+async def get_prefix(bot, msg):
+    # Works without prefix in DMs
+    if isinstance(msg.channel, discord.abc.PrivateChannel):
+        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
+
+    # Check for custom per-guild prefix
+    query = prefix_model.select().where(prefix_model.c.guild_id == msg.guild.id)
+    res = await bot.db.execute(query)
+    prefix_row = await res.first()
+    if prefix_row is not None:
+        return commands.when_mentioned_or(prefix_row.prefix)(bot, msg)
+    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
+
+
 class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(
-            command_prefix='bjarne pls ',
+            command_prefix=get_prefix,
             description=CONFIG['discord']['description'],
             pm_help=None,
             game=Game(name=random.choice(CONFIG['discord']['playing_states']))
