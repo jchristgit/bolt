@@ -1,6 +1,6 @@
-from bolt.bot import Bot
-from .util import CONFIG, create_logger
-
+from .bot import Bot
+from .bot.config import CONFIG
+from bolt.bot.logging import create_logger
 
 # Set up Logging
 logger = create_logger('discord')

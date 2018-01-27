@@ -1,9 +1,9 @@
 from . import (
-    cogs,
-    bot, database, models, util
+    bot, cogs,
+    database, models
 )
 
 __all__ = [
-    'cogs',
-    'bot', 'database', 'models', 'util'
+    'bot', 'cogs',
+    'bot', 'database', 'models'
 ]

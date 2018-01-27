@@ -5,8 +5,9 @@ import discord
 from discord import Game, Embed, Colour
 from discord.ext import commands
 
-from bolt import database
-from bolt.util import CONFIG, get_prefix
+from .. import database
+from .config import CONFIG, get_prefix
+from .logging import create_logger
 
 
 class Bot(commands.AutoShardedBot):
@@ -17,8 +18,8 @@ class Bot(commands.AutoShardedBot):
             pm_help=None,
             game=Game(name=random.choice(CONFIG['discord']['playing_states']))
         )
-        self.start_time = datetime.datetime.now()
         self.db = None
+        self.logger = create_logger('discord')
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
