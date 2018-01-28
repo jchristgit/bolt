@@ -16,6 +16,14 @@ class Tags:
     def __unload():
         print("Unloaded Cog Tags.")
 
+    async def get_exact_match(self, tag_title: str, guild_id: int):
+        query = tag_model.select().where(and_(
+            tag_model.c.title.ilike(tag_title),
+            tag_model.c.guild_id == guild_id)
+        )
+        result = await self.bot.db.execute(query)
+        return await result.first()
+
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
     async def tag(self, ctx, *, tag_name: str):
@@ -24,34 +32,41 @@ class Tags:
         To view a tag, simply use this command along with a tag name.
         """
 
-        query = tag_model.select(and_(tag_model.c.title.ilike(f'%{tag_name}%'), tag_model.c.guild_id == ctx.guild.id))
-        result = await self.bot.db.execute(query)
-        tag = await result.first()
+        match = await self.get_exact_match(tag_name, ctx.guild.id)
 
-        if tag is None:
-            await ctx.send(embed=discord.Embed(
-                title=f"No tag with a similar name to {tag_name!r} found.",
-                colour=discord.Colour.red()
-            ))
-        else:
-            tag_embed = discord.Embed(
-                title=f"{tag.title} (from {tag_name!r})",
-                colour=discord.Colour.blue(),
-                description=tag.content,
-                timestamp=tag.created_on
+        if match is None:
+            query = tag_model.select().where(and_(
+                tag_model.c.title.ilike(f'%{tag_name}%'),
+                tag_model.c.guild_id == ctx.guild.id)
             )
+            result = await self.bot.db.execute(query)
+            tag = await result.first()
 
-            author = self.bot.get_user(tag.author_id)
-            if author is not None:
-                tag_embed.set_footer(
-                    text=f"Created by {author.name}",
-                    icon_url=author.avatar_url
-                )
-            else:
-                tag_embed.set_footer(
-                    text=f"Created by {tag.author_id}"
-                )
-            await ctx.send(embed=tag_embed)
+            if tag is None:
+                return await ctx.send(embed=discord.Embed(
+                    title=f"No tag with a similar name to {tag_name!r} found.",
+                    colour=discord.Colour.red()
+                ))
+            match = tag
+
+        tag_embed = discord.Embed(
+            title=f"{match.title} (from {tag_name!r})",
+            colour=discord.Colour.blue(),
+            description=match.content,
+            timestamp=match.created_on
+        )
+
+        author = self.bot.get_user(match.author_id)
+        if author is not None:
+            tag_embed.set_footer(
+                text=f"Created by {author.name}",
+                icon_url=author.avatar_url
+            )
+        else:
+            tag_embed.set_footer(
+                text=f"Created by {match.author_id}"
+            )
+        await ctx.send(embed=tag_embed)
 
     @tag.command()
     @commands.guild_only()
@@ -66,9 +81,7 @@ class Tags:
             tag create 'my tag name' tag content
         """
 
-        query = tag_model.select(and_(tag_model.c.title.ilike(tag_title), tag_model.c.guild_id == ctx.guild.id))
-        result = await self.bot.db.execute(query)
-        existing_tag = await result.first()
+        existing_tag = await self.get_exact_match(tag_title, ctx.guild.id)
 
         if existing_tag is None:
             query = tag_model.insert().values(
@@ -102,9 +115,7 @@ class Tags:
         exceptions that it is case-insensitive.
         """
 
-        query = tag_model.select(and_(tag_model.c.title.ilike(tag_title), tag_model.c.guild_id == ctx.guild.id))
-        result = await self.bot.db.execute(query)
-        tag = await result.first()
+        tag = await self.get_exact_match(tag_title, ctx.guild.id)
 
         if tag is not None:
             if ctx.author.id != tag.author_id \
