@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ..models import (
+from ...models import (
     opt_cog as opt_cog_model,
     prefix as prefix_model
 )
@@ -17,6 +17,11 @@ class Config:
 
     def __init__(self, bot):
         self.bot = bot
+        print('Loaded Cog Config.')
+
+    @staticmethod
+    def __unload():
+        print('Unloaded Cog Config.')
 
     @commands.command(name='enablecog', aliases=['cogon'])
     @commands.guild_only()

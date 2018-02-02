@@ -3,7 +3,7 @@ import discord
 
 from discord.ext import commands
 
-from ..models import prefix as prefix_model
+from ...models import prefix as prefix_model
 
 
 class Mod:
@@ -27,10 +27,10 @@ class Mod:
     @commands.bot_has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, prune_days: int=1, *, reason: str=''):
         """Ban a Member with an optional prune and an optional reason.
-        
+
         If the amount of messages to prune is omitted, all his messages of the past day will be deleted.
         The maximum is 7 and the minimum is 0.
-        
+
         **Example:**
         !ban @Guy#1337 - bans Guy and deletes his messages of the last day
         !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
