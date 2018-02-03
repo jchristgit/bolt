@@ -1,4 +1,4 @@
-from . import models
+from . import models  # noqa
 from .cog import Tags
 
 

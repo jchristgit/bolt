@@ -15,5 +15,3 @@ tag = Table('tag', metadata,
     Column('author_id', BigInteger(), nullable=False),
     Column('guild_id', BigInteger(), nullable=False)
 )
-
-
