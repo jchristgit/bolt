@@ -5,7 +5,8 @@ from sqlalchemy import (
     Integer, String, DateTime, BigInteger
 )
 
-from bolt.database import metadata
+from ...database import metadata
+
 
 tag = Table('tag', metadata,
     Column('id', Integer(), primary_key=True),

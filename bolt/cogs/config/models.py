@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, BigInteger, String, Integer
 
-from bolt.database import metadata
+from ...database import metadata
+
 
 prefix = Table('prefix', metadata,
     Column('guild_id', BigInteger(), primary_key=True),

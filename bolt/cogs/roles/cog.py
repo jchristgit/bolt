@@ -7,6 +7,7 @@ from .models import sar as sar_model
 
 class Roles:
     """Commands for assigning, removing, and modifying Roles."""
+
     def __init__(self, bot):
         self.bot = bot
         print('Loaded Cog Roles.')
