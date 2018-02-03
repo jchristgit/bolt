@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from .base import OptionalCog
+from ..base import OptionalCog
 
 
 class Example(OptionalCog):

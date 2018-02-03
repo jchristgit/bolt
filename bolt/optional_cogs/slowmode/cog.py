@@ -3,7 +3,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from .base import OptionalCog, enabled_for
+from ..base import OptionalCog, enabled_for
 
 
 class Slowmode(OptionalCog):
