@@ -128,7 +128,10 @@ class Tags:
                     colour=discord.Colour.red()
                 ))
             else:
-                query = tag_model.delete(and_(tag_model.c.title.ilike(tag_title), tag_model.c.guild_id == ctx.guild.id))
+                query = tag_model.delete(and_(
+                    tag_model.c.title.ilike(tag_title),
+                    tag_model.c.guild_id == ctx.guild.id)
+                )
                 await self.bot.db.execute(query)
                 await ctx.send(embed=discord.Embed(
                     title=f"Deleted the tag {tag_title!r}.",

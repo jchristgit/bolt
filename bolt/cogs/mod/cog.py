@@ -3,8 +3,6 @@ import discord
 
 from discord.ext import commands
 
-from bolt.cogs.config.models import prefix as prefix_model
-
 
 class Mod:
     """
@@ -13,6 +11,7 @@ class Mod:
     Keep in mind that although I'm not primarily intended for Moderation Commands,
     I still provide a bunch of them in case you will ever need it.
     """
+
     def __init__(self, bot):
         self.bot = bot
         print('Loaded Cog Mod.')

@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, BigInteger, String
 
-from bolt.database import metadata
+from ...database import metadata
+
 
 sar = Table('self_assignable_role', metadata,
     Column('id', BigInteger(), primary_key=True),

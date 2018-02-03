@@ -5,7 +5,8 @@ from sqlalchemy import (
     Integer, String, DateTime, BigInteger
 )
 
-from bolt.database import metadata
+from ...database import metadata
+
 
 tag = Table('tag', metadata,
     Column('id', Integer(), primary_key=True),
@@ -15,5 +16,3 @@ tag = Table('tag', metadata,
     Column('author_id', BigInteger(), nullable=False),
     Column('guild_id', BigInteger(), nullable=False)
 )
-
-
