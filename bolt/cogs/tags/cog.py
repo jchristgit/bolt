@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ...models import tag as tag_model
+from .models import tag as tag_model
 
 
 class Tags:

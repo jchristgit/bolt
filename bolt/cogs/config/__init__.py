@@ -1,3 +1,4 @@
+from . import models
 from .cog import Config
 
 

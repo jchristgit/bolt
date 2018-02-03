@@ -3,10 +3,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ...models import (
-    opt_cog as opt_cog_model,
-    prefix as prefix_model
-)
+from .models import prefix as prefix_model, opt_cog as opt_cog_model
 
 
 class Config:

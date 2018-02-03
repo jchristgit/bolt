@@ -3,7 +3,7 @@ import discord
 
 from discord.ext import commands
 
-from ...models import prefix as prefix_model
+from bolt.cogs.config.models import prefix as prefix_model
 
 
 class Mod:
