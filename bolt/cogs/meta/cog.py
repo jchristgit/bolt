@@ -4,6 +4,7 @@ from discord.ext import commands
 
 class Meta:
     """Meta Commands, providing information about various things."""
+
     def __init__(self, bot):
         self.bot = bot
         print('Loaded Cog Meta.')
@@ -15,6 +16,7 @@ class Meta:
     @commands.command()
     async def stats(self, ctx):
         """Displays information and statistics about the Bot."""
+
         response = discord.Embed()
         response.colour = discord.Colour.blue()
         response.set_thumbnail(
@@ -39,6 +41,7 @@ class Meta:
     @commands.command()
     async def guilds(self, ctx):
         """Returns a list of all Guilds that the Bot can see."""
+
         await ctx.send(embed=discord.Embed(
             title=f'Guilds ({sum(1 for _ in self.bot.guilds)} total)',
             description=', '.join(g.name for g in self.bot.guilds),
@@ -49,6 +52,7 @@ class Meta:
     @commands.guild_only()
     async def minfo(self, ctx, *, member: discord.Member=None):
         """Displays Information about yourself or a tagged Member."""
+
         if member is None:
             member = ctx.message.author
         await ctx.send(embed=discord.Embed(
@@ -72,7 +76,3 @@ class Meta:
         ).set_thumbnail(
             url=member.avatar_url
         ))
-
-
-def setup(bot):
-    bot.add_cog(Meta(bot))

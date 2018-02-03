@@ -1,6 +1,6 @@
 from sqlalchemy import and_
 
-from ..models import opt_cog
+from ..cogs.config.models import opt_cog
 
 
 class OptionalCog:

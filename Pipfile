@@ -17,6 +17,7 @@ sqlalchemy-aio = "*"
 
 [dev-packages]
 
+"flake8" = "*"
 
 
 [requires]

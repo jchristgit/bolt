@@ -42,9 +42,5 @@ class Admin:
     async def cogs(self, ctx):
         await ctx.send(embed=discord.Embed(
             title=f'Currently loaded Cogs ({len(self.bot.cogs)} total)',
-            description=', '.join(self.bot.cogs))
-        )
-
-
-def setup(bot):
-    bot.add_cog(Admin(bot))
+            description=', '.join(self.bot.cogs)
+        ))

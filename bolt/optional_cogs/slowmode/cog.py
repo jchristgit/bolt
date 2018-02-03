@@ -3,7 +3,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from .base import OptionalCog, enabled_for
+from ..base import OptionalCog, enabled_for
 
 
 class Slowmode(OptionalCog):
@@ -70,7 +70,3 @@ class Slowmode(OptionalCog):
                 title='Channel is now in slowmode.',
                 colour=discord.Colour.green()
             ))
-
-
-def setup(bot):
-    bot.add_cog(Slowmode(bot))

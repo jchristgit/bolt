@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ..models import tag as tag_model
+from .models import tag as tag_model
 
 
 class Tags:
@@ -128,7 +128,10 @@ class Tags:
                     colour=discord.Colour.red()
                 ))
             else:
-                query = tag_model.delete(and_(tag_model.c.title.ilike(tag_title), tag_model.c.guild_id == ctx.guild.id))
+                query = tag_model.delete(and_(
+                    tag_model.c.title.ilike(tag_title),
+                    tag_model.c.guild_id == ctx.guild.id)
+                )
                 await self.bot.db.execute(query)
                 await ctx.send(embed=discord.Embed(
                     title=f"Deleted the tag {tag_title!r}.",
@@ -155,7 +158,3 @@ class Tags:
             description=', '.join(repr(t.title) for t in guild_tags) or 'This guild has no tags.',
             colour=discord.Color.blue()
         ))
-
-
-def setup(bot):
-    bot.add_cog(Tags(bot))
