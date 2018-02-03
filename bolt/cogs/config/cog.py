@@ -177,7 +177,3 @@ class Config:
                 description=f'The custom prefix for this guild is {humanized_prefix}.',
                 colour=discord.Colour.blue()
             ))
-
-
-def setup(bot):
-    bot.add_cog(Config(bot))

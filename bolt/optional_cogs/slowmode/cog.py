@@ -70,7 +70,3 @@ class Slowmode(OptionalCog):
                 title='Channel is now in slowmode.',
                 colour=discord.Colour.green()
             ))
-
-
-def setup(bot):
-    bot.add_cog(Slowmode(bot))

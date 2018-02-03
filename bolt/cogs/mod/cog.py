@@ -216,7 +216,3 @@ class Mod:
         ))
         await asyncio.sleep(5)
         await resp.delete()
-
-
-def setup(bot):
-    bot.add_cog(Mod(bot))
