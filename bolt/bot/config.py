@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 
-from bolt.models import prefix as prefix_model
+from ..cogs.config.models import prefix as prefix_model
 
 with open("config.json") as f:
     CONFIG = json.load(f)

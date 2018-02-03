@@ -3,10 +3,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ..models import (
-    opt_cog as opt_cog_model,
-    prefix as prefix_model
-)
+from .models import prefix as prefix_model, opt_cog as opt_cog_model
 
 
 class Config:
@@ -17,6 +14,11 @@ class Config:
 
     def __init__(self, bot):
         self.bot = bot
+        print('Loaded Cog Config.')
+
+    @staticmethod
+    def __unload():
+        print('Unloaded Cog Config.')
 
     @commands.command(name='enablecog', aliases=['cogon'])
     @commands.guild_only()
@@ -172,7 +174,3 @@ class Config:
                 description=f'The custom prefix for this guild is {humanized_prefix}.',
                 colour=discord.Colour.blue()
             ))
-
-
-def setup(bot):
-    bot.add_cog(Config(bot))

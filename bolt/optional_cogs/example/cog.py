@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from .base import OptionalCog
+from ..base import OptionalCog
 
 
 class Example(OptionalCog):
@@ -14,7 +14,3 @@ class Example(OptionalCog):
     @commands.command()
     async def hello(self, ctx):
         await ctx.send("Hello from an optional cog!")
-
-
-def setup(bot):
-    bot.add_cog(Example(bot))

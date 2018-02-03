@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ..models import sar as sar_model
+from .models import sar as sar_model
 
 
 class Roles:
@@ -218,7 +218,3 @@ class Roles:
         ).set_footer(
             text='Run `rinfo <name>` to get detailed information about a Role'
         ))
-
-
-def setup(bot):
-    bot.add_cog(Roles(bot))

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from ..models import tag as tag_model
+from .models import tag as tag_model
 
 
 class Tags:
@@ -155,7 +155,3 @@ class Tags:
             description=', '.join(repr(t.title) for t in guild_tags) or 'This guild has no tags.',
             colour=discord.Color.blue()
         ))
-
-
-def setup(bot):
-    bot.add_cog(Tags(bot))

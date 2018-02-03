@@ -72,7 +72,3 @@ class Meta:
         ).set_thumbnail(
             url=member.avatar_url
         ))
-
-
-def setup(bot):
-    bot.add_cog(Meta(bot))
