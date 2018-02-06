@@ -1,4 +1,6 @@
 import asyncio
+import collections
+import time
 
 import discord
 from discord.ext import commands
@@ -12,18 +14,30 @@ class Slowmode(OptionalCog):
     def __init__(self, bot):
         super().__init__(bot)
         bot.add_listener(self.on_message)
-        self.in_slowmode = set()
+        self.users = collections.defaultdict(lambda: (time.monotonic(), 1))
+        self.slowmode_users = set()
         self.slowmode_channels = set()
 
     async def on_message(self, msg):
         if msg.guild is not None and not await enabled_for(self, msg.guild.id):
             return
 
-        if msg.channel in self.slowmode_channels or msg.author in self.in_slowmode:
+        if msg.channel in self.slowmode_channels or msg.author in self.slowmode_users:
             if msg.author.top_role < msg.guild.me.top_role:
-                await msg.channel.set_permissions(msg.author, send_messages=False)
-                await asyncio.sleep(10 + 5 * max(0, len(self.in_slowmode) - 5))
-                await msg.channel.set_permissions(msg.author, send_messages=None)
+                last_time, count = self.users[msg.author.id]
+
+                # if the author did not send anything in the past 10 seconds, remove his entry
+                if time.monotonic() - last_time > 10:
+                    del self.users[msg.author.id]
+                    return
+
+                if count >= 5:
+                    await msg.channel.set_permissions(msg.author, send_messages=False)
+                    await asyncio.sleep(1)
+                    await msg.channel.set_permissions(msg.author, overwrite=None)
+                    del self.users[msg.author.id]
+                else:
+                    self.users[msg.author.id] = (last_time, count + 1)
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
@@ -32,8 +46,8 @@ class Slowmode(OptionalCog):
     async def slowmode(self, ctx, user: discord.Member):
         """Toggles slowmode on the given User."""
 
-        if user in self.in_slowmode:
-            self.in_slowmode.remove(user)
+        if user in self.slowmode_users:
+            self.slowmode_users.remove(user)
             await ctx.send(embed=discord.Embed(
                 description=f'User {user.mention} is no longer in slowmode.',
                 colour=discord.Colour.green()
@@ -45,7 +59,7 @@ class Slowmode(OptionalCog):
                 colour=discord.Colour.red()
             ))
         else:
-            self.in_slowmode.add(user)
+            self.slowmode_users.add(user)
             await ctx.send(embed=discord.Embed(
                 description=f'User {user.mention} is now in slowmode.',
                 colour=discord.Colour.green()
