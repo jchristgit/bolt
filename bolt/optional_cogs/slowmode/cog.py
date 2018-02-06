@@ -22,7 +22,7 @@ class Slowmode(OptionalCog):
         if msg.guild is not None and not await enabled_for(self, msg.guild.id):
             return
 
-        if msg.channel in self.slowmode_channels or msg.author in self.slowmode_users:
+        if msg.channel in self.slowmode_channels:
             if msg.author.top_role < msg.guild.me.top_role:
                 last_time, count = self.users[msg.author.id]
 
@@ -38,6 +38,11 @@ class Slowmode(OptionalCog):
                     del self.users[msg.author.id]
                 else:
                     self.users[msg.author.id] = (last_time, count + 1)
+
+        elif msg.author in self.slowmode_users:
+            await msg.channel.set_permissions(msg.author, send_messages=False)
+            await asyncio.sleep(1)
+            await msg.channel.set_permissions(msg.author, overwrite=None)
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
