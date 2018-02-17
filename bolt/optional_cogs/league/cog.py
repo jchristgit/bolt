@@ -22,6 +22,57 @@ class League(OptionalCog):
     async def league(self, *_):
         pass
 
+    @league.command(name="setpermrole")
+    @commands.has_permissions(manage_roles=True)
+    async def set_permitted_role(self, ctx, role: discord.Role):
+        """
+        Sets the role which members must have
+        to modify any settings for this Guild.
+        """
+
+        query = perm_role_model.select().where(perm_role_model.c.guild_id == ctx.guild.id)
+        result = await self.bot.db.execute(query)
+        exists = await result.first() is not None
+
+        if exists:
+            await ctx.send(embed=discord.Embed(
+                title="Failed to set permitted role:",
+                description="A role is already set. Remove it using `rmpermrole`.",
+                colour=discord.Colour.red()
+            ))
+        else:
+            query = perm_role_model.insert().values(id=role.id, guild_id=ctx.guild.id)
+            await self.bot.db.execute(query)
+            await ctx.send(embed=discord.Embed(
+                description=f"Successfully set permitted role to {role.mention}.",
+                colour=discord.Colour.green()
+            ))
+
+    @league.command(name="rmpermrole")
+    @commands.has_permissions(manage_roles=True)
+    async def remove_permitted_role(self, ctx):
+        """
+        Remove any role set set previously with setpermrole.
+        """
+
+        query = perm_role_model.select().where(perm_role_model.c.guild_id == ctx.guild.id)
+        result = await self.bot.db.execute(query)
+        exists = await result.first() is not None
+
+        if not exists:
+            await ctx.send(embed=discord.Embed(
+                title="Cannot remove permitted role:",
+                description="No permitted role is set.",
+                colour=discord.Colour.red()
+            ))
+        else:
+            query = perm_role_model.delete(perm_role_model.c.guild_id == ctx.guild.id)
+            await self.bot.db.execute(query)
+            await ctx.send(embed=discord.Embed(
+                description="Successfully removed permitted role",
+                colour=discord.Colour.green()
+            ))
+
     @league.command(name="setchamp")
     @commands.check(has_permission_role)
     async def set_champion(self, ctx, name: str):
@@ -78,56 +129,5 @@ class League(OptionalCog):
             await self.bot.db.execute(query)
             await ctx.send(embed=discord.Embed(
                 description="Successfully disassociated champion from this Guild.",
-                colour=discord.Colour.green()
-            ))
-
-    @league.command(name="setpermrole")
-    @commands.has_permissions(manage_roles=True)
-    async def set_permitted_role(self, ctx, role: discord.Role):
-        """
-        Sets the role which members must have
-        to modify any settings for this Guild.
-        """
-
-        query = perm_role_model.select().where(perm_role_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if exists:
-            await ctx.send(embed=discord.Embed(
-                title="Failed to set permitted role:",
-                description="A role is already set. Remove it using `rmpermrole`.",
-                colour=discord.Colour.red()
-            ))
-        else:
-            query = perm_role_model.insert().values(id=role.id, guild_id=ctx.guild.id)
-            await self.bot.db.execute(query)
-            await ctx.send(embed=discord.Embed(
-                description=f"Successfully set permitted role to {role.mention}.",
-                colour=discord.Colour.green()
-            ))
-
-    @league.command(name="rmpermrole")
-    @commands.has_permissions(manage_roles=True)
-    async def remove_permitted_role(self, ctx):
-        """
-        Remove any role set set previously with setpermrole.
-        """
-
-        query = perm_role_model.select().where(perm_role_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if not exists:
-            await ctx.send(embed=discord.Embed(
-                title="Cannot remove permitted role:",
-                description="No permitted role is set.",
-                colour=discord.Colour.red()
-            ))
-        else:
-            query = perm_role_model.delete(perm_role_model.c.guild_id == ctx.guild.id)
-            await self.bot.db.execute(query)
-            await ctx.send(embed=discord.Embed(
-                description="Successfully removed permitted role",
                 colour=discord.Colour.green()
             ))
