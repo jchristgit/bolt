@@ -39,9 +39,8 @@ class Bot(commands.AutoShardedBot):
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):
-            await ctx.send(embed=self.make_error_embed(f'**You invoked the Command with the wrong type of arguments.'
-                                                       f' Use `!help command` to get information about its usage.**\n'
-                                                       f'({error})'))
+            await ctx.send(embed=self.make_error_embed(f'Something went wrong with converting the command arguments:\n'
+                                                       f'*{error}*'))
         elif isinstance(error, commands.CommandInvokeError):
             if isinstance(error.original, discord.errors.Forbidden):
                 return await ctx.send(embed=discord.Embed(
@@ -60,6 +59,9 @@ class Bot(commands.AutoShardedBot):
             ))
 
             await super(Bot, self).on_command_error(ctx, error)
+
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send(embed=self.make_error_embed(f'A check required for this command did not pass:\n*{error}*'))
 
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(embed=self.make_error_embed('This Command is currently on cooldown.'))
