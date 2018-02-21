@@ -29,7 +29,7 @@ def async_cache(size: int=32):
     def decorator(f):
         @functools.wraps(f)
         async def decorated_function(client, *args):
-            key = ':'.join(args)
+            key = ':'.join(str(a) for a in args)
             if key not in cache:
                 if len(cache) >= size:
                     cache.popitem()
@@ -56,13 +56,17 @@ class LeagueAPIClient:
             if res.status == 429:
                 await asyncio.sleep(res.headers['Retry-After'])
                 return await self._get(url, **kwargs)
+            res.raise_for_status()
             return await res.json()
 
     @async_cache()
-    async def get_summoner(self, region: str, name: str) -> Optional[dict]:
+    async def get_summoner(self, region: str, identifier: Union[str, int]) -> Optional[dict]:
         if region not in ENDPOINTS:
             raise ValueError(f"{region} is not a valid region")
-        url = ENDPOINTS[region] + BASE_API_URL + "/lol/summoner/v3/summoners/by-name/" + name
+        if isinstance(identifier, str):
+            url = f"{ENDPOINTS[region]}{BASE_API_URL}/lol/summoner/v3/summoners/by-name/{identifier}"
+        else:
+            url = f"{ENDPOINTS[region]}{BASE_API_URL}/lol/summoner/v3/summoners/{identifier}"
         return await self._get(url)
 
     @async_cache()
@@ -71,20 +75,9 @@ class LeagueAPIClient:
         res = await self._get(url, headers={'locale': 'en_US'})
         return next((c for c in res['data'].values() if c['name'] == name), None)
 
-    async def get_mastery(self, region: str, summoner: Union[str, int], champion: Union[str, int]) -> int:
+    async def get_mastery(self, region: str, summoner_id: int, champion_id: int) -> int:
         if region not in ENDPOINTS:
             raise ValueError(f"{region} is not a valid region")
-
-        if isinstance(summoner, str):
-            summoner_id = await self.get_summoner(region, summoner)
-        else:
-            summoner_id = summoner
-
-        if isinstance(champion, str):
-            champion_data = await self.get_champion(champion)
-            champion_id = champion_data['id']
-        else:
-            champion_id = champion
 
         endpoint_url = ENDPOINTS[region] + BASE_API_URL + "/lol/champion-mastery/v3/champion-masteries"
         parametrized_url = f"{endpoint_url}/by-summoner/{summoner_id}/by-champion/{champion_id}"
