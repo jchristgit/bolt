@@ -154,6 +154,13 @@ class League(OptionalCog):
 
         name = ' '.join(name)
         summoner_data = await self.league_client.get_summoner(region, name)
+        if summoner_data is None:
+            return await ctx.send(embed=discord.Embed(
+                title="Failed to add User:",
+                description=f"No user named `{name}` in `{region}` found.",
+                colour=discord.Colour.red()
+            ))
+
         query = summoner_model.select().where(and_(
             summoner_model.c.id == summoner_data['id'],
             summoner_model.c.guild_id == ctx.guild.id
@@ -188,6 +195,13 @@ class League(OptionalCog):
 
         name = ' '.join(name)
         summoner_data = await self.league_client.get_summoner(region, name)
+        if summoner_data is None:
+            return await ctx.send(embed=discord.Embed(
+                title="Failed to remove user:",
+                description=f"`{name}` in `{region}` was not found.",
+                colour=discord.Colour.red()
+            ))
+
         query = summoner_model.select().where(and_(
             summoner_model.c.id == summoner_data['id'],
             summoner_model.c.guild_id == ctx.guild.id
@@ -198,7 +212,7 @@ class League(OptionalCog):
         if not exists:
             await ctx.send(embed=discord.Embed(
                 title="Failed to remove user:",
-                description=f"`{name}` in `{region}` is not known.",
+                description=f"`{name}` in `{region}` is not in the database.",
                 colour=discord.Colour.red()
             ))
         else:
@@ -232,7 +246,7 @@ class League(OptionalCog):
                 colour=discord.Color.red()
             ))
         else:
-            query = summoner_model.select().where(champion_model.c.guild_id == ctx.guild.id)
+            query = summoner_model.select().where(summoner_model.c.guild_id == ctx.guild.id)
             result = await self.bot.db.execute(query)
             summoners = await result.fetchall()
 

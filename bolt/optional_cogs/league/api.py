@@ -53,8 +53,10 @@ class LeagueAPIClient:
 
     async def _get(self, url, **kwargs):
         async with self._cs.get(url, **kwargs) as res:
-            if res.status == 429:
-                await asyncio.sleep(res.headers['Retry-After'])
+            if res.status == 404:
+                return None
+            elif res.status == 429:
+                await asyncio.sleep(int(res.headers['Retry-After']))
                 return await self._get(url, **kwargs)
             res.raise_for_status()
             return await res.json()
@@ -75,11 +77,13 @@ class LeagueAPIClient:
         res = await self._get(url, headers={'locale': 'en_US'})
         return next((c for c in res['data'].values() if c['name'] == name), None)
 
-    async def get_mastery(self, region: str, summoner_id: int, champion_id: int) -> int:
+    async def get_mastery(self, region: str, summoner_id: int, champion_id: int) -> Optional[int]:
         if region not in ENDPOINTS:
             raise ValueError(f"{region} is not a valid region")
 
         endpoint_url = ENDPOINTS[region] + BASE_API_URL + "/lol/champion-mastery/v3/champion-masteries"
         parametrized_url = f"{endpoint_url}/by-summoner/{summoner_id}/by-champion/{champion_id}"
         res = await self._get(parametrized_url)
-        return res['championPoints']
+        if res is not None:
+            return res['championPoints']
+        return None
