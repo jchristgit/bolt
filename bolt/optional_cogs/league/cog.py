@@ -261,6 +261,6 @@ class League(OptionalCog):
                     summoner_data = await self.league_client.get_summoner(summ.region, summ.id)
                     result.write(f"{idx + 1} | {summoner_data['name']} | {summ.region} | {score:,}\n")
 
-                result.seek(0)
-                await ctx.send(f"Done. Total entries: {len(summoner_masteries)}.",
-                               file=discord.File(result, filename="table.md"))
+                with io.BytesIO(bytes(result.getvalue(), encoding='utf-8')) as raw_result:
+                    await ctx.send(f"Done. Total entries: {len(summoner_masteries)}.",
+                                   file=discord.File(raw_result, filename="table.md"))
