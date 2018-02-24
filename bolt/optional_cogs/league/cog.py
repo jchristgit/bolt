@@ -1,5 +1,6 @@
 import io
 from operator import itemgetter
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -29,6 +30,14 @@ class League(OptionalCog):
     def __init__(self, bot):
         self.bot = bot
         self.league_client = LeagueAPIClient(CONFIG['league']['key'])
+
+    async def get_champ_id(self, guild_id: int) -> Optional[int]:
+        query = champion_model.select().where(champion_model.c.guild_id == guild_id)
+        result = await self.bot.db.execute(query)
+        result = await result.first()
+        if result is not None:
+            return result['champion_id']
+        return None
 
     @commands.group(aliases=['l'])
     @commands.guild_only()
@@ -94,11 +103,7 @@ class League(OptionalCog):
         this Guild for tracking user mastery.
         """
 
-        query = champion_model.select().where(champion_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if exists:
+        if await self.get_champ_id(ctx.guild.id) is not None:
             await ctx.send(embed=discord.Embed(
                 title="Failed to set associated Champion:",
                 description="A champion is already set. Remove it using `rmchamp`.",
@@ -127,11 +132,7 @@ class League(OptionalCog):
         Removes the champion associated with a guild, if set.
         """
 
-        query = champion_model.select().where(champion_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if not exists:
+        if await self.get_champ_id(ctx.guild.id) is None:
             await ctx.send(embed=discord.Embed(
                 title="Failed to disassociate champion:",
                 description="This guild has no associated champion set.",
@@ -147,12 +148,11 @@ class League(OptionalCog):
 
     @league.command(name="adduser")
     @commands.check(has_permission_role)
-    async def add_user(self, ctx, region: Region, *name: str):
+    async def add_user(self, ctx, region: Region, *, name: str):
         """
         Add a user to the mastery leaderboard for this guild.
         """
 
-        name = ' '.join(name)
         summoner_data = await self.league_client.get_summoner(region, name)
         if summoner_data is None:
             return await ctx.send(embed=discord.Embed(
@@ -174,6 +174,20 @@ class League(OptionalCog):
                 description=f"`{name}` in `{region}` is already added.",
                 colour=discord.Colour.red()
             ))
+
+        champ_id = await self.get_champ_id(ctx.guild.id)
+        if champ_id is None:
+            await ctx.send(embed=discord.Embed(
+                title="Failed to add User:",
+                description="This guild needs to have a champion associated with it first.",
+                colour=discord.Colour.red()
+            ))
+        elif await self.league_client.get_mastery(region, summoner_data['id'], champ_id) is None:
+            await ctx.send(embed=discord.Embed(
+                title="Failed to add User:",
+                description="The user was found, but I cannot get any mastery data.",
+                colour=discord.Colour.red()
+            ))
         else:
             query = summoner_model.insert().values(
                 id=summoner_data['id'],
@@ -188,12 +202,11 @@ class League(OptionalCog):
 
     @league.command(name="rmuser")
     @commands.check(has_permission_role)
-    async def remove_user(self, ctx, region: Region, *name: str):
+    async def remove_user(self, ctx, region: Region, *, name: str):
         """
         Removes a user from the mastery leaderboard for this guild.
         """
 
-        name = ' '.join(name)
         summoner_data = await self.league_client.get_summoner(region, name)
         if summoner_data is None:
             return await ctx.send(embed=discord.Embed(
@@ -235,11 +248,9 @@ class League(OptionalCog):
         and outputs it in valid Markdown.
         """
 
-        query = champion_model.select().where(champion_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        champion_row = await result.first()
+        champion_id = await self.get_champ_id(ctx.guild.id)
 
-        if champion_row is None:
+        if champion_id is None:
             await ctx.send(embed=discord.Embed(
                 title="Cannot build table:",
                 description="This command requires the champion to be set with `setchamp`.",
@@ -251,7 +262,7 @@ class League(OptionalCog):
             summoners = await result.fetchall()
 
             summoner_masteries = [
-                (s, await self.league_client.get_mastery(s.region, s.id, champion_row.champion_id))
+                (s, await self.league_client.get_mastery(s.region, s.id, champion_id))
                 for s in summoners
             ]
 
