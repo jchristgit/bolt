@@ -7,6 +7,7 @@ import aiohttp
 
 
 BASE_API_URL = ".api.riotgames.com"
+CALLS_PER_MINUTE = 50
 ENDPOINTS = {
     "BR": "br1",
     "EUNE": "eun1",
@@ -59,6 +60,7 @@ class LeagueAPIClient:
                 await asyncio.sleep(int(res.headers['Retry-After']))
                 return await self._get(url, **kwargs)
             res.raise_for_status()
+            await asyncio.sleep(CALLS_PER_MINUTE / 60)
             return await res.json()
 
     @async_cache()
