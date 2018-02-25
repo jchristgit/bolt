@@ -261,17 +261,27 @@ class League(OptionalCog):
             result = await self.bot.db.execute(query)
             summoners = await result.fetchall()
 
-            summoner_masteries = [
-                (s, await self.league_client.get_mastery(s.region, s.id, champion_id))
-                for s in summoners
-            ]
+            last_update_percent = 0.00
+            masteries = []
+            progress_msg = await ctx.send(":bar_chart: **Working...** 0% done.")
+
+            for idx, summ in enumerate(summoners):
+                mastery_score = await self.league_client.get_mastery(summ.region, summ.id, champion_id)
+                summoner_data = await self.league_client.get_summoner(summ.region, summ.id)
+
+                progress = idx / len(summoners)
+                if progress >= last_update_percent + 0.05:
+                    await progress_msg.edit(content=f":bar_chart: **Working...** {progress * 100:3.2f}% done.")
+                    last_update_percent = progress
+
+                masteries.append((summoner_data['name'], summ.region, mastery_score))
 
             with io.StringIO(TABLE_HEADER) as result:
                 result.seek(len(TABLE_HEADER))
-                for idx, (summ, score) in enumerate(sorted(summoner_masteries, key=itemgetter(1), reverse=True)):
-                    summoner_data = await self.league_client.get_summoner(summ.region, summ.id)
-                    result.write(f"{idx + 1} | {summoner_data['name']} | {summ.region} | {score:,}\n")
+                for idx, (name, region, score) in enumerate(sorted(masteries, key=itemgetter(2), reverse=True)):
+                    result.write(f"{idx + 1} | {name} | {region} | {score:,}\n")
 
                 with io.BytesIO(bytes(result.getvalue(), encoding='utf-8')) as raw_result:
-                    await ctx.send(f"Done. Total entries: {len(summoner_masteries)}.",
+                    await progress_msg.delete()
+                    await ctx.send(f"Done. Total entries: {len(masteries)}.",
                                    file=discord.File(raw_result, filename="table.md"))
