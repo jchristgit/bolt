@@ -53,6 +53,7 @@ class LeagueAPIClient:
         self._cs.close()
 
     async def _get(self, url, **kwargs):
+        backoff = kwargs.pop('backoff', 1)
         async with self._cs.get(url, **kwargs) as res:
             if res.status == 404:
                 return None
@@ -60,8 +61,8 @@ class LeagueAPIClient:
                 await asyncio.sleep(int(res.headers['Retry-After']))
                 return await self._get(url, **kwargs)
             elif res.status >= 500 and kwargs.get('backoff', 1) <= 3:
-                await asyncio.sleep(kwargs.get('backoff', 1))
-                return await self._get(url, **kwargs, backoff=kwargs.get('backoff') + 1)
+                await asyncio.sleep(backoff)
+                return await self._get(url, **kwargs, backoff=backoff + 1)
 
             res.raise_for_status()
             await asyncio.sleep(CALLS_PER_MINUTE / 60)
