@@ -175,30 +175,31 @@ class League(OptionalCog):
                 colour=discord.Colour.red()
             ))
 
-        champ_id = await self.get_champ_id(ctx.guild.id)
-        if champ_id is None:
-            await ctx.send(embed=discord.Embed(
-                title="Failed to add User:",
-                description="This guild needs to have a champion associated with it first.",
-                colour=discord.Colour.red()
-            ))
-        elif await self.league_client.get_mastery(region, summoner_data['id'], champ_id) is None:
-            await ctx.send(embed=discord.Embed(
-                title="Failed to add User:",
-                description="The user was found, but I cannot get any mastery data.",
-                colour=discord.Colour.red()
-            ))
         else:
-            query = summoner_model.insert().values(
-                id=summoner_data['id'],
-                guild_id=ctx.guild.id,
-                region=region
-            )
-            await self.bot.db.execute(query)
-            await ctx.send(embed=discord.Embed(
-                description=f"Successfully added `{name}` to the database.",
-                colour=discord.Colour.green()
-            ))
+            champ_id = await self.get_champ_id(ctx.guild.id)
+            if champ_id is None:
+                await ctx.send(embed=discord.Embed(
+                    title="Failed to add User:",
+                    description="This guild needs to have a champion associated with it first.",
+                    colour=discord.Colour.red()
+                ))
+            elif await self.league_client.get_mastery(region, summoner_data['id'], champ_id) is None:
+                await ctx.send(embed=discord.Embed(
+                    title="Failed to add User:",
+                    description="The user was found, but I cannot get any mastery data.",
+                    colour=discord.Colour.red()
+                ))
+            else:
+                query = summoner_model.insert().values(
+                    id=summoner_data['id'],
+                    guild_id=ctx.guild.id,
+                    region=region
+                )
+                await self.bot.db.execute(query)
+                await ctx.send(embed=discord.Embed(
+                    description=f"Successfully added `{name}` to the database.",
+                    colour=discord.Colour.green()
+                ))
 
     @league.command(name="rmuser")
     @commands.check(has_permission_role)
