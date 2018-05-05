@@ -24,7 +24,7 @@ class Mod:
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def ban(self, ctx, member: discord.Member, reason: str=''):
+    async def ban(self, ctx, member: discord.Member, *, reason: str=''):
         """Ban a Member with an optional reason.
 
         **Examples:**
@@ -35,23 +35,31 @@ class Mod:
         if ctx.message.guild.me.top_role.position <= member.top_role.position:
             return await ctx.send(embed=discord.Embed(
                 title='Cannot ban:',
-                description=('I cannot ban any Members that are in the same or higher position in the role hierarchy '
-                             'as I am.'),
+                description=('I cannot ban any Members that are in the same '
+                             'or higher position in the role hierarchy as I am.'),
                 colour=discord.Colour.red()
             ))
 
         await ctx.guild.ban(
             member,
-            reason=f'Command invoked by {ctx.message.author}, reason: '
+            reason=f'banned by command invocation from {ctx.message.author}, reason: '
                    f'{"No reason specified" if reason == "" else reason}.',
             delete_message_days=7
         )
 
-        reason_description = f' for *"{reason}"*.' if reason != '' else '.'
-        await ctx.send(embed=discord.Embed(
-            title='Ban successful',
-            description=f'**Banned {member}**{reason_description}'
-        ))
+        response = discord.Embed(
+            title=f'Banned `{member}` (`{member.id}`)',
+            colour=discord.Colour.green()
+        )
+        response.set_footer(
+            text=f'Banned by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        if reason:
+            response.description = f'**Reason**: {reason}'
+
+        await ctx.send(embed=response)
 
     @commands.command()
     @commands.guild_only()
@@ -79,12 +87,19 @@ class Mod:
                    f'{"No reason specified" if reason == "" else reason}.'
         )
 
-        reason = f' for *"{reason}"*.' if reason != '' else '.'
-        await ctx.send(embed=discord.Embed(
-            title='Kick successful',
-            description=f'**Kicked {member}**{reason}',
+        response = discord.Embed(
+            title=f'Kicked `{member}` (`{member.id}`)',
             colour=discord.Colour.green()
-        ))
+        )
+        response.set_footer(
+            text=f'Kicked by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        if reason:
+            response.description = f'**Reason**: {reason}.'
+
+        await ctx.send(embed=response)
 
     @commands.command()
     @commands.guild_only()
