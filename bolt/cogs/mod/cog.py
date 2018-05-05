@@ -68,7 +68,7 @@ class Mod:
     async def kick(self, ctx, member: discord.Member, *, reason: str=''):
         """Kick a Member with an optional reason.
 
-        **Example:**
+        **Examples:**
         !kick @Guy#1337 - kicks Guy
         !Kick @Guy#1337 spamming - kick Guy and specifies the reason "spamming" for the Audit Log.
         """
@@ -101,7 +101,7 @@ class Mod:
 
         await ctx.send(embed=response)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
@@ -111,122 +111,135 @@ class Mod:
         Requires the `manage_messages` permission on both the Bot and
         the User that invokes the Command. Only works on Guilds.
 
-        **Example:**
+        For more specific purge commands, use the various subcommands.
+
+        **Examples:**
         purge - deletes 100 messages
         purge 50 - deletes 50 messages
         """
 
-        total = sum(1 for _ in await ctx.message.channel.purge(
-            limit=limit
+        total = len(await ctx.message.channel.purge(
+            limit=limit,
         ))
-        info_response = f'Purged a total of **{total} Messages**.'
-        resp = await ctx.send(embed=discord.Embed(
-            title='Purge completed',
-            description=info_response
-        ))
-        await asyncio.sleep(5)
-        await resp.delete()
 
-    @commands.command(name='purgeid')
+        info_response = discord.Embed(
+            title=f'Purged a total of `{total}` messages.',
+            colour=discord.Colour.green()
+        )
+        info_response.set_footer(
+            text=f'Purged by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        await ctx.send(embed=info_response)
+
+    @purge.command(name='id')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(manage_messages=True)
-    async def purge_by_id(self, ctx, *ids_to_prune: int):
-        """Purge up to 500 Messages sent by the User with the given ID.
+    @commands.bot_has_permissions(manage_messages=True, read_message_history=True)
+    async def purge_id(self, ctx, *ids_to_purge: int):
+        """Purge up to 1000 Messages sent by the User with the given ID.
 
-        Useful when you want to purge Messages from a User that left the Server.
+        Useful when you want to purge Messages from one or more users that left the Server.
 
-        **Example:**
-        purgeid 129301
-            searches the past 500 messages for messages from the user and purges them.
-        purgeid 129301 128195
-            searches the past 500 messages for messages from these ID's and purges them.
+        **Examples:**
+        purge id 129301
+            searches the past 1000 messages for messages from the user and purges them.
+        purge id 129301 128195
+            searches the past 1000 messages for messages from these ID's and purges them.
         """
 
-        total = sum(1 for _ in await ctx.message.channel.purge(
-            check=lambda m: m.author.id in ids_to_prune
-        ))
-        pruned = f'`{"`, `".join(str(x) for x in ids_to_prune)}`'
-        info_response = f'Purged a total of **{total} Messages** sent by {pruned}.'
-        resp = await ctx.send(embed=discord.Embed(
-            title='Purge completed',
-            description=info_response,
-            colour=discord.Colour.green()
-        ))
-        await asyncio.sleep(5)
-        await resp.delete()
+        if not ids_to_purge:
+            return await ctx.send(embed=discord.Embed(
+                title='Failed to purge by ID:',
+                description='You need to specify at least one ID to purge.',
+                color=discord.Colour.red()
+            ))
 
-    @commands.command(name='purgemsg')
+        total = len(await ctx.message.channel.purge(
+            check=lambda m: m.author.id in ids_to_purge,
+            limit=1000
+        ))
+        pruned_ids = f'`{"`, `".join(str(x) for x in ids_to_purge)}`'
+
+        info_response = discord.Embed(
+            title=f'Purged a total of `{total}` messages.',
+            description=f'Affected IDs: {pruned_ids}',
+            colour=discord.Colour.green()
+        )
+        info_response.set_footer(
+            text=f'Purged by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        await ctx.send(embed=info_response)
+
+    @purge.command(name='containing')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(manage_messages=True)
-    async def purge_messages(self, ctx, amount: str, *, message_contents: str):
-        """Purges up to `amount` Messages with the specified content in them.
+    @commands.bot_has_permissions(manage_messages=True, read_message_history=True)
+    async def purge_containing(self, ctx, amount: int, *, message_contents: str):
+        """Purges up to `amount` Messages containing the specified contents.
 
-        **Example:**
-        !purgemsg 30 evil
+        **Examples:**
+        purge containing 30 evil
             deletes messages in the last 30 messages containing 'evil'
-        !purgemsg 80 zalgo comes
+        purge containing 80 zalgo comes
             deletes messages in the last 80 messages containing 'zalgo comes'
         """
 
-        if not amount.isdigit():
-            return await ctx.send(embed=discord.Embed(
-                title='Failed to Purge Messages:',
-                description='You need to specify the amount of Messages to be purged for example `purge 30 evil`.',
-                colour=discord.Colour.red()
-            ))
-        res = await ctx.message.channel.purge(
+        total = len(await ctx.message.channel.purge(
             check=lambda m: message_contents in m.content,
-            limit=int(amount)
-        )
-        info_response = f'Purged a total of **{len(res)} Messages** containing `{message_contents}`.'
-        resp = await ctx.send(embed=discord.Embed(
-            title='Message purge completed',
-            description=info_response,
-            colour=discord.Colour.green()
+            limit=amount
         ))
-        await asyncio.sleep(5)
-        await resp.delete()
 
-    @commands.command(name='purgeuser')
+        info_response = discord.Embed(
+            title=f'Purged a total of `{total}` messages.',
+            description=f'Specified message content: `{message_contents}`.',
+            colour=discord.Colour.green()
+        )
+        info_response.set_footer(
+            text=f'Purged by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        await ctx.send(embed=info_response)
+
+    @purge.command(name='user')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge_user(self, ctx, amount: str, *to_purge: discord.Member):
-        """Purge a mentioned User, or a list of mentioned Users.
-
-        The amount defaults to 100, but can be set manually.
+    async def purge_user(self, ctx, amount: int, *to_purge: discord.Member):
+        """Purge a mentioned Member, or a list of mentioned Members.
 
         **Example:**
-        purgeuser 300 @Person#1337 @Robot#7331
+        purge user 300 @Person#1337 @Robot#7331
             purges messages from Person and Robot in the past 300 Messages.
-        purgeuser 40 @Person#1337
+        purge user 40 @Person#1337
             purges messages from Person in the past 40 Messages.
         """
 
-        if not amount.isdigit():
-            return await ctx.send(embed=discord.Embed(
-                title='Failed to Purge Messages:',
-                description=('You need to specify the amount of Messages to be purged for example '
-                             '`purgeuser 30 @Guy#1337`.'),
-                colour=discord.Colour.red()
-            ))
         if not to_purge:
             return await ctx.send(embed=discord.Embed(
                 title='Failed to purge User(s)',
                 description='You need to mention at least one User to purge.',
                 color=discord.Colour.red()
             ))
-        total_purged = sum(1 for _ in await ctx.message.channel.purge(
+
+        total = len(await ctx.message.channel.purge(
             check=lambda m: m.author in to_purge,
-            limit=int(amount)
+            limit=amount
         ))
-        resp = await ctx.send(embed=discord.Embed(
-            title='User purge completed',
-            description=f'Purged a total of **{total_purged} Messages** from '
-                        f'{", ".join(str(x) for x in to_purge)}.',
+
+        affected_users = ', '.join(f'`{member}` (`{member.id}`)' for member in to_purge)
+        info_response = discord.Embed(
+            title=f'Purged a total of `{total}` messages.',
+            description=f'Affected users: {affected_users}',
             colour=discord.Colour.green()
-        ))
-        await asyncio.sleep(5)
-        await resp.delete()
+        )
+        info_response.set_footer(
+            text=f'Purged by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        await ctx.send(embed=info_response)
