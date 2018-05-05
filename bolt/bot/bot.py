@@ -30,7 +30,6 @@ class Bot(commands.AutoShardedBot):
 
     async def init(self):
         if self.db is None:
-            await database.setup()
             self.db = await database.engine.connect()
 
     async def cleanup(self):
