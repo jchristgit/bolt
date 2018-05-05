@@ -24,38 +24,33 @@ class Mod:
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def ban(self, ctx, member: discord.Member, prune_days: int=1, *, reason: str=''):
-        """Ban a Member with an optional prune and an optional reason.
+    async def ban(self, ctx, member: discord.Member, reason: str=''):
+        """Ban a Member with an optional reason.
 
-        If the amount of messages to prune is omitted, all his messages of the past day will be deleted.
-        The maximum is 7 and the minimum is 0.
-
-        **Example:**
-        !ban @Guy#1337 - bans Guy and deletes his messages of the last day
-        !ban @Guy#1337 3 - bans Guy and prunes his messages of the last 3 days
-        !ban @Guy#1337 4 be nice - bans Guy and specifies the reason "be nice" for the Audit Log.
+        **Examples:**
+        !ban @Guy#1337
+        !ban @Guy#1337 spamming - bans Guy and specifies the reason "spamming" for the audit Log.
         """
 
-        if prune_days > 7 or prune_days < 0:
-            return await ctx.send(embed=discord.Embed(
-                title='Failed to Ban:',
-                description='The amount of days to prune Messages for must be within 0 and 7.',
-                colour=discord.Colour.red()
-            ))
-        elif ctx.message.guild.me.top_role.position <= member.top_role.position:
+        if ctx.message.guild.me.top_role.position <= member.top_role.position:
             return await ctx.send(embed=discord.Embed(
                 title='Cannot ban:',
                 description=('I cannot ban any Members that are in the same or higher position in the role hierarchy '
                              'as I am.'),
                 colour=discord.Colour.red()
             ))
-        await ctx.guild.ban(member, reason=f'Command invoked by {ctx.message.author}, reason: '
-                                           f'{"No reason specified" if reason == "" else reason}.',
-                            delete_message_days=prune_days)
-        reason = f' for *"{reason}"*.' if reason != '' else '.'
+
+        await ctx.guild.ban(
+            member,
+            reason=f'Command invoked by {ctx.message.author}, reason: '
+                   f'{"No reason specified" if reason == "" else reason}.',
+            delete_message_days=7
+        )
+
+        reason_description = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(
             title='Ban successful',
-            description=f'**Banned {member}**{reason}'
+            description=f'**Banned {member}**{reason_description}'
         ))
 
     @commands.command()
@@ -67,7 +62,7 @@ class Mod:
 
         **Example:**
         !kick @Guy#1337 - kicks Guy
-        !Kick @Guy#1337 be nice - kick Guy and specifies the reason "be nice" for the Audit Log.
+        !Kick @Guy#1337 spamming - kick Guy and specifies the reason "spamming" for the Audit Log.
         """
 
         if ctx.message.guild.me.top_role.position <= member.top_role.position:
@@ -76,9 +71,14 @@ class Mod:
                 description=('I cannot kick any Members that are in the same or higher position in the role hierarchy '
                              'as I am.'),
                 colour=discord.Colour.red()
-            ))
-        await ctx.guild.kick(member, reason=f'Command invoked by {ctx.message.author}, reason: '
-                                            f'{"No reason specified" if reason == "" else reason}.')
+             ))
+
+        await ctx.guild.kick(
+            member,
+            reason=f'Command invoked by {ctx.message.author}, reason: '
+                   f'{"No reason specified" if reason == "" else reason}.'
+        )
+
         reason = f' for *"{reason}"*.' if reason != '' else '.'
         await ctx.send(embed=discord.Embed(
             title='Kick successful',
