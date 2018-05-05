@@ -1,16 +1,25 @@
-import asyncio
-import discord
+import itertools
+import operator
 
+import discord
 from discord.ext import commands
+from sqlalchemy import and_
+
+from .models import infraction as infraction_db
+from .types import InfractionType
+
+
+INFRACTION_TYPE_EMOJI = {
+    InfractionType.note: '📔',
+    InfractionType.warning: '⚠',
+    InfractionType.mute: '🔇',
+    InfractionType.kick: '👢',
+    InfractionType.ban: '🔨'
+}
 
 
 class Mod:
-    """
-    Moderation Commands for Guilds, such as kicking / banning or changing configuration.
-
-    Keep in mind that although I'm not primarily intended for Moderation Commands,
-    I still provide a bunch of them in case you will ever need it.
-    """
+    """Moderation Commands for Guilds."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -55,9 +64,23 @@ class Mod:
             icon_url=ctx.author.avatar_url
         )
 
-        if reason:
-            response.description = f'**Reason**: {reason}.'
+        query = infraction_db.insert().values(
+            type=InfractionType.kick,
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            moderator_id=ctx.author.id,
+            reason=reason
+        )
+        result = await self.bot.db.execute(query)
+        inserted_pk = result.inserted_primary_key[0]
 
+        response.add_field(
+            name='Reason',
+            value=reason or 'no reason specified'
+        ).add_field(
+            name='Infraction',
+            value=f'created with ID `{inserted_pk}`'
+        )
         await ctx.send(embed=response)
 
     @commands.command()
@@ -90,14 +113,31 @@ class Mod:
         response = discord.Embed(
             title=f'Banned `{member}` (`{member.id}`)',
             colour=discord.Colour.green()
-        )
-        response.set_footer(
+        ).set_footer(
             text=f'Banned by {ctx.author} ({ctx.author.id})',
             icon_url=ctx.author.avatar_url
         )
 
         if reason:
             response.description = f'**Reason**: {reason}'
+
+        query = infraction_db.insert().values(
+            type=InfractionType.ban,
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            moderator_id=ctx.author.id,
+            reason=reason
+        )
+        result = await self.bot.db.execute(query)
+        inserted_pk = result.inserted_primary_key[0]
+
+        response.add_field(
+            name='Reason',
+            value=reason or 'no reason specified'
+        ).add_field(
+            name='Infraction',
+            value=f'created with ID `{inserted_pk}`'
+        )
 
         await ctx.send(embed=response)
 
@@ -212,7 +252,7 @@ class Mod:
     async def purge_user(self, ctx, amount: int, *to_purge: discord.Member):
         """Purge a mentioned Member, or a list of mentioned Members.
 
-        **Example:**
+        **Examples:**
         purge user 300 @Person#1337 @Robot#7331
             purges messages from Person and Robot in the past 300 Messages.
         purge user 40 @Person#1337
@@ -243,3 +283,254 @@ class Mod:
         )
 
         await ctx.send(embed=info_response)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def note(self, ctx, user: discord.User, *, note: str):
+        """Add the given note to the infraction database for the given user.
+
+        **Examples:**
+        note @Person#1337 likes ducks
+        """
+
+        query = infraction_db.insert().values(
+            type=InfractionType.note,
+            user_id=user.id,
+            guild_id=ctx.guild.id,
+            moderator_id=ctx.author.id,
+            reason=note
+        )
+        result = await self.bot.db.execute(query)
+
+        inserted_pk = result.inserted_primary_key[0]
+        info_response = discord.Embed(
+            title=f'Added a note for `{user}` (`{user.id}`)',
+            description=f'View it in detail by using `infraction detail {inserted_pk}`.',
+            colour=discord.Colour.green()
+        )
+        info_response.set_footer(
+            text=f'Note added by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+        await ctx.send(embed=info_response)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def warn(self, ctx, user: discord.User, *, reason: str):
+        """Warn the specified user with the given reason."""
+
+        query = infraction_db.insert().values(
+            type=InfractionType.warning,
+            guild_id=ctx.guild.id,
+            user_id=user.id,
+            moderator_id=ctx.author.id,
+            reason=reason
+        )
+        result = await self.bot.db.execute(query)
+        created_infraction_id = result.inserted_primary_key[0]
+
+        info_response = discord.Embed(
+            title=f'Warned user `{user}` (`{user.id}`)',
+            colour=0xFFCC00
+        ).add_field(
+            name='Reason',
+            value=reason or 'no reason specified'
+        ).add_field(
+            name='Infraction',
+            value=f'created with ID `{created_infraction_id}`'
+        ).set_footer(
+            text=f'Authored by {ctx.author} ({ctx.author.id})',
+            icon_url=user.avatar_url
+        )
+        await ctx.send(embed=info_response)
+
+    @commands.group()
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def infraction(self, _):
+        """Contains infraction management commands."""
+
+    @infraction.command(name='edit')
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def infraction_edit(self, ctx, id_: int, *, new_reason: str):
+        """Change the reason of the given infraction ID to the given new reason."""
+
+        query = infraction_db.update().where(
+            infraction_db.c.id == id_,
+            infraction_db.c.guild_id == ctx.guild.id
+        ).values(reason=new_reason)
+        result = await self.bot.db.execute(query)
+
+        if result.rowcount == 0:
+            await ctx.send(embed=discord.Embed(
+                title=f'Failed to find infraction #`{id_}` on this guild.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            await ctx.send(embed=discord.Embed(
+                title=f'Successfully edited infraction #`{id_}`.',
+                description=f'**New reason**: {new_reason}',
+                colour=discord.Colour.green()
+            ))
+
+    @infraction.command(name='delete')
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def infraction_delete(self, ctx, id_: int):
+        """Delete the given infraction from the database."""
+
+        query = infraction_db.delete().where(
+            infraction_db.c.id == id_,
+            infraction_db.c.guild_id == ctx.guild.id
+        )
+        result = await self.bot.db.execute(query)
+
+        if result.rowcount == 0:
+            await ctx.send(embed=discord.Embed(
+                title=f'Failed to find infraction #`{id_}` on this Guild.',
+                colour=discord.Colour.red()
+            ))
+        else:
+            await ctx.send(embed=discord.Embed(
+                title=f'Successfully deleted infraction #`{id_}`.',
+                colour=discord.Colour.green()
+            ))
+
+    @infraction.command(name='detail')
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def infraction_detail(self, ctx, id_: int):
+        """Look up the given infraction ID in the database."""
+
+        query = infraction_db.select().where(and_(
+            infraction_db.c.id == id_,
+            infraction_db.c.guild_id == ctx.guild.id
+        ))
+        result = await self.bot.db.execute(query)
+        infraction = await result.first()
+
+        if infraction is None:
+            return await ctx.send(embed=discord.Embed(
+                title=f'Failed to find infraction ID `{id_}`.',
+                colour=discord.Colour.red()
+            ))
+
+        infraction_embed = discord.Embed(
+            title=f'Infraction: `{id_}`',
+            colour=discord.Colour.blue()
+        )
+
+        infraction_user = self.bot.get_user(infraction.user_id)
+        infraction_embed.add_field(
+            name='User',
+            value=(f'`{infraction_user}` (`{infraction_user.id}`)'
+                   if infraction_user is not None else f'`{infraction.user_id}`')
+        )
+
+        infraction_embed.add_field(
+            name='Type',
+            value=f'{INFRACTION_TYPE_EMOJI[infraction.type]} {infraction.type.value.title()}'
+        ).add_field(
+            name='Creation',
+            value=str(infraction.created_on)
+        ).add_field(
+            name='Last edited',
+            value=str(infraction.edited_on or 'never')
+        ).add_field(
+            name='Reason',
+            value=infraction.reason,
+            inline=False
+        )
+
+        author_moderator = self.bot.get_user(infraction.moderator_id)
+        if author_moderator is not None:
+            infraction_embed.set_footer(
+                text=f'Authored by {author_moderator} ({author_moderator.id})',
+                icon_url=author_moderator.avatar_url
+            )
+        else:
+            infraction_embed.set_footer(
+                text=f'Authored by unknown user (ID: {infraction.moderator_id})'
+            )
+
+        await ctx.send(embed=infraction_embed)
+
+    @infraction.command(name='list')
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def infraction_list(self, ctx, *types: InfractionType):
+        """List all infractions, or infractions with the specified type(s)."""
+
+        if types:
+            query = infraction_db.select().where(and_(
+                infraction_db.c.guild_id == ctx.guild.id,
+                infraction_db.c.type.in_(types)
+            )).order_by(infraction_db.c.created_on)
+            title = f'Infractions with types `{"`, `".join(f"`{type_}`" for type_ in types)}` on {ctx.guild.name}'
+        else:
+            query = infraction_db.select().where(
+                infraction_db.c.guild_id == ctx.guild.id
+            ).order_by(infraction_db.c.created_on)
+            title = f'All infractions on {ctx.guild.name}'
+
+        result = await self.bot.db.execute(query)
+        all_infractions = await result.fetchall()
+
+        list_embed_description = []
+        for infraction in all_infractions:
+            user = self.bot.get_user(infraction.user_id)
+            if user is not None:
+                user_string = f'`{user}` (`{user.id}`)'
+            else:
+                user_string = f'unknown user (`{user.id}`)'
+            infraction_emoji = INFRACTION_TYPE_EMOJI[infraction.type]
+
+            list_embed_description.append(
+                f'• [`{infraction.id}`] {infraction_emoji} on {user_string} created {infraction.created_on}'
+            )
+
+        list_embed = discord.Embed(
+            title=title,
+            description='\n'.join(list_embed_description) or 'Seems like there\'s nothing here yet.',
+            colour=discord.Colour.blue()
+        )
+        await ctx.send(embed=list_embed)
+
+    @infraction.command(name='user')
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def infraction_user(self, ctx, user: discord.User):
+        """Look up infractions for the specified user."""
+
+        query = infraction_db.select().where(and_(
+            infraction_db.c.guild_id == ctx.guild.id,
+            infraction_db.c.user_id == user.id
+        )).order_by(infraction_db.c.type)
+        result = await self.bot.db.execute(query)
+        rows = await result.fetchall()
+
+        if not rows:
+            return await ctx.send(embed=discord.Embed(
+                title=f'No recorded infractions for `{user}` (`{user.id}`).',
+                colour=discord.Colour.blue()
+            ))
+
+        most_recent = max(rows, key=operator.attrgetter('created_on'))
+        response = discord.Embed(
+            title=f'Infractions for `{user}` (`{user.id}`)',
+            colour=discord.Colour.blue()
+        ).set_footer(
+            text=f'total infractions: {len(rows)}, most recent: #{most_recent.id} at {most_recent.created_on}',
+            icon_url=user.avatar_url
+        )
+
+        for infraction_type, infractions in itertools.groupby(rows, key=operator.attrgetter('type')):
+            response.add_field(
+                name=f'{INFRACTION_TYPE_EMOJI[infraction_type]} {infraction_type.value}s',
+                value='\n'.join(f'• [`{infraction.id}`] on {infraction.created_on}' for infraction in infractions)
+            )
+
+        await ctx.send(embed=response)

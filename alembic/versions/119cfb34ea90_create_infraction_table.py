@@ -29,9 +29,10 @@ class InfractionType(Enum):
 def upgrade():
     op.create_table(
         'infraction',
-        sa.Column('id', sa.BigInteger(), primary_key=True),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('guild_id', sa.BigInteger(), nullable=False),
         sa.Column('created_on', sa.DateTime(), server_default=sa.func.now()),
-        sa.Column('edited_on', sa.DateTime(), server_onupdate=sa.func.now()),
+        sa.Column('edited_on', sa.DateTime(), onupdate=sa.func.now()),
         sa.Column('type', sa.Enum(InfractionType), nullable=False),
         sa.Column('user_id', sa.BigInteger(), nullable=False),
         sa.Column('moderator_id', sa.BigInteger(), nullable=False),
