@@ -1,7 +1,8 @@
 config/*
 __pycache__
 .idea/
-data/*.db
+data/*
+!data/.gitkeep
 logs/*.log
 venv/
 Pipfile.lock
