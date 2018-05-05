@@ -22,6 +22,46 @@ class Mod:
 
     @commands.command()
     @commands.guild_only()
+    @commands.has_permissions(kick_members=True)
+    @commands.bot_has_permissions(kick_members=True)
+    async def kick(self, ctx, member: discord.Member, *, reason: str=''):
+        """Kick a Member with an optional reason.
+
+        **Examples:**
+        !kick @Guy#1337 - kicks Guy
+        !Kick @Guy#1337 spamming - kick Guy and specifies the reason "spamming" for the Audit Log.
+        """
+
+        if ctx.message.guild.me.top_role.position <= member.top_role.position:
+            return await ctx.send(embed=discord.Embed(
+                title='Cannot kick:',
+                description=('I cannot kick any Members that are in the same or higher position in the role hierarchy '
+                             'as I am.'),
+                colour=discord.Colour.red()
+             ))
+
+        await ctx.guild.kick(
+            member,
+            reason=f'Command invoked by {ctx.message.author}, reason: '
+                   f'{"No reason specified" if reason == "" else reason}.'
+        )
+
+        response = discord.Embed(
+            title=f'Kicked `{member}` (`{member.id}`)',
+            colour=discord.Colour.green()
+        )
+        response.set_footer(
+            text=f'Kicked by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+
+        if reason:
+            response.description = f'**Reason**: {reason}.'
+
+        await ctx.send(embed=response)
+
+    @commands.command()
+    @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, *, reason: str=''):
@@ -58,46 +98,6 @@ class Mod:
 
         if reason:
             response.description = f'**Reason**: {reason}'
-
-        await ctx.send(embed=response)
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
-    @commands.bot_has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason: str=''):
-        """Kick a Member with an optional reason.
-
-        **Examples:**
-        !kick @Guy#1337 - kicks Guy
-        !Kick @Guy#1337 spamming - kick Guy and specifies the reason "spamming" for the Audit Log.
-        """
-
-        if ctx.message.guild.me.top_role.position <= member.top_role.position:
-            return await ctx.send(embed=discord.Embed(
-                title='Cannot kick:',
-                description=('I cannot kick any Members that are in the same or higher position in the role hierarchy '
-                             'as I am.'),
-                colour=discord.Colour.red()
-             ))
-
-        await ctx.guild.kick(
-            member,
-            reason=f'Command invoked by {ctx.message.author}, reason: '
-                   f'{"No reason specified" if reason == "" else reason}.'
-        )
-
-        response = discord.Embed(
-            title=f'Kicked `{member}` (`{member.id}`)',
-            colour=discord.Colour.green()
-        )
-        response.set_footer(
-            text=f'Kicked by {ctx.author} ({ctx.author.id})',
-            icon_url=ctx.author.avatar_url
-        )
-
-        if reason:
-            response.description = f'**Reason**: {reason}.'
 
         await ctx.send(embed=response)
 
