@@ -346,7 +346,7 @@ class Mod:
         )
         await ctx.send(embed=info_response)
 
-    @commands.group()
+    @commands.group(aliases=['infr', 'infractions'])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def infraction(self, _):
@@ -469,7 +469,8 @@ class Mod:
                 infraction_db.c.guild_id == ctx.guild.id,
                 infraction_db.c.type.in_(types)
             )).order_by(infraction_db.c.created_on)
-            title = f'Infractions with types `{"`, `".join(f"`{type_}`" for type_ in types)}` on {ctx.guild.name}'
+            selected_types = "`, `".join(f"`{type_.value}`" for type_ in types)
+            title = f'Infractions with types `{selected_types}` on {ctx.guild.name}'
         else:
             query = infraction_db.select().where(
                 infraction_db.c.guild_id == ctx.guild.id
