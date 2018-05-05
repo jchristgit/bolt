@@ -1,3 +1,4 @@
+alembic.ini
 config/*
 __pycache__
 .idea/
