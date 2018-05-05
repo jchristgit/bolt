@@ -11,6 +11,7 @@ fuzzyfinder = "*"
 sqlalchemy = "*"
 sqlalchemy-aio = "*"
 alembic = "*"
+yarl = "==1.1.1"
 
 [dev-packages]
 "flake8" = "*"
