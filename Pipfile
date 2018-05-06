@@ -13,10 +13,10 @@ sqlalchemy-aio = "*"
 alembic = "*"
 yarl = "==1.1.1"
 dateparser = "*"
-"psycopg2-binary" = "*"
 peewee = "*"
 peewee-async = "*"
 aiopg = "*"
+peewee-migrate = "==0.14.0"
 
 [dev-packages]
 "flake8" = "*"
