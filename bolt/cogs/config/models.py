@@ -9,6 +9,5 @@ class Prefix(Model):
 
 
 class OptionalCog(Model):
-    id = peewee.IntegerField(primary_key=True)
     name = peewee.CharField(max_length=20)
     guild_id = peewee.BigIntegerField()

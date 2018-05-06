@@ -27,7 +27,6 @@ OPTIONAL_COGS = [
 if __name__ == '__main__':
     client = Bot()
     print('Loading Cogs...')
-    """
     for cog in MAIN_COGS:
         try:
             client.load_extension(MAIN_COGS_BASE_PATH + cog)
@@ -38,11 +37,8 @@ if __name__ == '__main__':
             client.load_extension(OPTIONAL_COGS_BASE_PATH + cog)
         except ModuleNotFoundError as err:
             print(f'Could not load Cog \'{cog}\': {err}.')
-    """
-    client.load_extension(MAIN_COGS_BASE_PATH + 'config')
 
     print('Logging in...')
     client.run(CONFIG['discord']['token'])
     client.close()
-    # asyncio.get_event_loop().run_until_complete(client.cleanup())
     print('Logged off.')

@@ -1,6 +1,7 @@
-from sqlalchemy import and_
+from peewee import DoesNotExist
 
-from ..cogs.config.models import opt_cog
+from ..cogs.config.models import OptionalCog as OptionalCogModel
+from ..database import objects
 
 
 class OptionalCog:
@@ -30,9 +31,12 @@ class OptionalCog:
 
 
 async def enabled_for(cog: OptionalCog, guild_id: int):
-    query = opt_cog.select().where(and_(opt_cog.c.guild_id == guild_id,
-                                        opt_cog.c.name == cog.__class__.__name__))
-    res = await cog.bot.db.execute(query)
-    row = await res.first()
-
-    return row is not None
+    try:
+        await objects.get(
+            OptionalCogModel,
+            OptionalCogModel.guild_id == guild_id,
+            OptionalCogModel.name == cog.__class__.__name__
+        )
+    except DoesNotExist:
+        return False
+    return True

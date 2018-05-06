@@ -3,19 +3,17 @@ from operator import itemgetter
 from typing import Optional
 
 import discord
+import peewee_async
 from discord.ext import commands
-from sqlalchemy import and_
+from peewee import DoesNotExist
 
 from ...bot.config import CONFIG
+from ...database import objects
 from ..base import OptionalCog
 from .api import LeagueAPIClient
 from .converters import Region
-from .models import (
-    champion as champion_model,
-    permitted_role as perm_role_model,
-    summoner as summoner_model
-)
-from .util import has_permission_role
+from .models import Champion, PermittedRole, Summoner
+from .util import has_permitted_role
 
 
 TABLE_HEADER = ("\# | **Summoner Name** | **Server** | **Points**\n"
@@ -32,12 +30,14 @@ class League(OptionalCog):
         self.league_client = LeagueAPIClient(CONFIG['league']['key'])
 
     async def get_champ_id(self, guild_id: int) -> Optional[int]:
-        query = champion_model.select().where(champion_model.c.guild_id == guild_id)
-        result = await self.bot.db.execute(query)
-        result = await result.first()
-        if result is not None:
-            return result['champion_id']
-        return None
+        try:
+            champion = await objects.get(
+                Champion,
+                Champion.guild_id == guild_id
+            )
+        except DoesNotExist:
+            return None
+        return champion.id
 
     @commands.group(aliases=['l'])
     @commands.guild_only()
@@ -52,22 +52,24 @@ class League(OptionalCog):
         to modify any settings for this Guild.
         """
 
-        query = perm_role_model.select().where(perm_role_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
+        _, created = await objects.get_or_create(
+            PermittedRole,
+            guild_id=ctx.guild.id,
+            defaults={
+                'id': role.id
+            }
+        )
 
-        if exists:
+        if created:
+            await ctx.send(embed=discord.Embed(
+                description=f"Successfully set permitted role to {role.mention}.",
+                colour=discord.Colour.green()
+            ))
+        else:
             await ctx.send(embed=discord.Embed(
                 title="Failed to set permitted role:",
                 description="A role is already set. Remove it using `rmpermrole`.",
                 colour=discord.Colour.red()
-            ))
-        else:
-            query = perm_role_model.insert().values(id=role.id, guild_id=ctx.guild.id)
-            await self.bot.db.execute(query)
-            await ctx.send(embed=discord.Embed(
-                description=f"Successfully set permitted role to {role.mention}.",
-                colour=discord.Colour.green()
             ))
 
     @league.command(name="rmpermrole")
@@ -77,26 +79,26 @@ class League(OptionalCog):
         Remove any role set set previously with setpermrole.
         """
 
-        query = perm_role_model.select().where(perm_role_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if not exists:
+        try:
+            role = await objects.get(
+                PermittedRole,
+                PermittedRole.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title="Cannot remove permitted role:",
                 description="No permitted role is set.",
                 colour=discord.Colour.red()
             ))
         else:
-            query = perm_role_model.delete(perm_role_model.c.guild_id == ctx.guild.id)
-            await self.bot.db.execute(query)
+            await objects.delete(role)
             await ctx.send(embed=discord.Embed(
                 description="Successfully removed permitted role",
                 colour=discord.Colour.green()
             ))
 
     @league.command(name="setchamp")
-    @commands.check(has_permission_role)
+    @commands.check(has_permitted_role)
     async def set_champion(self, ctx, name: str):
         """
         Sets the champion to be associated with
@@ -112,8 +114,11 @@ class League(OptionalCog):
         else:
             champion_data = await self.league_client.get_champion(name)
             if champion_data is not None:
-                query = champion_model.insert().values(guild_id=ctx.guild.id, champion_id=champion_data['id'])
-                await self.bot.db.execute(query)
+                await objects.create(
+                    Champion,
+                    id=champion_data['id'],
+                    guild_id=ctx.guild.id
+                )
                 await ctx.send(embed=discord.Embed(
                     description=f"Successfully associated Champion `{name}` with this Guild.",
                     colour=discord.Colour.green()
@@ -126,28 +131,32 @@ class League(OptionalCog):
                 ))
 
     @league.command(name="rmchamp")
-    @commands.check(has_permission_role)
+    @commands.check(has_permitted_role)
     async def remove_champion(self, ctx):
         """
         Removes the champion associated with a guild, if set.
         """
 
-        if await self.get_champ_id(ctx.guild.id) is None:
+        try:
+            guild_champion = await objects.get(
+                Champion,
+                Champion.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title="Failed to disassociate champion:",
                 description="This guild has no associated champion set.",
                 colour=discord.Colour.red()
             ))
         else:
-            query = champion_model.delete(champion_model.c.guild_id == ctx.guild.id)
-            await self.bot.db.execute(query)
+            await objects.delete(guild_champion)
             await ctx.send(embed=discord.Embed(
                 description="Successfully disassociated champion from this Guild.",
                 colour=discord.Colour.green()
             ))
 
     @league.command(name="adduser")
-    @commands.check(has_permission_role)
+    @commands.check(has_permitted_role)
     async def add_user(self, ctx, region: Region, *, name: str):
         """
         Add a user to the mastery leaderboard for this guild.
@@ -161,21 +170,13 @@ class League(OptionalCog):
                 colour=discord.Colour.red()
             ))
 
-        query = summoner_model.select().where(and_(
-            summoner_model.c.id == summoner_data['id'],
-            summoner_model.c.guild_id == ctx.guild.id
-        ))
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if exists:
-            await ctx.send(embed=discord.Embed(
-                title="Failed to add User:",
-                description=f"`{name}` in `{region}` is already added.",
-                colour=discord.Colour.red()
-            ))
-
-        else:
+        try:
+            await objects.get(
+                Summoner,
+                Summoner.id == summoner_data['id'],
+                Summoner.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
             champ_id = await self.get_champ_id(ctx.guild.id)
             if champ_id is None:
                 await ctx.send(embed=discord.Embed(
@@ -190,19 +191,25 @@ class League(OptionalCog):
                     colour=discord.Colour.red()
                 ))
             else:
-                query = summoner_model.insert().values(
+                await objects.create(
+                    Summoner,
                     id=summoner_data['id'],
                     guild_id=ctx.guild.id,
                     region=region
                 )
-                await self.bot.db.execute(query)
                 await ctx.send(embed=discord.Embed(
                     description=f"Successfully added `{name}` to the database.",
                     colour=discord.Colour.green()
                 ))
+        else:
+            await ctx.send(embed=discord.Embed(
+                title="Failed to add User:",
+                description=f"`{name}` in `{region}` is already added.",
+                colour=discord.Colour.red()
+            ))
 
     @league.command(name="rmuser")
-    @commands.check(has_permission_role)
+    @commands.check(has_permitted_role)
     async def remove_user(self, ctx, region: Region, *, name: str):
         """
         Removes a user from the mastery leaderboard for this guild.
@@ -216,32 +223,27 @@ class League(OptionalCog):
                 colour=discord.Colour.red()
             ))
 
-        query = summoner_model.select().where(and_(
-            summoner_model.c.id == summoner_data['id'],
-            summoner_model.c.guild_id == ctx.guild.id
-        ))
-        result = await self.bot.db.execute(query)
-        exists = await result.first() is not None
-
-        if not exists:
+        try:
+            summoner = await objects.get(
+                Summoner,
+                Summoner.id == summoner_data['id'],
+                Summoner.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title="Failed to remove user:",
                 description=f"`{name}` in `{region}` is not in the database.",
                 colour=discord.Colour.red()
             ))
         else:
-            query = summoner_model.delete(and_(
-                summoner_model.c.id == summoner_data['id'],
-                summoner_model.c.guild_id == ctx.guild.id
-            ))
-            await self.bot.db.execute(query)
+            await objects.delete(summoner)
             await ctx.send(embed=discord.Embed(
                 description=f"Successfully removed `{name}` from the database.",
                 colour=discord.Colour.green()
             ))
 
     @league.command(name="buildtable")
-    @commands.check(has_permission_role)
+    @commands.check(has_permitted_role)
     async def build_table(self, ctx):
         """
         Builds a table with the added users on this
@@ -258,9 +260,10 @@ class League(OptionalCog):
                 colour=discord.Color.red()
             ))
         else:
-            query = summoner_model.select().where(summoner_model.c.guild_id == ctx.guild.id)
-            result = await self.bot.db.execute(query)
-            summoners = await result.fetchall()
+            summoners = await peewee_async.execute(
+                Summoner.select()
+                        .where(Summoner.guild_id == ctx.guild.id)
+            )
 
             last_update_percent = 0.00
             masteries = []

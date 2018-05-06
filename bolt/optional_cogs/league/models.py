@@ -1,21 +1,23 @@
-from sqlalchemy import Table, Column, BigInteger, String, Integer
+import peewee
 
-from ...database import metadata
-
-
-champion = Table('champion', metadata,
-    Column('guild_id', BigInteger(), primary_key=True),
-    Column('champion_id', Integer(), nullable=False)
-)
+from ...database import Model
 
 
-summoner = Table('summoner', metadata,
-    Column('id', BigInteger(), primary_key=True),
-    Column('guild_id', BigInteger(), nullable=False, index=True),
-    Column('region', String(4), nullable=False)
-)
+class Champion(Model):
+    id = peewee.IntegerField()
+    guild_id = peewee.BigIntegerField(primary_key=True)
 
-permitted_role = Table('permitted_role', metadata,
-    Column('id', BigInteger(), primary_key=True),
-    Column('guild_id', BigInteger(), index=True)
-)
+
+class Summoner(Model):
+    id = peewee.BigIntegerField(primary_key=True)
+    guild_id = peewee.BigIntegerField()
+    region = peewee.FixedCharField(4)
+
+
+class PermittedRole(Model):
+    id = peewee.BigIntegerField()
+    guild_id = peewee.BigIntegerField()
+
+    class Meta:
+        primary_key = peewee.CompositeKey('id', 'guild_id')
+
