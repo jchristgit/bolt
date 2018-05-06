@@ -1,3 +1,4 @@
+import asyncio
 import itertools
 import operator
 
@@ -5,8 +6,10 @@ import discord
 from discord.ext import commands
 from sqlalchemy import and_
 
-from .models import infraction as infraction_db
+from .converters import ExpirationDate
+from .models import infraction as infraction_db, mute as mute_db, mute_role as mute_role_db
 from .types import InfractionType
+from .unmute_task import background_unmute_task
 
 
 INFRACTION_TYPE_EMOJI = {
@@ -23,11 +26,28 @@ class Mod:
 
     def __init__(self, bot):
         self.bot = bot
+        self.unmute_task = None
         print('Loaded Cog Mod.')
 
-    @staticmethod
-    def __unload():
+    def __unload(self):
+        if self.unmute_task is not None:
+            self.unmute_task.cancel()
         print('Unloaded Cog Mod.')
+
+    async def start_unmute_task(self):
+        try:
+            await background_unmute_task(self.bot)
+        except asyncio.CancelledError:
+            pass
+
+    async def restart_unmute_task(self):
+        if self.unmute_task is not None:
+            self.unmute_task.cancel()
+        self.unmute_task = self.bot.loop.create_task(self.start_unmute_task())
+
+    async def on_ready(self):
+        if self.unmute_task is None:
+            self.unmute_task = self.bot.loop.create_task(self.start_unmute_task())
 
     @commands.command()
     @commands.guild_only()
@@ -38,7 +58,7 @@ class Mod:
 
         **Examples:**
         !kick @Guy#1337 - kicks Guy
-        !Kick @Guy#1337 spamming - kick Guy and specifies the reason "spamming" for the Audit Log.
+        !kick @Guy#1337 spamming - kick Guy and specifies the reason "spamming" for the Audit Log.
         """
 
         if ctx.message.guild.me.top_role.position <= member.top_role.position:
@@ -346,6 +366,143 @@ class Mod:
         )
         await ctx.send(embed=info_response)
 
+    @commands.group(invoke_without_command=True)
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
+    @commands.has_permissions(manage_roles=True)
+    async def mute(self, ctx, member: discord.Member, expiry: ExpirationDate, *, reason: str):
+        """Mute the mentioned member for the given duration with an optional reason.
+
+        To specify a duration spanning multiple words, use double quotes.
+        """
+
+        query = mute_role_db.select().where(mute_role_db.c.guild_id == ctx.guild.id)
+        result = await self.bot.db.execute(query)
+        role_row = await result.first()
+
+        if role_row is None:
+            return await ctx.send(embed=discord.Embed(
+                title=f'Cannot mute user `{member}` (`{member.id}`)',
+                description='You need to set a role to assign with this command through `mute setrole` first.',
+                colour=discord.Colour.red()
+            ))
+
+        role = discord.utils.get(ctx.guild.roles, id=role_row.role_id)
+        if role is None:
+            return await ctx.send(embed=discord.Embed(
+                title=f'Cannot mute user `{member}` (`{member.id}`)',
+                description='The currently configured mute role could not '
+                            'be found. Reconfigure it with `mute setrole`.',
+                colour=discord.Colour.red()
+            ))
+
+        if role in member.roles:
+            return await ctx.send(embed=discord.Embed(
+                title=f'Cannot mute user `{member}` (`{member.id}`)',
+                description=f'The user already has the role {role.mention} assigned, '
+                            'and is therefore assumed to already be muted.',
+                colour=discord.Colour.red()
+            ))
+
+        query = mute_db.select().where(and_(
+            infraction_db.c.guild_id == ctx.guild.id,
+            infraction_db.c.user_id == member.id,
+            mute_db.c.active.is_(True)
+        )).join(infraction_db).select()
+        result = await self.bot.db.execute(query)
+        active_mute = await result.first()
+
+        if active_mute is not None:
+            return await ctx.send(embed=discord.Embed(
+                title=f'Cannot mute user `{member}` (`{member.id}`)',
+                description=f'A mute is already active under infraction ID `{active_mute.id}`, '
+                            f'expiring at {str(active_mute.expiry)}. Edit it to change the mute.',
+                colour=discord.Colour.red()
+            ))
+
+        await member.add_roles(role)
+
+        query = infraction_db.insert().values(
+            type=InfractionType.mute,
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            moderator_id=ctx.author.id,
+            reason=reason
+        )
+        result = await self.bot.db.execute(query)
+        created_infraction_id = result.inserted_primary_key[0]
+
+        query = mute_db.insert().values(
+            expiry=expiry,
+            infraction_id=created_infraction_id
+        )
+        await self.bot.db.execute(query)
+
+        # Restart the unmute task as it could be sleeping until a mute
+        # with a later expiry than the newly created mute expires.
+        await self.restart_unmute_task()
+
+        response_embed = discord.Embed(
+            title=f'Muted user `{member}` (`{member.id}`)',
+            colour=discord.Colour.blue()
+        ).add_field(
+            name='Reason',
+            value=reason or 'no reason specified'
+        ).add_field(
+            name='Expiry',
+            value=str(expiry)
+        ).add_field(
+            name='Infraction',
+            value=f'created with ID `{created_infraction_id}`'
+        ).set_footer(
+            text=f'Authored by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+        await ctx.send(embed=response_embed)
+
+    @mute.command(name='setrole')
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def mute_setrole(self, ctx, *, role: discord.Role):
+        """Set the role to be used for muting users."""
+
+        query = mute_role_db.select().where(mute_role_db.c.guild_id == ctx.guild.id)
+        result = await self.bot.db.execute(query)
+        role_row = await result.first()
+
+        if role_row is None:
+            query = mute_role_db.insert().values(
+                guild_id=ctx.guild.id,
+                role_id=role.id
+            )
+            await self.bot.db.execute(query)
+
+            info_embed = discord.Embed(
+                title=f'Mute role was set to {role}.',
+                colour=discord.Colour.green()
+            ).set_footer(
+                text=f'Authored by {ctx.author} ({ctx.author.id})',
+                icon_url=ctx.author.avatar_url
+            )
+            await ctx.send(embed=info_embed)
+
+        else:
+            query = mute_role_db.update().where(
+                mute_role_db.c.guild_id == ctx.guild.id
+            ).values(
+                role_id=role.id
+            )
+            await self.bot.db.execute(query)
+
+            info_embed = discord.Embed(
+                title=f'Mute role was updated to {role}.',
+                colour=discord.Colour.green()
+            ).set_footer(
+                text=f'Authored by {ctx.author} ({ctx.author.id})',
+                icon_url=ctx.author.avatar_url
+            )
+            await ctx.send(embed=info_embed)
+
     @commands.group(aliases=['infr', 'infractions'])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
@@ -382,10 +539,10 @@ class Mod:
     async def infraction_delete(self, ctx, id_: int):
         """Delete the given infraction from the database."""
 
-        query = infraction_db.delete().where(
+        query = infraction_db.delete().where(and_(
             infraction_db.c.id == id_,
             infraction_db.c.guild_id == ctx.guild.id
-        )
+        ))
         result = await self.bot.db.execute(query)
 
         if result.rowcount == 0:
@@ -503,7 +660,7 @@ class Mod:
     @infraction.command(name='user')
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def infraction_user(self, ctx, user: discord.User):
+    async def infraction_user(self, ctx, *, user: discord.User):
         """Look up infractions for the specified user."""
 
         query = infraction_db.select().where(and_(
