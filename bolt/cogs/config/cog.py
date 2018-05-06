@@ -1,9 +1,11 @@
+from contextlib import suppress
+
 import discord
-
 from discord.ext import commands
-from sqlalchemy import and_
+from peewee import DoesNotExist
 
-from .models import prefix as prefix_model, opt_cog as opt_cog_model
+from .models import OptionalCog, Prefix
+from ...database import objects
 
 
 class Config:
@@ -42,12 +44,13 @@ class Config:
                 colour=discord.Colour.red()
             ))
 
-        query = opt_cog_model.select().where(and_(opt_cog_model.c.name == cog_name,
-                                                  opt_cog_model.c.guild_id == ctx.guild.id))
-        res = await self.bot.db.execute(query)
-        cog_row = await res.first()
-
-        if cog_row is None:
+        try:
+            await objects.get(
+                OptionalCog,
+                name=cog_name,
+                guild_id=ctx.guild.id
+            )
+        except DoesNotExist:
             app_info = await self.bot.application_info()
             if cog.RESTRICTED and ctx.author != app_info.owner:
                 return await ctx.send(embed=discord.Embed(
@@ -56,8 +59,11 @@ class Config:
                     colour=discord.Colour.red()
                 ))
 
-            query = opt_cog_model.insert().values(name=cog_name, guild_id=ctx.guild.id)
-            await self.bot.db.execute(query)
+            await objects.create(
+                OptionalCog,
+                name=cog_name,
+                guild_id=ctx.guild.id
+            )
             await ctx.send(embed=discord.Embed(
                 title='Successfully enabled Cog',
                 description=f'`{cog_name}` is now enabled on this Guild.',
@@ -89,25 +95,24 @@ class Config:
                 colour=discord.Colour.red()
             ))
 
-        query = opt_cog_model.select().where(and_(opt_cog_model.c.name == cog_name,
-                                                  opt_cog_model.c.guild_id == ctx.guild.id))
-        res = await self.bot.db.execute(query)
-        cog_row = await res.first()
-
-        if cog_row is not None:
-            query = opt_cog_model.delete().where(and_(opt_cog_model.c.name == cog_name,
-                                                      opt_cog_model.c.guild_id == ctx.guild.id))
-            await self.bot.db.execute(query)
-            await ctx.send(embed=discord.Embed(
-                title='Successfully disabled Cog',
-                description=f'`{cog_name}` is now disabled on this Guild.',
-                colour=discord.Colour.green()
-            ))
-        else:
+        try:
+            optional_cog = await objects.get(
+                OptionalCog,
+                name=cog_name,
+                guild_id=ctx.guild.id
+            )
+            await objects.delete(optional_cog)
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title='Failed to disable Cog:',
                 description=f'`{cog_name}` is not enabled on this Guild.',
                 colour=discord.Colour.red()
+            ))
+        else:
+            await ctx.send(embed=discord.Embed(
+                title='Successfully disabled Cog',
+                description=f'`{cog_name}` is now disabled on this Guild.',
+                colour=discord.Colour.green()
             ))
 
     @commands.command(name='setprefix')
@@ -132,9 +137,9 @@ class Config:
         without specifying a new prefix you wish to use, like `setprefix`.
         """
 
-        # This command always has to delete an existing prefix if it is present.
-        query = prefix_model.delete().where(prefix_model.c.guild_id == ctx.guild.id)
-        await self.bot.db.execute(query)
+        with suppress(DoesNotExist):
+            current_prefix = await objects.get(Prefix, guild_id=ctx.guild.id)
+            await objects.delete(current_prefix)
 
         if new_prefix is None:
             await ctx.send(embed=discord.Embed(
@@ -142,10 +147,14 @@ class Config:
                 description='My prefix is now reset to the default. Alternatively, you can mention me.',
                 colour=discord.Colour.green()
             ))
+
         else:
             new_prefix = new_prefix.replace('_', ' ')
-            query = prefix_model.insert().values(guild_id=ctx.guild.id, prefix=new_prefix)
-            await self.bot.db.execute(query)
+            await objects.create(
+                Prefix,
+                guild_id=ctx.guild.id,
+                prefix=new_prefix
+            )
             await ctx.send(embed=discord.Embed(
                 title=f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.',
                 colour=discord.Colour.green()
@@ -157,18 +166,16 @@ class Config:
     async def get_prefix(self, ctx):
         """Tells you which prefix is currently active on this guild."""
 
-        query = prefix_model.select().where(prefix_model.c.guild_id == ctx.guild.id)
-        res = await self.bot.db.execute(query)
-        prefix_row = await res.first()
-
-        if prefix_row is None:
+        try:
+            prefix = await objects.get(Prefix, guild_id=ctx.guild.id)
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title='Custom Guild Prefix',
                 description='This Guild has no custom prefix set.',
                 colour=discord.Colour.blue()
             ))
         else:
-            humanized_prefix = f'`{prefix_row.prefix}`{", with a space" if prefix_row.prefix[-1] == " " else ""}'
+            humanized_prefix = f'`{prefix.prefix}`{", with a space" if prefix.prefix[-1] == " " else ""}'
             await ctx.send(embed=discord.Embed(
                 title='Custom Guild Prefix',
                 description=f'The custom prefix for this guild is {humanized_prefix}.',

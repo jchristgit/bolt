@@ -4,7 +4,6 @@ import discord
 from discord import Game, Embed, Colour
 from discord.ext import commands
 
-from .. import database
 from .config import CONFIG, get_prefix
 from .logging import create_logger
 
@@ -17,24 +16,12 @@ class Bot(commands.AutoShardedBot):
             pm_help=None,
             game=Game(name=random.choice(CONFIG['discord']['playing_states']))
         )
-        self.db = None
         self.logger = create_logger('discord')
 
     # Helper function to create and return an Embed with red colour.
     @staticmethod
     def make_error_embed(description):
         return Embed(colour=Colour.red(), description=description)
-
-    async def on_connect(self):
-        await self.init()
-
-    async def init(self):
-        if self.db is None:
-            self.db = await database.engine.connect()
-
-    async def cleanup(self):
-        if self.db is not None:
-            await self.db.close()
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):

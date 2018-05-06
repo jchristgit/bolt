@@ -2,8 +2,10 @@ import json
 
 import discord
 from discord.ext import commands
+from peewee import DoesNotExist
 
-from ..cogs.config.models import prefix as prefix_model
+from ..cogs.config.models import Prefix
+from ..database import objects
 
 with open("config.json") as f:
     CONFIG = json.load(f)
@@ -15,9 +17,9 @@ async def get_prefix(bot, msg):
         return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
 
     # Check for custom per-guild prefix
-    query = prefix_model.select().where(prefix_model.c.guild_id == msg.guild.id)
-    res = await bot.db.execute(query)
-    prefix_row = await res.first()
-    if prefix_row is not None:
-        return commands.when_mentioned_or(prefix_row.prefix)(bot, msg)
-    return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
+    try:
+        prefix = await objects.get(Prefix, guild_id=msg.guild.id)
+    except DoesNotExist:
+        return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
+    else:
+        return commands.when_mentioned_or(prefix.prefix)(bot, msg)

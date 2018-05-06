@@ -1,15 +1,14 @@
-from sqlalchemy import Table, Column, BigInteger, String, Integer
+import peewee
 
-from ...database import metadata
+from ...database import Model
 
 
-prefix = Table('prefix', metadata,
-    Column('guild_id', BigInteger(), primary_key=True),
-    Column('prefix', String(50), nullable=False)
-)
+class Prefix(Model):
+    guild_id = peewee.BigIntegerField(primary_key=True)
+    prefix = peewee.CharField(max_length=25)
 
-opt_cog = Table('optional_cog', metadata,
-    Column('id', Integer(), primary_key=True),
-    Column('name', String(20), nullable=False),
-    Column('guild_id', BigInteger(), nullable=False)
-)
+
+class OptionalCog(Model):
+    id = peewee.IntegerField(primary_key=True)
+    name = peewee.CharField(max_length=20)
+    guild_id = peewee.BigIntegerField()
