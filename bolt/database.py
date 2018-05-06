@@ -1,12 +1,14 @@
+import asyncio
 import os
-
-
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy_aio import ASYNCIO_STRATEGY
+import peewee
+from peewee_async import Manager, PostgresqlDatabase
 
 
 engine_url = os.environ['BOLT_DATABASE_URL']
-engine = create_engine(
-    engine_url, strategy=ASYNCIO_STRATEGY
-)
-metadata = MetaData()
+database = PostgresqlDatabase(engine_url)
+objects = Manager(database, loop=asyncio.get_event_loop())
+
+
+class Model(peewee.Model):
+    class Meta:
+        database = database
