@@ -12,6 +12,7 @@ sqlalchemy = "*"
 sqlalchemy-aio = "*"
 alembic = "*"
 yarl = "==1.1.1"
+"psycopg2-binary" = "*"
 
 [dev-packages]
 "flake8" = "*"

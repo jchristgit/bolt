@@ -8,3 +8,4 @@ logs/*.log
 venv/
 Pipfile.lock
 config.json
+.env
