@@ -1,8 +1,11 @@
 import discord
+import peewee_async
 from discord.ext import commands
 from sqlalchemy import and_
+from peewee import DoesNotExist
 
-from .models import sar as sar_model
+from .models import SelfAssignableRole
+from ...database import objects
 
 
 class Roles:
@@ -38,10 +41,15 @@ class Roles:
         return embed
 
     async def is_self_assignable(self, role: discord.Role):
-        query = sar_model.select().where(and_(sar_model.c.id == role.id, sar_model.c.guild_id == role.guild.id))
-        result = await self.bot.db.execute(query)
-        row = await result.first()
-        return row is not None
+        try:
+            await objects.get(
+                SelfAssignableRole,
+                SelfAssignableRole.id == role.id,
+                SelfAssignableRole.guild_id == role.guild.id
+            )
+        except DoesNotExist:
+            return False
+        return True
 
     @role.command(name='asar', aliases=['msa'])
     @commands.has_permissions(manage_roles=True)
@@ -59,14 +67,19 @@ class Roles:
 
         success, failed = [], []
         for role in roles:
-            if await self.is_self_assignable(role):
-                failed.append(f'• Role {role.mention} is already self-assignable.')
-            elif role >= ctx.guild.me.top_role:
+            if role >= ctx.guild.me.top_role:
                 failed.append(f'• Role {role.mention} is higher or as high in the role hierarchy than my top role.')
             else:
-                query = sar_model.insert().values(id=role.id, name=role.name, guild_id=ctx.guild.id)
-                await self.bot.db.execute(query)
-                success.append(role.mention)
+                _, created = await objects.get_or_create(
+                    SelfAssignableRole,
+                    id=role.id,
+                    name=role.name,
+                    guild_id=ctx.guild.id
+                )
+                if created:
+                    success.append(role.mention)
+                else:
+                    failed.append(f'• Role {role.mention} is already self-assignable.')
 
         await ctx.send(embed=self.create_role_update_response(discord.Embed(
             title=f'Updated Self-Assignable Roles',
@@ -81,11 +94,16 @@ class Roles:
 
         success, failed = [], []
         for role in roles:
-            if not await self.is_self_assignable(role):
+            try:
+                role_db_entry = await objects.get(
+                    SelfAssignableRole,
+                    SelfAssignableRole.id == role.id,
+                    SelfAssignableRole.guild_id == ctx.guild.id
+                )
+            except DoesNotExist:
                 failed.append(f'• Role {role.mention} is not self-assignable.')
             else:
-                query = sar_model.delete().where(and_(sar_model.c.id == role.id, sar_model.c.guild_id == ctx.guild.id))
-                await self.bot.db.execute(query)
+                await objects.delete(role_db_entry)
                 success.append(role.mention)
 
         await ctx.send(embed=self.create_role_update_response(discord.Embed(
@@ -152,9 +170,11 @@ class Roles:
     async def list_self_assignable_roles(self, ctx):
         """Show all self-assignable Roles on this Guild."""
 
-        query = sar_model.select().where(sar_model.c.guild_id == ctx.guild.id).order_by(sar_model.c.name)
-        result = await self.bot.db.execute(query)
-        roles = await result.fetchall()
+        roles = await peewee_async.execute(
+            SelfAssignableRole.select()
+                              .where(SelfAssignableRole.guild_id == ctx.guild.id)
+                              .order_by(SelfAssignableRole.name.desc())
+        )
 
         if not roles:
             await ctx.send(embed=discord.Embed(

@@ -1,10 +1,9 @@
-from sqlalchemy import Table, Column, BigInteger, String
+import peewee
 
-from ...database import metadata
+from ...database import Model
 
 
-sar = Table('self_assignable_role', metadata,
-    Column('id', BigInteger(), primary_key=True),
-    Column('name', String(150), index=True, nullable=False),
-    Column('guild_id', BigInteger(), nullable=False)
-)
+class SelfAssignableRole(Model):
+    id = peewee.BigIntegerField(primary_key=True)
+    name = peewee.CharField(150)
+    guild_id = peewee.BigIntegerField()
