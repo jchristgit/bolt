@@ -3,13 +3,16 @@ import itertools
 import operator
 
 import discord
+import peewee_async
 from discord.ext import commands
+from peewee import DoesNotExist
 from sqlalchemy import and_
 
 from .converters import ExpirationDate
-from .models import infraction as infraction_db, mute as mute_db, mute_role as mute_role_db
+from .models import Infraction, Mute, MuteRole
 from .types import InfractionType
 from .unmute_task import background_unmute_task
+from ...database import objects
 
 
 INFRACTION_TYPE_EMOJI = {
@@ -39,6 +42,8 @@ class Mod:
             await background_unmute_task(self.bot)
         except asyncio.CancelledError:
             pass
+        except Exception as e:
+            print('unhandled:', e)
 
     async def restart_unmute_task(self):
         if self.unmute_task is not None:
@@ -84,22 +89,21 @@ class Mod:
             icon_url=ctx.author.avatar_url
         )
 
-        query = infraction_db.insert().values(
+        created_infraction = await objects.create(
+            Infraction,
             type=InfractionType.kick,
             guild_id=ctx.guild.id,
             user_id=member.id,
             moderator_id=ctx.author.id,
             reason=reason
         )
-        result = await self.bot.db.execute(query)
-        inserted_pk = result.inserted_primary_key[0]
 
         response.add_field(
             name='Reason',
             value=reason or 'no reason specified'
         ).add_field(
             name='Infraction',
-            value=f'created with ID `{inserted_pk}`'
+            value=f'created with ID `{created_infraction.id}`'
         )
         await ctx.send(embed=response)
 
@@ -141,22 +145,21 @@ class Mod:
         if reason:
             response.description = f'**Reason**: {reason}'
 
-        query = infraction_db.insert().values(
+        created_infraction = await objects.create(
+            Infraction,
             type=InfractionType.ban,
             guild_id=ctx.guild.id,
             user_id=member.id,
             moderator_id=ctx.author.id,
             reason=reason
         )
-        result = await self.bot.db.execute(query)
-        inserted_pk = result.inserted_primary_key[0]
 
         response.add_field(
             name='Reason',
             value=reason or 'no reason specified'
         ).add_field(
             name='Infraction',
-            value=f'created with ID `{inserted_pk}`'
+            value=f'created with ID `{created_infraction.id}`'
         )
 
         await ctx.send(embed=response)
@@ -314,19 +317,18 @@ class Mod:
         note @Person#1337 likes ducks
         """
 
-        query = infraction_db.insert().values(
+        created_infraction = await objects.create(
+            Infraction,
             type=InfractionType.note,
-            user_id=user.id,
             guild_id=ctx.guild.id,
+            user_id=user.id,
             moderator_id=ctx.author.id,
             reason=note
         )
-        result = await self.bot.db.execute(query)
 
-        inserted_pk = result.inserted_primary_key[0]
         info_response = discord.Embed(
             title=f'Added a note for `{user}` (`{user.id}`)',
-            description=f'View it in detail by using `infraction detail {inserted_pk}`.',
+            description=f'View it in detail by using `infraction detail {created_infraction.id}`.',
             colour=discord.Colour.green()
         )
         info_response.set_footer(
@@ -341,15 +343,14 @@ class Mod:
     async def warn(self, ctx, user: discord.User, *, reason: str):
         """Warn the specified user with the given reason."""
 
-        query = infraction_db.insert().values(
+        created_infraction = await objects.create(
+            Infraction,
             type=InfractionType.warning,
             guild_id=ctx.guild.id,
             user_id=user.id,
             moderator_id=ctx.author.id,
             reason=reason
         )
-        result = await self.bot.db.execute(query)
-        created_infraction_id = result.inserted_primary_key[0]
 
         info_response = discord.Embed(
             title=f'Warned user `{user}` (`{user.id}`)',
@@ -359,7 +360,7 @@ class Mod:
             value=reason or 'no reason specified'
         ).add_field(
             name='Infraction',
-            value=f'created with ID `{created_infraction_id}`'
+            value=f'created with ID `{created_infraction.id}`'
         ).set_footer(
             text=f'Authored by {ctx.author} ({ctx.author.id})',
             icon_url=user.avatar_url
@@ -376,89 +377,90 @@ class Mod:
         To specify a duration spanning multiple words, use double quotes.
         """
 
-        query = mute_role_db.select().where(mute_role_db.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        role_row = await result.first()
-
-        if role_row is None:
-            return await ctx.send(embed=discord.Embed(
+        try:
+            mute_role = await objects.get(
+                MuteRole,
+                MuteRole.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
+            await ctx.send(embed=discord.Embed(
                 title=f'Cannot mute user `{member}` (`{member.id}`)',
                 description='You need to set a role to assign with this command through `mute setrole` first.',
                 colour=discord.Colour.red()
             ))
+        else:
+            role = discord.utils.get(ctx.guild.roles, id=mute_role.role_id)
+            if role is None:
+                return await ctx.send(embed=discord.Embed(
+                    title=f'Cannot mute user `{member}` (`{member.id}`)',
+                    description='The currently configured mute role could not '
+                                'be found. Reconfigure it with `mute setrole`.',
+                    colour=discord.Colour.red()
+                ))
 
-        role = discord.utils.get(ctx.guild.roles, id=role_row.role_id)
-        if role is None:
-            return await ctx.send(embed=discord.Embed(
-                title=f'Cannot mute user `{member}` (`{member.id}`)',
-                description='The currently configured mute role could not '
-                            'be found. Reconfigure it with `mute setrole`.',
-                colour=discord.Colour.red()
-            ))
+            elif role in member.roles:
+                return await ctx.send(embed=discord.Embed(
+                    title=f'Cannot mute user `{member}` (`{member.id}`)',
+                    description=f'The user already has the role {role.mention} assigned, '
+                                'and is therefore assumed to already be muted.',
+                    colour=discord.Colour.red()
+                ))
 
-        if role in member.roles:
-            return await ctx.send(embed=discord.Embed(
-                title=f'Cannot mute user `{member}` (`{member.id}`)',
-                description=f'The user already has the role {role.mention} assigned, '
-                            'and is therefore assumed to already be muted.',
-                colour=discord.Colour.red()
-            ))
+            active_user_mutes = await peewee_async.execute(
+                Mute.select()
+                    .where(Mute.active == True,  # noqa
+                           Infraction.guild_id == ctx.guild.id,
+                           Infraction.user_id == member.id)
+                    .join(Infraction)
+            )
 
-        query = mute_db.select().where(and_(
-            infraction_db.c.guild_id == ctx.guild.id,
-            infraction_db.c.user_id == member.id,
-            mute_db.c.active.is_(True)
-        )).join(infraction_db).select()
-        result = await self.bot.db.execute(query)
-        active_mute = await result.first()
+            if not active_user_mutes:
+                await member.add_roles(role)
 
-        if active_mute is not None:
-            return await ctx.send(embed=discord.Embed(
-                title=f'Cannot mute user `{member}` (`{member.id}`)',
-                description=f'A mute is already active under infraction ID `{active_mute.id}`, '
-                            f'expiring at {str(active_mute.expiry)}. Edit it to change the mute.',
-                colour=discord.Colour.red()
-            ))
+                created_infraction = await objects.create(
+                    Infraction,
+                    type=InfractionType.mute,
+                    guild_id=ctx.guild.id,
+                    user_id=member.id,
+                    moderator_id=ctx.author.id,
+                    reason=reason
+                )
+                await objects.create(
+                    Mute,
+                    expiry=expiry,
+                    infraction=created_infraction
+                )
 
-        await member.add_roles(role)
+                # Restart the unmute task as it could be sleeping until a mute
+                # with a later expiry than the newly created mute expires.
+                await self.restart_unmute_task()
 
-        query = infraction_db.insert().values(
-            type=InfractionType.mute,
-            guild_id=ctx.guild.id,
-            user_id=member.id,
-            moderator_id=ctx.author.id,
-            reason=reason
-        )
-        result = await self.bot.db.execute(query)
-        created_infraction_id = result.inserted_primary_key[0]
+                response_embed = discord.Embed(
+                    title=f'Muted user `{member}` (`{member.id}`)',
+                    colour=discord.Colour.blue()
+                ).add_field(
+                    name='Reason',
+                    value=reason or 'no reason specified'
+                ).add_field(
+                    name='Expiry',
+                    value=str(expiry)
+                ).add_field(
+                    name='Infraction',
+                    value=f'created with ID `{created_infraction.id}`'
+                ).set_footer(
+                    text=f'Authored by {ctx.author} ({ctx.author.id})',
+                    icon_url=ctx.author.avatar_url
+                )
+                await ctx.send(embed=response_embed)
 
-        query = mute_db.insert().values(
-            expiry=expiry,
-            infraction_id=created_infraction_id
-        )
-        await self.bot.db.execute(query)
-
-        # Restart the unmute task as it could be sleeping until a mute
-        # with a later expiry than the newly created mute expires.
-        await self.restart_unmute_task()
-
-        response_embed = discord.Embed(
-            title=f'Muted user `{member}` (`{member.id}`)',
-            colour=discord.Colour.blue()
-        ).add_field(
-            name='Reason',
-            value=reason or 'no reason specified'
-        ).add_field(
-            name='Expiry',
-            value=str(expiry)
-        ).add_field(
-            name='Infraction',
-            value=f'created with ID `{created_infraction_id}`'
-        ).set_footer(
-            text=f'Authored by {ctx.author} ({ctx.author.id})',
-            icon_url=ctx.author.avatar_url
-        )
-        await ctx.send(embed=response_embed)
+            else:
+                active_mute = active_user_mutes[0]
+                await ctx.send(embed=discord.Embed(
+                    title=f'Cannot mute user `{member}` (`{member.id}`)',
+                    description=f'A mute is already active under infraction ID `{active_mute.infraction.id}`, '
+                                f'expiring at {str(active_mute.expiry)}. Edit it to change the mute.',
+                    colour=discord.Colour.red()
+                ))
 
     @mute.command(name='setrole')
     @commands.guild_only()
@@ -466,16 +468,18 @@ class Mod:
     async def mute_setrole(self, ctx, *, role: discord.Role):
         """Set the role to be used for muting users."""
 
-        query = mute_role_db.select().where(mute_role_db.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        role_row = await result.first()
+        try:
+            mute_role = await objects.get(
+                MuteRole,
+                MuteRole.guild_id == ctx.guild.id
+            )
 
-        if role_row is None:
-            query = mute_role_db.insert().values(
+        except DoesNotExist:
+            await objects.create(
+                MuteRole,
                 guild_id=ctx.guild.id,
                 role_id=role.id
             )
-            await self.bot.db.execute(query)
 
             info_embed = discord.Embed(
                 title=f'Mute role was set to {role}.',
@@ -487,12 +491,8 @@ class Mod:
             await ctx.send(embed=info_embed)
 
         else:
-            query = mute_role_db.update().where(
-                mute_role_db.c.guild_id == ctx.guild.id
-            ).values(
-                role_id=role.id
-            )
-            await self.bot.db.execute(query)
+            mute_role.guild_id = ctx.guild.id
+            await objects.update(mute_role, only=['guild_id'])
 
             info_embed = discord.Embed(
                 title=f'Mute role was updated to {role}.',
@@ -515,18 +515,21 @@ class Mod:
     async def infraction_edit(self, ctx, id_: int, *, new_reason: str):
         """Change the reason of the given infraction ID to the given new reason."""
 
-        query = infraction_db.update().where(
-            infraction_db.c.id == id_,
-            infraction_db.c.guild_id == ctx.guild.id
-        ).values(reason=new_reason)
-        result = await self.bot.db.execute(query)
-
-        if result.rowcount == 0:
+        try:
+            infraction = await objects.get(
+                Infraction,
+                Infraction.id == id_,
+                Infraction.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title=f'Failed to find infraction #`{id_}` on this guild.',
                 colour=discord.Colour.red()
             ))
         else:
+            infraction.reason = new_reason
+            await objects.update(infraction, only=['reason'])
+
             await ctx.send(embed=discord.Embed(
                 title=f'Successfully edited infraction #`{id_}`.',
                 description=f'**New reason**: {new_reason}',
@@ -539,18 +542,19 @@ class Mod:
     async def infraction_delete(self, ctx, id_: int):
         """Delete the given infraction from the database."""
 
-        query = infraction_db.delete().where(and_(
-            infraction_db.c.id == id_,
-            infraction_db.c.guild_id == ctx.guild.id
-        ))
-        result = await self.bot.db.execute(query)
-
-        if result.rowcount == 0:
+        try:
+            infraction = await objects.get(
+                Infraction,
+                Infraction.id == id_,
+                Infraction.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
             await ctx.send(embed=discord.Embed(
                 title=f'Failed to find infraction #`{id_}` on this Guild.',
                 colour=discord.Colour.red()
             ))
         else:
+            await objects.delete(infraction)
             await ctx.send(embed=discord.Embed(
                 title=f'Successfully deleted infraction #`{id_}`.',
                 colour=discord.Colour.green()
@@ -562,58 +566,57 @@ class Mod:
     async def infraction_detail(self, ctx, id_: int):
         """Look up the given infraction ID in the database."""
 
-        query = infraction_db.select().where(and_(
-            infraction_db.c.id == id_,
-            infraction_db.c.guild_id == ctx.guild.id
-        ))
-        result = await self.bot.db.execute(query)
-        infraction = await result.first()
-
-        if infraction is None:
-            return await ctx.send(embed=discord.Embed(
+        try:
+            infraction = await objects.get(
+                Infraction,
+                Infraction.id == id_,
+                Infraction.guild_id == ctx.guild.id
+            )
+        except DoesNotExist:
+            await ctx.send(embed=discord.Embed(
                 title=f'Failed to find infraction ID `{id_}`.',
                 colour=discord.Colour.red()
             ))
-
-        infraction_embed = discord.Embed(
-            title=f'Infraction: `{id_}`',
-            colour=discord.Colour.blue()
-        )
-
-        infraction_user = self.bot.get_user(infraction.user_id)
-        infraction_embed.add_field(
-            name='User',
-            value=(f'`{infraction_user}` (`{infraction_user.id}`)'
-                   if infraction_user is not None else f'`{infraction.user_id}`')
-        )
-
-        infraction_embed.add_field(
-            name='Type',
-            value=f'{INFRACTION_TYPE_EMOJI[infraction.type]} {infraction.type.value.title()}'
-        ).add_field(
-            name='Creation',
-            value=str(infraction.created_on)
-        ).add_field(
-            name='Last edited',
-            value=str(infraction.edited_on or 'never')
-        ).add_field(
-            name='Reason',
-            value=infraction.reason,
-            inline=False
-        )
-
-        author_moderator = self.bot.get_user(infraction.moderator_id)
-        if author_moderator is not None:
-            infraction_embed.set_footer(
-                text=f'Authored by {author_moderator} ({author_moderator.id})',
-                icon_url=author_moderator.avatar_url
-            )
         else:
-            infraction_embed.set_footer(
-                text=f'Authored by unknown user (ID: {infraction.moderator_id})'
+            infraction_embed = discord.Embed(
+                title=f'Infraction: `{infraction.id}`',
+                colour=discord.Colour.blue()
             )
 
-        await ctx.send(embed=infraction_embed)
+            infraction_user = self.bot.get_user(infraction.user_id)
+            infraction_embed.add_field(
+                name='User',
+                value=(f'`{infraction_user}` (`{infraction_user.id}`)'
+                       if infraction_user is not None else f'unknown user (`{infraction.user_id}`)')
+            )
+
+            infraction_embed.add_field(
+                name='Type',
+                value=f'{INFRACTION_TYPE_EMOJI[infraction.type]} {infraction.type.value.title()}'
+            ).add_field(
+                name='Creation',
+                value=str(infraction.created_on)
+            ).add_field(
+                name='Last edited',
+                value=str(infraction.edited_on or 'never')
+            ).add_field(
+                name='Reason',
+                value=infraction.reason,
+                inline=False
+            )
+
+            author_moderator = self.bot.get_user(infraction.moderator_id)
+            if author_moderator is not None:
+                infraction_embed.set_footer(
+                    text=f'Authored by {author_moderator} ({author_moderator.id})',
+                    icon_url=author_moderator.avatar_url
+                )
+            else:
+                infraction_embed.set_footer(
+                    text=f'Authored by unknown user (ID: {infraction.moderator_id})'
+                )
+
+            await ctx.send(embed=infraction_embed)
 
     @infraction.command(name='list')
     @commands.guild_only()
@@ -622,20 +625,21 @@ class Mod:
         """List all infractions, or infractions with the specified type(s)."""
 
         if types:
-            query = infraction_db.select().where(and_(
-                infraction_db.c.guild_id == ctx.guild.id,
-                infraction_db.c.type.in_(types)
-            )).order_by(infraction_db.c.created_on)
+            all_infractions = await peewee_async.execute(
+                Infraction.select()
+                          .where(Infraction.guild_id == ctx.guild.id,
+                                 Infraction.type.in_(types))
+                          .order_by(Infraction.created_on.desc())
+            )
             selected_types = "`, `".join(f"`{type_.value}`" for type_ in types)
             title = f'Infractions with types `{selected_types}` on {ctx.guild.name}'
         else:
-            query = infraction_db.select().where(
-                infraction_db.c.guild_id == ctx.guild.id
-            ).order_by(infraction_db.c.created_on)
+            all_infractions = await peewee_async.execute(
+                Infraction.select()
+                          .where(Infraction.guild_id == ctx.guild.id)
+                          .order_by(Infraction.created_on.desc())
+            )
             title = f'All infractions on {ctx.guild.name}'
-
-        result = await self.bot.db.execute(query)
-        all_infractions = await result.fetchall()
 
         list_embed_description = []
         for infraction in all_infractions:
@@ -663,29 +667,30 @@ class Mod:
     async def infraction_user(self, ctx, *, user: discord.User):
         """Look up infractions for the specified user."""
 
-        query = infraction_db.select().where(and_(
-            infraction_db.c.guild_id == ctx.guild.id,
-            infraction_db.c.user_id == user.id
-        )).order_by(infraction_db.c.type)
-        result = await self.bot.db.execute(query)
-        rows = await result.fetchall()
+        user_infractions = await peewee_async.execute(
+            Infraction.select()
+                      .where(Infraction.guild_id == ctx.guild.id,
+                             Infraction.user_id == user.id)
+                      .order_by(Infraction.type)
+        )
 
-        if not rows:
+        if not user_infractions:
             return await ctx.send(embed=discord.Embed(
                 title=f'No recorded infractions for `{user}` (`{user.id}`).',
                 colour=discord.Colour.blue()
             ))
 
-        most_recent = max(rows, key=operator.attrgetter('created_on'))
+        most_recent = max(user_infractions, key=operator.attrgetter('created_on'))
         response = discord.Embed(
             title=f'Infractions for `{user}` (`{user.id}`)',
             colour=discord.Colour.blue()
         ).set_footer(
-            text=f'total infractions: {len(rows)}, most recent: #{most_recent.id} at {most_recent.created_on}',
+            text=f'total infractions: {len(user_infractions)}, '
+                 f'most recent: #{most_recent.id} at {most_recent.created_on}',
             icon_url=user.avatar_url
         )
 
-        for infraction_type, infractions in itertools.groupby(rows, key=operator.attrgetter('type')):
+        for infraction_type, infractions in itertools.groupby(user_infractions, key=operator.attrgetter('type')):
             response.add_field(
                 name=f'{INFRACTION_TYPE_EMOJI[infraction_type]} {infraction_type.value}s',
                 value='\n'.join(f'• [`{infraction.id}`] on {infraction.created_on}' for infraction in infractions)

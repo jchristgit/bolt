@@ -1,51 +1,66 @@
 import asyncio
 import datetime
 
+from peewee import DoesNotExist
 import discord
+import peewee_async
 
-from .models import mute as mute_db, infraction as infraction_db, mute_role as mute_role_db
+from .models import Mute, MuteRole
+from ...database import objects
 
 
 async def background_unmute_task(bot):
     while True:
-        query = (mute_db.select()
-                 .order_by(mute_db.c.expiry)
-                 .where(mute_db.c.active.is_(True))
-                 .join(infraction_db)
-                 .select())
+        active_mutes = await peewee_async.execute(
+            Mute.select()
+                .order_by(Mute.expiry.asc())
+                .where(Mute.active == True)  # noqa
+        )
 
-        result = await bot.db.execute(query)
-        rows = await result.fetchall()
-
-        for row in rows:
+        for mute in active_mutes:
             # The mute table is ordered by expiry.
             # If the current expiry lies in the future, we can stop here,
             # as all further mutes will also expire in the future.
-            if row.expiry > datetime.datetime.now():
+            if mute.expiry > datetime.datetime.utcnow():
                 break
 
-            query = (mute_role_db.select()
-                     .where(mute_role_db.c.guild_id == row.guild_id))
-            result = await bot.db.execute(query)
-            role_row = await result.first()
+            try:
+                configured_mute_role = await objects.get(
+                    MuteRole,
+                    MuteRole.guild_id == mute.infraction.guild_id
+                )
+            except DoesNotExist:
+                # The guild does not have any mute role configured.
+                # That means we cannot unmute the user, so log it.
+                continue
 
-            guild = bot.get_guild(row.guild_id)
-            mute_role = discord.utils.get(guild.roles, id=role_row.role_id)
-            member = discord.utils.get(guild.members, id=row.user_id)
+            guild = bot.get_guild(mute.infraction.guild_id)
 
-            await member.remove_roles(mute_role)
+            mute_role = discord.utils.get(guild.roles, id=configured_mute_role.role_id)
+            # The previously configured mute role can no longer be found on the Guild.
+            if mute_role is None:
+                continue
 
-            query = (mute_db.update()
-                     .where(mute_db.c.infraction_id == row.infraction_id)
-                     .values(active=False))
-            await bot.db.execute(query)
+            member = discord.utils.get(guild.members, id=mute.infraction.user_id)
+            if member is not None:
+                await member.remove_roles(mute_role)
+            else:
+                # The member that should be released from the mute is no longer present on the Guild.
+                # Emit a warning.
+                pass
 
-        # Find the mute that expires next, default to 5 minutes from now.
-        sleep_until = next(
-            (row.expiry for row in rows if row.expiry > datetime.datetime.now()),
-            datetime.datetime.now() + datetime.timedelta(minutes=5)
-        )
-        total_seconds = (sleep_until - datetime.datetime.now()).total_seconds()
+            # We've removed the mute role, or the member was not present on the guild anymore anyways.
+            #  Remove the `active` flag for this mute.
+            mute.active = False
+            await objects.update(mute, only=['active'])
+
+        # Sleep until the next mute we found expires, or 1 hour at most.
+        # Default to sleeping for 1 hour if no active mute was found.
+        if active_mutes:
+            diff_seconds = (mute.expiry - datetime.datetime.utcnow()).total_seconds()
+            sleep_seconds = min(diff_seconds, 60 * 60)
+        else:
+            sleep_seconds = 60 * 60
 
         # Sleep for either the time given above, or at most for 1 hour.
-        await asyncio.sleep(min(total_seconds, 60 * 60))
+        await asyncio.sleep(sleep_seconds)

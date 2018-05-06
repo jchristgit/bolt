@@ -20,3 +20,15 @@ objects = Manager(database, loop=asyncio.get_event_loop())
 class Model(peewee.Model):
     class Meta:
         database = database
+
+
+class EnumField(peewee.CharField):
+    def __init__(self, enum, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._enum = enum
+
+    def db_value(self, value):
+        return value.name
+
+    def python_value(self, value):
+        return self._enum(value)

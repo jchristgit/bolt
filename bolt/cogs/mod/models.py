@@ -1,29 +1,34 @@
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Enum, ForeignKey, func, Integer, String, Table
+from datetime import datetime
+
+import peewee
 
 from .types import InfractionType
-from ...database import metadata
+from ...database import EnumField, Model
 
 
-infraction = Table('infraction', metadata,
-    Column('id', Integer(), primary_key=True),
-    Column('guild_id', BigInteger(), nullable=False),
-    Column('created_on', DateTime(), server_default=func.now()),
-    Column('edited_on', DateTime(), onupdate=func.now()),
-    Column('type', Enum(InfractionType), nullable=False),
-    Column('user_id', BigInteger(), nullable=False),
-    Column('moderator_id', BigInteger(), nullable=False),
-    Column('reason', String(250))
-)
+class Infraction(Model):
+    guild_id = peewee.BigIntegerField()
+    created_on = peewee.DateTimeField(default=datetime.utcnow)
+    edited_on = peewee.DateTimeField(default=datetime.utcnow)  # ON UPDATE handled through trigger
+    type = EnumField(InfractionType)
+    user_id = peewee.BigIntegerField()
+    moderator_id = peewee.BigIntegerField()
+    reason = peewee.CharField(max_length=250)
 
 
-mute = Table('mute', metadata,
-    Column('expiry', DateTime()),
-    Column('active', Boolean(), default=True),
-    Column('infraction_id', Integer(), ForeignKey(infraction.c.id, ondelete='CASCADE'), primary_key=True)
-)
+class Mute(Model):
+    active = peewee.BooleanField(default=True)
+    expiry = peewee.DateTimeField()
+    infraction = peewee.ForeignKeyField(
+        Infraction,
+        primary_key=True,
+        on_delete='CASCADE'
+    )
 
 
-mute_role = Table('mute_role', metadata,
-    Column('guild_id', BigInteger(), primary_key=True),
-    Column('role_id', BigInteger(), primary_key=True)
-)
+class MuteRole(Model):
+    guild_id = peewee.BigIntegerField()
+    role_id = peewee.BigIntegerField()
+
+    class Meta:
+        primary_key = peewee.CompositeKey('guild_id', 'role_id')
