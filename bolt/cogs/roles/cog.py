@@ -1,7 +1,6 @@
 import discord
 import peewee_async
 from discord.ext import commands
-from sqlalchemy import and_
 from peewee import DoesNotExist
 
 from .models import SelfAssignableRole

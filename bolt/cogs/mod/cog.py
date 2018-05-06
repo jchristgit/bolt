@@ -6,7 +6,6 @@ import discord
 import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
-from sqlalchemy import and_
 
 from .converters import ExpirationDate
 from .models import Infraction, Mute, MuteRole
