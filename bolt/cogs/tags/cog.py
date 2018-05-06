@@ -1,8 +1,10 @@
 import discord
+import peewee_async
 from discord.ext import commands
-from sqlalchemy import and_
+from peewee import DoesNotExist
 
-from .models import tag as tag_model
+from .models import Tag
+from ...database import objects
 
 
 class Tags:
@@ -17,12 +19,14 @@ class Tags:
         print("Unloaded Cog Tags.")
 
     async def get_exact_match(self, tag_title: str, guild_id: int):
-        query = tag_model.select().where(and_(
-            tag_model.c.title.ilike(tag_title),
-            tag_model.c.guild_id == guild_id)
-        )
-        result = await self.bot.db.execute(query)
-        return await result.first()
+        try:
+            return await objects.get(
+                Tag,
+                Tag.title ** tag_title,
+                Tag.guild_id == guild_id
+            )
+        except DoesNotExist:
+            return None
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
@@ -35,12 +39,7 @@ class Tags:
         match = await self.get_exact_match(tag_name, ctx.guild.id)
 
         if match is None:
-            query = tag_model.select().where(and_(
-                tag_model.c.title.ilike(f'%{tag_name}%'),
-                tag_model.c.guild_id == ctx.guild.id)
-            )
-            result = await self.bot.db.execute(query)
-            tag = await result.first()
+            tag = await self.get_exact_match(f'%{tag_name}%', ctx.guild.id)
 
             if tag is None:
                 return await ctx.send(embed=discord.Embed(
@@ -81,14 +80,17 @@ class Tags:
             tag create 'my tag name' tag content
         """
 
-        existing_tag = await self.get_exact_match(tag_title, ctx.guild.id)
+        _, created = await objects.get_or_create(
+            Tag,
+            title=tag_title,
+            defaults={
+                'content': tag_content,
+                'author_id': ctx.author.id,
+                'guild_id': ctx.guild.id
+            }
+        )
 
-        if existing_tag is None:
-            query = tag_model.insert().values(
-                title=tag_title, content=tag_content, author_id=ctx.author.id, guild_id=ctx.guild.id
-            )
-            await self.bot.db.execute(query)
-
+        if created:
             await ctx.send(embed=discord.Embed(
                 title=f"Created the tag {tag_title!r}!",
                 colour=discord.Colour.green()
@@ -118,24 +120,20 @@ class Tags:
         tag = await self.get_exact_match(tag_title, ctx.guild.id)
 
         if tag is not None:
-            if ctx.author.id != tag.author_id \
-               and not ctx.author.permissions_in(ctx.channel).manage_messages:
+            if (ctx.author.id == tag.author_id
+               or ctx.author.permissions_in(ctx.channel).manage_messages):
+                await objects.delete(tag)
+                await ctx.send(embed=discord.Embed(
+                    title=f"Deleted the tag {tag_title!r}.",
+                    colour=discord.Colour.green()
+                ))
+            else:
                 await ctx.send(embed=discord.Embed(
                     title="Not allowed to delete tag",
                     description=("You need to either have the 'Manage "
                                  "Messages' permission or need to be "
                                  "the creator of the specified tag."),
                     colour=discord.Colour.red()
-                ))
-            else:
-                query = tag_model.delete(and_(
-                    tag_model.c.title.ilike(tag_title),
-                    tag_model.c.guild_id == ctx.guild.id)
-                )
-                await self.bot.db.execute(query)
-                await ctx.send(embed=discord.Embed(
-                    title=f"Deleted the tag {tag_title!r}.",
-                    colour=discord.Colour.green()
                 ))
         else:
             await ctx.send(embed=discord.Embed(
@@ -149,9 +147,10 @@ class Tags:
     async def list_(self, ctx):
         """Lists all tags on the guild."""
 
-        query = tag_model.select(tag_model.c.guild_id == ctx.guild.id)
-        result = await self.bot.db.execute(query)
-        guild_tags = await result.fetchall()
+        guild_tags = await peewee_async.execute(
+            Tag.select()
+               .where(Tag.guild_id == ctx.guild.id)
+        )
 
         await ctx.send(embed=discord.Embed(
             title=f"Tags on {ctx.guild.name}:",
