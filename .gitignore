@@ -2,8 +2,6 @@ alembic.ini
 config/*
 __pycache__
 .idea/
-data/*
-!data/.gitkeep
 logs/*.log
 venv/
 Pipfile.lock
