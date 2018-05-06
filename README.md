@@ -4,9 +4,7 @@ Bolt is a Discord Bot designed for moderation, but also ships a variety of other
 ## Setup
 Install dependencies: `pipenv install --dev`.
 
-Copy the alembic configuration in `alembic-defaults.ini` to `alembic.ini` and customize it to your needs.
-
-Run migrations: `alembic upgrade head`.
+Run migrations: `pw_migrate migrate --database postgresql://user:password@host/dbname`.
 
 Copy `config-example.json` to `config.json` and insert your credentials.
 
