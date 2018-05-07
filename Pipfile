@@ -13,6 +13,8 @@ peewee-migrate = "==0.14.0"
 
 [dev-packages]
 "flake8" = "*"
+"flake8-import-order" = "*"
+"flake8-bugbear" = "*"
 
 [requires]
 python_version = "3.6"
