@@ -3,6 +3,7 @@ import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from .converters import RoleListConverter
 from .models import SelfAssignableRole
 from ...database import objects
 
@@ -53,11 +54,13 @@ class Roles:
     @role.command(name='asar', aliases=['msa'])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def make_self_assignable(self, ctx, *roles: discord.Role):
+    async def make_self_assignable(self, ctx, *, roles: RoleListConverter):
         """Makes the given role self-assignable for Members.
 
         This also works with a list of Roles, for example:
-        `role asar "Member" "Guest" "Light Blue"`
+            `role asar Member Guest "Light Blue"`
+        Note that you need to add double quotes around
+        roles with names spanning multiple words.
 
         Alternatively, if you have changed the role name
         or done some other wizardry resulting in the bot
@@ -88,7 +91,7 @@ class Roles:
     @role.command(name='rsar', aliases=['usa'])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def unmake_self_assignable(self, ctx, *roles: discord.Role):
+    async def unmake_self_assignable(self, ctx, *, roles: RoleListConverter):
         """Removes the given Role from the self-assignable roles."""
 
         success, failed = [], []
@@ -113,7 +116,7 @@ class Roles:
     @commands.command(name='iam', aliases=['assign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def assign(self, ctx, *roles: discord.Role):
+    async def assign(self, ctx, *, roles: RoleListConverter):
         """Assign self-assignable Roles to yourself.
 
         This supports passing a list of roles, for example
@@ -142,7 +145,7 @@ class Roles:
     @commands.command(name='iamn', aliases=['unassign'])
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def un_assign(self, ctx, *roles: discord.Role):
+    async def un_assign(self, ctx, *, roles: RoleListConverter):
         """Remove self-assignable Roles from yourself."""
 
         success, failed = [], []
@@ -189,7 +192,7 @@ class Roles:
 
     @commands.command(name='rinfo')
     @commands.guild_only()
-    async def role_info(self, ctx, role: discord.Role):
+    async def role_info(self, ctx, *, role: discord.Role):
         """Gives information about a Role."""
 
         members = ', '.join(r.name for r in role.members)
