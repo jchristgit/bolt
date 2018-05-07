@@ -2,6 +2,7 @@ import logging
 
 from .bot import Bot
 from .bot.config import CONFIG
+from .constants import MAIN_COGS_BASE_PATH, MAIN_COGS, OPTIONAL_COGS_BASE_PATH, OPTIONAL_COGS
 
 
 logging.basicConfig(
@@ -12,26 +13,6 @@ logging.basicConfig(
 
 log = logging.getLogger(__name__)
 logging.getLogger('discord').setLevel(logging.ERROR)
-
-
-MAIN_COGS_BASE_PATH = 'bolt.cogs.'
-MAIN_COGS = [
-    'admin',
-    'config',
-    'meta',
-    'mod',
-    'purging',
-    'roles',
-    'tags'
-]
-
-
-OPTIONAL_COGS_BASE_PATH = 'bolt.optional_cogs.'
-OPTIONAL_COGS = [
-    'example',
-    'league',
-    'slowmode'
-]
 
 
 if __name__ == '__main__':
