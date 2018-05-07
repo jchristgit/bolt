@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from ..base import OptionalCog
+from bolt.optional_cogs.base import OptionalCog
 
 
 class Example(OptionalCog):

@@ -5,7 +5,7 @@ import time
 import discord
 from discord.ext import commands
 
-from ..base import OptionalCog, enabled_for
+from bolt.optional_cogs.base import OptionalCog, enabled_for
 
 
 class Slowmode(OptionalCog):

@@ -2,7 +2,7 @@ from datetime import datetime
 
 import peewee
 
-from ...database import Model
+from bolt.database import Model
 
 
 class Tag(Model):

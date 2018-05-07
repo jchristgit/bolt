@@ -4,8 +4,8 @@ import discord
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from bolt.database import objects
 from .models import OptionalCog, Prefix
-from ...database import objects
 
 
 class Config:

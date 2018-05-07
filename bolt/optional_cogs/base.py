@@ -1,7 +1,7 @@
 from peewee import DoesNotExist
 
-from ..cogs.config.models import OptionalCog as OptionalCogModel
-from ..database import objects
+from bolt.cogs.config.models import OptionalCog as OptionalCogModel
+from bolt.database import objects
 
 
 class OptionalCog:

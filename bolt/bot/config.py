@@ -4,8 +4,9 @@ import discord
 from discord.ext import commands
 from peewee import DoesNotExist
 
-from ..cogs.config.models import Prefix
-from ..database import objects
+from bolt.cogs.config.models import Prefix
+from bolt.database import objects
+
 
 with open("config.json") as f:
     CONFIG = json.load(f)

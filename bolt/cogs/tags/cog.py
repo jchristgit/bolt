@@ -3,8 +3,8 @@ import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from bolt.database import objects
 from .models import Tag
-from ...database import objects
 
 
 class Tags:

@@ -1,6 +1,6 @@
 import peewee
 
-from ...database import Model
+from bolt.database import Model
 
 
 class SelfAssignableRole(Model):

@@ -7,11 +7,11 @@ import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from bolt.database import objects
 from .converters import ExpirationDate
 from .models import Infraction, Mute, MuteRole
 from .types import InfractionType
 from .unmute_task import background_unmute_task
-from ...database import objects
 
 
 INFRACTION_TYPE_EMOJI = {

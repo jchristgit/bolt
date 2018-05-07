@@ -5,8 +5,8 @@ import discord
 import peewee_async
 from peewee import DoesNotExist
 
+from bolt.database import objects
 from .models import Mute, MuteRole
-from ...database import objects
 
 
 async def background_unmute_task(bot):

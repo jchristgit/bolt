@@ -2,8 +2,8 @@ from datetime import datetime
 
 import peewee
 
+from bolt.database import EnumField, Model
 from .types import InfractionType
-from ...database import EnumField, Model
 
 
 class Infraction(Model):

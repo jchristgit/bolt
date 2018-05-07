@@ -1,8 +1,8 @@
 from discord.ext.commands import CheckFailure
 from peewee import DoesNotExist
 
+from bolt.database import objects
 from .models import PermittedRole
-from ...database import objects
 
 
 async def has_permitted_role(ctx):

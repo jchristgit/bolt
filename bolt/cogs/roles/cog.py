@@ -3,9 +3,9 @@ import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from bolt.database import objects
 from .converters import RoleListConverter
 from .models import SelfAssignableRole
-from ...database import objects
 
 
 class Roles:
