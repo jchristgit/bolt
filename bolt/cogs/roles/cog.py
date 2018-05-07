@@ -197,7 +197,7 @@ class Roles:
 
         members = ', '.join(r.name for r in role.members)
         response = discord.Embed(
-            title=f'__Role Information for {role.mention}__',
+            title=f'__Role Information for `{role.name}`__',
             colour=role.colour
         ).add_field(
             name='ID',
