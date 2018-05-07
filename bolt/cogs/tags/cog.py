@@ -1,3 +1,5 @@
+import logging
+
 import discord
 import peewee_async
 from discord.ext import commands
@@ -7,16 +9,19 @@ from bolt.database import objects
 from .models import Tag
 
 
+log = logging.getLogger(__name__)
+
+
 class Tags:
     """Commands for creating, editing, and reading Tags."""
 
     def __init__(self, bot):
         self.bot = bot
-        print("Loaded Cog Tags.")
+        log.debug("Loaded Cog Tags.")
 
     @staticmethod
     def __unload():
-        print("Unloaded Cog Tags.")
+        log.debug("Unloaded Cog Tags.")
 
     async def get_exact_match(self, tag_title: str, guild_id: int):
         try:

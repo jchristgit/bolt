@@ -1,5 +1,10 @@
+import logging
+
 import discord
 from discord.ext import commands
+
+
+log = logging.getLogger(__name__)
 
 
 class Admin:
@@ -7,16 +12,15 @@ class Admin:
 
     def __init__(self, bot):
         self.bot = bot
-        print('Loaded Cog Admin.')
+        log.debug('Loaded Cog Admin.')
 
     @staticmethod
     def __unload():
-        print('Unloaded Cog Admin.')
+        log.debug('Unloaded Cog Admin.')
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def shutdown(self, ctx):
-        print('Shutting down by owner request...')
         await ctx.send(embed=discord.Embed(description='Shutting down...'))
         await self.bot.cleanup()
         await self.bot.close()

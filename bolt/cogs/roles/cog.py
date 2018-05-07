@@ -1,3 +1,5 @@
+import logging
+
 import discord
 import peewee_async
 from discord.ext import commands
@@ -8,16 +10,19 @@ from .converters import RoleListConverter
 from .models import SelfAssignableRole
 
 
+log = logging.getLogger(__name__)
+
+
 class Roles:
     """Commands for assigning, removing, and modifying Roles."""
 
     def __init__(self, bot):
         self.bot = bot
-        print('Loaded Cog Roles.')
+        log.debug('Loaded Cog Roles.')
 
     @staticmethod
     def __unload():
-        print('Unloaded Cog Roles.')
+        log.debug('Unloaded Cog Roles.')
 
     @commands.group()
     @commands.guild_only()

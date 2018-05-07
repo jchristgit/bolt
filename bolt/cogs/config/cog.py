@@ -1,3 +1,4 @@
+import logging
 from contextlib import suppress
 
 import discord
@@ -8,6 +9,9 @@ from bolt.database import objects
 from .models import OptionalCog, Prefix
 
 
+log = logging.getLogger(__name__)
+
+
 class Config:
     """
     Commands to configure the bot on a per-guild basis,
@@ -16,11 +20,11 @@ class Config:
 
     def __init__(self, bot):
         self.bot = bot
-        print('Loaded Cog Config.')
+        log.debug('Loaded Cog Config.')
 
     @staticmethod
     def __unload():
-        print('Unloaded Cog Config.')
+        log.debug('Unloaded Cog Config.')
 
     @commands.command(name='enablecog', aliases=['cogon'])
     @commands.guild_only()

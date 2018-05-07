@@ -1,5 +1,6 @@
 import asyncio
 import itertools
+import logging
 import operator
 from contextlib import suppress
 from datetime import datetime
@@ -25,18 +26,21 @@ INFRACTION_TYPE_EMOJI = {
 }
 
 
+log = logging.getLogger(__name__)
+
+
 class Mod:
     """Moderation Commands for Guilds."""
 
     def __init__(self, bot):
         self.bot = bot
         self.unmute_task = None
-        print('Loaded Cog Mod.')
+        log.debug('Loaded Cog Mod.')
 
     def __unload(self):
         if self.unmute_task is not None:
             self.unmute_task.cancel()
-        print('Unloaded Cog Mod.')
+        log.debug('Unloaded Cog Mod.')
 
     async def start_unmute_task(self):
         try:
@@ -44,16 +48,18 @@ class Mod:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            print('unhandled:', e)
+            log.error(f"Unhandled Exception in unmute task: {e}")
 
     async def restart_unmute_task(self):
         if self.unmute_task is not None:
             self.unmute_task.cancel()
         self.unmute_task = self.bot.loop.create_task(self.start_unmute_task())
+        log.debug("Restarted unmute task.")
 
     async def on_ready(self):
         if self.unmute_task is None:
             self.unmute_task = self.bot.loop.create_task(self.start_unmute_task())
+            log.debug("Started unmute task from `on_ready`")
 
     async def on_member_join(self, member: discord.Member):
         active_mute = await peewee_async.execute(

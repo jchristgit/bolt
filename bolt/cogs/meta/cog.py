@@ -1,5 +1,10 @@
+import logging
+
 import discord
 from discord.ext import commands
+
+
+log = logging.getLogger(__name__)
 
 
 class Meta:
@@ -7,11 +12,11 @@ class Meta:
 
     def __init__(self, bot):
         self.bot = bot
-        print('Loaded Cog Meta.')
+        log.debug('Loaded Cog Meta.')
 
     @staticmethod
     def __unload():
-        print('Unloaded Cog Meta.')
+        log.debug('Unloaded Cog Meta.')
 
     @commands.command()
     async def stats(self, ctx):
