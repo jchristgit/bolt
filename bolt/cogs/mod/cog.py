@@ -2,6 +2,7 @@ import asyncio
 import itertools
 import operator
 from contextlib import suppress
+from datetime import datetime
 
 import discord
 import peewee_async
@@ -340,7 +341,7 @@ class Mod:
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def warn(self, ctx, user: discord.User, *, reason: str):
+    async def warn(self, ctx, user: discord.User, *, reason: commands.clean_content):
         """Warn the specified user with the given reason."""
 
         created_infraction = await objects.create(
@@ -351,6 +352,59 @@ class Mod:
             moderator_id=ctx.author.id,
             reason=reason
         )
+        try:
+            warn_embed = discord.Embed(
+                title=f"You have been warned by a staff member on {ctx.guild} for the following reason:",
+                description=reason,
+                colour=0xFFCC00
+            ).set_thumbnail(
+                url=ctx.guild.icon_url
+            )
+            warn_embed.timestamp = datetime.utcnow()
+            await user.send(embed=warn_embed)
+        except discord.Forbidden:
+            await ctx.send(embed=discord.Embed(
+                title="Warned user has direct messages disabled.",
+                description="If you want to warn them in a channel, reply with a mention of it. "
+                            "Otherwise, simply reply `no`, or wait for `120` seconds.",
+                colour=discord.Colour.dark_green()
+            ))
+            while True:
+                try:
+                    response = await self.bot.wait_for(
+                        'message',
+                        check=lambda m: m.guild == ctx.guild and m.author == ctx.author,
+                        timeout=120
+                    )
+                except asyncio.TimeoutError:
+                    await ctx.send(embed=discord.Embed(
+                        title="Waiting for a response timed out. Not warning per direct message.",
+                        colour=discord.Colour.green()
+                    ))
+                    break
+                else:
+                    if response.content == 'no':
+                        await ctx.send(embed=discord.Embed(
+                            title="Aborted warning the user per direct message.",
+                            colour=discord.Colour.green()
+                        ))
+                        break
+
+                    try:
+                        channel = await commands.TextChannelConverter().convert(ctx, response.content)
+                    except commands.BadArgument:
+                        await ctx.send(embed=discord.Embed(
+                            title=f"Failed to convert `{response.clean_content}` to a text channel - please retry.",
+                            description="(expiring in `120` seconds)",
+                            colour=discord.Colour.red()
+                        ))
+                    else:
+                        await channel.send(user.mention, embed=discord.Embed(
+                            title=f"`{user}` has been warned for the following reason:",
+                            description=f"{reason}",
+                            colour=0xFFCC00
+                        ))
+                        break
 
         info_response = discord.Embed(
             title=f'Warned user `{user}` (`{user.id}`)',
