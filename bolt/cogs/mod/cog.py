@@ -1,6 +1,7 @@
 import asyncio
 import itertools
 import operator
+from contextlib import suppress
 
 import discord
 import peewee_async
@@ -10,8 +11,8 @@ from peewee import DoesNotExist
 from bolt.database import objects
 from .converters import ExpirationDate
 from .models import Infraction, Mute, MuteRole
+from .mutes import background_unmute_task, unmute_member
 from .types import InfractionType
-from .unmute_task import background_unmute_task
 
 
 INFRACTION_TYPE_EMOJI = {
@@ -538,6 +539,7 @@ class Mod:
     @infraction.command(name='delete')
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(manage_roles=True)
     async def infraction_delete(self, ctx, id_: int):
         """Delete the given infraction from the database."""
 
@@ -553,11 +555,31 @@ class Mod:
                 colour=discord.Colour.red()
             ))
         else:
-            await objects.delete(infraction)
-            await ctx.send(embed=discord.Embed(
-                title=f'Successfully deleted infraction #`{id_}`.',
+            info_response = discord.Embed(
+                title=f'Successfully delete infraction #`{id_}`.',
                 colour=discord.Colour.green()
-            ))
+            )
+
+            if infraction.type == InfractionType.mute:
+
+                # If an active mute for the original infraction was not found,
+                # we can safely ignore the `DoesNotExist` error. This simply means
+                # that there is no currently active mute, so we're done here.
+                with suppress(DoesNotExist):
+                    active_mute = await objects.get(
+                        Mute,
+                        active=True,
+                        infraction_id=infraction.id
+                    )
+                    member = discord.utils.get(ctx.guild.members, id=infraction.user_id)
+                    await unmute_member(member, ctx.guild, active_mute, infraction)
+                    info_response.description = (
+                        f"The accompanying mute expiring on {active_mute.expiry} "
+                        "was also deleted, and the user was unmuted."
+                    )
+
+            await objects.delete(infraction)
+            await ctx.send(embed=info_response)
 
     @infraction.command(name='detail')
     @commands.guild_only()

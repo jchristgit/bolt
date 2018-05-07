@@ -6,7 +6,7 @@ import peewee_async
 from peewee import DoesNotExist
 
 from bolt.database import objects
-from .models import Mute, MuteRole
+from .models import Infraction, Mute, MuteRole
 
 
 async def background_unmute_task(bot):
@@ -64,3 +64,26 @@ async def background_unmute_task(bot):
 
         # Sleep for either the time given above, or at most for 1 hour.
         await asyncio.sleep(sleep_seconds)
+
+
+async def unmute_member(member: discord.Member, guild: discord.Guild, mute: Mute):
+    try:
+        configured_mute_role = await objects.get(
+            MuteRole,
+            MuteRole.guild_id == guild.id
+        )
+
+    except DoesNotExist:
+        raise ValueError("no mute role is configured on this guild, cannot unmute")
+
+    else:
+        mute_role = discord.utils.get(guild.roles, id=configured_mute_role.role_id)
+        if mute_role is None:
+            raise ValueError(
+                f"cannot find the configured mute role with ID `{configured_mute_role.role_id}` on this guild"
+            )
+
+        await member.remove_roles(mute_role)
+
+        mute.active = False
+        await objects.update(mute, only=['active'])
