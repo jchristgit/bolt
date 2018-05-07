@@ -1,7 +1,7 @@
 import random
 
 import discord
-from discord import Game, Embed, Colour
+from discord import Colour, Embed, Game
 from discord.ext import commands
 
 from .config import CONFIG, get_prefix

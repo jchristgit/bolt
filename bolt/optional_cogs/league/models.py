@@ -20,4 +20,3 @@ class PermittedRole(Model):
 
     class Meta:
         primary_key = peewee.CompositeKey('id', 'guild_id')
-

@@ -1,5 +1,5 @@
-from typing import Iterable
 from shlex import split
+from typing import Iterable
 
 from discord import Role
 from discord.ext.commands import BadArgument, RoleConverter

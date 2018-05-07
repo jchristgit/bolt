@@ -1,7 +1,7 @@
 from . import (
-    bot, cogs, optional_cogs, database
+    bot, cogs, database, optional_cogs
 )
 
 __all__ = [
-    'bot', 'cogs', 'optional_cogs', 'database'
+    'bot', 'cogs', 'database', 'optional_cogs'
 ]

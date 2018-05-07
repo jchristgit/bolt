@@ -7,12 +7,12 @@ import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
 
-from ...bot.config import CONFIG
-from ...database import objects
-from ..base import OptionalCog
 from .api import LeagueAPIClient
 from .converters import Region
+from ..base import OptionalCog
+from ...bot.config import CONFIG
 from .models import Champion, PermittedRole, Summoner
+from ...database import objects
 from .util import has_permitted_role
 
 

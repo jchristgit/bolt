@@ -1,9 +1,9 @@
 import asyncio
 import datetime
 
-from peewee import DoesNotExist
 import discord
 import peewee_async
+from peewee import DoesNotExist
 
 from .models import Mute, MuteRole
 from ...database import objects
