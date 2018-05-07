@@ -43,7 +43,10 @@ async def background_unmute_task(bot):
 
             member = discord.utils.get(guild.members, id=mute.infraction.user_id)
             if member is not None:
-                await member.remove_roles(mute_role)
+                await member.remove_roles(
+                    mute_role,
+                    reason=f"Mute expired"
+                )
             else:
                 # The member that should be released from the mute is no longer present on the Guild.
                 # Emit a warning.
@@ -83,7 +86,10 @@ async def unmute_member(member: discord.Member, guild: discord.Guild, mute: Mute
                 f"cannot find the configured mute role with ID `{configured_mute_role.role_id}` on this guild"
             )
 
-        await member.remove_roles(mute_role)
+        await member.remove_roles(
+            mute_role,
+            reason=f"manual unmute invocation"
+        )
 
         mute.active = False
         await objects.update(mute, only=['active'])

@@ -83,7 +83,10 @@ class Mod:
         else:
             mute_role = discord.utils.get(member.guild.roles, id=configured_mute_role.role_id)
             if mute_role is not None:
-                await member.add_roles(mute_role)
+                await member.add_roles(
+                    mute_role,
+                    reason=f"User rejoined while still being muted, mute infraction ID: {active_mute.id}"
+                )
 
     @commands.command()
     @commands.guild_only()
@@ -499,7 +502,10 @@ class Mod:
             )
 
             if not active_user_mutes:
-                await member.add_roles(role)
+                await member.add_roles(
+                    role,
+                    reason=f"Mute command invoked by {member} ({member.id}), expiry: {expiry}, reason: {reason}"
+                )
 
                 created_infraction = await objects.create(
                     Infraction,
