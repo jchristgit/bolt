@@ -5,10 +5,8 @@ name = "pypi"
 
 [packages]
 "discord.py" = {git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
-fuzzyfinder = "*"
 yarl = "==1.1.1"
 dateparser = "*"
-peewee = "*"
 peewee-async = "*"
 aiopg = "*"
 peewee-migrate = "==0.14.0"
