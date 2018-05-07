@@ -55,6 +55,30 @@ class Mod:
         if self.unmute_task is None:
             self.unmute_task = self.bot.loop.create_task(self.start_unmute_task())
 
+    async def on_member_join(self, member: discord.Member):
+        active_mute = await peewee_async.execute(
+            Mute.select()
+                .where(Mute.active == True,  # noqa
+                       Infraction.user_id == member.id,
+                       Infraction.guild_id == member.guild.id)
+                .join(Infraction)
+        )
+
+        if not active_mute:
+            return
+
+        try:
+            configured_mute_role = await objects.get(
+                MuteRole,
+                MuteRole.guild_id == member.guild.id
+            )
+        except DoesNotExist:
+            pass
+        else:
+            mute_role = discord.utils.get(member.guild.roles, id=configured_mute_role.role_id)
+            if mute_role is not None:
+                await member.add_roles(mute_role)
+
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
@@ -626,7 +650,7 @@ class Mod:
                         infraction_id=infraction.id
                     )
                     member = discord.utils.get(ctx.guild.members, id=infraction.user_id)
-                    await unmute_member(member, ctx.guild, active_mute, infraction)
+                    await unmute_member(member, ctx.guild, active_mute)
                     info_response.description = (
                         f"The accompanying mute expiring on {active_mute.expiry} "
                         "was also deleted, and the user was unmuted."
@@ -722,7 +746,7 @@ class Mod:
             if user is not None:
                 user_string = f'`{user}` (`{user.id}`)'
             else:
-                user_string = f'unknown user (`{user.id}`)'
+                user_string = f'unknown user (`{infraction.user_id}`)'
             infraction_emoji = INFRACTION_TYPE_EMOJI[infraction.type]
 
             list_embed_description.append(
