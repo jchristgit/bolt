@@ -20,6 +20,7 @@ MAIN_COGS = [
     'config',
     'meta',
     'mod',
+    'purging',
     'roles',
     'tags'
 ]
