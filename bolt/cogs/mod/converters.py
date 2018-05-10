@@ -17,7 +17,8 @@ class ExpirationDate(Converter):
         if expiry is None:
             raise BadArgument(f"Failed to parse expiration date from `{expiration_string}`")
 
-        if expiry < datetime.utcnow():
-            raise BadArgument("Expiration date cannot be within the past")
+        now = datetime.utcnow()
+        if expiry < now:
+            expiry = now + (now - expiry)
 
         return expiry
