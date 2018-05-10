@@ -6,6 +6,7 @@ from discord.ext.commands import BadArgument, Converter
 
 DATEPARSER_SETTINGS = {
     'PREFER_DATES_FROM': 'future',
+    'TIMEZONE': 'UTC',
     'TO_TIMEZONE': 'UTC'
 }
 
