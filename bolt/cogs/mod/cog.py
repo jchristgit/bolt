@@ -420,35 +420,25 @@ class Mod:
                 MuteRole,
                 MuteRole.guild_id == ctx.guild.id
             )
-
         except DoesNotExist:
-            await objects.create(
-                MuteRole,
-                guild_id=ctx.guild.id,
-                role_id=role.id
-            )
-
-            info_embed = discord.Embed(
-                title=f'Mute role was set to {role}.',
-                colour=discord.Colour.green()
-            ).set_footer(
-                text=f'Authored by {ctx.author} ({ctx.author.id})',
-                icon_url=ctx.author.avatar_url
-            )
-            await ctx.send(embed=info_embed)
-
+            pass
         else:
-            mute_role.guild_id = ctx.guild.id
-            await objects.update(mute_role, only=['guild_id'])
+            await objects.delete(mute_role)
 
-            info_embed = discord.Embed(
-                title=f'Mute role was updated to {role}.',
-                colour=discord.Colour.green()
-            ).set_footer(
-                text=f'Authored by {ctx.author} ({ctx.author.id})',
-                icon_url=ctx.author.avatar_url
-            )
-            await ctx.send(embed=info_embed)
+        await objects.create(
+            MuteRole,
+            guild_id=ctx.guild.id,
+            role_id=role.id
+        )
+
+        info_embed = discord.Embed(
+            title=f'Mute role was set to {role}.',
+            colour=discord.Colour.green()
+        ).set_footer(
+            text=f'Authored by {ctx.author} ({ctx.author.id})',
+            icon_url=ctx.author.avatar_url
+        )
+        await ctx.send(embed=info_embed)
 
     @commands.group(aliases=['infr', 'infractions'])
     @commands.guild_only()
