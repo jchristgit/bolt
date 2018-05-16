@@ -22,6 +22,7 @@ class Meta:
     async def stats(self, ctx):
         """Displays information and statistics about the Bot."""
 
+        average_members = sum(g.member_count for g in self.bot.guilds) // len(self.bot.guilds)
         response = discord.Embed()
         response.colour = discord.Colour.blue()
         response.set_thumbnail(
@@ -33,7 +34,7 @@ class Meta:
         ).add_field(
             name='Guilds',
             value=(f'**Total**: {sum(1 for _ in self.bot.guilds)}\n'
-                   f'**Avg. Members**: {sum(g.member_count for g in self.bot.guilds) // len(self.bot.guilds)}\n'
+                   f'**Avg. Members**: {average_members}\n'
                    f'**Shards**: {self.bot.shard_count}')
         ).add_field(
             name='Users',
@@ -56,12 +57,12 @@ class Meta:
     @commands.command(aliases=['member'])
     @commands.guild_only()
     async def minfo(self, ctx, *, member: discord.Member=None):
-        """Displays Information about yourself or a tagged Member."""
+        """Displays information about yourself or a tagged Member."""
 
         if member is None:
             member = ctx.message.author
         await ctx.send(embed=discord.Embed(
-            title=f'User Information for {member}',
+            title=f'User information for {member}',
             colour=member.top_role.colour
         ).add_field(
             name='Roles',
@@ -81,3 +82,37 @@ class Meta:
         ).set_thumbnail(
             url=member.avatar_url
         ))
+
+    @commands.command(aliases=['guild'])
+    @commands.guild_only()
+    async def ginfo(self, ctx):
+        """Displays information about the guild the command is invoked on."""
+
+        info_embed = discord.Embed(
+            title=f'Guild information: {ctx.guild.name}',
+            colour=discord.Colour.blurple()
+        ).add_field(
+            name='ID',
+            value=f'`{ctx.guild.id}`'
+        ).add_field(
+            name='Statistics',
+            value=f'Total Emojis: {len(ctx.guild.emojis)}\n'
+                  f'Total Members: {ctx.guild.member_count}\n'
+                  f'Total Roles: {len(ctx.guild.roles)}'
+        ).add_field(
+            name='Owner',
+            value=ctx.guild.owner.mention
+        )
+        info_embed.set_footer(text='Creation date')
+        info_embed.timestamp = ctx.guild.created_at
+
+        if ctx.guild.icon_url:
+            info_embed.set_thumbnail(url=ctx.guild.icon_url)
+
+        if ctx.guild.features:
+            info_embed.add_field(
+                name='Features',
+                value=', '.join(f'`{feature}`' for feature in ctx.guild.features)
+            )
+
+        await ctx.send(embed=info_embed)
