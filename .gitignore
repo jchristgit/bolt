@@ -1,9 +1,5 @@
-alembic.ini
-config/*
-__pycache__
+.env
 .idea/
-logs/*.log
-venv/
+__pycache__
 Pipfile.lock
 config.json
-.env
