@@ -27,8 +27,8 @@ class Bot(commands.AutoShardedBot):
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):
-            await ctx.send(embed=self.make_error_embed(f'Something went wrong with converting the command arguments:\n'
-                                                       f'*{error}*'))
+            await ctx.send(embed=self.make_error_embed('**Something went wrong with converting the command arguments:**\n'
+                                                       f'{error}'))
         elif isinstance(error, commands.CommandInvokeError):
             if isinstance(error.original, discord.errors.Forbidden):
                 return await ctx.send(embed=discord.Embed(
