@@ -6,6 +6,7 @@ from discord.ext import commands
 from peewee import DoesNotExist
 
 from bolt.database import objects
+from .converters import TagName
 from .models import Tag
 
 
@@ -74,7 +75,7 @@ class Tags:
 
     @tag.command()
     @commands.guild_only()
-    async def create(self, ctx, tag_title: str, *, tag_content: str):
+    async def create(self, ctx, tag_title: TagName, *, tag_content: str):
         """Create a new tag.
 
         The tag will only be usable in the Guild on which it was created.
