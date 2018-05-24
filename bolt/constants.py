@@ -6,6 +6,7 @@ MAIN_COGS = [
     'mod',
     'purging',
     'roles',
+    'stafflog',
     'tags'
 ]
 OPTIONAL_COGS_BASE_PATH = 'bolt.optional_cogs.'
