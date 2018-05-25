@@ -30,23 +30,13 @@ class Bot(commands.AutoShardedBot):
             await ctx.send(embed=self.make_error_embed('**Something went wrong with converting the command arguments:**\n'
                                                        f'{error}'))
         elif isinstance(error, commands.CommandInvokeError):
-            if isinstance(error.original, discord.errors.Forbidden):
-                return await ctx.send(embed=discord.Embed(
-                    title='You have Direct Messages disabled.',
-                    description=('The Command you invoked requires me to send you a Direct Message, but '
-                                 'I\'m not allowed to send you one. To fix this, right click on this guild '
-                                 'and choose **Privacy Settings**, and tick **Allow direct messages from '
-                                 'members**, then try the command again. Thanks!'),
-                    colour=discord.Colour.blue()
-                ))
-
             await ctx.send(embed=self.make_error_embed(
                 ('**An Error occurred through the invocation of the command**.\n'
                  'Please contact Volcyy#2359 with a detailed '
                  'description of the problem and how it was created. Thanks!')
             ))
 
-            await super(Bot, self).on_command_error(ctx, error)
+            await super().on_command_error(ctx, error)
 
         elif isinstance(error, commands.CheckFailure):
             await ctx.send(embed=self.make_error_embed(f'A check required for this command did not pass:\n*{error}*'))
