@@ -361,7 +361,8 @@ class Mod:
             if not active_user_mutes:
                 await member.add_roles(
                     role,
-                    reason=f"Mute command invoked by {member} ({member.id}), expiry: {expiry}, reason: {reason}"
+                    reason=(f"Mute command invoked by {ctx.author} "
+                            f"({ctx.author.id}), expiry: {expiry}, reason: {reason}")
                 )
 
                 created_infraction = await objects.create(
