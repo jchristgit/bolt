@@ -6,6 +6,7 @@ from contextlib import suppress
 from datetime import datetime
 
 import discord
+import humanize
 import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
@@ -103,8 +104,8 @@ class Mod:
         if ctx.message.guild.me.top_role.position <= member.top_role.position:
             return await ctx.send(embed=discord.Embed(
                 title='Cannot kick:',
-                description=('I cannot kick any Members that are in the same or higher position in the role hierarchy '
-                             'as I am.'),
+                description=('I cannot kick any Members that are in the same '
+                             'or higher position in the role hierarchy as I am.'),
                 colour=discord.Colour.red()
              ))
 
@@ -164,7 +165,7 @@ class Mod:
         await ctx.guild.ban(
             member,
             reason=f'banned by command invocation from {ctx.message.author}, reason: '
-                   f'{"No reason specified" if reason == "" else reason}.',
+                   f'{reason or "No reason specified"}.',
             delete_message_days=7
         )
 
@@ -242,6 +243,7 @@ class Mod:
             moderator_id=ctx.author.id,
             reason=reason
         )
+
         try:
             warn_embed = discord.Embed(
                 title=f"You have been warned by a staff member on {ctx.guild} for the following reason:",
@@ -391,7 +393,7 @@ class Mod:
                     value=reason or 'no reason specified'
                 ).add_field(
                     name='Expiry',
-                    value=str(expiry)
+                    value=expiry.strftime('%d.%m.%y %H:%M')
                 ).add_field(
                     name='Infraction',
                     value=f'created with ID `{created_infraction.id}`'
@@ -403,12 +405,14 @@ class Mod:
 
             else:
                 active_mute = active_user_mutes[0]
-                await ctx.send(embed=discord.Embed(
+                human_delta = humanize.naturaldelta(datetime.utcnow() - active_mute.expiry)
+                mute_info_embed = discord.Embed(
                     title=f'Cannot mute user `{member}` (`{member.id}`)',
                     description=f'A mute is already active under infraction ID `{active_mute.infraction.id}`, '
-                                f'expiring at {str(active_mute.expiry)}. Edit it to change the mute.',
+                                f'expiring at {human_delta}. Edit it to change the mute.',
                     colour=discord.Colour.red()
-                ))
+                )
+                await ctx.send(embed=mute_info_embed)
 
     @mute.command(name='setrole')
     @commands.guild_only()
@@ -494,7 +498,7 @@ class Mod:
             ))
         else:
             info_response = discord.Embed(
-                title=f'Successfully delete infraction #`{id_}`.',
+                title=f'Successfully deleted infraction #`{id_}`.',
                 colour=discord.Colour.green()
             )
 
@@ -511,8 +515,11 @@ class Mod:
                     )
                     member = discord.utils.get(ctx.guild.members, id=infraction.user_id)
                     await unmute_member(member, ctx.guild, active_mute)
+
+                    time_until_unmute = active_mute.expiry - datetime.utcnow()
+                    expiry_string = humanize.naturaldelta(time_until_unmute)
                     info_response.description = (
-                        f"The accompanying mute expiring on {active_mute.expiry} "
+                        f"The accompanying mute expiring in {expiry_string} "
                         "was also deleted, and the user was unmuted."
                     )
 
@@ -546,7 +553,8 @@ class Mod:
             infraction_embed.add_field(
                 name='User',
                 value=(f'`{infraction_user}` (`{infraction_user.id}`)'
-                       if infraction_user is not None else f'unknown user (`{infraction.user_id}`)')
+                       if infraction_user is not None
+                       else f'unknown user (`{infraction.user_id}`)')
             )
 
             infraction_embed.add_field(
@@ -554,10 +562,12 @@ class Mod:
                 value=f'{INFRACTION_TYPE_EMOJI[infraction.type]} {infraction.type.value.title()}'
             ).add_field(
                 name='Creation',
-                value=str(infraction.created_on)
+                value=infraction.created_on.strftime('%d.%m.%y %H:%M')
             ).add_field(
                 name='Last edited',
-                value=str(infraction.edited_on or 'never')
+                value=(infraction.edited_on.strftime('%d.%m.%y %H:%M')
+                       if infraction.edited_on != infraction.created_on
+                       else 'never')
             ).add_field(
                 name='Reason',
                 value=infraction.reason,
@@ -609,13 +619,15 @@ class Mod:
                 user_string = f'unknown user (`{infraction.user_id}`)'
             infraction_emoji = INFRACTION_TYPE_EMOJI[infraction.type]
 
+            creation_string = infraction.created_on.strftime(f'%d.%m.%y %H:%M')
             list_embed_description.append(
-                f'• [`{infraction.id}`] {infraction_emoji} on {user_string} created {infraction.created_on}'
+                f'• [`{infraction.id}`] {infraction_emoji} on '
+                f'{user_string} created {creation_string}'
             )
 
         list_embed = discord.Embed(
             title=title,
-            description='\n'.join(list_embed_description) or 'Seems like there\'s nothing here yet.',
+            description='\n'.join(list_embed_description) or "Seems like there's nothing here yet.",
             colour=discord.Colour.blue()
         )
         await ctx.send(embed=list_embed)
@@ -640,12 +652,13 @@ class Mod:
             ))
 
         most_recent = max(user_infractions, key=operator.attrgetter('created_on'))
+        creation_string = most_recent.created_on.strftime('%d.%m.%y %H:%M')
         response = discord.Embed(
             title=f'Infractions for `{user}` (`{user.id}`)',
             colour=discord.Colour.blue()
         ).set_footer(
             text=f'total infractions: {len(user_infractions)}, '
-                 f'most recent: #{most_recent.id} at {most_recent.created_on}',
+                 f"most recent: #{most_recent.id} at {creation_string}",
             icon_url=user.avatar_url
         )
 

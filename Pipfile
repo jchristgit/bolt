@@ -10,6 +10,7 @@ dateparser = "==0.7.0"
 peewee-async = "==0.5.12"
 aiopg = "==0.13.2"
 peewee-migrate = "==0.14.0"
+humanize = "==0.5.1"
 
 [dev-packages]
 "flake8" = "==3.5.0"

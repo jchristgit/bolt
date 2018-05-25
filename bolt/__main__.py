@@ -2,7 +2,7 @@ import logging
 
 from .bot import Bot
 from .bot.config import CONFIG
-from .constants import MAIN_COGS_BASE_PATH, MAIN_COGS, OPTIONAL_COGS_BASE_PATH, OPTIONAL_COGS
+from .constants import MAIN_COGS, MAIN_COGS_BASE_PATH, OPTIONAL_COGS, OPTIONAL_COGS_BASE_PATH
 
 
 logging.basicConfig(
@@ -13,6 +13,7 @@ logging.basicConfig(
 
 log = logging.getLogger(__name__)
 logging.getLogger('discord').setLevel(logging.ERROR)
+logging.getLogger('websockets').setLevel(logging.ERROR)
 
 
 if __name__ == '__main__':
