@@ -663,9 +663,10 @@ class Mod:
         )
 
         for infraction_type, infractions in itertools.groupby(user_infractions, key=operator.attrgetter('type')):
+            detail_fmt = "• [`{0.id}`] on {0.created_on.strftime('%d.%m.%y %H:%M')}"
             response.add_field(
                 name=f'{INFRACTION_TYPE_EMOJI[infraction_type]} {infraction_type.value}s',
-                value='\n'.join(f'• [`{infraction.id}`] on {infraction.created_on}' for infraction in infractions)
+                value='\n'.join(detail_fmt.format(infraction) for infraction in infractions)
             )
 
         await ctx.send(embed=response)
