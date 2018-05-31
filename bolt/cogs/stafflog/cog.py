@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Tuple, Union
 
 import discord
@@ -15,6 +15,19 @@ from .util import get_log_channel as fetch_log_channel
 
 
 log = logging.getLogger(__name__)
+
+
+def thirty_seconds_ago() -> datetime:
+    """
+    Gives the time 30 seconds ago.
+
+    Returns:
+        datetime:
+            A datetime object representing the
+            date and time as they were 30 seconds ago.
+    """
+
+    return datetime.utcnow() - timedelta(seconds=30)
 
 
 class StaffLog:
@@ -140,6 +153,62 @@ class StaffLog:
                   f"({humanize.naturaldelta(datetime.utcnow() - member.joined_at)} ago)"
         )
 
+        # We can only retrieve more specific information relevant
+        # for the infraction database by checking the audit log.
+        if member.guild.me.guild_permissions.view_audit_log:
+            audit_entry = await member.guild.audit_logs(
+                action=discord.AuditLogAction.kick,
+                after=thirty_seconds_ago()
+            ).find(
+                lambda entry: entry.target == member
+            )
+            if audit_entry is not None:
+                await self.handle_member_kick(member, audit_entry)
+            else:
+                info_embed.set_footer(
+                    text="Tried fetching potential kick information from the "
+                         "audit log, but couldn't find any relevant entry."
+                )
+        else:
+            info_embed.set_footer(
+                text="By giving me the `view audit log` permission, "
+                     "I can check the audit log for a kick."
+            )
+
+        await self.log_for(member.guild, info_embed)
+
+    # This is not emitted by discord.py, but emitted through `on_member_remove` if applicable.
+    async def handle_member_kick(self, member: discord.Member, audit_entry: discord.AuditLogEntry):
+        info_embed = discord.Embed(
+            title="👢 Member kicked",
+            colour=discord.Colour.red(),
+            timestamp=datetime.utcnow()
+        ).set_thumbnail(
+            url=member.avatar_url
+        ).add_field(
+            name="Reason",
+            value=audit_entry.reason or "*no reason specified*"
+        ).set_footer(
+            text=f"Authored by {audit_entry.user} ({audit_entry.user.id})",
+            icon_url=audit_entry.user.avatar_url
+        )
+        info_embed.timestamp = audit_entry.created_at
+
+        created_infraction = await objects.create(
+            Infraction,
+            type=InfractionType.kick,
+            guild_id=member.guild.id,
+            user_id=member.id,
+            moderator_id=audit_entry.user.id,
+            reason=audit_entry.reason
+        )
+
+        info_embed.add_field(
+            name="Infraction",
+            value=f"created with ID `{created_infraction.id}`\n"
+                  f"use `infr detail {created_infraction.id}` for details"
+        )
+
         await self.log_for(member.guild, info_embed)
 
     async def on_member_ban(self, guild: discord.Guild, user: Union[discord.Member, discord.User]):
@@ -154,12 +223,10 @@ class StaffLog:
             value=f"`{user}` (`{user.id}`)"
         )
 
-        # We can only retrieve more specific information relevant
-        # for the infraction database by checking the audit log.
         if guild.me.guild_permissions.view_audit_log:
             audit_entry = await guild.audit_logs(
                 action=discord.AuditLogAction.ban,
-                limit=10
+                after=thirty_seconds_ago()
             ).find(
                 lambda entry: entry.target == user
             )
@@ -214,7 +281,7 @@ class StaffLog:
         if guild.me.guild_permissions.view_audit_log:
             audit_entry = await guild.audit_logs(
                 action=discord.AuditLogAction.unban,
-                limit=10
+                after=thirty_seconds_ago()
             ).find(
                 lambda entry: entry.target == user
             )
@@ -307,9 +374,9 @@ class StaffLog:
                 )
                 await ctx.send(embed=response_embed)
             else:
-                if not channel_object.enabled:
-                    channel_object.enabled = True
-                    await objects.update(channel_object, only=['enabled'])
+                channel_object.channel_id = channel.id
+                channel_object.enabled = True
+                await objects.update(channel_object, only=('channel_id', 'enabled'))
 
                 response_embed = discord.Embed(
                     title="Staff log is now enabled",
