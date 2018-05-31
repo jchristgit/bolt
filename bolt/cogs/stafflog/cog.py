@@ -1,12 +1,14 @@
 import logging
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import discord
 import humanize
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from bolt.cogs.infractions.models import Infraction
+from bolt.cogs.infractions.types import InfractionType
 from bolt.database import objects
 from .models import StaffLogChannel
 from .util import get_log_channel as fetch_log_channel
@@ -137,6 +139,101 @@ class StaffLog:
         )
 
         await self.log_for(member.guild, info_embed)
+
+    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.Member, discord.User]):
+        info_embed = discord.Embed(
+            title=f"🔨 Member banned",
+            colour=discord.Colour.red(),
+            timestamp=datetime.utcnow()
+        ).set_thumbnail(
+            url=user.avatar_url
+        ).add_field(
+            name="User",
+            value=f"`{user}` (`{user.id}`)"
+        )
+
+        # We can only retrieve more specific information relevant
+        # for the infraction database by checking the audit log.
+        if guild.me.guild_permissions.view_audit_log:
+            audit_entry = await guild.audit_logs(
+                action=discord.AuditLogAction.ban,
+                limit=10
+            ).find(
+                lambda entry: entry.target == user
+            )
+            if audit_entry is not None:
+                info_embed.add_field(
+                    name="Reason",
+                    value=audit_entry.reason or "*no reason specified*"
+                ).set_footer(
+                    text=f"Authored by {audit_entry.user} ({audit_entry.user.id})",
+                    icon_url=audit_entry.user.avatar_url
+                )
+                info_embed.timestamp = audit_entry.created_at
+
+                created_infraction = await objects.create(
+                    Infraction,
+                    type=InfractionType.ban,
+                    guild_id=guild.id,
+                    user_id=user.id,
+                    moderator_id=audit_entry.user.id,
+                    reason=audit_entry.reason
+                )
+                info_embed.add_field(
+                    name="Infraction",
+                    value=f"created with ID `{created_infraction.id}`\n"
+                          f"use `infr detail {created_infraction.id}` for details"
+                )
+
+            else:
+                info_embed.set_footer(
+                    text="Tried fetching ban information from the "
+                         "audit log, but couldn't find any relevant entry."
+                )
+        else:
+            info_embed.set_footer(
+                text="By giving me the `view audit log` permission, I can give more information."
+            )
+
+        await self.log_for(guild, info_embed)
+
+    async def on_member_unban(self, guild: discord.Guild, user: discord.User):
+        info_embed = discord.Embed(
+            title=f"🤝 Member unbanned",
+            colour=discord.Colour.blurple(),
+            timestamp=datetime.utcnow()
+        ).set_thumbnail(
+            url=user.avatar_url
+        ).add_field(
+            name="User",
+            value=f"`{user}` (`{user.id}`)"
+        )
+
+        if guild.me.guild_permissions.view_audit_log:
+            audit_entry = await guild.audit_logs(
+                action=discord.AuditLogAction.unban,
+                limit=10
+            ).find(
+                lambda entry: entry.target == user
+            )
+
+            if audit_entry is not None:
+                info_embed.set_footer(
+                    text=f"Authored by {audit_entry.user} ({audit_entry.user.id})",
+                    icon_url=audit_entry.user.avatar_url
+                )
+                info_embed.timestamp = audit_entry.created_at
+            else:
+                info_embed.set_footer(
+                    text="Tried fetching unban information from the "
+                         "audit log, but couldn't find any relevant entry."
+                )
+        else:
+            info_embed.set_footer(
+                text="By giving me the `view audit log` permission, I can give more information."
+            )
+
+        await self.log_for(guild, info_embed)
 
     @commands.group(name='log', aliases=['stafflog'])
     @commands.has_permissions(manage_messages=True)

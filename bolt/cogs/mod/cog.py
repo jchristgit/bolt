@@ -10,6 +10,7 @@ from peewee import DoesNotExist
 
 from bolt.cogs.infractions.models import Infraction
 from bolt.cogs.infractions.types import InfractionType
+from bolt.cogs.stafflog.util import get_log_channel as get_stafflog_channel
 from bolt.database import objects
 from .converters import ExpirationDate
 from .models import Mute, MuteRole
@@ -153,40 +154,16 @@ class Mod:
 
         await ctx.guild.ban(
             member,
-            reason=f'banned by command invocation from {ctx.message.author}, reason: '
-                   f'{reason or "No reason specified"}.',
+            reason=f"banned by command invocation from {ctx.message.author} "
+                   f"({ctx.message.author.id}), reason: {reason or 'No reason specified'}.",
             delete_message_days=7
         )
 
-        response = discord.Embed(
-            title=f'Banned `{member}` (`{member.id}`)',
-            colour=discord.Colour.green()
-        ).set_footer(
-            text=f'Banned by {ctx.author} ({ctx.author.id})',
-            icon_url=ctx.author.avatar_url
-        )
-
-        if reason:
-            response.description = f'**Reason**: {reason}'
-
-        created_infraction = await objects.create(
-            Infraction,
-            type=InfractionType.ban,
-            guild_id=ctx.guild.id,
-            user_id=member.id,
-            moderator_id=ctx.author.id,
-            reason=reason
-        )
-
-        response.add_field(
-            name='Reason',
-            value=reason or 'no reason specified'
-        ).add_field(
-            name='Infraction',
-            value=f'created with ID `{created_infraction.id}`'
-        )
-
-        await ctx.send(embed=response)
+        stafflog_channel = await get_stafflog_channel(self.bot, ctx.guild)
+        if stafflog_channel is not None and stafflog_channel.enabled:
+            await ctx.send("👌 user banned, see staff log for details")
+        else:
+            await ctx.send("👌 user banned, see audit log for details")
 
     @commands.command()
     @commands.guild_only()
