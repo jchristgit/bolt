@@ -67,9 +67,11 @@ class StaffLog:
                 The embed to send in the staff log channel.
         """
 
-        channel_row, channel = await self.get_log_channel(guild)
-        if channel_row.enabled and channel is not None:
-            await channel.send(embed=embed)
+        result_tuple = await self.get_log_channel(guild)
+        if result_tuple is not None:
+            channel_row, channel = result_tuple
+            if channel_row.enabled and channel is not None:
+                await channel.send(embed=embed)
 
     async def on_message_delete(self, message: discord.Message):
         if message.guild is None or message.author == self.bot.user:
