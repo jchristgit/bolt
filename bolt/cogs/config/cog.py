@@ -7,6 +7,7 @@ from peewee import DoesNotExist
 
 from bolt.database import objects
 from .models import OptionalCog, Prefix
+from .util import get_prefix_for_guild
 
 
 log = logging.getLogger(__name__)
@@ -141,6 +142,7 @@ class Config:
         without specifying a new prefix you wish to use, like `setprefix`.
         """
 
+        print(get_prefix_for_guild.cache)
         with suppress(DoesNotExist):
             current_prefix = await objects.get(Prefix, guild_id=ctx.guild.id)
             await objects.delete(current_prefix)
@@ -151,6 +153,8 @@ class Config:
                 description='My prefix is now reset to the default. Alternatively, you can mention me.',
                 colour=discord.Colour.green()
             ))
+            if (ctx.guild.id,) in get_prefix_for_guild.cache:
+                del get_prefix_for_guild.cache[(ctx.guild.id,)]
 
         else:
             new_prefix = new_prefix.replace('_', ' ')
@@ -160,26 +164,26 @@ class Config:
                 prefix=new_prefix
             )
             await ctx.send(embed=discord.Embed(
-                title=f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix[-1] == " " else ""}.',
+                title=f'Set Prefix to `{new_prefix}`{", with a space" if new_prefix.endswith(" ") else ""}.',
                 colour=discord.Colour.green()
             ))
+            get_prefix_for_guild.cache[(ctx.guild.id,)] = new_prefix
+            print(get_prefix_for_guild.cache)
 
-    @commands.command(name='getprefix', aliases=['prefix'])
+    @commands.command(name='getprefix')
     @commands.guild_only()
-    @commands.has_permissions(manage_messages=True)
     async def get_prefix(self, ctx):
         """Tells you which prefix is currently active on this guild."""
 
-        try:
-            prefix = await objects.get(Prefix, guild_id=ctx.guild.id)
-        except DoesNotExist:
+        prefix = await get_prefix_for_guild(ctx.guild.id)
+        if prefix is None:
             await ctx.send(embed=discord.Embed(
                 title='Custom Guild Prefix',
                 description='This Guild has no custom prefix set.',
                 colour=discord.Colour.blue()
             ))
         else:
-            humanized_prefix = f'`{prefix.prefix}`{", with a space" if prefix.prefix[-1] == " " else ""}'
+            humanized_prefix = f"`{prefix}`{', with a space' if prefix.endswith(' ') else ''}"
             await ctx.send(embed=discord.Embed(
                 title='Custom Guild Prefix',
                 description=f'The custom prefix for this guild is {humanized_prefix}.',

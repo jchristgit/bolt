@@ -2,10 +2,8 @@ import json
 
 import discord
 from discord.ext import commands
-from peewee import DoesNotExist
 
-from bolt.cogs.config.models import Prefix
-from bolt.database import objects
+from bolt.cogs.config.util import get_prefix_for_guild
 
 
 with open("config.json") as f:
@@ -18,9 +16,8 @@ async def get_prefix(bot, msg):
         return commands.when_mentioned_or(*CONFIG['discord']['prefixes'], '')(bot, msg)
 
     # Check for custom per-guild prefix
-    try:
-        prefix = await objects.get(Prefix, guild_id=msg.guild.id)
-    except DoesNotExist:
+    prefix = await get_prefix_for_guild(msg.guild.id)
+    if prefix is None:
         return commands.when_mentioned_or(*CONFIG['discord']['prefixes'])(bot, msg)
     else:
-        return commands.when_mentioned_or(prefix.prefix)(bot, msg)
+        return commands.when_mentioned_or(prefix)(bot, msg)
