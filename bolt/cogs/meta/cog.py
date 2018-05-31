@@ -1,6 +1,8 @@
 import logging
+from datetime import datetime
 
 import discord
+import humanize
 from discord.ext import commands
 
 
@@ -29,7 +31,6 @@ class Meta:
             url=self.bot.user.avatar_url
         ).set_author(
             name='Made by Volcyy#2359',
-            url='https://github.com/Volcyy/Bolt',
             icon_url=(await self.bot.application_info()).owner.avatar_url
         ).add_field(
             name='Guilds',
@@ -57,28 +58,25 @@ class Meta:
     @commands.command(aliases=['member'])
     @commands.guild_only()
     async def minfo(self, ctx, *, member: discord.Member=None):
-        """Displays information about yourself or a tagged Member."""
+        """Displays information about yourself or a Member."""
 
         if member is None:
             member = ctx.message.author
+
         await ctx.send(embed=discord.Embed(
-            title=f'User information for {member}',
-            colour=member.top_role.colour
+            title=f"{member} (`{member.id}`)",
+            colour=member.colour
         ).add_field(
-            name='Roles',
-            value=', '.join(m.mention for m in member.roles[1:]) or 'No Roles'
+            name="Roles",
+            value=', '.join(m.mention for m in member.roles[1:]) or "No Roles"
         ).add_field(
-            name='Joined this Guild',
-            value=str(member.joined_at)[:-7]
+            name="Joined this Guild",
+            value=f"{member.joined_at.strftime('%d.%m.%y %H:%M')} "
+                  f"({humanize.naturaldelta(datetime.utcnow() - member.joined_at)})"
         ).add_field(
-            name='Joined Discord',
-            value=str(member.created_at)[:-7]
-        ).add_field(
-            name='User ID',
-            value=member.id
-        ).add_field(
-            name='Avatar URL',
-            value=member.avatar_url
+            name="Joined Discord",
+            value=f"{member.created_at.strftime('%d.%m.%y %H:%M')} "
+                  f"({humanize.naturaldelta(datetime.utcnow() - member.created_at)})"
         ).set_thumbnail(
             url=member.avatar_url
         ))
@@ -89,21 +87,18 @@ class Meta:
         """Displays information about the guild the command is invoked on."""
 
         info_embed = discord.Embed(
-            title=f'Guild information: {ctx.guild.name}',
+            title=f"{ctx.guild.name} (`{ctx.guild.id}`)",
             colour=discord.Colour.blurple()
         ).add_field(
-            name='ID',
-            value=f'`{ctx.guild.id}`'
+            name="Statistics",
+            value=f"Total Emojis: {len(ctx.guild.emojis)}\n"
+                  f"Total Members: {ctx.guild.member_count}\n"
+                  f"Total Roles: {len(ctx.guild.roles)}"
         ).add_field(
-            name='Statistics',
-            value=f'Total Emojis: {len(ctx.guild.emojis)}\n'
-                  f'Total Members: {ctx.guild.member_count}\n'
-                  f'Total Roles: {len(ctx.guild.roles)}'
-        ).add_field(
-            name='Owner',
+            name="Owner",
             value=ctx.guild.owner.mention
         )
-        info_embed.set_footer(text='Creation date')
+        info_embed.set_footer(text="Creation date")
         info_embed.timestamp = ctx.guild.created_at
 
         if ctx.guild.icon_url:
