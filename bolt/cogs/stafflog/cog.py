@@ -9,6 +9,7 @@ from peewee import DoesNotExist
 
 from bolt.database import objects
 from .models import StaffLogChannel
+from .util import get_log_channel as fetch_log_channel
 
 
 log = logging.getLogger(__name__)
@@ -42,22 +43,16 @@ class StaffLog:
                 otherwise, if nothing was found, `None`.
         """
 
-        try:
-            channel_row = await objects.get(
-                StaffLogChannel,
-                guild_id=guild.id
-            )
-        except DoesNotExist:
-            return None
-        else:
-            channel = guild.get_channel(channel_row.channel_id)
+        channel_obj = await fetch_log_channel(self.bot, guild)
+        if channel_obj is not None:
+            channel = guild.get_channel(channel_obj.channel_id)
             if channel is None:
                 log.debug(
                     "Previously set stafflog channel for guild {guild} ({guild.id}) "
                     "could not be found anymore, deleting from the database."
                 )
-                await objects.delete(channel_row)
-            return channel_row, channel
+                await objects.delete(channel_obj)
+            return channel_obj, channel
 
     async def log_for(self, guild: discord.Guild, embed: discord.Embed):
         """
