@@ -1,5 +1,4 @@
 .env
 .idea/
 __pycache__
-Pipfile.lock
 config.json
