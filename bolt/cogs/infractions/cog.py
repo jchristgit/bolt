@@ -37,10 +37,10 @@ class Infractions:
     async def infraction(self, _):
         """Contains infraction management commands."""
 
-    @infraction.command(name='edit')
+    @infraction.command(name='reason')
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def infraction_edit(self, ctx, id_: int, *, new_reason: str):
+    async def infraction_reason(self, ctx, id_: int, *, new_reason: str):
         """Change the reason of the given infraction ID to the given new reason."""
 
         try:
@@ -51,18 +51,25 @@ class Infractions:
             )
         except DoesNotExist:
             await ctx.send(embed=discord.Embed(
-                title=f'Failed to find infraction #`{id_}` on this guild.',
+                title=f"Failed to find infraction #`{id_}` on this guild.",
                 colour=discord.Colour.red()
             ))
         else:
             infraction.reason = new_reason
             await objects.update(infraction, only=['reason'])
 
-            await ctx.send(embed=discord.Embed(
-                title=f'Successfully edited infraction #`{id_}`.',
-                description=f'**New reason**: {new_reason}',
-                colour=discord.Colour.green()
-            ))
+            response_embed = discord.Embed(
+                title=f"Successfully edited infraction #`{id_}`.",
+                colour=discord.Colour.green(),
+                timestamp=datetime.utcnow()
+            ).add_field(
+                name="New reason",
+                value=new_reason
+            ).set_footer(
+                text=f'Authored by {ctx.author} ({ctx.author.id})',
+                icon_url=ctx.author.avatar_url
+            )
+            await ctx.send(embed=response_embed)
 
     @infraction.command(name='delete')
     @commands.guild_only()
