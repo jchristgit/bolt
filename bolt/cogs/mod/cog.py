@@ -566,7 +566,7 @@ class Mod:
             ).add_field(
                 name='Last edited',
                 value=(infraction.edited_on.strftime('%d.%m.%y %H:%M')
-                       if infraction.edited_on != infraction.created_on
+                       if infraction.edited_on is not None
                        else 'never')
             ).add_field(
                 name='Reason',

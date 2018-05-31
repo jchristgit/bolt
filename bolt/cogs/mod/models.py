@@ -9,7 +9,7 @@ from .types import InfractionType
 class Infraction(Model):
     guild_id = peewee.BigIntegerField()
     created_on = peewee.DateTimeField(default=datetime.utcnow)
-    edited_on = peewee.DateTimeField(default=datetime.utcnow)  # ON UPDATE handled through trigger
+    edited_on = peewee.DateTimeField(default=None, null=True)  # ON UPDATE handled through trigger
     type = EnumField(InfractionType)
     user_id = peewee.BigIntegerField()
     moderator_id = peewee.BigIntegerField()
