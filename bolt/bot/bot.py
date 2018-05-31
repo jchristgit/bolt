@@ -1,7 +1,6 @@
 import logging
 import random
 
-import discord
 from discord import Colour, Embed, Game
 from discord.ext import commands
 
@@ -27,8 +26,8 @@ class Bot(commands.AutoShardedBot):
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument):
-            await ctx.send(embed=self.make_error_embed('**Something went wrong with converting the command arguments:**\n'
-                                                       f'{error}'))
+            await ctx.send(embed=self.make_error_embed('**Something went wrong with converting the '
+                                                       'command arguments:**\n {error}'))
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.send(embed=self.make_error_embed(
                 ('**An Error occurred through the invocation of the command**.\n'
