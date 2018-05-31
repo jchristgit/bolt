@@ -39,6 +39,10 @@ class StaffLog:
 
     def __init__(self, bot):
         self.bot = bot
+        log.debug('Loaded Cog StaffLog.')
+
+    def __unload(self):
+        log.debug('Unloaded Cog StaffLog.')
 
     async def get_log_channel(self, guild: discord.Guild) -> Optional[
         Tuple[
