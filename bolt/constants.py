@@ -1,16 +1,17 @@
 MAIN_COGS_BASE_PATH = 'bolt.cogs.'
-MAIN_COGS = [
+MAIN_COGS = (
     'admin',
     'config',
+    'infractions',
     'meta',
     'mod',
     'purging',
     'roles',
     'stafflog',
     'tags'
-]
+)
 OPTIONAL_COGS_BASE_PATH = 'bolt.optional_cogs.'
-OPTIONAL_COGS = [
+OPTIONAL_COGS = (
     'example',
     'league'
-]
+)
