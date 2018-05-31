@@ -1,4 +1,5 @@
 import logging
+from os import getenv
 
 from .bot import Bot
 from .bot.config import CONFIG
@@ -8,7 +9,7 @@ from .constants import MAIN_COGS, MAIN_COGS_BASE_PATH, OPTIONAL_COGS, OPTIONAL_C
 logging.basicConfig(
     format="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
     datefmt="%d.%m.%y %H:%M:%S",
-    level=logging.INFO
+    level=getattr(logging, getenv('LOG_LEVEL', default='INFO'))
 )
 
 log = logging.getLogger(__name__)
