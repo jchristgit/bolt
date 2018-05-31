@@ -11,20 +11,12 @@ import peewee_async
 from discord.ext import commands
 from peewee import DoesNotExist
 
+from bolt.cogs.infractions.models import Infraction
+from bolt.cogs.infractions.types import InfractionType
 from bolt.database import objects
 from .converters import ExpirationDate
-from .models import Infraction, Mute, MuteRole
+from .models import Mute, MuteRole
 from .mutes import background_unmute_task, unmute_member
-from .types import InfractionType
-
-
-INFRACTION_TYPE_EMOJI = {
-    InfractionType.note: '📔',
-    InfractionType.warning: '⚠',
-    InfractionType.mute: '🔇',
-    InfractionType.kick: '👢',
-    InfractionType.ban: '🔨'
-}
 
 
 log = logging.getLogger(__name__)
