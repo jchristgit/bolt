@@ -1,6 +1,7 @@
 MAIN_COGS_BASE_PATH = 'bolt.cogs.'
 MAIN_COGS = (
     'admin',
+    'botlog',
     'config',
     'infractions',
     'meta',
