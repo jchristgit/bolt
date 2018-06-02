@@ -168,11 +168,6 @@ class StaffLog:
             )
             if audit_entry is not None:
                 await self.handle_member_kick(member, audit_entry)
-            else:
-                info_embed.set_footer(
-                    text="Tried fetching potential kick information from the "
-                         "audit log, but couldn't find any relevant entry."
-                )
         else:
             info_embed.set_footer(
                 text="By giving me the `view audit log` permission, "
