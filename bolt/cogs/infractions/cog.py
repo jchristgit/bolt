@@ -13,6 +13,7 @@ from peewee import DoesNotExist
 from bolt.cogs.mod.models import Mute
 from bolt.cogs.mod.mutes import unmute_member
 from bolt.database import objects
+from bolt.paginator import LinePaginator
 from .constants import INFRACTION_TYPE_EMOJI
 from .models import Infraction
 from .types import InfractionType
@@ -203,7 +204,7 @@ class Infractions:
             )
             title = f'All infractions on {ctx.guild.name}'
 
-        list_embed_description = []
+        lines = []
         for infraction in all_infractions:
             user = self.bot.get_user(infraction.user_id)
             if user is not None:
@@ -213,17 +214,22 @@ class Infractions:
             infraction_emoji = INFRACTION_TYPE_EMOJI[infraction.type]
 
             creation_string = infraction.created_on.strftime(f'%d.%m.%y %H:%M')
-            list_embed_description.append(
+            lines.append(
                 f'• [`{infraction.id}`] {infraction_emoji} on '
                 f'{user_string} created {creation_string}'
             )
 
-        list_embed = discord.Embed(
-            title=title,
-            description='\n'.join(list_embed_description) or "Seems like there's nothing here yet.",
-            colour=discord.Colour.blue()
-        )
-        await ctx.send(embed=list_embed)
+        if not lines:
+            response = discord.Embed(
+                title=title,
+                description="Seems like there's nothing here yet.",
+                colour=discord.Colour.blue()
+            )
+            await ctx.send(response)
+        else:
+            initial_embed = discord.Embed(title=title, colour=discord.Colour.blue())
+            paginator = LinePaginator(ctx, lines, 10, initial_embed)
+            await paginator.send()
 
     @infraction.command(name='user')
     @commands.guild_only()
