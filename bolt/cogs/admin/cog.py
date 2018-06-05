@@ -104,6 +104,17 @@ class Admin:
     async def set_user_name(self, _, *, username):
         await self.bot.user.edit(username=username)
 
+    @commands.command()
+    @commands.is_owner()
+    async def guilds(self, ctx):
+        """Returns a list of all Guilds that the Bot can see."""
+
+        await ctx.send(embed=discord.Embed(
+            title=f'Guilds ({sum(1 for _ in self.bot.guilds)} total)',
+            description=', '.join(f"{g} (`{g.id}`)" for g in self.bot.guilds),
+            colour=discord.Colour.blue()
+        ))
+
     @commands.command(name='getguild')
     @commands.is_owner()
     async def get_guild(self, ctx, guild_id: int):

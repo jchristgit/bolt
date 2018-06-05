@@ -45,16 +45,6 @@ class Meta:
 
         await ctx.send(embed=response)
 
-    @commands.command()
-    async def guilds(self, ctx):
-        """Returns a list of all Guilds that the Bot can see."""
-
-        await ctx.send(embed=discord.Embed(
-            title=f'Guilds ({sum(1 for _ in self.bot.guilds)} total)',
-            description=', '.join(f"{g} (`{g.id}`)" for g in self.bot.guilds),
-            colour=discord.Colour.blue()
-        ))
-
     @commands.command(aliases=['member'])
     @commands.guild_only()
     async def minfo(self, ctx, *, member: discord.Member=None):
