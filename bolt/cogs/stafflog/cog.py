@@ -109,7 +109,7 @@ class StaffLog:
             value=message.created_at.strftime('%d.%m.%y %H:%M')
         ).add_field(
             name="System content",
-            value=message.system_content
+            value=message.system_content or "(no content)"
         )
 
         if message.attachments:
