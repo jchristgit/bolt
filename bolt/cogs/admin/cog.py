@@ -126,8 +126,7 @@ class Admin:
                 timestamp=guild.me.joined_at
             ).add_field(
                 name="Total Members",
-                value=f"{guild.member_count} "
-                      f"({len(set(guild.members) - set(self.bot.users))} unique)"
+                value=str(guild.member_count)
             ).add_field(
                 name="Total roles",
                 value=str(len(guild.roles))
