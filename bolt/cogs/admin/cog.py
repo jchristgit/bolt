@@ -114,8 +114,9 @@ class Admin:
                 colour=discord.Colour.blurple(),
                 timestamp=guild.me.joined_at
             ).add_field(
-                name="Unique Members",
-                value=str(len(set(guild.members) - set(self.bot.users)))
+                name="Total Members",
+                value=f"{guild.member_count} "
+                      f"({len(set(guild.members) - set(self.bot.users))} unique)"
             ).add_field(
                 name="Total roles",
                 value=str(len(guild.roles))
