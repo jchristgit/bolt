@@ -51,7 +51,7 @@ class Meta:
 
         await ctx.send(embed=discord.Embed(
             title=f'Guilds ({sum(1 for _ in self.bot.guilds)} total)',
-            description=', '.join(g.name for g in self.bot.guilds),
+            description=', '.join(f"{g} (`{g.id}`)" for g in self.bot.guilds),
             colour=discord.Colour.blue()
         ))
 
