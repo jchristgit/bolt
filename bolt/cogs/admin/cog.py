@@ -23,11 +23,18 @@ class Admin:
     @commands.group(invoke_without_command=True, aliases=['cog'])
     @commands.is_owner()
     async def cogs(self, ctx):
+        """Cog management commands.
+
+        When invoked without a subcommand, returns a list of loaded cogs.
+        """
+
         await ctx.invoke(self.cogs_loaded)
 
     @cogs.command(name='load')
     @commands.is_owner()
     async def cogs_load(self, ctx, extension_name: str):
+        """Load the specified cog."""
+
         if extension_name.title() in self.bot.cogs:
             error_embed = discord.Embed(
                 title=f"Failed to load Cog `{extension_name}`:",
@@ -56,6 +63,8 @@ class Admin:
     @cogs.command(name='unload')
     @commands.is_owner()
     async def cogs_unload(self, ctx, extension_name: str):
+        """Unload the specified cog."""
+
         if extension_name.title() not in self.bot.cogs:
             error_embed = discord.Embed(
                 title=f"Failed to unload Cog `{extension_name}`:",
@@ -75,6 +84,8 @@ class Admin:
     @cogs.command(name='loaded')
     @commands.is_owner()
     async def cogs_loaded(self, ctx):
+        """List loaded Cogs."""
+
         loaded_cogs_embed = discord.Embed(
             title=f"Loaded Cogs (`{len(self.bot.cogs)}` total)",
             description='\n'.join(f"• {cog}" for cog in sorted(self.bot.cogs)),
@@ -85,23 +96,30 @@ class Admin:
     @commands.command()
     @commands.is_owner()
     async def shutdown(self, ctx):
+        """Shutdown the bot."""
+
         await ctx.send(embed=discord.Embed(description='Shutting down...'))
-        await self.bot.cleanup()
         await self.bot.close()
 
     @commands.command(name='setplaying')
     @commands.is_owner()
     async def set_playing(self, _, *, new_status: str):
-        await self.bot.change_presence(game=discord.Game(name=new_status))
+        """Set the playing status of the game."""
+
+        await self.bot.change_presence(activity=discord.Game(new_status))
 
     @commands.command(name='setnick')
     @commands.is_owner()
     async def set_nick(self, ctx, *, nick):
+        """Set the nickname for the bot on the current guild."""
+
         await ctx.guild.me.edit(nick=nick)
 
     @commands.command(name='setname')
     @commands.is_owner()
     async def set_user_name(self, _, *, username):
+        """Set the bot's username."""
+
         await self.bot.user.edit(username=username)
 
     @commands.command()
@@ -118,6 +136,8 @@ class Admin:
     @commands.command(name='getguild')
     @commands.is_owner()
     async def get_guild(self, ctx, guild_id: int):
+        """Return information about the given guild ID."""
+
         guild = self.bot.get_guild(guild_id)
         if guild is not None:
             info_embed = discord.Embed(
