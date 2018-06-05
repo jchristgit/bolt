@@ -126,6 +126,9 @@ class StaffLog:
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if after.guild is None or after.author == self.bot.user:
             return
+        elif before.content == after.content:
+            # It's some other edit that we don't actually care about.
+            return
 
         info_embed = discord.Embed(
             title=f"📝 Message edited (`{after.id}`)",
