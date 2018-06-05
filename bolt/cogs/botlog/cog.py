@@ -73,4 +73,4 @@ class BotLog:
             if guild.icon_url:
                 info_embed.set_thumbnail(url=guild.icon_url)
 
-            await self.channel.send
+            await self.channel.send(embed=info_embed)
