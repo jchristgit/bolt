@@ -82,24 +82,58 @@ class Admin:
         )
         await ctx.send(embed=loaded_cogs_embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def shutdown(self, ctx):
         await ctx.send(embed=discord.Embed(description='Shutting down...'))
         await self.bot.cleanup()
         await self.bot.close()
 
-    @commands.command(name='setplaying', hidden=True)
+    @commands.command(name='setplaying')
     @commands.is_owner()
     async def set_playing(self, _, *, new_status: str):
         await self.bot.change_presence(game=discord.Game(name=new_status))
 
-    @commands.command(name='setnick', hidden=True)
+    @commands.command(name='setnick')
     @commands.is_owner()
     async def set_nick(self, ctx, *, nick):
         await ctx.guild.me.edit(nick=nick)
 
-    @commands.command(name='setname', hidden=True)
+    @commands.command(name='setname')
     @commands.is_owner()
     async def set_user_name(self, _, *, username):
         await self.bot.user.edit(username=username)
+
+    @commands.command(name='getguild')
+    @commands.is_owner()
+    async def get_guild(self, ctx, guild_id: int):
+        guild = self.bot.get_guild(guild_id)
+        if guild is not None:
+            info_embed = discord.Embed(
+                title=f"{guild} (`{guild.id}`)",
+                colour=discord.Colour.blurple(),
+                timestamp=guild.me.joined_at
+            ).add_field(
+                name="Unique Members",
+                value=str(len(set(guild.members) - set(self.bot.users)))
+            ).add_field(
+                name="Total roles",
+                value=str(len(guild.roles))
+            ).set_author(
+                name=f"{guild.owner} ({guild.owner.id})",
+                icon_url=guild.owner.avatar_url
+            ).set_footer(
+                text="Joined at"
+            )
+
+            if guild.icon_url:
+                info_embed.set_thumbnail(url=guild.icon_url)
+
+            await ctx.send(embed=info_embed)
+        else:
+            error_embed = discord.Embed(
+                title="Cannot obtain guild information",
+                description=f"Failed to find a guild with the ID `{guild_id}`.",
+                colour=discord.Colour.red()
+            )
+            await ctx.send(embed=error_embed)
