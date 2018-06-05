@@ -126,7 +126,8 @@ class Bot(commands.AutoShardedBot):
                                 "didn't allow me to do what I wanted to."
                 )
                 await ctx.send(error_embed)
-                log.exception(f"Encountered a command error for message {ctx.message.content}")
+                log.error(f"Encountered a command error for message {ctx.message.content}")
+                await super().on_command_error(ctx, error)
 
             else:
                 error_embed = self.make_error_embed(
@@ -134,9 +135,11 @@ class Bot(commands.AutoShardedBot):
                     description="Worry not, the bot administrator has been informed."
                 )
                 await ctx.send(embed=error_embed)
-                log.exception(f"Encountered a command error for message {ctx.message.content!r}:")
+                log.error(f"Encountered a command error for message {ctx.message.content!r}")
+                await super().on_command_error(ctx, error)
         else:
-            log.exception(f"Unhandled command error (from message {ctx.message.content!r}):")
+            log.error(f"Unhandled command error (from message {ctx.message.content!r})")
+            await super().on_command_error(ctx, error)
 
     async def on_ready(self):
         log.info("Logged in.")
