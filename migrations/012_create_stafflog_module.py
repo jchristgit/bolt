@@ -1,4 +1,4 @@
-"""Peewee migrations -- 011_create_stafflog_module.py."""
+"""Peewee migrations -- 012_create_stafflog_module.py."""
 
 import peewee as pw
 

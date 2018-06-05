@@ -163,7 +163,7 @@ class Infractions:
                        else 'never')
             ).add_field(
                 name='Reason',
-                value=infraction.reason,
+                value=infraction.reason or '',
                 inline=False
             )
 

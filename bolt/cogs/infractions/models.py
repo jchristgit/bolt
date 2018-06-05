@@ -13,4 +13,4 @@ class Infraction(Model):
     type = EnumField(InfractionType)
     user_id = peewee.BigIntegerField()
     moderator_id = peewee.BigIntegerField()
-    reason = peewee.CharField(max_length=250)
+    reason = peewee.CharField(max_length=250, null=True)
