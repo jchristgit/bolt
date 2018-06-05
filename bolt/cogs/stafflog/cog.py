@@ -123,6 +123,33 @@ class StaffLog:
 
         await self.log_for(message.guild, info_embed)
 
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if after.guild is None or after.author == self.bot.user:
+            return
+
+        info_embed = discord.Embed(
+            title=f"📝 Message edited (`{after.id}`)",
+            colour=discord.Colour.blue(),
+            timestamp=datetime.utcnow()
+        ).set_author(
+            name=f"{after.author} ({after.author.id})",
+            icon_url=after.author.avatar_url
+        ).add_field(
+            name="Channel",
+            value=after.channel.mention
+        ).add_field(
+            name="Creation date",
+            value=after.created_at.strftime('%d.%m.%y %H:%M')
+        ).add_field(
+            name="Old content",
+            value=before.content or "(no content)"
+        ).add_field(
+            name="Updated content",
+            value=after.content or "(no content)"
+        )
+
+        await self.log_for(after.guild, info_embed)
+
     async def on_member_join(self, member: discord.Member):
         info_embed = discord.Embed(
             title=f"📥 Member joined",
