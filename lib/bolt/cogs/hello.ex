@@ -1,7 +1,11 @@
 defmodule Bolt.Cogs.Hello do
   use Alchemy.Cogs
 
-  Cogs.def echo(content) do
-    Cogs.say("beep bop `#{content}`")
+  @doc """
+  Greet the user specified with `name` with the given `content`.
+  """
+  Cogs.def echo(content, name \\ "bob") do
+    name = String.trim_leading(name, "@")
+    Cogs.say("#{content}, #{name}!")
   end
 end

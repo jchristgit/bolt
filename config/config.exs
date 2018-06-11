@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :bolt,
-  default_prefix: "!",
+  default_prefix: ".",
   token: System.get_env("BOT_TOKEN")
 
 config :porcelain, driver: Porcelain.Driver.Basic
