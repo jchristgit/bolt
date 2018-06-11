@@ -6,6 +6,8 @@ config :bolt,
   default_prefix: ".",
   token: System.get_env("BOT_TOKEN")
 
+config :bolt, Bolt.Repo, url: System.get_env("PGSQL_URL")
+
 config :porcelain, driver: Porcelain.Driver.Basic
 
 # This configuration is loaded before any dependency and is restricted

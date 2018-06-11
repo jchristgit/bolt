@@ -3,6 +3,7 @@ defmodule Bolt.Application do
 
   def start(_type, _args) do
     children = [
+      Bolt.Repo,
       %{
         id: Bolt.Client,
         start: {Alchemy.Client, :start_link, [Application.fetch_env!(:bolt, :token), []]}
