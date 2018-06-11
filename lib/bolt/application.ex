@@ -11,7 +11,10 @@ defmodule Bolt.Application do
 
     options = [strategy: :one_for_one, name: Bolt.Supervisor]
     startup_result = Supervisor.start_link(children, options)
-    Alchemy.Cogs.set_prefix("%")
+
+    Application.fetch_env!(:bolt, :default_prefix)
+    |> Alchemy.Cogs.set_prefix()
+
     load_cogs()
     startup_result
   end
@@ -21,5 +24,6 @@ defmodule Bolt.Application do
 
     use Cogs.Hello
     use Cogs.Help
+    use Cogs.Meta
   end
 end
