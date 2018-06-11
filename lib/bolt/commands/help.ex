@@ -67,7 +67,10 @@ defmodule Bolt.Commands.Help do
       description: command_overview(),
       color: Constants.color_blue()
     }
-    |> Embed.footer(text: "use `#{Application.fetch_env!(:bolt, :default_prefix)}help <command>` for more details")
+    |> Embed.footer(
+      text:
+        "use `#{Application.fetch_env!(:bolt, :default_prefix)}help <command>` for more details"
+    )
   end
 
   @spec format_command_detail(Module.t(), arity(), String.t()) :: String.t() | nil
