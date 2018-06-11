@@ -30,27 +30,33 @@ defmodule Bolt.Commands.GuildInfo do
       |> Embed.field("Total emojis", length(guild.emojis) |> to_string, inline: true)
       |> Embed.field(
         "Total members",
-        (if guild.member_count != nil, do: guild.member_count |> to_string, else: "*unknown, guild not in cache*"),
+        if(
+          guild.member_count != nil,
+          do: guild.member_count |> to_string,
+          else: "*unknown, guild not in cache*"
+        ),
         inline: true
       )
       |> Embed.thumbnail(Guild.icon_url(guild))
 
-    info_embed = with {:ok, owner_id} when owner_id != nil <- Map.fetch(guild, :owner_id),
-         {:ok, owner} <- get_member(guild.id, owner_id) do
+    info_embed =
+      with {:ok, owner_id} when owner_id != nil <- Map.fetch(guild, :owner_id),
+           {:ok, owner} <- get_member(guild.id, owner_id) do
         Embed.field(
           info_embed,
           "Owner",
           "#{owner.user.username}##{owner.user.discriminator} (<@#{owner.user.id}>)",
           inline: true
         )
-    else
-      {:error, :not_found} ->
-        Embed.field(info_embed, "Owner", "<@#{guild.owner_id}>", inline: true)
+      else
+        {:error, :not_found} ->
+          Embed.field(info_embed, "Owner", "<@#{guild.owner_id}>", inline: true)
 
-      _err ->
-        Embed.field(info_embed, "Owner", "*unknown, failed to fetch*", inline: true)
-    end
-    IO.inspect info_embed
+        _err ->
+          Embed.field(info_embed, "Owner", "*unknown, failed to fetch*", inline: true)
+      end
+
+    IO.inspect(info_embed)
 
     with {:ok, creation_iso8601} when creation_iso8601 != nil <- Map.fetch(guild, :joined_at),
          {:ok, creation_stamp} <- DateTime.from_iso8601(creation_iso8601) do
