@@ -1,4 +1,4 @@
-defmodule Bolt.Cogs.Help do
+defmodule Bolt.Commands.Help do
   use Alchemy.Cogs
   alias Alchemy.Embed
   require Alchemy.Embed
@@ -6,8 +6,6 @@ defmodule Bolt.Cogs.Help do
 
   @spec command_information(String.t()) :: {Module.t(), arity(), String.t()}
   defp command_information(cmd_name) do
-    IO.inspect(Cogs.all_commands())
-
     case Cogs.all_commands()[cmd_name] do
       {module, arity, function_name, _parser} -> {module, arity, function_name}
       res -> res
@@ -60,7 +58,6 @@ defmodule Bolt.Cogs.Help do
           end).()
     end)
     |> Enum.join("\n\n")
-    |> IO.inspect()
   end
 
   @spec format_command_overview() :: Embed.t()
@@ -70,7 +67,7 @@ defmodule Bolt.Cogs.Help do
       description: command_overview(),
       color: Constants.color_blue()
     }
-    |> Embed.footer(text: "use `help <command>` for more details")
+    |> Embed.footer(text: "use `#{Application.fetch_env!(:bolt, :default_prefix)}help <command>` for more details")
   end
 
   @spec format_command_detail(Module.t(), arity(), String.t()) :: String.t() | nil
@@ -83,7 +80,7 @@ defmodule Bolt.Cogs.Help do
       ```ini
       #{name} #{format_args(args)}
       ```
-      #{if is_bitstring(doc), do: doc, else: "Seems like I didn't write any docs for this yet."}
+      #{if is_bitstring(doc), do: doc, else: "Seems like I didn't write any docs for this yet..."}
       """,
       color: Constants.color_blue()
     }

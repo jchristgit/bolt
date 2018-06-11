@@ -20,10 +20,10 @@ defmodule Bolt.Application do
   end
 
   defp load_cogs() do
-    alias Bolt.Cogs
+    alias Bolt.Commands
 
-    use Cogs.Hello
-    use Cogs.Help
-    use Cogs.Meta
+    use Commands.Hello
+    use Commands.Help
+    use Commands.Meta
   end
 end

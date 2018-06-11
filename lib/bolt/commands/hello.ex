@@ -1,4 +1,4 @@
-defmodule Bolt.Cogs.Hello do
+defmodule Bolt.Commands.Hello do
   use Alchemy.Cogs
 
   @doc """

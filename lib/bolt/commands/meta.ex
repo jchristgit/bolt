@@ -1,4 +1,4 @@
-defmodule Bolt.Cogs.Meta do
+defmodule Bolt.Commands.Meta do
   use Alchemy.Cogs
   alias Alchemy.{Cache, Client, Guild, Embed}
   require Alchemy.Embed
