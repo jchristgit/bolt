@@ -1,5 +1,5 @@
 %{
-  "alchemy": {:hex, :discord_alchemy, "0.6.1", "944bf8d96aacc91977ba1a9eae9a28cc09d8c9606000c9aec329517f372f7ffa", [:mix], [{:gen_stage, "~> 0.11", [hex: :gen_stage, repo: "hexpm", optional: false]}, {:httpoison, "~> 0.13.0", [hex: :httpoison, repo: "hexpm", optional: false]}, {:kcl, "~> 1.0.0", [hex: :kcl, repo: "hexpm", optional: false]}, {:poison, "~> 3.0", [hex: :poison, repo: "hexpm", optional: false]}, {:porcelain, "~> 2.0", [hex: :porcelain, repo: "hexpm", optional: false]}, {:websocket_client, "~> 1.2", [hex: :websocket_client, repo: "hexpm", optional: false]}], "hexpm"},
+  "alchemy": {:git, "https://github.com/jchristgit/alchemy", "29290d6cecef9804fa6f6338812bff61f58f80dd", [branch: "add-guild-icon-url-function"]},
   "certifi": {:hex, :certifi, "2.3.1", "d0f424232390bf47d82da8478022301c561cf6445b5b5fb6a84d49a9e76d2639", [:rebar3], [{:parse_trans, "3.2.0", [hex: :parse_trans, repo: "hexpm", optional: false]}], "hexpm"},
   "chacha20": {:hex, :chacha20, "1.0.1", "4f5eb7ec715b63f90b5f152b91cc490382753ad08827960017c0660c8e30f613", [:mix], [], "hexpm"},
   "curve25519": {:hex, :curve25519, "1.0.2", "1dd89550518937ed1c8196389a3974b3b2fb5f016fa0bd0601e8cdcb44336bf2", [:mix], [], "hexpm"},
