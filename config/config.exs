@@ -3,11 +3,10 @@
 use Mix.Config
 
 config :bolt,
-  default_prefix: "!"
+  default_prefix: "!",
+  token: System.get_env("BOT_TOKEN")
 
-config :nostrum,
-  token: System.get_env("BOT_TOKEN"),
-  shards: :auto
+config :porcelain, driver: Porcelain.Driver.Basic
 
 
 # This configuration is loaded before any dependency and is restricted

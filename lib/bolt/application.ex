@@ -3,10 +3,21 @@ defmodule Bolt.Application do
 
   def start(_type, _args) do
     children = [
-      Bolt.Consumer
+      %{
+        id: Bolt.Client,
+        start: {Alchemy.Client, :start_link, [Application.fetch_env!(:bolt, :token), []]}
+      }
     ]
 
     options = [strategy: :one_for_one, name: Bolt.Supervisor]
-    Supervisor.start_link(children, options)
+    startup_result = Supervisor.start_link(children, options)
+    load_cogs()
+    startup_result
+  end
+
+  defp load_cogs() do
+    alias Bolt.Cogs
+
+    use Cogs.Hello
   end
 end
