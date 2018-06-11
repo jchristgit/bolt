@@ -1,7 +1,7 @@
 import logging
 import random
 
-from discord import Colour, Embed, Forbidden, Game, HTTPException
+from discord import Colour, Embed, Forbidden, Game, Guild, HTTPException
 from discord.ext import commands
 
 from .config import CONFIG, get_prefix
@@ -149,3 +149,8 @@ class Bot(commands.AutoShardedBot):
             return
 
         await self.process_commands(msg)
+
+    async def send_stafflog(self, guild: Guild, contents: Embed):
+        cog = self.get_cog('StaffLog')
+        if cog is not None:
+            await cog.log_for(guild, contents)
