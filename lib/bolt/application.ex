@@ -22,8 +22,8 @@ defmodule Bolt.Application do
   defp load_cogs() do
     alias Bolt.Commands
 
-    use Commands.Hello
+    use Commands.Echo
     use Commands.Help
-    use Commands.Meta
+    use Commands.GuildInfo
   end
 end

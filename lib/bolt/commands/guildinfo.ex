@@ -1,4 +1,4 @@
-defmodule Bolt.Commands.Meta do
+defmodule Bolt.Commands.GuildInfo do
   use Alchemy.Cogs
   alias Alchemy.{Cache, Client, Guild, Embed}
   require Alchemy.Embed
@@ -30,14 +30,13 @@ defmodule Bolt.Commands.Meta do
       |> Embed.field("Total emojis", length(guild.emojis) |> to_string, inline: true)
       |> Embed.field(
         "Total members",
-        Map.get(guild, :member_count, "*unknown, guild not in cache*"),
+        (if guild.member_count != nil, do: guild.member_count |> to_string, else: "*unknown, guild not in cache*"),
         inline: true
       )
       |> Embed.thumbnail(Guild.icon_url(guild))
 
-    with {:ok, owner_id} when owner_id != nil <- Map.fetch(guild, :owner_id),
+    info_embed = with {:ok, owner_id} when owner_id != nil <- Map.fetch(guild, :owner_id),
          {:ok, owner} <- get_member(guild.id, owner_id) do
-      info_embed =
         Embed.field(
           info_embed,
           "Owner",
@@ -46,11 +45,12 @@ defmodule Bolt.Commands.Meta do
         )
     else
       {:error, :not_found} ->
-        info_embed = Embed.field(info_embed, "Owner", "<@#{guild.owner_id}>", inline: true)
+        Embed.field(info_embed, "Owner", "<@#{guild.owner_id}>", inline: true)
 
       _err ->
-        info_embed = Embed.field(info_embed, "Owner", "*unknown, failed to fetch*")
+        Embed.field(info_embed, "Owner", "*unknown, failed to fetch*", inline: true)
     end
+    IO.inspect info_embed
 
     with {:ok, creation_iso8601} when creation_iso8601 != nil <- Map.fetch(guild, :joined_at),
          {:ok, creation_stamp} <- DateTime.from_iso8601(creation_iso8601) do
