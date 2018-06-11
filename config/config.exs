@@ -2,6 +2,9 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :bolt,
+  default_prefix: "!"
+
 config :nostrum,
   token: System.get_env("BOT_TOKEN"),
   shards: :auto
