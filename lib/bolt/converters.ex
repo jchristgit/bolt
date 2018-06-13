@@ -47,6 +47,8 @@ defmodule Bolt.Converters do
     {"marc", "4215"}
     iex> text_to_name_and_discrim("name")
     :error
+    iex> text_to_name_and_discrim("joe#109231")
+    :error
   """
   @spec text_to_name_and_discrim(String.t()) :: {String.t(), String.t()} | :error
   def text_to_name_and_discrim(text) do
@@ -61,7 +63,7 @@ defmodule Bolt.Converters do
       with {value, _remainder} when value in 0001..9999 <- Integer.parse(discrim) do
         {name, discrim}
       else
-        :error -> :error
+        _err -> :error
       end
     else
       :error
@@ -97,7 +99,7 @@ defmodule Bolt.Converters do
                        members,
                        &(&1.user.username == name and &1.user.discriminator == discrim)
                      ) do
-                  nil -> {:error, "There is no member named #{name}##{discrim} on this Guild."}
+                  nil -> {:error, "There is no member named `#{name}##{discrim}` on this Guild."}
                   member -> {:ok, member}
                 end
 
@@ -105,7 +107,7 @@ defmodule Bolt.Converters do
                 case Enum.find(members, &(&1.user.username == text)) do
                   nil ->
                     case Enum.find(members, &(&1.nick == text)) do
-                      nil -> {:error, "Failed to find any member matching #{text} on this guild."}
+                      nil -> {:error, "Failed to find any member matching `#{text}` on this guild."}
                       member -> {:ok, member}
                     end
 
