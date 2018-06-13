@@ -6,6 +6,7 @@ defmodule Bolt.Cogs.MemberInfo do
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild.Member
+  alias Nostrum.Struct.Snowflake
   use Timex
 
   @spec top_role_for(Nostrum.Struct.Snowflake.t(), Member.t()) ::
@@ -28,6 +29,7 @@ defmodule Bolt.Cogs.MemberInfo do
       member.joined_at
       |> DateTime.from_iso8601()
       |> elem(1)
+    creation_datetime = Snowflake.creation_time(member.user.id)
 
     embed = %Embed{
       title: "#{member.user.username}##{member.user.discriminator}",
@@ -42,6 +44,18 @@ defmodule Bolt.Cogs.MemberInfo do
               |> Timex.format!("%d.%m.%y %H:%M", :strftime)
             } (#{
               join_datetime
+              |> Timex.from_now()
+            })",
+          inline: true
+        },
+        %Embed.Field{
+          name: "Joined Discord",
+          value:
+            "#{
+              creation_datetime
+              |> Timex.format!("%d.%m.%y %H:%M", :strftime)
+            } (#{
+              creation_datetime
               |> Timex.from_now()
             })",
           inline: true
@@ -122,4 +136,6 @@ defmodule Bolt.Cogs.MemberInfo do
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
+
+  def command(_name, _msg, _args), do: :ok
 end
