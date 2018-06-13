@@ -17,7 +17,7 @@ defmodule Bolt.Converters do
     iex> user_mention_to_id("not valid")
     :error
   """
-  @spec user_mention_to_id(String.t()) :: pos_integer() | :error
+  @spec user_mention_to_id(String.t()) :: {:ok, pos_integer()} | {:error, String.t()}
   def user_mention_to_id(text) do
     maybe_id =
       text
@@ -26,8 +26,8 @@ defmodule Bolt.Converters do
       |> String.trim_trailing(">")
 
     case Integer.parse(maybe_id) do
-      {value, _remainder} -> value
-      :error -> :error
+      {value, _remainder} -> {:ok, value}
+      :error -> {:error, "not a valid ID"}
     end
   end
 
