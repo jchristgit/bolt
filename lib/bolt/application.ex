@@ -4,7 +4,6 @@ defmodule Bolt.Application do
   def start(_type, _args) do
     children = [
       Bolt.Repo,
-      #Bolt.Commander,
       Bolt.Consumer
     ]
 
