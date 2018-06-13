@@ -5,7 +5,7 @@ defmodule Bolt.Consumer do
   @handlers %{
     MESSAGE_CREATE: [
       Cogs.Echo,
-      Cogs.Help
+      Cogs.MemberInfo
     ]
   }
 
@@ -17,7 +17,7 @@ defmodule Bolt.Consumer do
     case msg.content do
       "." <> command_name ->
         if !msg.author.bot do
-          [command_name | args] = msg.content |> OptionParser.split()
+          [command_name | args] = msg.content |> String.trim_leading(".") |> OptionParser.split()
 
           @handlers[:MESSAGE_CREATE]
           |> Enum.each(& &1.command(command_name, msg, args))
