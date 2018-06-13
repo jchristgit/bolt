@@ -1,11 +1,12 @@
 defmodule Bolt.Commands.Echo do
-  use Alchemy.Cogs
+  alias Nostrum.Api
+
+  # @on_definition {Bolt.Commander, :on_def}
 
   @doc """
   Greet the user specified with `name` with the given `content`.
   """
-  Cogs.def echo(content, name \\ "bob") do
-    name = String.trim_leading(name, "@")
-    Cogs.say("#{content}, #{name}!")
+  def command("echo", msg, _args) do
+    {:ok, msg} = Api.create_message(msg.channel_id, "I copy and pasted this code")
   end
 end

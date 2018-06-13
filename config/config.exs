@@ -3,12 +3,13 @@
 use Mix.Config
 
 config :bolt,
-  default_prefix: ".",
-  token: System.get_env("BOT_TOKEN")
+  default_prefix: "."
 
 config :bolt, Bolt.Repo, url: System.get_env("PGSQL_URL")
 
-config :porcelain, driver: Porcelain.Driver.Basic
+config :nostrum,
+  token: System.get_env("BOT_TOKEN"),
+  num_shards: :auto
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

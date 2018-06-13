@@ -22,9 +22,7 @@ defmodule Bolt.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:alchemy, "~> 0.6.0", hex: :discord_alchemy}
-      {:alchemy,
-       git: "https://github.com/jchristgit/alchemy", branch: "add-guild-icon-url-function"},
+      {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
       {:ecto, "~> 2.2.10"},
       {:postgrex, "~> 0.13.5"}
       # {:dep_from_hexpm, "~> 0.3.0"},
