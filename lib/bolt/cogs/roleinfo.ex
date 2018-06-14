@@ -69,4 +69,6 @@ defmodule Bolt.Cogs.RoleInfo do
     end
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
+
+  def command(_name, _msg, _ars), do: :ok
 end
