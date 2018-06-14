@@ -1,11 +1,13 @@
 defmodule Bolt.Cogs.GuildInfo do
   alias Bolt.Constants
+  alias Bolt.Helpers
   alias Nostrum.Api
   alias Nostrum.Guild
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Snowflake
   use Timex
+
 
   @guild_only_embed %Embed{
     title: "Failed to fetch guild information",
@@ -48,11 +50,8 @@ defmodule Bolt.Cogs.GuildInfo do
           value:
             (fn ->
                if guild.joined_at != nil do
-                 parsed_date = Snowflake.creation_time(guild.id)
-
-                 "#{Timex.format!(parsed_date, "%d.%m.%y %H:%M", :strftime)} (#{
-                   Timex.from_now(parsed_date)
-                 })"
+                 Snowflake.creation_time(guild.id)
+                 |> Helpers.datetime_to_human
                else
                  "*unknown, guild not in cache*"
                end
@@ -93,7 +92,7 @@ defmodule Bolt.Cogs.GuildInfo do
   Display information about the guild that
   this command is invoked on.
   """
-  def command(name, msg, _args) when name in ["guildinfo", "ginfo"] do
+  def command(name, msg, _args) when name in ["ginfo", "guildinfo", "guild"] do
     embed =
       with guild_id when guild_id != nil <- msg.guild_id,
            {:ok, guild} <- GuildCache.get(guild_id) do

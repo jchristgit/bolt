@@ -39,26 +39,12 @@ defmodule Bolt.Cogs.MemberInfo do
         %Embed.Field{name: "Total roles", value: "#{length(member.roles)}", inline: true},
         %Embed.Field{
           name: "Joined this Guild",
-          value:
-            "#{
-              join_datetime
-              |> Timex.format!("%d.%m.%y %H:%M", :strftime)
-            } (#{
-              join_datetime
-              |> Timex.from_now()
-            })",
+          value: Helpers.datetime_to_human(join_datetime),
           inline: true
         },
         %Embed.Field{
           name: "Joined Discord",
-          value:
-            "#{
-              creation_datetime
-              |> Timex.format!("%d.%m.%y %H:%M", :strftime)
-            } (#{
-              creation_datetime
-              |> Timex.from_now()
-            })",
+          value: Helpers.datetime_to_human(creation_datetime),
           inline: true
         }
       ],
@@ -117,7 +103,7 @@ defmodule Bolt.Cogs.MemberInfo do
   def command(name, msg, [member]) when name in ["minfo", "memberinfo", "member"] do
     embed =
       with guild_id when guild_id != nil <- msg.guild_id,
-           {:ok, fetched_member} <- Converters.member(guild_id, member) do
+           {:ok, fetched_member} <- Converters.to_member(guild_id, member) do
         format_member_info(msg.guild_id, fetched_member)
       else
         nil ->
