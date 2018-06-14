@@ -5,6 +5,7 @@ defmodule Bolt.Consumer do
   @handlers %{
     MESSAGE_CREATE: [
       Cogs.Echo,
+      Cogs.GuildInfo,
       Cogs.MemberInfo
     ]
   }
