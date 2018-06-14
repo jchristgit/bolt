@@ -27,6 +27,12 @@ defmodule Bolt.Commander do
       parser: &Parsers.passthrough/1,
       help: "Show information about the given role.",
       predicates: [&Checks.guild_only/1]
+    },
+    "roles" => %{
+      callback: &Cogs.Roles.command/2,
+      parser: &Parsers.passthrough/1,
+      help: "Show all roles on the guild the command is invoked on.",
+      predicates: [&Checks.guild_only/1]
     }
   }
 
