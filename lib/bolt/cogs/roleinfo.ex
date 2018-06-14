@@ -49,9 +49,11 @@ defmodule Bolt.Cogs.RoleInfo do
   def command(msg, "") do
     response = %Embed{
       title: "Failed to fetch role information",
-      description: "You need to add the role you want to retrieve information about as an argument.",
-      color: Constants.color_red
+      description:
+        "You need to add the role you want to retrieve information about as an argument.",
+      color: Constants.color_red()
     }
+
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
   end
 
