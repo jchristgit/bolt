@@ -72,8 +72,7 @@ defmodule Bolt.Cogs.MemberInfo do
   """
   def command(msg, "") do
     embed =
-      with guild_id when guild_id != nil <- msg.guild_id,
-           {:ok, guild} <- GuildCache.get(msg.guild_id),
+      with {:ok, guild} <- GuildCache.get(msg.guild_id),
            member when member != nil <- Enum.find(guild.members, &(&1.user.id == msg.author.id)) do
         format_member_info(msg.guild_id, member)
       else
@@ -102,17 +101,9 @@ defmodule Bolt.Cogs.MemberInfo do
   """
   def command(msg, member) do
     embed =
-      with guild_id when guild_id != nil <- msg.guild_id,
-           {:ok, fetched_member} <- Converters.to_member(guild_id, member) do
+      with {:ok, fetched_member} <- Converters.to_member(guild_id, member) do
         format_member_info(msg.guild_id, fetched_member)
       else
-        nil ->
-          %Embed{
-            title: "Failed to fetch member information",
-            description: "This command can only be used on guilds.",
-            color: Constants.color_red()
-          }
-
         {:error, reason} ->
           %Embed{
             title: "Failed to fetch member information",

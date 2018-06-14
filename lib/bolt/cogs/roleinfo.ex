@@ -59,24 +59,16 @@ defmodule Bolt.Cogs.RoleInfo do
 
   def command(msg, role) do
     embed =
-      if msg.guild_id != nil do
-        case Converters.to_role(msg.guild_id, role, true) do
-          {:ok, matching_role} ->
-            format_role_info(matching_role)
+      case Converters.to_role(msg.guild_id, role, true) do
+        {:ok, matching_role} ->
+          format_role_info(matching_role)
 
-          {:error, reason} ->
-            %Embed{
-              title: "Failed to fetch role information",
-              description: "Could not convert the given argument to a role: #{reason}",
-              color: Constants.color_red()
-            }
-        end
-      else
-        %Embed{
-          title: "Failed to fetch role information",
-          description: "This command can only be used on guilds.",
-          color: Constants.color_red()
-        }
+        {:error, reason} ->
+          %Embed{
+            title: "Failed to fetch role information",
+            description: "Could not convert the given argument to a role: #{reason}",
+            color: Constants.color_red()
+          }
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)

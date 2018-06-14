@@ -8,12 +8,7 @@ defmodule Bolt.Cogs.GuildInfo do
   alias Nostrum.Struct.Snowflake
   use Timex
 
-  @guild_only_embed %Embed{
-    title: "Failed to fetch guild information",
-    description: "This command needs to be invoked on a Guild.",
-    color: Constants.color_red()
-  }
-
+  @guild_only_embed
   @spec format_guild_info(Guild.t()) :: Embed.t()
   defp format_guild_info(guild) do
     info_embed = %Embed{
@@ -93,24 +88,22 @@ defmodule Bolt.Cogs.GuildInfo do
   """
   def command(msg, _args) do
     embed =
-      with guild_id when guild_id != nil <- msg.guild_id,
-           {:ok, guild} <- GuildCache.get(guild_id) do
+      with {:ok, guild} <- GuildCache.get(msg.guild_id) do
         format_guild_info(guild)
       else
-        nil ->
-          @guild_only_embed
-
         {:error, _reason} ->
           case Api.get_guild(msg.guild_id) do
             {:ok, guild} ->
               format_guild_info(guild)
 
             {:error, _reason} ->
-              @guild_only_embed
-              |> Embed.put_description(
-                "This Guild was not found in the cache nor " <>
-                  "could any information be fetched from the API."
-              )
+              %Embed{
+                title: "Failed to fetch guild information",
+                description:
+                  "This Guild was not found in the cache nor " <>
+                    "could any information be fetched from the API.",
+                color: Constants.color_red()
+              }
           end
       end
 
