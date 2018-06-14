@@ -7,7 +7,8 @@ config :bolt,
   prefix: "."
 
 config :bolt, Bolt.Repo,
-  adapter: Ecto.Adapters.Postgres
+  adapter: Ecto.Adapters.Postgres,
+  url: System.get_env("PGSQL_URL")
 
 config :nostrum,
   token: System.get_env("BOT_TOKEN"),
