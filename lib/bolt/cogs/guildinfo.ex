@@ -8,7 +8,6 @@ defmodule Bolt.Cogs.GuildInfo do
   alias Nostrum.Struct.Snowflake
   use Timex
 
-  @guild_only_embed
   @spec format_guild_info(Guild.t()) :: Embed.t()
   defp format_guild_info(guild) do
     info_embed = %Embed{

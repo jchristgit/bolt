@@ -101,7 +101,7 @@ defmodule Bolt.Cogs.MemberInfo do
   """
   def command(msg, member) do
     embed =
-      with {:ok, fetched_member} <- Converters.to_member(guild_id, member) do
+      with {:ok, fetched_member} <- Converters.to_member(msg.guild_id, member) do
         format_member_info(msg.guild_id, fetched_member)
       else
         {:error, reason} ->
