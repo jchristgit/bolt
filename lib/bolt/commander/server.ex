@@ -5,6 +5,18 @@ defmodule Bolt.Commander.Server do
   use GenServer
 
   @commands %{
+    "clean" => %{
+      callback: &Cogs.Clean.command/2,
+      parser: &Cogs.Clean.parse/1,
+      help: """
+      cleanup messages
+      """,
+      usage: [
+        "clean [amount:int=20]",
+        "clean <options...>"
+      ],
+      predicates: [&Checks.guild_only/1]
+    },
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
       parser: &Parsers.passthrough/1,
