@@ -9,20 +9,6 @@ defmodule Bolt.Cogs.MemberInfo do
   alias Nostrum.Struct.Snowflake
   use Timex
 
-  @spec top_role_for(Nostrum.Struct.Snowflake.t(), Member.t()) ::
-          Nostrum.Struct.Guild.Role.t() | {:error, String.t()}
-  defp top_role_for(guild_id, member) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        guild.roles
-        |> Stream.filter(&(&1.id in member.roles))
-        |> Enum.max_by(& &1.position, {:error, "*no roles on guild*"})
-
-      {:error, _reason} ->
-        {:error, "*unknown, guild not in cache*"}
-    end
-  end
-
   @spec format_member_info(Nostrum.Struct.Snowflake.t(), Guild.Member.t()) :: Nostrum.Embed.t()
   defp format_member_info(guild_id, member) do
     join_datetime =
@@ -51,9 +37,9 @@ defmodule Bolt.Cogs.MemberInfo do
       thumbnail: %Embed.Thumbnail{url: Helpers.avatar_url(member.user)}
     }
 
-    case top_role_for(guild_id, member) do
+    case Helpers.top_role_for(guild_id, member) do
       {:error, reason} ->
-        Embed.put_field(embed, "Roles", reason)
+        Embed.put_field(embed, "Roles", "*#{reason}*")
 
       role ->
         embed

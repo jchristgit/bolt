@@ -1,5 +1,7 @@
 defmodule Bolt.Helpers do
+  alias Nostrum.Api
   alias Nostrum.Struct.User
+  alias Nostrum.Cache.GuildCache
   use Timex
 
   @doc """
@@ -43,5 +45,67 @@ defmodule Bolt.Helpers do
   @spec datetime_to_human(Nostrum.Struct.Snowflake.t()) :: String.t()
   def datetime_to_human(datetime) do
     "#{Timex.format!(datetime, "%d.%m.%y %H:%M", :strftime)} (#{Timex.from_now(datetime)})"
+  end
+
+  @doc "Try to return a member of the given guild ID with the given author ID."
+  @spec get_member(Nostrum.Struct.Snowflake.t(), Nostrum.Struct.Snowflake.t()) ::
+          {:ok, Nostrum.Struct.Guild.Member.t()} | {:error, String.t()}
+  def get_member(guild_id, author_id) do
+    case GuildCache.get(guild_id) do
+      {:ok, guild} ->
+        case Enum.find(
+               guild.members,
+               {:error, "There is no member with ID #{author_id} in this guild"},
+               &(&1.user.id == author_id)
+             ) do
+          {:error, reason} -> {:error, reason}
+          member -> {:ok, member}
+        end
+
+      {:error, _reason} ->
+        case Api.get_guild_member(guild_id, author_id) do
+          {:ok, member} ->
+            {:ok, member}
+
+          {:error, _why} ->
+            {:error,
+             "This guild is not in the cache, and no member with the ID #{author_id} could be found"}
+        end
+    end
+  end
+
+  defp find_role(guild_roles, member_roles) do
+    role_match =
+      guild_roles
+      |> Stream.filter(&(&1.id in member_roles))
+      |> Enum.max_by(& &1.position, {:error, "no roles on guild"})
+
+    case role_match do
+      {:error, reason} -> {:error, reason}
+      role -> {:ok, role}
+    end
+  end
+
+  @doc "Returns the top role for the given member ID on the given guild, representative for permissions on the given guild ID."
+  @spec top_role_for(Nostrum.Struct.Snowflake.t(), Member.t()) ::
+          Nostrum.Struct.Guild.Role.t() | {:error, String.t()}
+  def top_role_for(guild_id, member_id) do
+    with {:ok, member} <- get_member(guild_id, member_id) do
+      case GuildCache.get(guild_id) do
+        {:ok, guild} ->
+          find_role(guild.roles, member.roles)
+
+        {:error, _reason} ->
+          case Api.get_guild_roles(guild_id) do
+            {:ok, roles} ->
+              find_role(roles, member.roles)
+
+            {:error, _} ->
+              {:error, "guild was not in the cache, nor could it be fetched from the API"}
+          end
+      end
+    else
+      {:error, reason} -> {:error, reason}
+    end
   end
 end
