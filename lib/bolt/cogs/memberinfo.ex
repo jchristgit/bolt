@@ -5,7 +5,6 @@ defmodule Bolt.Cogs.MemberInfo do
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Guild.Member
   alias Nostrum.Struct.Snowflake
   use Timex
 
