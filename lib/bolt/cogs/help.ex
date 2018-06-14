@@ -4,6 +4,8 @@ defmodule Bolt.Cogs.Help do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
+  @prefix Application.fetch_env!(:bolt, :prefix)
+
   @spec format_command_detail(String.t(), String.t(), String.t()) :: Embed.t()
   defp format_command_detail(name, usage, description) do
     %Embed{
@@ -12,7 +14,7 @@ defmodule Bolt.Cogs.Help do
       ```ini
       #{
         usage
-        |> Stream.map(&".#{&1}")
+        |> Stream.map(&"#{@prefix}#{&1}")
         |> Enum.join("\n")
       }
       ```
@@ -37,7 +39,7 @@ defmodule Bolt.Cogs.Help do
       description:
         Server.all_commands()
         |> Map.keys()
-        |> Stream.map(&"`#{&1}`")
+        |> Stream.map(&"`#{@prefix}#{&1}`")
         |> Enum.join(", "),
       color: Constants.color_blue()
     }

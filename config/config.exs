@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :bolt,
-  default_prefix: "."
+  prefix: "."
 
 config :bolt, Bolt.Repo, url: System.get_env("PGSQL_URL")
 

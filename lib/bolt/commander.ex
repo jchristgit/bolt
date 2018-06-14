@@ -2,6 +2,8 @@ defmodule Bolt.Commander do
   alias Bolt.Commander.Server
   alias Nostrum.Api
 
+  @prefix Application.fetch_env!(:bolt, :prefix)
+
   defp find_failing_predicate(msg, predicates) do
     predicates
     |> Enum.map(& &1.(msg))
@@ -44,7 +46,7 @@ defmodule Bolt.Commander do
   """
   @spec handle_message(Nostrum.Struct.Message.t()) :: no_return
   def handle_message(msg) do
-    with ["." <> command_name | args] <- String.split(msg.content),
+    with [@prefix <> command_name | args] <- String.split(msg.content),
          command_map when command_map != nil <- Server.lookup(command_name) do
       invoke(command_map, msg, args)
     else

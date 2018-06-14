@@ -13,5 +13,5 @@ A high-quality Discord moderation bot, intended for large guilds.
 
 
 ## Configuration
-You can configure the `prefixes` in `config/config.exs` to have
-the bot listen to other prefixes than the default ones.
+You can configure the prefix used by the bot in `config/config.exs` to have
+the bot listen to another prefix than the default one (`.`).
