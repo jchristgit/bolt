@@ -54,24 +54,24 @@ defmodule Bolt.Converters.Role do
             role_name = String.downcase(text)
 
             case Enum.find(
-              roles,
-              {:error, "No role matching `#{role_name}` found on this guild (case-insensitive)"},
-              &(String.downcase(&1.name) == role_name)
-            ) do
+                   roles,
+                   {:error,
+                    "No role matching `#{role_name}` found on this guild (case-insensitive)"},
+                   &(String.downcase(&1.name) == role_name)
+                 ) do
               {:error, reason} -> {:error, reason}
               role -> {:ok, role}
             end
 
           false ->
             case Enum.find(
-              roles,
-              {:error, "No role matching `#{text}` found on this guild"},
-              &(&1.name == text)
-            ) do
+                   roles,
+                   {:error, "No role matching `#{text}` found on this guild"},
+                   &(&1.name == text)
+                 ) do
               {:error, reason} -> {:error, reason}
               role -> {:ok, role}
-                end
-
+            end
         end
     end
   end
