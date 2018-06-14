@@ -5,12 +5,6 @@ defmodule Bolt.Commander.Server do
   use GenServer
 
   @commands %{
-    "echo" => %{
-      callback: &Cogs.Echo.command/2,
-      parser: &Parsers.passthrough/1,
-      help: "Echo the given content.",
-      usage: ["echo <content:str>"]
-    },
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
       parser: &Parsers.passthrough/1,
