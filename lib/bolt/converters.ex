@@ -107,8 +107,11 @@ defmodule Bolt.Converters do
                 case Enum.find(members, &(&1.user.username == text)) do
                   nil ->
                     case Enum.find(members, &(&1.nick == text)) do
-                      nil -> {:error, "Failed to find any member matching `#{text}` on this guild."}
-                      member -> {:ok, member}
+                      nil ->
+                        {:error, "Failed to find any member matching `#{text}` on this guild."}
+
+                      member ->
+                        {:ok, member}
                     end
 
                   member ->

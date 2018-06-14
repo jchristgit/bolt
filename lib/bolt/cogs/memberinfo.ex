@@ -29,6 +29,7 @@ defmodule Bolt.Cogs.MemberInfo do
       member.joined_at
       |> DateTime.from_iso8601()
       |> elem(1)
+
     creation_datetime = Snowflake.creation_time(member.user.id)
 
     embed = %Embed{
