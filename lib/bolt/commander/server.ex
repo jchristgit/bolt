@@ -26,7 +26,7 @@ defmodule Bolt.Commander.Server do
     },
     "help" => %{
       callback: &Cogs.Help.command/2,
-      parser: &String.downcase/1,
+      parser: &Parsers.join/1,
       help:
         "Show information about the given command, or, with no arguments given, list all commands.",
       usage: [
@@ -36,7 +36,7 @@ defmodule Bolt.Commander.Server do
     },
     "memberinfo" => %{
       callback: &Cogs.MemberInfo.command/2,
-      parser: &Parsers.passthrough/1,
+      parser: &Parsers.join/1,
       help: """
       Without arguments, show information about yourself.
       When given an argument, attempt to convert the argument to a member - either per ID, mention, username#discrim, username, or nickname.
@@ -49,7 +49,7 @@ defmodule Bolt.Commander.Server do
     },
     "roleinfo" => %{
       callback: &Cogs.RoleInfo.command/2,
-      parser: &Parsers.passthrough/1,
+      parser: &Parsers.join/1,
       help: """
       Show information about the given role.
       The role can be given as either a direct role ID, a role mention, or a role name (case-insensitive).
@@ -59,7 +59,7 @@ defmodule Bolt.Commander.Server do
     },
     "roles" => %{
       callback: &Cogs.Roles.command/2,
-      parser: &Parsers.passthrough/1,
+      parser: &Parsers.join/1,
       help: """
       Show all roles on the guild the command is invoked on.
       When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).

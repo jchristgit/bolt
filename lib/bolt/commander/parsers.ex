@@ -1,5 +1,5 @@
 defmodule Bolt.Commander.Parsers do
-  @spec passthrough(String.t()) :: String.t()
+  @spec passthrough([String.t()]) :: [String.t()]
   def passthrough(args) do
     args
   end

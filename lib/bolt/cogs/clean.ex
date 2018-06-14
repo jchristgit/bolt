@@ -1,11 +1,10 @@
 defmodule Bolt.Cogs.Clean do
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
 
-  @spec parse(String.t()) :: {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
+  @spec parse([String.t()]) :: {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
   def parse(arguments) do
     OptionParser.parse(
-      OptionParser.split(arguments),
+      arguments,
       strict: [
         # --bots | --no-bots
         #   clean only bot messages, or exclude bot messages from cleaning

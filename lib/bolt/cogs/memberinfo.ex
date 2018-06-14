@@ -40,7 +40,7 @@ defmodule Bolt.Cogs.MemberInfo do
       {:error, reason} ->
         Embed.put_field(embed, "Roles", "*#{reason}*")
 
-      role ->
+      {:ok, role} ->
         embed
         |> Embed.put_field(
           "Roles",
