@@ -1,49 +1,6 @@
 defmodule Bolt.Commander do
-  alias Bolt.Cogs
-  alias Bolt.Commander.Parsers
-  alias Bolt.Commander.Checks
+  alias Bolt.Commander.Server
   alias Nostrum.Api
-
-  @commands %{
-    "echo" => %{
-      callback: &Cogs.Echo.command/2,
-      parser: &Parsers.passthrough/1,
-      help: "Echo the given command."
-    },
-    "guildinfo" => %{
-      callback: &Cogs.GuildInfo.command/2,
-      parser: &Parsers.passthrough/1,
-      help: "Show information about the current Guild.",
-      predicates: [&Checks.guild_only/1]
-    },
-    "memberinfo" => %{
-      callback: &Cogs.MemberInfo.command/2,
-      parser: &Parsers.passthrough/1,
-      help: "Show information about the mentioned member, or yourself.",
-      predicates: [&Checks.guild_only/1]
-    },
-    "roleinfo" => %{
-      callback: &Cogs.RoleInfo.command/2,
-      parser: &Parsers.passthrough/1,
-      help: "Show information about the given role.",
-      predicates: [&Checks.guild_only/1]
-    },
-    "roles" => %{
-      callback: &Cogs.Roles.command/2,
-      parser: &Parsers.passthrough/1,
-      help: "Show all roles on the guild the command is invoked on.",
-      predicates: [&Checks.guild_only/1]
-    }
-  }
-
-  @aliases %{
-    "ginfo" => "guildinfo",
-    "guild" => "guildinfo",
-    "minfo" => "memberinfo",
-    "member" => "memberinfo",
-    "rinfo" => "roleinfo",
-    "role" => "roleinfo"
-  }
 
   defp find_failing_predicate(msg, predicates) do
     predicates
@@ -87,25 +44,11 @@ defmodule Bolt.Commander do
   """
   @spec handle_message(Nostrum.Struct.Message.t()) :: no_return
   def handle_message(msg) do
-    case String.split(msg.content) do
-      ["." <> command_name | args] ->
-        case Map.get(@commands, command_name) do
-          nil ->
-            case Map.get(@aliases, command_name) do
-              nil ->
-                :ignored
-
-              command_alias ->
-                Map.get(@commands, command_alias)
-                |> invoke(msg, args)
-            end
-
-          command ->
-            invoke(command, msg, args)
-        end
-
-      _ ->
-        :ignored
+    with ["." <> command_name | args] <- String.split(msg.content),
+         command_map when command_map != nil <- Server.lookup(command_name) do
+      invoke(command_map, msg, args)
+    else
+      _err -> :ignored
     end
   end
 end
