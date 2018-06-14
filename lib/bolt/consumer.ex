@@ -6,7 +6,8 @@ defmodule Bolt.Consumer do
     MESSAGE_CREATE: [
       Cogs.Echo,
       Cogs.GuildInfo,
-      Cogs.MemberInfo
+      Cogs.MemberInfo,
+      Cogs.RoleInfo
     ]
   }
 
