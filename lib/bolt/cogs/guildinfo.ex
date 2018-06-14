@@ -91,7 +91,7 @@ defmodule Bolt.Cogs.GuildInfo do
   Display information about the guild that
   this command is invoked on.
   """
-  def command(name, msg, _args) when name in ["ginfo", "guildinfo", "guild"] do
+  def command(msg, _args) do
     embed =
       with guild_id when guild_id != nil <- msg.guild_id,
            {:ok, guild} <- GuildCache.get(guild_id) do

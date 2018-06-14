@@ -46,7 +46,16 @@ defmodule Bolt.Cogs.RoleInfo do
     }
   end
 
-  def command(name, msg, role) when name in ["rinfo", "roleinfo", "role"] do
+  def command(msg, "") do
+    response = %Embed{
+      title: "Failed to fetch role information",
+      description: "You need to add the role you want to retrieve information about as an argument.",
+      color: Constants.color_red
+    }
+    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+  end
+
+  def command(msg, role) do
     embed =
       if msg.guild_id != nil do
         case Converters.to_role(msg.guild_id, role, true) do

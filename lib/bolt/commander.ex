@@ -4,22 +4,22 @@ defmodule Bolt.Commander do
 
   @commands %{
     "echo" => %{
-      callback: &Cogs.Echo.command/3,
+      callback: &Cogs.Echo.command/2,
       parser: &OptionParser.split/1,
       help: "Echo the given command."
     },
     "guildinfo" => %{
-      callback: &Cogs.GuildInfo.command/3,
+      callback: &Cogs.GuildInfo.command/2,
       parser: &Parsers.passthrough/1,
       help: "Show information about the current Guild."
     },
     "memberinfo" => %{
-      callback: &Cogs.MemberInfo.command/3,
+      callback: &Cogs.MemberInfo.command/2,
       parser: &Parsers.passthrough/1,
       help: "Show information about the mentioned member, or yourself."
     },
     "roleinfo" => %{
-      callback: &Cogs.RoleInfo.command/3,
+      callback: &Cogs.RoleInfo.command/2,
       parser: &Parsers.passthrough/1,
       help: "Show information about the given role."
     }
@@ -54,14 +54,14 @@ defmodule Bolt.Commander do
 
               command_alias ->
                 %{callback: callback, parser: parser} = Map.get(@commands, command_alias)
-                callback.(command_name, msg, parser.(Enum.join(args, " ")))
+                callback.(msg, parser.(Enum.join(args, " ")))
             end
 
           %{callback: callback, parser: parser} ->
             # TODO: Instead of splitting the entire message content,
             #       only split off the actual command, since that is
             #       not of interest to the command handler.
-            callback.(command_name, msg, parser.(Enum.join(args, " ")))
+            callback.(msg, parser.(Enum.join(args, " ")))
         end
 
       _ ->
