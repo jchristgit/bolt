@@ -3,9 +3,11 @@
 use Mix.Config
 
 config :bolt,
+  ecto_repos: [Bolt.Repo],
   prefix: "."
 
-config :bolt, Bolt.Repo, url: System.get_env("PGSQL_URL")
+config :bolt, Bolt.Repo,
+  adapter: Ecto.Adapters.Postgres
 
 config :nostrum,
   token: System.get_env("BOT_TOKEN"),
