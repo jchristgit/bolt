@@ -8,30 +8,57 @@ defmodule Bolt.Commander.Server do
     "echo" => %{
       callback: &Cogs.Echo.command/2,
       parser: &Parsers.passthrough/1,
-      help: "Echo the given command."
+      help: "Echo the given content.",
+      usage: ["echo <content:str>"]
     },
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
       parser: &Parsers.passthrough/1,
-      help: "Show information about the current Guild.",
+      help: "Show information about the current Guild. Aliased to `ginfo` and `guild`.",
+      usage: ["guildinfo"],
       predicates: [&Checks.guild_only/1]
+    },
+    "help" => %{
+      callback: &Cogs.Help.command/2,
+      parser: &String.downcase/1,
+      help:
+        "Show information about the given command, or, with no arguments given, list all commands.",
+      usage: [
+        "help",
+        "help <command:str>"
+      ]
     },
     "memberinfo" => %{
       callback: &Cogs.MemberInfo.command/2,
       parser: &Parsers.passthrough/1,
-      help: "Show information about the mentioned member, or yourself.",
+      help: """
+      Without arguments, show information about yourself.
+      When given an argument, attempt to convert the argument to a member - either per ID, mention, username#discrim, username, or nickname.
+      """,
+      usage: [
+        "memberinfo",
+        "memberinfo <member:user>"
+      ],
       predicates: [&Checks.guild_only/1]
     },
     "roleinfo" => %{
       callback: &Cogs.RoleInfo.command/2,
       parser: &Parsers.passthrough/1,
-      help: "Show information about the given role.",
+      help: """
+      Show information about the given role.
+      The role can be given as either a direct role ID, a role mention, or a role name (case-insensitive).
+      """,
+      usage: ["roleinfo <role:role>"],
       predicates: [&Checks.guild_only/1]
     },
     "roles" => %{
       callback: &Cogs.Roles.command/2,
       parser: &Parsers.passthrough/1,
-      help: "Show all roles on the guild the command is invoked on.",
+      help: """
+      Show all roles on the guild the command is invoked on.
+      When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
+      """,
+      usage: ["roles [name:str]"],
       predicates: [&Checks.guild_only/1]
     }
   }
@@ -52,6 +79,12 @@ defmodule Bolt.Commander.Server do
     GenServer.start_link(__MODULE__, :ok, options)
   end
 
+  @doc "Return a map with all available commands."
+  @spec all_commands() :: map
+  def all_commands() do
+    GenServer.call(__MODULE__, :all_commands)
+  end
+
   @doc "Fetch the command map for the given command name. Respects aliases."
   @spec lookup(String.t()) :: map | nil
   def lookup(command_name) do
@@ -63,6 +96,11 @@ defmodule Bolt.Commander.Server do
   @impl true
   def init(:ok) do
     {:ok, {@commands, @aliases}}
+  end
+
+  @impl true
+  def handle_call(:all_commands, _from, {commands, _} = state) do
+    {:reply, commands, state}
   end
 
   @impl true
