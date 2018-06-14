@@ -1,6 +1,7 @@
 defmodule Bolt.Consumer do
   use Nostrum.Consumer
   alias Bolt.Cogs
+  alias Bolt.Commander
 
   @handlers %{
     MESSAGE_CREATE: [
@@ -16,18 +17,7 @@ defmodule Bolt.Consumer do
   end
 
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
-    case msg.content do
-      "." <> command_name ->
-        if !msg.author.bot do
-          [command_name | args] = msg.content |> String.trim_leading(".") |> OptionParser.split()
-
-          @handlers[:MESSAGE_CREATE]
-          |> Enum.each(& &1.command(command_name, msg, args))
-        end
-
-      _ ->
-        :ignored
-    end
+    Commander.handle_message(msg)
   end
 
   def handle_event(_event) do

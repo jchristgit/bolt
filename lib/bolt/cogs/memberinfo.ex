@@ -70,7 +70,7 @@ defmodule Bolt.Cogs.MemberInfo do
   @doc """
   Returns information about yourself.
   """
-  def command(name, msg, []) when name in ["minfo", "memberinfo", "member"] do
+  def command(name, msg, "") when name in ["minfo", "memberinfo", "member"] do
     embed =
       with guild_id when guild_id != nil <- msg.guild_id,
            {:ok, guild} <- GuildCache.get(msg.guild_id),
@@ -100,7 +100,7 @@ defmodule Bolt.Cogs.MemberInfo do
   The member given can either be an ID, a mention,
   a name#discrim combination, a name, or a nickname.
   """
-  def command(name, msg, [member]) when name in ["minfo", "memberinfo", "member"] do
+  def command(name, msg, member) when name in ["minfo", "memberinfo", "member"] do
     embed =
       with guild_id when guild_id != nil <- msg.guild_id,
            {:ok, fetched_member} <- Converters.to_member(guild_id, member) do
@@ -123,6 +123,4 @@ defmodule Bolt.Cogs.MemberInfo do
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
-
-  def command(_name, _msg, _args), do: :ok
 end

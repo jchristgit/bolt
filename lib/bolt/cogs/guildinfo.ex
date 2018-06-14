@@ -8,7 +8,6 @@ defmodule Bolt.Cogs.GuildInfo do
   alias Nostrum.Struct.Snowflake
   use Timex
 
-
   @guild_only_embed %Embed{
     title: "Failed to fetch guild information",
     description: "This command needs to be invoked on a Guild.",
@@ -51,7 +50,7 @@ defmodule Bolt.Cogs.GuildInfo do
             (fn ->
                if guild.joined_at != nil do
                  Snowflake.creation_time(guild.id)
-                 |> Helpers.datetime_to_human
+                 |> Helpers.datetime_to_human()
                else
                  "*unknown, guild not in cache*"
                end
@@ -117,6 +116,4 @@ defmodule Bolt.Cogs.GuildInfo do
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
-
-  def command(_name, _msg, _args), do: :ok
 end

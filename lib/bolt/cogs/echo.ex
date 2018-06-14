@@ -4,9 +4,8 @@ defmodule Bolt.Cogs.Echo do
   @doc """
   Greet the user specified with `name` with the given `content`.
   """
-  def command("echo", msg, _args) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "I copy and pasted this code")
+  def command("echo", msg, args) do
+    {:ok, _msg} =
+      Api.create_message(msg.channel_id, "I copy and pasted this code, args: #{inspect(args)}")
   end
-
-  def command(_cmd, _msg, _args), do: :ok
 end
