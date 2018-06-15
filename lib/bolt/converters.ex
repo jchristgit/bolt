@@ -1,5 +1,6 @@
 defmodule Bolt.Converters do
   alias Bolt.Converters.{
+    Channel,
     Member,
     Role
   }
@@ -10,5 +11,9 @@ defmodule Bolt.Converters do
 
   def to_role(guild_id, text, ilike \\ false) do
     Role.role(guild_id, text, ilike)
+  end
+
+  def to_channel(guild_id, text) do
+    Channel.channel(guild_id, text)
   end
 end

@@ -86,8 +86,8 @@ defmodule Bolt.Converters.Role do
 
       {:error, _reason} ->
         case Api.get_guild_roles(guild_id) do
-          {:ok, guild} ->
-            find_role(guild, text, ilike)
+          {:ok, roles} ->
+            find_role(roles, text, ilike)
 
           {:error, _reason} ->
             {:error, "This guild is not in the cache, nor could it be fetched from the API."}
