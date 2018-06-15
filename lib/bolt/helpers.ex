@@ -74,7 +74,8 @@ defmodule Bolt.Helpers do
     end
   end
 
-  @spec find_role([Nostrum.Struct.Guild.Role.t()], [Nostrum.Struct.Guild.Role.t()]) :: {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+  @spec find_role([Nostrum.Struct.Guild.Role.t()], [Nostrum.Struct.Guild.Role.t()]) ::
+          {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
   defp find_role(guild_roles, member_roles) do
     role_match =
       guild_roles
@@ -89,7 +90,7 @@ defmodule Bolt.Helpers do
 
   @doc "Returns the top role for the given member ID on the given guild, representative for permissions on the given guild ID."
   @spec top_role_for(Nostrum.Struct.Snowflake.t(), Member.t()) ::
-  {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+          {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
   def top_role_for(guild_id, member) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->

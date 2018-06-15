@@ -81,29 +81,50 @@ defmodule Bolt.Cogs.GuildInfo do
     end
   end
 
+  @spec fetch_and_build(Nostrum.Struct.Snowflake.t(), String.t()) :: String.t()
+  defp fetch_and_build(guild_id, on_not_found) do
+    with {:ok, guild} <- GuildCache.get(guild_id) do
+      format_guild_info(guild)
+    else
+      {:error, _reason} ->
+        case Api.get_guild(guild_id) do
+          {:ok, guild} ->
+            format_guild_info(guild)
+
+          {:error, _reason} ->
+            %Embed{
+              title: "Failed to fetch guild information",
+              description:
+                "#{on_not_found} was not found in the cache nor " <>
+                  "could any information be fetched from the API.",
+              color: Constants.color_red()
+            }
+        end
+    end
+  end
+
   @doc """
   Display information about the guild that
   this command is invoked on.
   """
-  def command(msg, _args) do
-    embed =
-      with {:ok, guild} <- GuildCache.get(msg.guild_id) do
-        format_guild_info(guild)
-      else
-        {:error, _reason} ->
-          case Api.get_guild(msg.guild_id) do
-            {:ok, guild} ->
-              format_guild_info(guild)
+  def command(msg, []) do
+    embed = fetch_and_build(msg.guild_id, "This guild")
+    {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+  end
 
-            {:error, _reason} ->
-              %Embed{
-                title: "Failed to fetch guild information",
-                description:
-                  "This Guild was not found in the cache nor " <>
-                    "could any information be fetched from the API.",
-                color: Constants.color_red()
-              }
-          end
+  @doc "Display information about the given guild ID"
+  def command(msg, [guild_id]) do
+    embed =
+      case Nostrum.Struct.Snowflake.cast(guild_id) do
+        {:ok, snowflake} when snowflake != nil ->
+          fetch_and_build(snowflake, "A guild with ID `#{snowflake}`")
+
+        _ ->
+          %Embed{
+            title: "Failed to fetch guild information",
+            description: "`#{guild_id}` is not a valid guild ID.",
+            color: Constants.color_red()
+          }
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
