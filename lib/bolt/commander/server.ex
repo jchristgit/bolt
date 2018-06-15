@@ -20,8 +20,9 @@ defmodule Bolt.Commander.Server do
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
       parser: &Parsers.passthrough/1,
-      help: "Show information about the current Guild. Aliased to `ginfo` and `guild`.",
-      usage: ["guildinfo"],
+      help:
+        "Show information about the current Guild, or a given guild ID. Aliased to `ginfo` and `guild`.",
+      usage: ["guildinfo [guild:snowflake]"],
       predicates: [&Checks.guild_only/1]
     },
     "help" => %{
@@ -29,10 +30,7 @@ defmodule Bolt.Commander.Server do
       parser: &Parsers.join/1,
       help:
         "Show information about the given command, or, with no arguments given, list all commands.",
-      usage: [
-        "help",
-        "help <command:str>"
-      ]
+      usage: ["help [command:str]"]
     },
     "memberinfo" => %{
       callback: &Cogs.MemberInfo.command/2,
