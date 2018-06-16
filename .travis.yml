@@ -1,0 +1,4 @@
+elixir: '1.6.5'
+script:
+    - mix format --check-formatted
+    - mix test --no-start
