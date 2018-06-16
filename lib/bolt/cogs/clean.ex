@@ -171,13 +171,11 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  @spec parse_users(Nostrum.Struct.Message.t(), [String.t()]) ::
-          {:ok, [Nostrum.Struct.Snowflake.t()]} | {:error, String.t()}
-  defp parse_users(_msg, nil) do
+  def parse_users(_msg, nil) do
     {:ok, []}
   end
 
-  defp parse_users(msg, user) when is_bitstring(user) do
+  def parse_users(msg, user) when is_bitstring(user) do
     case Integer.parse(user) do
       {value, _remainder} ->
         {:ok, [value]}
@@ -194,7 +192,7 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  defp parse_users(msg, users) when is_list(users) do
+  def parse_users(msg, users) when is_list(users) do
     valid_users =
       users
       |> Enum.map(fn maybe_user ->
@@ -221,10 +219,11 @@ defmodule Bolt.Cogs.Clean do
   @spec bot_filter(Nostrum.Struct.Message.t(), keyword()) :: boolean()
   def bot_filter(msg, options) do
     # if `User.bot` is `nil`, then the user isn't a bot
-    is_bot = case msg.author.bot do
-      nil -> false
-      val -> val
-    end
+    is_bot =
+      case msg.author.bot do
+        nil -> false
+        val -> val
+      end
 
     cond do
       # no bot filter specified, passthrough

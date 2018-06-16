@@ -43,7 +43,11 @@ defmodule BoltTest.Cogs.Clean do
     alias Bolt.Cogs.Clean
 
     setup do
-      %{nonbot_msg: make_message(false), nilbot_msg: make_message(nil), bot_msg: make_message(true)}
+      %{
+        nonbot_msg: make_message(false),
+        nilbot_msg: make_message(nil),
+        bot_msg: make_message(true)
+      }
     end
 
     test "allows bots and humans without any explicit setting", fixture do
@@ -62,6 +66,26 @@ defmodule BoltTest.Cogs.Clean do
       assert Clean.bot_filter(fixture.nonbot_msg, bots: false) == true
       assert Clean.bot_filter(fixture.nilbot_msg, bots: false) == true
       assert Clean.bot_filter(fixture.bot_msg, bots: false) == false
+    end
+  end
+
+  describe "parse_users/2" do
+    alias Bolt.Cogs.Clean
+
+    setup do
+      %{msg: make_message(nil)}
+    end
+
+    test "returns empty list if `options[:user]` is not given (`nil`)", %{msg: msg} do
+      assert Clean.parse_users(msg, nil) == {:ok, []}
+    end
+
+    test "returns single snowflake if user is a valid integer", %{msg: msg} do
+      assert Clean.parse_users(msg, "101") == {:ok, [101]}
+    end
+
+    test "returns multiple snowflakes if multiple valid integers are given", %{msg: msg} do
+      assert Clean.parse_users(msg, ["101", "102", "103", "104"]) == {:ok, [101, 102, 103, 104]}
     end
   end
 end
