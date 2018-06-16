@@ -34,7 +34,7 @@ defmodule Bolt.Commander do
   end
 
   @spec try_split(String.t()) :: [String.t()]
-  defp try_split(content) do
+  def try_split(content) do
     try do
       OptionParser.split(content)
     rescue
