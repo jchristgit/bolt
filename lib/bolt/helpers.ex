@@ -89,21 +89,25 @@ defmodule Bolt.Helpers do
   end
 
   @doc "Returns the top role for the given member ID on the given guild, representative for permissions on the given guild ID."
-  @spec top_role_for(Nostrum.Struct.Snowflake.t(), Member.t()) ::
+  @spec top_role_for(Nostrum.Struct.Snowflake.t(), Nostrum.Struct.Snowflake.t()) ::
           {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
-  def top_role_for(guild_id, member) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        find_role(guild.roles, member.roles)
+  def top_role_for(guild_id, member_id) do
+    with {:ok, member} <- get_member(guild_id, member_id) do
+      case GuildCache.get(guild_id) do
+        {:ok, guild} ->
+          find_role(guild.roles, member.roles)
 
-      {:error, _reason} ->
-        case Api.get_guild_roles(guild_id) do
-          {:ok, roles} ->
-            find_role(roles, member.roles)
+        {:error, _reason} ->
+          case Api.get_guild_roles(guild_id) do
+            {:ok, roles} ->
+              find_role(roles, member.roles)
 
-          {:error, _} ->
-            {:error, "guild was not in the cache, nor could it be fetched from the API"}
-        end
+            {:error, _} ->
+              {:error, "guild was not in the cache, nor could it be fetched from the API"}
+          end
+      end
+    else
+      {:error, reason} -> {:error, reason}
     end
   end
 
