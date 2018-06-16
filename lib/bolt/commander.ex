@@ -4,7 +4,12 @@ defmodule Bolt.Commander do
 
   @prefix Application.fetch_env!(:bolt, :prefix)
 
-  defp find_failing_predicate(msg, predicates) do
+  @spec find_failing_predicate(
+          Nostrum.Struct.Message.t(),
+          (Nostrum.Struct.Message.t() ->
+             {:ok, Nostrum.Struct.Message.t()} | {:error, Nostrum.Struct.Embed.t()})
+        ) :: nil | {:error, Nostrum.Struct.Embed.t()}
+  def find_failing_predicate(msg, predicates) do
     predicates
     |> Enum.map(& &1.(msg))
     |> Enum.find(&match?({:error, _embed}, &1))
