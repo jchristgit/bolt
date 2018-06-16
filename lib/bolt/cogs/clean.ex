@@ -29,7 +29,6 @@ defmodule Bolt.Cogs.Clean do
 
   @spec do_prune(Nostrum.Struct.Message.t(), [Nostrum.Struct.Snowflake.t()]) :: no_return()
   defp do_prune(msg, message_ids) do
-    IO.inspect message_ids, label: "message IDs, about to prune:"
     with {:ok} <- Api.bulk_delete_messages(msg.channel_id, message_ids) do
       {:ok} = Api.create_reaction(msg.channel_id, msg.id, "👌")
     else
@@ -124,7 +123,11 @@ defmodule Bolt.Cogs.Clean do
       do_prune(msg, message_ids)
     else
       {:error, %{message: %{"limit" => errors}, status_code: status}} ->
-        {:ok, _msg} = Api.create_message(msg.channel_id, "⚠ got status #{status} from the API, reason: #{Enum.join(errors, ", ")}")
+        {:ok, _msg} =
+          Api.create_message(
+            msg.channel_id,
+            "⚠ got status #{status} from the API, reason: #{Enum.join(errors, ", ")}"
+          )
 
       {:error, reason} ->
         {:ok, _msg} = Api.create_message(msg.channel_id, "⚠ error: #{reason}")
@@ -182,7 +185,7 @@ defmodule Bolt.Cogs.Clean do
       :error ->
         case Converters.to_member(msg.guild_id, user) do
           {:ok, member} ->
-            [member.id]
+            {:ok, [member.user.id]}
 
           {:error, _reason} ->
             {:error,
@@ -250,13 +253,13 @@ defmodule Bolt.Cogs.Clean do
   defp get_filtered_message_ids(msg, options, channel_id) do
     limit = Keyword.get(options, :limit, 30)
 
-    with {:ok, messages} when messages != [] <- Api.get_channel_messages(channel_id, limit),
+    with {:ok, messages} when messages != [] <- Api.get_channel_messages(channel_id, limit + 1),
          {:ok, users} <- parse_users(msg, options[:user]) do
       to_delete =
         messages
         |> Enum.filter(&bot_filter(&1, options))
-                                                            # Don't delete the original command invocation message.
-        |> Enum.reject(& &1.id == msg.id)
+        # Don't delete the original command invocation message.
+        |> Enum.reject(&(&1.id == msg.id))
 
       # Do we have any users we want to include specifically, instead of
       # scanning through all messages? If yes, only return messages
