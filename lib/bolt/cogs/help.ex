@@ -25,7 +25,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   @spec format_command_not_found(String.t()) :: Embed.t()
-  defp format_command_not_found(command_name) do
+  def format_command_not_found(command_name) do
     %Embed{
       title: "Command not found: `#{command_name}`",
       description: "Hmmm.. I looked everywhere, but couldn't find that command.",
