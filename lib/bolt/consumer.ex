@@ -3,7 +3,7 @@ defmodule Bolt.Consumer do
   use Nostrum.Consumer
 
   def start_link() do
-    Consumer.start_link(__MODULE__, [max_restarts: 0])
+    Consumer.start_link(__MODULE__, max_restarts: 0)
   end
 
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
