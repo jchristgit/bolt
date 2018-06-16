@@ -6,8 +6,8 @@ defmodule Bolt.Cogs.Help do
 
   @prefix Application.fetch_env!(:bolt, :prefix)
 
-  @spec format_command_detail(String.t(), String.t(), String.t()) :: Embed.t()
-  defp format_command_detail(name, usage, description) do
+  @spec format_command_detail(String.t(), [String.t()], String.t()) :: Embed.t()
+  def format_command_detail(name, usage, description) do
     %Embed{
       title: "❔ `#{name}`",
       description: """
