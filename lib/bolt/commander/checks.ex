@@ -58,17 +58,37 @@ defmodule Bolt.Commander.Checks do
     end
   end
 
+  @not_allowed_titles [
+    "Nah",
+    "Nope",
+    "I think not...",
+    "Let this be lesson for you",
+    "Go ahead and cry, baby",
+    "The burning you feel? It is shame"
+  ]
+
+  @spec missing_permissions_embed(String.t()) :: Embed.t()
+  defp missing_permissions_embed(content) do
+    %Embed{
+      title: Enum.random(@not_allowed_titles),
+      description: "You're not allowed to do that - required permission: #{content}",
+      color: Constants.color_red()
+    }
+  end
+
   @bitflags_manage_roles 0x10000000
   @doc "Checks that the message author has the `MANAGE_ROLES` permission."
   @spec can_manage_roles?(Nostrum.Struct.Message.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
   def can_manage_roles?(msg) do
-    unauthorized_embed = %Embed{
-      title: "I think not..",
-      description: "You're not allowed to do that - required permission: manage roles.",
-      color: Constants.color_red()
-    }
+    has_permission?(msg, @bitflags_manage_roles, missing_permissions_embed("manage roles"))
+  end
 
-    has_permission?(msg, @bitflags_manage_roles, unauthorized_embed)
+  @bitflags_manage_messages 0x00002000
+  @doc "Checks that the message author has the `MANAGE_MESSSAGES` permission."
+  @spec can_manage_messages?(Nostrum.Struct.Message.t()) ::
+          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+  def can_manage_messages?(msg) do
+    has_permission?(msg, @bitflags_manage_messages, missing_permissions_embed("manage messages"))
   end
 end
