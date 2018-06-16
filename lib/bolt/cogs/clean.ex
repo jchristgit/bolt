@@ -219,7 +219,13 @@ defmodule Bolt.Cogs.Clean do
   end
 
   @spec bot_filter(Nostrum.Struct.Message.t(), keyword()) :: boolean()
-  defp bot_filter(msg, options) do
+  def bot_filter(msg, options) do
+    # if `User.bot` is `nil`, then the user isn't a bot
+    is_bot = case msg.author.bot do
+      nil -> false
+      val -> val
+    end
+
     cond do
       # no bot filter specified, passthrough
       options[:bots] == nil ->
@@ -227,11 +233,11 @@ defmodule Bolt.Cogs.Clean do
 
       # --bots specified: filter out non-bots
       options[:bots] ->
-        msg.author.bot
+        is_bot
 
       # --no-bots specified: filter out bots
       !options[:bots] ->
-        !msg.author.bot
+        !is_bot
     end
   end
 
