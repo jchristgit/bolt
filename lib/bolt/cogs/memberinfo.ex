@@ -6,6 +6,7 @@ defmodule Bolt.Cogs.MemberInfo do
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Snowflake
+  alias Nostrum.Struct.User
   use Timex
 
   @spec format_member_info(Nostrum.Struct.Snowflake.t(), Guild.Member.t()) :: Nostrum.Embed.t()
@@ -33,7 +34,7 @@ defmodule Bolt.Cogs.MemberInfo do
           inline: true
         }
       ],
-      thumbnail: %Embed.Thumbnail{url: Helpers.avatar_url(member.user)}
+      thumbnail: %Embed.Thumbnail{url: User.avatar_url(member.user)}
     }
 
     case Helpers.top_role_for(guild_id, member) do

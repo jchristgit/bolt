@@ -111,7 +111,9 @@ defmodule Bolt.Helpers do
     end
   end
 
-  @doc "Replace `@everyone` and `@here` mentions with their harmless variants"
+  @doc """
+  Replace `@everyone` and `@here` mentions with their harmless variants
+  """
   @spec clean_content(String.t()) :: String.t()
   def clean_content(content) do
     content
