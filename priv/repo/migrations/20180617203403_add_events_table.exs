@@ -6,8 +6,6 @@ defmodule Bolt.Repo.Migrations.AddEventsTable do
       add :timestamp,   :utc_datetime,  comment: "Timestamp at which the event should be executed"
       add :event,       :string,        comment: "Event type, chosen from enum"
       add :data,        :map,           comment: "Additional metadata for the event"
-
-      timestamps()
     end
   end
 end
