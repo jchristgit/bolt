@@ -4,6 +4,7 @@ defmodule Bolt.Application do
   def start(_type, _args) do
     children = [
       Bolt.Repo,
+      {Bolt.Events.Handler, name: Bolt.Events.Handler},
       {Bolt.Commander.Server, name: Bolt.Commander.Server},
       Bolt.Consumer
     ]

@@ -5,6 +5,12 @@ defmodule Bolt.Commander.Server do
   use GenServer
 
   @commands %{
+    "pingback" => %{
+      callback: &Cogs.Pingback.command/2,
+      parser: &Parsers.join/1,
+      help: "pingback after the given `seconds`",
+      usage: ["pingback <seconds:int>"]
+    },
     "clean" => %{
       callback: &Cogs.Clean.command/2,
       parser: &Cogs.Clean.parse/1,
