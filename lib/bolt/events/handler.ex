@@ -21,6 +21,7 @@ defmodule Bolt.Events.Handler do
     else
       false ->
         {:error, "`#{event.type}` is not a valid event type"}
+
       {:error, %Changeset{} = changeset} ->
         {:error, changeset.errors}
 
