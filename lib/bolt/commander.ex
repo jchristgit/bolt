@@ -1,4 +1,5 @@
 defmodule Bolt.Commander do
+  alias Bolt.Commander.Parsers
   alias Bolt.Commander.Server
   alias Nostrum.Api
 
@@ -16,7 +17,9 @@ defmodule Bolt.Commander do
   end
 
   @spec invoke(Map.t(), Nostrum.Structs.Message.t(), [String.t()]) :: no_return()
-  defp invoke(%{callback: callback, parser: parser} = command, msg, args) do
+  defp invoke(%{callback: callback} = command, msg, args) do
+    parser = Map.get(command, :parser, &Parsers.passthrough/1)
+
     case Map.get(command, :predicates, []) do
       # no predicates -> invoke command directly
       [] ->

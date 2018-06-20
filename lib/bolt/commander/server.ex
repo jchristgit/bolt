@@ -55,7 +55,6 @@ defmodule Bolt.Commander.Server do
     },
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
-      parser: &Parsers.passthrough/1,
       help:
         "Show information about the current Guild, or a given guild ID. Aliased to `ginfo` and `guild`.",
       usage: ["guildinfo [guild:snowflake]"],
@@ -70,7 +69,6 @@ defmodule Bolt.Commander.Server do
     },
     "infraction" => %{
       callback: &Cogs.Infraction.command/2,
-      parser: &Parsers.passthrough/1,
       help: """
       Various operations on the infraction database.
       Aliased to `infr`.
@@ -112,7 +110,6 @@ defmodule Bolt.Commander.Server do
     },
     "temprole" => %{
       callback: &Cogs.Temprole.command/2,
-      parser: &Parsers.passthrough/1,
       help: "Temporarily apply the given role to the given user.",
       usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str]"],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
