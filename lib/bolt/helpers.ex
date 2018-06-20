@@ -65,10 +65,10 @@ defmodule Bolt.Helpers do
     role_match =
       guild_roles
       |> Stream.filter(&(&1.id in member_roles))
-      |> Enum.max_by(& &1.position, {:error, "no roles on guild"})
+      |> Enum.max_by(& &1.position, fn -> {:error, "no roles on member"} end)
 
     case role_match do
-      {:error, reason} -> {:error, reason}
+      {:error, _reason} = error -> error
       role -> {:ok, role}
     end
   end
