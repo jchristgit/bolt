@@ -68,6 +68,15 @@ defmodule Bolt.Commander.Server do
         "Show information about the given command, or, with no arguments given, list all commands.",
       usage: ["help [command:str]"]
     },
+    "infraction" => %{
+      callback: &Cogs.Infraction.command/2,
+      parser: &Parsers.passthrough/1,
+      help: """
+      Various operations on the infraction database.
+      Aliased to `infr`.
+      """,
+      usage: ["infraction detail"],
+    },
     "memberinfo" => %{
       callback: &Cogs.MemberInfo.command/2,
       parser: &Parsers.join/1,
@@ -106,6 +115,7 @@ defmodule Bolt.Commander.Server do
   @aliases %{
     "ginfo" => "guildinfo",
     "guild" => "guildinfo",
+    "infr" => "infraction",
     "minfo" => "memberinfo",
     "member" => "memberinfo",
     "rinfo" => "roleinfo",
