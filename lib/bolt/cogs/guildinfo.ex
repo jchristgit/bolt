@@ -2,9 +2,9 @@ defmodule Bolt.Cogs.GuildInfo do
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Nostrum.Api
-  alias Nostrum.Guild
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
+  alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Snowflake
   use Timex
 
@@ -40,15 +40,7 @@ defmodule Bolt.Cogs.GuildInfo do
         },
         %Embed.Field{
           name: "Creation date",
-          value:
-            (fn ->
-               if guild.joined_at != nil do
-                 Snowflake.creation_time(guild.id)
-                 |> Helpers.datetime_to_human()
-               else
-                 "*unknown, guild not in cache*"
-               end
-             end).(),
+          value: Snowflake.creation_time(guild.id) |> Helpers.datetime_to_human(),
           inline: true
         },
         %Embed.Field{
@@ -77,7 +69,7 @@ defmodule Bolt.Cogs.GuildInfo do
 
     if guild.icon != nil do
       info_embed
-      |> Embed.put_thumbnail("https://cdn.discordapp.com/icons/#{guild.id}/#{guild.icon}.png")
+      |> Embed.put_thumbnail(Guild.icon_url(guild, "png"))
     end
   end
 
