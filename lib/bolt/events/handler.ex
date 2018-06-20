@@ -12,9 +12,11 @@ defmodule Bolt.Events.Handler do
     alias Bolt.Schema
 
     changeset = Schema.Event.changeset(event)
+
     case Repo.insert(changeset) do
       {:ok, created_event} ->
         GenServer.call(__MODULE__, {:create, created_event})
+
       {:error, error_changeset} ->
         {:error, error_changeset.errors}
     end
