@@ -16,8 +16,11 @@ defmodule Bolt.Schema.Event do
   end
 
   def changeset(event, params \\ %{}) do
+    alias Bolt.Events.Deserializer
+
     event
     |> cast(params, [:timestamp, :event, :data])
     |> validate_required([:timestamp, :event, :data])
+    |> validate_inclusion(:event, Deserializer.valid_events())
   end
 end
