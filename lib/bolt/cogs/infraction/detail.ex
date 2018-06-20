@@ -26,6 +26,26 @@ defmodule Bolt.Cogs.Infraction.Detail do
     end
   end
 
+  @spec add_specific_fields(Embed.t(), Infraction) :: Embed.t()
+  defp add_specific_fields(embed, %Infraction{type: "temprole", data: data}) do
+    new_field = %Field{
+      name: "Added role",
+      value: "<@&#{data["role_id"]}>",
+      inline: true
+    }
+
+    {_, embed} =
+      Map.get_and_update(embed, :fields, fn fields ->
+        {fields, fields ++ [new_field]}
+      end)
+
+    embed
+  end
+
+  defp add_specific_fields(embed, _) do
+    embed
+  end
+
   @spec get_response(Message.t(), pos_integer) :: Embed.t()
   def get_response(msg, id) do
     case Repo.get_by(Infraction, id: id, guild_id: msg.guild_id) do
@@ -115,6 +135,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
                end
              end).()
         }
+        |> add_specific_fields(infraction)
     end
   end
 end

@@ -3,8 +3,10 @@ defmodule Bolt.Cogs.Temprole do
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Bolt.Parsers
+  alias Bolt.Repo
   alias Bolt.Events.Handler
   alias Bolt.Schema.Event
+  alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Footer
@@ -13,7 +15,7 @@ defmodule Bolt.Cogs.Temprole do
 
   def command(msg, [user, role, duration | reason_list]) do
     response =
-      with _reason <- Enum.join(reason_list, " "),
+      with reason <- Enum.join(reason_list, " "),
            {:ok, member} <- Converters.to_member(msg.guild_id, user),
            {:ok, role} <- Converters.to_role(msg.guild_id, role),
            {:ok, expiry} <- Parsers.human_future_date(duration),
@@ -23,6 +25,19 @@ defmodule Bolt.Cogs.Temprole do
                member.user.id,
                roles: Enum.uniq(member.roles ++ [role.id])
              ),
+           infraction <- %Infraction{
+             type: "temprole",
+             guild_id: msg.guild_id,
+             user_id: member.user.id,
+             actor_id: msg.author.id,
+             reason: if(reason != "", do: reason, else: nil),
+             expires_at: expiry,
+             data: %{
+               "role_id" => role.id
+             }
+           },
+           changeset <- Infraction.changeset(infraction),
+           {:ok, created_infraction} <- Repo.insert(changeset),
            {:ok, _event} <-
              Handler.create(%Event{
                timestamp: expiry,
@@ -35,9 +50,12 @@ defmodule Bolt.Cogs.Temprole do
              }) do
         %Embed{
           title: "Temporary role applied",
-          description:
-            "Attached the role #{Role.mention(role)} to " <>
-              "#{User.mention(member.user)} until #{Helpers.datetime_to_human(expiry)}",
+          description: """
+          Attached the role #{Role.mention(role)} to #{User.mention(member.user)} until #{
+            Helpers.datetime_to_human(expiry)
+          }.
+          An infraction was created with ID `#{created_infraction.id}`.
+          """,
           color: Constants.color_green(),
           footer: %Footer{
             text: "Authored by #{User.full_name(msg.author)} (#{msg.author.id})",
