@@ -1,13 +1,21 @@
 defmodule Bolt.Cogs.Pingback do
-  def command(msg, duration) do
-    {seconds, _} = Integer.parse(duration)
-    unix_timestamp = DateTime.utc_now() |> DateTime.to_unix()
-    {:ok, expiry} = (unix_timestamp + seconds) |> DateTime.from_unix()
+  alias Nostrum.Api
+  alias Bolt.Parsers
 
-    Bolt.Events.Handler.create(%Bolt.Schema.Event{
-      timestamp: expiry,
-      event: "CREATE_MESSAGE",
-      data: %{channel_id: msg.channel_id, content: "Ping-pong! Sent from Bolt's event handler."}
-    })
+  def command(msg, expiry) do
+    case Parsers.human_future_date(expiry) do
+      {:ok, date} ->
+        Bolt.Events.Handler.create(%Bolt.Schema.Event{
+          timestamp: date,
+          event: "CREATE_MESSAGE",
+          data: %{
+            channel_id: msg.channel_id,
+            content: "Ping-pong! Sent from Bolt's event handler."
+          }
+        })
+
+      {:error, reason} ->
+        {:ok, _msg} = Api.create_message(msg.channel_id, "failed to parse expiry: #{reason}")
+    end
   end
 end
