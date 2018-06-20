@@ -75,7 +75,7 @@ defmodule Bolt.Commander.Server do
       Various operations on the infraction database.
       Aliased to `infr`.
       """,
-      usage: ["infraction detail"],
+      usage: ["infraction detail"]
     },
     "memberinfo" => %{
       callback: &Cogs.MemberInfo.command/2,
@@ -109,6 +109,13 @@ defmodule Bolt.Commander.Server do
       """,
       usage: ["roles [name:str]"],
       predicates: [&Checks.guild_only/1]
+    },
+    "temprole" => %{
+      callback: &Cogs.Temprole.command/2,
+      parser: &Parsers.passthrough/1,
+      help: "Temporarily apply the given role to the given user.",
+      usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str]"],
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
     }
   }
 
