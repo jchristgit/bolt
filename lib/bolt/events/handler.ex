@@ -8,17 +8,24 @@ defmodule Bolt.Events.Handler do
   end
 
   def create(event) do
+    alias Bolt.Events.Deserializer
     alias Bolt.Repo
     alias Bolt.Schema
+    alias Ecto.Changeset
 
     changeset = Schema.Event.changeset(event)
 
-    case Repo.insert(changeset) do
-      {:ok, created_event} ->
-        GenServer.call(__MODULE__, {:create, created_event})
+    with true <- event.event in Deserializer.valid_events(),
+         {:ok, created_event} <- Repo.insert(changeset) do
+      GenServer.call(__MODULE__, {:create, created_event})
+    else
+      false ->
+        {:error, "`#{event.type}` is not a valid event type"}
+      {:error, %Changeset{} = changeset} ->
+        {:error, changeset.errors}
 
-      {:error, error_changeset} ->
-        {:error, error_changeset.errors}
+      {:error, _reason} = error ->
+        error
     end
   end
 
@@ -63,7 +70,7 @@ defmodule Bolt.Events.Handler do
        )}
       |> (fn {event, timer} -> Map.put(timers, event, timer) end).()
 
-    {:reply, :ok, timers}
+    {:reply, {:ok, event}, timers}
   end
 
   @impl true
