@@ -25,11 +25,10 @@ defmodule Bolt.Commander.Server do
       parser: &Parsers.join/1,
       help: """
       Without arguments, show information about yourself.
-      When given an argument, attempt to convert the argument to a member - either per ID, mention, username#discrim, username, or nickname.
+      When given a member, show information about the member instead of yourself.
       """,
       usage: [
-        "memberinfo",
-        "memberinfo <member:user>"
+        "memberinfo [user:member]",
       ],
       predicates: [&Checks.guild_only/1]
     },
@@ -104,8 +103,17 @@ defmodule Bolt.Commander.Server do
     },
     "note" => %{
       callback: &Cogs.Note.command/2,
-      help: "Create a note for the given user. The note is stored in the infraction database.",
-      usage: ["note <member:user> <note:str>"],
+      help: """
+      Create a note for the given user.
+      The note is stored in the infraction database, and can be retrieved later.
+      Requires the `MANAGE_MESSAGES` permission.
+
+      **Examples**:
+      ```rs
+      note @Dude#0001 has an odd affection to ducks
+      ```
+      """,
+      usage: ["note <user:member> <note:str...>"],
       predicates: [
         &Checks.guild_only/1,
         &Checks.can_manage_messages?/1
@@ -113,44 +121,114 @@ defmodule Bolt.Commander.Server do
     },
     "warn" => %{
       callback: &Cogs.Warn.command/2,
-      help: "Warn the given user for the specified reason.",
-      usage: ["warn <user:member> <reason:str>"],
+      help: """
+      Warn the given user for the specified reason.
+      The warning is stored in the infraction database, and can be retrieved later.
+      Requires the `MANAGE_MESSAGES` permission.
+
+      **Examples**:
+      ```rs
+      warn @Dude#0001 spamming duck images at #dog-pics
+      ```
+      """,
+      usage: ["warn <user:member> <reason:str...>"],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     },
     "temprole" => %{
       callback: &Cogs.Temprole.command/2,
-      help: "Temporarily apply the given role to the given user.",
-      usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str]"],
+      help: """
+      Temporarily apply the given role to the given user.
+      An infraction is stored in the infraction database, and can be retrieved later.
+      Requires the `MANAGE_ROLES` permission.
+
+      **Examples**:
+      ```rs
+      // apply the role "Shitposter" to Dude for 24 hours
+      temprole @Dude#0001 Shitposter 24h
+
+      // the same thing, but with a specified reason
+      temprole @Dude#0001 Shitposter 24h spamming lol no generics near gophers
+      ```
+      """,
+      usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str...]"],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
     },
     "kick" => %{
       callback: &Cogs.Kick.command/2,
       help: """
       Kick the given member with an optional reason.
+      An infraction is stored in the infraction database, and can be retrieved later.
       Requires the `KICK_MEMBERS` permission.
+
+      **Examples**:
+      ```rs
+      // kick Dude without an explicit reason
+      kick @Dude#0001
+
+      // kick Dude with an explicit reason
+      kick @Dude#0001 spamming cats when asked to post ducks
+      ```
       """,
-      usage: ["kick <user:member> [reason:str]"],
+      usage: ["kick <user:member> [reason:str...]"],
       predicates: [&Checks.guild_only/1, &Checks.can_kick_members?/1]
     },
     "tempban" => %{
       callback: &Cogs.Tempban.command/2,
-      help: "Temporary ban the given user for the given duration. A reason can be provided.",
-      usage: ["tempban <user:snowflake|member> <duration:duration> [reason:str]"],
+      help: """
+      Temporarily ban the given user for the given duration with an optional reason.
+      An infraction is stored in the infraction database, and can be retrieved later.
+      Requires the `BAN_MEMBERS` permission.
+
+      **Examples**:
+      ```rs
+      // tempban Dude for 2 days without a reason
+      tempban @Dude#0001 2d
+
+      // the same thing, but with a specified reason
+      tempban @Dude#0001 2d posting cats instead of ducks
+      ```
+      """,
+      usage: ["tempban <user:snowflake|member> <duration:duration> [reason:str...]"],
       predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
     },
     "ban" => %{
       callback: &Cogs.Ban.command/2,
-      help: "Ban the given user with an optional reason.",
+      help: """
+      Ban the given user with an optional reason.
+      An infraction is stored in the infraction database, and can be retrieved later.
+      Requires the `BAN_MEMBERS` permission.
+
+      **Examples**:
+      ```rs
+      // ban Dude without a reason
+      ban @Dude#0001
+
+      // the same thing, but with a reason
+      ban @Dude#0001 too many cat pictures
+      ```
+      """,
       usage: ["ban <user:snowflake|member> [reason:str]"],
       predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
     },
     "infraction" => %{
       callback: &Cogs.Infraction.command/2,
       help: """
-      Various operations on the infraction database.
-      Aliased to `infr`.
+      Operations on the infraction database.
+      Requires the `MANAGE_MESSAGES` permission.
+
+      **Subcommands**:
+      • `detail <id:int>`: View the given infraction ID in detail.
+
+      **Examples**:
+      ```rs
+      // view infraction #538
+      infr detail 538
+      ```
       """,
-      usage: ["infraction detail"]
+      usage: [
+        "infraction detail <id:int>"
+      ],
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     }
   }
 
