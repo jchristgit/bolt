@@ -87,7 +87,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
               name: "Modification",
               value:
                 (fn ->
-                   if DateTime.diff(infraction.inserted_at, infraction.updated_at, :seconds) < 1 do
+                   if DateTime.diff(infraction.inserted_at, infraction.updated_at, :seconds) == 0 do
                      "*never*"
                    else
                      Helpers.datetime_to_human(infraction.updated_at)
