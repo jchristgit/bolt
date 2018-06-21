@@ -218,15 +218,20 @@ defmodule Bolt.Commander.Server do
 
       **Subcommands**:
       • `detail <id:int>`: View the given infraction ID in detail.
+      • `reason <id:int> <reason:str...>`: Update the reason for the given infraction ID.
 
       **Examples**:
       ```rs
       // view infraction #538
       infr detail 538
+
+      // set infraction #32's reason to "spamming"
+      infr reason 32 spamming
       ```
       """,
       usage: [
-        "infraction detail <id:int>"
+        "infraction detail <id:int>",
+        "infraction reason <id:int> <reason:str...>"
       ],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     }
