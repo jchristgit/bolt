@@ -38,6 +38,13 @@ defmodule Bolt.Cogs.Kick do
           }
         }
       else
+        {:error, %{status_code: status, message: %{"message" => reason}}} ->
+          %Embed{
+            title: "Cannot kick user",
+            description: "API Error: #{reason} (status code `#{status}`)",
+            color: Constants.color_red()
+          }
+
         {:error, reason} ->
           %Embed{
             title: "Cannot kick user",
