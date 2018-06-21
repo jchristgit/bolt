@@ -53,6 +53,11 @@ defmodule Bolt.Commander.Server do
       usage: ["roles [name:str]"],
       predicates: [&Checks.guild_only/1]
     },
+    "stats" => %{
+      callback: &Cogs.Stats.command/2,
+      help: "Show statistics about the bot.",
+      usage: ["stats"]
+    },
 
     ## Moderation Commands
     "clean" => %{
