@@ -47,8 +47,6 @@ defmodule Bolt.Events.Deserializer do
     func = fn ->
       alias Nostrum.Api
 
-      IO.inspect guild_id, label: "guild"
-      IO.inspect user_id, label: "user"
       {:ok} = Api.remove_guild_ban(guild_id, user_id)
     end
 
