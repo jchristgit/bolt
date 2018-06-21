@@ -14,7 +14,13 @@ defmodule Bolt.Commander.Server do
     "ban" => %{
       callback: &Cogs.Ban.command/2,
       help: "Ban the given user with an optional reason.",
-      usage: ["ban <user:member> [reason:str]"],
+      usage: ["ban <user:snowflake|member> [reason:str]"],
+      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    },
+    "tempban" => %{
+      callback: &Cogs.Tempban.command/2,
+      help: "Temporary ban the given user for the given duration. A reason can be provided.",
+      usage: ["tempban <user:snowflake|member> <duration:duration> [reason:str]"],
       predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
     },
     "clean" => %{

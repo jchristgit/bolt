@@ -1,52 +1,50 @@
-defmodule Bolt.Cogs.Ban do
+defmodule Bolt.Cogs.Tempban do
+  alias Bolt.Cogs.Ban
   alias Bolt.Constants
-  alias Bolt.Converters
+  alias Bolt.Events.Handler
+  alias Bolt.Helpers
+  alias Bolt.Parsers
   alias Bolt.Repo
+  alias Bolt.Schema.Event
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.User
 
-  @spec into_id(Nostrum.Struct.Snowflake.t(), String.t()) ::
-          {:ok, Nostrum.Struct.Snowflake.t(), Nostrum.Struct.User.t() | nil}
-          | {:error, String.t()}
-  def into_id(guild_id, text) do
-    case Integer.parse(text) do
-      {value, _} ->
-        {:ok, value, nil}
-
-      :error ->
-        case Converters.to_member(guild_id, text) do
-          {:ok, member} -> {:ok, member.user.id, member.user}
-          {:error, _} = error -> error
-        end
-    end
-  end
-
-  def command(msg, [user | reason_list]) do
+  def command(msg, [user, duration | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
-           {:ok, user_id, converted_user} <- into_id(msg.guild_id, user),
+           {:ok, user_id, converted_user} <- Ban.into_id(msg.guild_id, user),
+           {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
+           {:ok, _event} <-
+             Handler.create(%Event{
+               timestamp: expiry,
+               event: "UNBAN_MEMBER",
+               data: %{
+                 "guild_id" => msg.guild_id,
+                 "user_id" => user_id
+               }
+             }),
            infraction <- %Infraction{
-             type: "ban",
+             type: "tempban",
              guild_id: msg.guild_id,
              user_id: user_id,
              actor_id: msg.author.id,
-             reason: if(reason != "", do: reason, else: nil)
+             reason: if(reason != "", do: reason, else: nil),
+             expires_at: expiry
            },
            changeset <- Infraction.changeset(infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
         %Embed{
-          title: "Ban successful",
-          description: """
-          Banned #{
-            if converted_user != nil,
-              do: "#{User.full_name(converted_user)} (`#{converted_user.id}`)",
-              else: user_id
-          }#{if reason != nil, do: ", reason: `#{reason}`"}
-          """,
+          title: "Temporary ban applied",
+          description:
+            if(
+              converted_user == nil,
+              do: "`#{user_id}`",
+              else: "#{User.full_name(converted_user)} (`#{user_id}`)"
+            ) <> " has been temporary banned until #{Helpers.datetime_to_human(expiry)}",
           color: Constants.color_green(),
           footer: %Footer{
             text: "Infraction created with ID ##{created_infraction.id}"
@@ -55,14 +53,14 @@ defmodule Bolt.Cogs.Ban do
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           %Embed{
-            title: "Cannot ban user",
+            title: "Cannot tempban user",
             description: "API Error: #{reason} (status code `#{status}`)",
             color: Constants.color_red()
           }
 
         {:error, reason} ->
           %Embed{
-            title: "Cannot ban user",
+            title: "Cannot tempban user",
             description: "Error: #{reason}",
             color: Constants.color_red()
           }
