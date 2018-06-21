@@ -31,15 +31,15 @@ defmodule Bolt.Commander.Server do
       // delete 60 messages in the current channel
       clean 60
 
-      // delete up to 10 messages by 
+      // delete up to 10 messages by
       // bots in the current channel
-      clean --bots --limit 10  
+      clean --bots --limit 10
 
-      // delete up to 30 messages sent 
+      // delete up to 30 messages sent
       // by 197177484792299522 in the #fsharp channel
       clean --user 197177484792299522 --channel #fsharp
 
-      // delete up to 50 messages containing 
+      // delete up to 50 messages containing
       // "lol no generics" in the #golang channel
       clean --content "lol no generics" --channel #golang --limit 50
       ```
@@ -74,6 +74,15 @@ defmodule Bolt.Commander.Server do
       Aliased to `infr`.
       """,
       usage: ["infraction detail"]
+    },
+    "kick" => %{
+      callback: &Cogs.Kick.command/2,
+      help: """
+      Kick the given member with an optional reason.
+      Requires the `KICK_MEMBERS` permission.
+      """,
+      usage: ["kick <user:member> <reason:str>"],
+      predicates: [&Checks.guild_only/1, &Checks.can_kick_members?/1]
     },
     "memberinfo" => %{
       callback: &Cogs.MemberInfo.command/2,
