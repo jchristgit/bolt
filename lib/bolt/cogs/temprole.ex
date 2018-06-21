@@ -43,9 +43,9 @@ defmodule Bolt.Cogs.Temprole do
                timestamp: expiry,
                event: "REMOVE_ROLE",
                data: %{
-                 guild_id: msg.guild_id,
-                 user_id: member.user.id,
-                 role_id: role.id
+                 "guild_id" => msg.guild_id,
+                 "user_id" => member.user.id,
+                 "role_id" => role.id
                }
              }) do
         %Embed{
