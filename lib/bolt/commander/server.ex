@@ -5,24 +5,56 @@ defmodule Bolt.Commander.Server do
   use GenServer
 
   @commands %{
-    "pingback" => %{
-      callback: &Cogs.Pingback.command/2,
+    ## Meta Commands
+    "guildinfo" => %{
+      callback: &Cogs.GuildInfo.command/2,
+      help:
+        "Show information about the current Guild, or a given guild ID. Aliased to `ginfo` and `guild`.",
+      usage: ["guildinfo [guild:snowflake]"],
+      predicates: [&Checks.guild_only/1]
+    },
+    "help" => %{
+      callback: &Cogs.Help.command/2,
       parser: &Parsers.join/1,
-      help: "pingback after the given `seconds`",
-      usage: ["pingback <seconds:int>"]
+      help:
+        "Show information about the given command, or, with no arguments given, list all commands.",
+      usage: ["help [command:str]"]
     },
-    "ban" => %{
-      callback: &Cogs.Ban.command/2,
-      help: "Ban the given user with an optional reason.",
-      usage: ["ban <user:snowflake|member> [reason:str]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    "memberinfo" => %{
+      callback: &Cogs.MemberInfo.command/2,
+      parser: &Parsers.join/1,
+      help: """
+      Without arguments, show information about yourself.
+      When given an argument, attempt to convert the argument to a member - either per ID, mention, username#discrim, username, or nickname.
+      """,
+      usage: [
+        "memberinfo",
+        "memberinfo <member:user>"
+      ],
+      predicates: [&Checks.guild_only/1]
     },
-    "tempban" => %{
-      callback: &Cogs.Tempban.command/2,
-      help: "Temporary ban the given user for the given duration. A reason can be provided.",
-      usage: ["tempban <user:snowflake|member> <duration:duration> [reason:str]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    "roleinfo" => %{
+      callback: &Cogs.RoleInfo.command/2,
+      parser: &Parsers.join/1,
+      help: """
+      Show information about the given role.
+      The role can be given as either a direct role ID, a role mention, or a role name (case-insensitive).
+      """,
+      usage: ["roleinfo <role:role>"],
+      predicates: [&Checks.guild_only/1]
     },
+    "roles" => %{
+      callback: &Cogs.Roles.command/2,
+      parser: &Parsers.join/1,
+      help: """
+      Show all roles on the guild the command is invoked on.
+      When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
+      """,
+      usage: ["roles [name:str]"],
+      predicates: [&Checks.guild_only/1]
+    },
+
+    ## Moderation Commands
     "clean" => %{
       callback: &Cogs.Clean.command/2,
       parser: &Cogs.Clean.parse/1,
@@ -65,27 +97,26 @@ defmodule Bolt.Commander.Server do
         &Checks.can_manage_messages?/1
       ]
     },
-    "guildinfo" => %{
-      callback: &Cogs.GuildInfo.command/2,
-      help:
-        "Show information about the current Guild, or a given guild ID. Aliased to `ginfo` and `guild`.",
-      usage: ["guildinfo [guild:snowflake]"],
-      predicates: [&Checks.guild_only/1]
+    "note" => %{
+      callback: &Cogs.Note.command/2,
+      help: "Create a note for the given user. The note is stored in the infraction database.",
+      usage: ["note <member:user> <note:str>"],
+      predicates: [
+        &Checks.guild_only/1,
+        &Checks.can_manage_messages?/1
+      ]
     },
-    "help" => %{
-      callback: &Cogs.Help.command/2,
-      parser: &Parsers.join/1,
-      help:
-        "Show information about the given command, or, with no arguments given, list all commands.",
-      usage: ["help [command:str]"]
+    "warn" => %{
+      callback: &Cogs.Warn.command/2,
+      help: "Warn the given user for the specified reason.",
+      usage: ["warn <user:member> <reason:str>"],
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     },
-    "infraction" => %{
-      callback: &Cogs.Infraction.command/2,
-      help: """
-      Various operations on the infraction database.
-      Aliased to `infr`.
-      """,
-      usage: ["infraction detail"]
+    "temprole" => %{
+      callback: &Cogs.Temprole.command/2,
+      help: "Temporarily apply the given role to the given user.",
+      usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str]"],
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
     },
     "kick" => %{
       callback: &Cogs.Kick.command/2,
@@ -96,59 +127,25 @@ defmodule Bolt.Commander.Server do
       usage: ["kick <user:member> [reason:str]"],
       predicates: [&Checks.guild_only/1, &Checks.can_kick_members?/1]
     },
-    "memberinfo" => %{
-      callback: &Cogs.MemberInfo.command/2,
-      parser: &Parsers.join/1,
+    "tempban" => %{
+      callback: &Cogs.Tempban.command/2,
+      help: "Temporary ban the given user for the given duration. A reason can be provided.",
+      usage: ["tempban <user:snowflake|member> <duration:duration> [reason:str]"],
+      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    },
+    "ban" => %{
+      callback: &Cogs.Ban.command/2,
+      help: "Ban the given user with an optional reason.",
+      usage: ["ban <user:snowflake|member> [reason:str]"],
+      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    },
+    "infraction" => %{
+      callback: &Cogs.Infraction.command/2,
       help: """
-      Without arguments, show information about yourself.
-      When given an argument, attempt to convert the argument to a member - either per ID, mention, username#discrim, username, or nickname.
+      Various operations on the infraction database.
+      Aliased to `infr`.
       """,
-      usage: [
-        "memberinfo",
-        "memberinfo <member:user>"
-      ],
-      predicates: [&Checks.guild_only/1]
-    },
-    "note" => %{
-      callback: &Cogs.Note.command/2,
-      help: "Create a note for the given user. The note is stored in the infraction database.",
-      usage: ["note <member:user> <note:str>"],
-      predicates: [
-        &Checks.guild_only/1,
-        &Checks.can_manage_messages?/1
-      ]
-    },
-    "roleinfo" => %{
-      callback: &Cogs.RoleInfo.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Show information about the given role.
-      The role can be given as either a direct role ID, a role mention, or a role name (case-insensitive).
-      """,
-      usage: ["roleinfo <role:role>"],
-      predicates: [&Checks.guild_only/1]
-    },
-    "roles" => %{
-      callback: &Cogs.Roles.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Show all roles on the guild the command is invoked on.
-      When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
-      """,
-      usage: ["roles [name:str]"],
-      predicates: [&Checks.guild_only/1]
-    },
-    "temprole" => %{
-      callback: &Cogs.Temprole.command/2,
-      help: "Temporarily apply the given role to the given user.",
-      usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
-    },
-    "warn" => %{
-      callback: &Cogs.Warn.command/2,
-      help: "Warn the given user for the specified reason.",
-      usage: ["warn <user:member> <reason:str>"],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+      usage: ["infraction detail"]
     }
   }
 
