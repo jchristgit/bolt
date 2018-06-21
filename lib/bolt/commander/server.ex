@@ -122,6 +122,12 @@ defmodule Bolt.Commander.Server do
       help: "Temporarily apply the given role to the given user.",
       usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str]"],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
+    },
+    "warn" => %{
+      callback: &Cogs.Warn.command/2,
+      help: "Warn the given user for the specified reason.",
+      usage: ["warn <user:member> <reason:str>"],
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     }
   }
 
