@@ -88,6 +88,15 @@ defmodule Bolt.Commander.Server do
       ],
       predicates: [&Checks.guild_only/1]
     },
+    "note" => %{
+      callback: &Cogs.Note.command/2,
+      help: "Create a note for the given user. The note is stored in the infraction database.",
+      usage: ["note <member:user> <note:str>"],
+      predicates: [
+        &Checks.guild_only/1,
+        &Checks.can_manage_messages?/1
+      ]
+    },
     "roleinfo" => %{
       callback: &Cogs.RoleInfo.command/2,
       parser: &Parsers.join/1,
