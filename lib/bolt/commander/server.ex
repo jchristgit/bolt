@@ -28,7 +28,7 @@ defmodule Bolt.Commander.Server do
       When given a member, show information about the member instead of yourself.
       """,
       usage: [
-        "memberinfo [user:member]",
+        "memberinfo [user:member]"
       ],
       predicates: [&Checks.guild_only/1]
     },
