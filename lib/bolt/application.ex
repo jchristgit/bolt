@@ -9,7 +9,7 @@ defmodule Bolt.Application do
       Bolt.Consumer
     ]
 
-    options = [strategy: :one_for_one, name: Bolt.Supervisor]
+    options = [strategy: :rest_for_one, name: Bolt.Supervisor]
     Supervisor.start_link(children, options)
   end
 end
