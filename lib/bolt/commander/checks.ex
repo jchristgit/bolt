@@ -91,4 +91,12 @@ defmodule Bolt.Commander.Checks do
   def can_manage_messages?(msg) do
     has_permission?(msg, @bitflags_manage_messages, missing_permissions_embed("manage messages"))
   end
+
+  @bitflags_kick_members 0x00000002
+  @doc "Checks that the message author has the `KICK_MEMBERS` permission."
+  @spec can_kick_members?(Nostrum.Struct.Message.t()) ::
+          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+  def can_kick_members?(msg) do
+    has_permission?(msg, @bitflags_kick_members, missing_permissions_embed("kick members"))
+  end
 end
