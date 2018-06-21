@@ -11,6 +11,12 @@ defmodule Bolt.Commander.Server do
       help: "pingback after the given `seconds`",
       usage: ["pingback <seconds:int>"]
     },
+    "ban" => %{
+      callback: &Cogs.Ban.command/2,
+      help: "Ban the given user with an optional reason.",
+      usage: ["ban <user:member> [reason:str]"],
+      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    },
     "clean" => %{
       callback: &Cogs.Clean.command/2,
       parser: &Cogs.Clean.parse/1,
@@ -81,7 +87,7 @@ defmodule Bolt.Commander.Server do
       Kick the given member with an optional reason.
       Requires the `KICK_MEMBERS` permission.
       """,
-      usage: ["kick <user:member> <reason:str>"],
+      usage: ["kick <user:member> [reason:str]"],
       predicates: [&Checks.guild_only/1, &Checks.can_kick_members?/1]
     },
     "memberinfo" => %{
