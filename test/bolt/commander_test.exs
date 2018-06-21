@@ -63,7 +63,7 @@ defmodule BoltTest.Commander do
       %{
         message: message,
         always_pass: fn msg -> {:ok, msg} end,
-        always_fail: fn msg -> {:error, "boom"} end
+        always_fail: fn _msg -> {:error, "boom"} end
       }
     end
 
