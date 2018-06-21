@@ -99,4 +99,12 @@ defmodule Bolt.Commander.Checks do
   def can_kick_members?(msg) do
     has_permission?(msg, @bitflags_kick_members, missing_permissions_embed("kick members"))
   end
+
+  @bitflags_ban_members 0x00000004
+  @doc "Checks that the message author has the `BAN_MEMBERS` permission."
+  @spec can_ban_members?(Nostrum.Struct.Message.t()) ::
+          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+  def can_ban_members?(msg) do
+    has_permission?(msg, @bitflags_ban_members, missing_permissions_embed("ban members"))
+  end
 end
