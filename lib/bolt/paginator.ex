@@ -12,9 +12,14 @@ defmodule Bolt.Paginator do
   end
 
   @spec paginate_over(Message.t(), Embed.t(), [Embed.t()]) :: no_return()
-  def paginate_over(original_msg, base_page, pages) when length(pages) == 1 do
+  def paginate_over(original_msg, base_page, []) do
+    base_page = Map.put(base_page, :description, "Seems like there's nothing here yet.")
+    {:ok, _msg} = Api.create_message(original_msg.channel_id, embed: base_page)
+  end
+
+  def paginate_over(original_msg, base_page, [page]) do
     {:ok, _msg} =
-      Api.create_message(original_msg.channel_id, Map.merge(base_page, Enum.fetch!(pages, 0)))
+      Api.create_message(original_msg.channel_id, embed: Map.merge(base_page, page, fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end))
   end
 
   def paginate_over(original_msg, base_page, pages) do
