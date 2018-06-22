@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.Ban do
   alias Bolt.Constants
-  alias Bolt.Converters
+  alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -8,26 +8,10 @@ defmodule Bolt.Cogs.Ban do
   alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.User
 
-  @spec into_id(Nostrum.Struct.Snowflake.t(), String.t()) ::
-          {:ok, Nostrum.Struct.Snowflake.t(), Nostrum.Struct.User.t() | nil}
-          | {:error, String.t()}
-  def into_id(guild_id, text) do
-    case Integer.parse(text) do
-      {value, _} ->
-        {:ok, value, nil}
-
-      :error ->
-        case Converters.to_member(guild_id, text) do
-          {:ok, member} -> {:ok, member.user.id, member.user}
-          {:error, _} = error -> error
-        end
-    end
-  end
-
   def command(msg, [user | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
-           {:ok, user_id, converted_user} <- into_id(msg.guild_id, user),
+           {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
            infraction <- %Infraction{
              type: "ban",

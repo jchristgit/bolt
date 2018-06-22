@@ -1,5 +1,4 @@
 defmodule Bolt.Cogs.Tempban do
-  alias Bolt.Cogs.Ban
   alias Bolt.Constants
   alias Bolt.Events.Handler
   alias Bolt.Helpers
@@ -15,7 +14,7 @@ defmodule Bolt.Cogs.Tempban do
   def command(msg, [user, duration | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
-           {:ok, user_id, converted_user} <- Ban.into_id(msg.guild_id, user),
+           {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
            {:ok, _event} <-

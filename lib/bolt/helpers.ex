@@ -1,4 +1,5 @@
 defmodule Bolt.Helpers do
+  alias Bolt.Converters
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   use Timex
@@ -104,5 +105,22 @@ defmodule Bolt.Helpers do
     content
     |> String.replace("@everyone", "@\u200Beveryone")
     |> String.replace("@here", "@\u200Bhere")
+  end
+
+  @doc "Convert text into either a raw snowflake or a snowflake + member."
+  @spec into_id(Nostrum.Struct.Snowflake.t(), String.t()) ::
+          {:ok, Nostrum.Struct.Snowflake.t(), Nostrum.Struct.User.t() | nil}
+          | {:error, String.t()}
+  def into_id(guild_id, text) do
+    case Integer.parse(text) do
+      {value, _} ->
+        {:ok, value, nil}
+
+      :error ->
+        case Converters.to_member(guild_id, text) do
+          {:ok, member} -> {:ok, member.user.id, member.user}
+          {:error, _} = error -> error
+        end
+    end
   end
 end
