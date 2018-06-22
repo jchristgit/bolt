@@ -1,7 +1,9 @@
 defmodule Bolt.Cogs.Infraction do
   alias Bolt.Cogs.Infraction.Detail
+  alias Bolt.Cogs.Infraction.List
   alias Bolt.Cogs.Infraction.Reason
   alias Bolt.Constants
+  alias Bolt.Paginator
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
@@ -83,6 +85,11 @@ defmodule Bolt.Cogs.Infraction do
     }
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+  end
+
+  def command(msg, ["list" | maybe_type]) do
+    {base_embed, pages} = List.prepare_for_paginator(msg, maybe_type)
+    Paginator.paginate_over(msg, base_embed, pages)
   end
 
   def command(msg, anything) do

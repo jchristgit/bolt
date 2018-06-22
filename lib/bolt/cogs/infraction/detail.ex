@@ -4,27 +4,10 @@ defmodule Bolt.Cogs.Infraction.Detail do
   alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Nostrum.Api
-  alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field
   alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.Message
-  alias Nostrum.Struct.User
-
-  @spec get_user(pos_integer()) :: {:ok, User.t()} | {:error, String.t()}
-  defp get_user(user_id) do
-    case UserCache.get(user_id) do
-      {:ok, _user} = result ->
-        result
-
-      {:error, _reason} ->
-        case Api.get_user(user_id) do
-          {:ok, _user} = result -> result
-          {:error, _reason} -> {:error, "unknown user (`#{user_id}`)"}
-        end
-    end
-  end
 
   @spec add_specific_fields(Embed.t(), Infraction) :: Embed.t()
   defp add_specific_fields(embed, %Infraction{type: "temprole", data: data}) do
@@ -63,13 +46,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
           fields: [
             %Field{
               name: "User",
-              value:
-                (fn ->
-                   case get_user(infraction.user_id) do
-                     {:ok, user} -> "#{User.full_name(user)} (`#{user.id}`)"
-                     {:error, user_string} -> user_string
-                   end
-                 end).(),
+              value: General.format_user(infraction.user_id),
               inline: true
             },
             %Field{
@@ -119,21 +96,9 @@ defmodule Bolt.Cogs.Infraction.Detail do
               inline: true
             }
           ],
-          footer:
-            (fn ->
-               case get_user(infraction.actor_id) do
-                 {:ok, user} ->
-                   %Footer{
-                     icon_url: User.avatar_url(user),
-                     text: "authored by #{User.full_name(user)} (#{user.id})"
-                   }
-
-                 {:error, user_string} ->
-                   %Footer{
-                     text: "authored by #{user_string}"
-                   }
-               end
-             end).()
+          footer: %Footer{
+            text: "authored by #{General.format_user(infraction.actor_id)}"
+          }
         }
         |> add_specific_fields(infraction)
     end
