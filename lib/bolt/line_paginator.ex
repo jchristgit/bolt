@@ -20,12 +20,12 @@ defmodule Bolt.LinePaginator do
     initial_embed = %{Enum.fetch!(pages, 0) | footer: %Footer{text: "Page 1 / #{length(pages)}"}}
     {:ok, msg} = Api.create_message(original_msg.channel_id, embed: initial_embed)
 
+    # Add the navigator reactions to the embed. Sleep shortly to respect ratelimits.
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "⬅")
     Process.sleep(250)
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "➡")
     Process.sleep(250)
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "❌")
-    Process.sleep(50)
 
     paginator_map = %{
       message: msg,
@@ -34,6 +34,9 @@ defmodule Bolt.LinePaginator do
     }
 
     GenServer.cast(__MODULE__, {:add, paginator_map})
+
+    # Drop the paginator from the pool after 15 minutes.
+    Process.send_after(__MODULE__, {:drop, msg.id}, 15 * 60 * 1_000)
   end
 
   ## Server Callbacks
@@ -52,66 +55,77 @@ defmodule Bolt.LinePaginator do
   @impl true
   def handle_cast({:MESSAGE_REACTION_ADD, reaction}, paginators) do
     with {:ok, paginator} <- Map.fetch(paginators, reaction.message_id) do
-      case reaction.emoji.name do
-        "⬅" ->
-          Api.delete_user_reaction(
-            paginator.message.channel_id,
-            paginator.message.id,
-            reaction.emoji.name,
-            reaction.user_id
-          )
+      if paginator.message.author.id == reaction.user_id do
+        {:noreply, paginators}
+      else
+        case reaction.emoji.name do
+          "⬅" ->
+            Api.delete_user_reaction(
+              paginator.message.channel_id,
+              paginator.message.id,
+              reaction.emoji.name,
+              reaction.user_id
+            )
 
-          if paginator.current_page == 0 do
+            # Are we at the first page? If so, ignore the reaction.
+            if paginator.current_page == 0 do
+              {:noreply, paginators}
+            else
+              {_, paginator} =
+                Map.get_and_update(paginator, :current_page, fn page -> {page, page - 1} end)
+
+              new_page = Enum.fetch!(paginator.pages, paginator.current_page)
+
+              new_page =
+                Map.put(new_page, :footer, %Footer{
+                  text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
+                })
+
+              {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
+              {:noreply, %{paginators | reaction.message_id => paginator}}
+            end
+
+          "➡" ->
+            Api.delete_user_reaction(
+              paginator.message.channel_id,
+              paginator.message.id,
+              reaction.emoji.name,
+              reaction.user_id
+            )
+
+            # Are we at the last page? If so, ignore the reaction.
+            if paginator.current_page == length(paginator.pages) - 1 do
+              {:noreply, paginators}
+            else
+              {_, paginator} =
+                Map.get_and_update(paginator, :current_page, fn page -> {page, page + 1} end)
+
+              new_page = Enum.fetch!(paginator.pages, paginator.current_page)
+
+              new_page =
+                Map.put(new_page, :footer, %Footer{
+                  text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
+                })
+
+              {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
+              {:noreply, %{paginators | reaction.message_id => paginator}}
+            end
+
+          "❌" ->
+            Api.delete_message(paginator.message)
+            {:noreply, Map.delete(paginators, paginator.message.id)}
+
+          _any_reaction ->
             {:noreply, paginators}
-          else
-            {_, paginator} =
-              Map.get_and_update(paginator, :current_page, fn page -> {page, page - 1} end)
-
-            new_page = Enum.fetch!(paginator.pages, paginator.current_page)
-
-            new_page =
-              Map.put(new_page, :footer, %Footer{
-                text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
-              })
-
-            {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
-            {:noreply, %{paginators | reaction.message_id => paginator}}
-          end
-
-        "➡" ->
-          Api.delete_user_reaction(
-            paginator.message.channel_id,
-            paginator.message.id,
-            reaction.emoji.name,
-            reaction.user_id
-          )
-
-          if paginator.current_page == length(paginator.pages) - 1 do
-            {:noreply, paginators}
-          else
-            {_, paginator} =
-              Map.get_and_update(paginator, :current_page, fn page -> {page, page + 1} end)
-
-            new_page = Enum.fetch!(paginator.pages, paginator.current_page)
-
-            new_page =
-              Map.put(new_page, :footer, %Footer{
-                text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
-              })
-
-            {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
-            {:noreply, %{paginators | reaction.message_id => paginator}}
-          end
-
-        "❌" ->
-          Api.delete_message(paginator.message)
-          {:noreply, Map.delete(paginators, paginator.message.id)}
-
-        _any_reaction ->
-          {:noreply, paginators}
+        end
       end
     else
       _error -> {:noreply, paginators}
     end
+  end
+
+  @impl true
+  def handle_info({:drop, msg_id}, paginators) do
+    {:noreply, Map.delete(paginators, msg_id)}
   end
 end
