@@ -11,13 +11,18 @@ defmodule Bolt.LinePaginator do
     GenServer.start_link(__MODULE__, :ok, options)
   end
 
-  @spec paginate_over(Message.t(), [Embed.t()]) :: no_return()
-  def paginate_over(original_msg, pages) when length(pages) == 1 do
-    {:ok, _msg} = Api.create_message(original_msg.channel_id, Enum.fetch!(pages, 0))
+  @spec paginate_over(Message.t(), Embed.t(), [Embed.t()]) :: no_return()
+  def paginate_over(original_msg, base_page, pages) when length(pages) == 1 do
+    {:ok, _msg} = Api.create_message(original_msg.channel_id, Map.merge(base_page, Enum.fetch!(pages, 0)))
   end
 
-  def paginate_over(original_msg, pages) do
-    initial_embed = %{Enum.fetch!(pages, 0) | footer: %Footer{text: "Page 1 / #{length(pages)}"}}
+  def paginate_over(original_msg, base_page, pages) do
+    initial_embed = Map.merge(
+      base_page,
+      %{Enum.fetch!(pages, 0) | footer: %Footer{text: "Page 1 / #{length(pages)}"}},
+      fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
+    )
+    |> IO.inspect label: "initial"
     {:ok, msg} = Api.create_message(original_msg.channel_id, embed: initial_embed)
 
     # Add the navigator reactions to the embed. Sleep shortly to respect ratelimits.
@@ -30,6 +35,7 @@ defmodule Bolt.LinePaginator do
     paginator_map = %{
       message: msg,
       current_page: 0,
+      base_page: base_page,
       pages: pages
     }
 
@@ -74,7 +80,11 @@ defmodule Bolt.LinePaginator do
               {_, paginator} =
                 Map.get_and_update(paginator, :current_page, fn page -> {page, page - 1} end)
 
-              new_page = Enum.fetch!(paginator.pages, paginator.current_page)
+              new_page = Map.merge(
+                paginator.base_page,
+                Enum.fetch!(paginator.pages, paginator.current_page),
+                fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
+              )
 
               new_page =
                 Map.put(new_page, :footer, %Footer{
@@ -100,7 +110,11 @@ defmodule Bolt.LinePaginator do
               {_, paginator} =
                 Map.get_and_update(paginator, :current_page, fn page -> {page, page + 1} end)
 
-              new_page = Enum.fetch!(paginator.pages, paginator.current_page)
+              new_page = Map.merge(
+                paginator.base_page,
+                Enum.fetch!(paginator.pages, paginator.current_page),
+                fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
+              )
 
               new_page =
                 Map.put(new_page, :footer, %Footer{

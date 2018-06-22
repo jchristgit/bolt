@@ -3,24 +3,28 @@ defmodule Bolt.Cogs.Paginate do
   alias Nostrum.Struct.Embed
 
   def command(msg, _args) do
+    base_page = %Embed{
+      title: "Paginator command"
+    }
+
     pages = [
       %Embed{
-        title: "page one"
+        description: "page one"
       },
       %Embed{
-        title: "page two"
+        description: "page two"
       },
       %Embed{
-        title: "page three"
+        description: "page three"
       },
       %Embed{
-        title: "page four"
+        description: "page four"
       },
       %Embed{
-        title: "page five"
+        description: "page five"
       }
     ]
 
-    LinePaginator.paginate_over(msg, pages)
+    LinePaginator.paginate_over(msg, base_page, pages)
   end
 end
