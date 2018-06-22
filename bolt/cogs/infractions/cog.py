@@ -225,7 +225,7 @@ class Infractions:
                 description="Seems like there's nothing here yet.",
                 colour=discord.Colour.blue()
             )
-            await ctx.send(response)
+            await ctx.send(embed=response)
         else:
             initial_embed = discord.Embed(title=title, colour=discord.Colour.blue())
             paginator = LinePaginator(ctx, lines, 10, initial_embed)
