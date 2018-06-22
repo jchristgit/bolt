@@ -2,7 +2,9 @@ defmodule Bolt.Cogs.Infraction do
   alias Bolt.Cogs.Infraction.Detail
   alias Bolt.Cogs.Infraction.List
   alias Bolt.Cogs.Infraction.Reason
+  alias Bolt.Cogs.Infraction.User
   alias Bolt.Constants
+  alias Bolt.Helpers
   alias Bolt.Paginator
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -90,6 +92,23 @@ defmodule Bolt.Cogs.Infraction do
   def command(msg, ["list" | maybe_type]) do
     {base_embed, pages} = List.prepare_for_paginator(msg, maybe_type)
     Paginator.paginate_over(msg, base_embed, pages)
+  end
+
+  def command(msg, ["user" | maybe_user]) do
+    case Helpers.into_id(msg.guild_id, Enum.join(maybe_user, " ")) do
+      {:ok, snowflake, user} ->
+        {base_embed, pages} = User.prepare_for_paginator(msg, {snowflake, user})
+        Paginator.paginate_over(msg, base_embed, pages)
+
+      {:error, reason} ->
+        response = %Embed{
+          title: "invalid command invocation",
+          description: "error while parsing arguments: #{reason}",
+          color: Constants.color_red()
+        }
+
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    end
   end
 
   def command(msg, anything) do
