@@ -19,7 +19,10 @@ defmodule Bolt.Paginator do
 
   def paginate_over(original_msg, base_page, [page]) do
     {:ok, _msg} =
-      Api.create_message(original_msg.channel_id, embed: Map.merge(base_page, page, fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end))
+      Api.create_message(
+        original_msg.channel_id,
+        embed: Map.merge(base_page, page, fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end)
+      )
   end
 
   def paginate_over(original_msg, base_page, pages) do
