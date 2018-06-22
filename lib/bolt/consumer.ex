@@ -10,6 +10,10 @@ defmodule Bolt.Consumer do
     Commander.handle_message(msg)
   end
 
+  def handle_event({:MESSAGE_REACTION_ADD, {reaction}, _ws_state}) do
+    GenServer.cast(Bolt.LinePaginator, {:MESSAGE_REACTION_ADD, reaction})
+  end
+
   def handle_event(_event) do
     :noop
   end
