@@ -6,6 +6,11 @@ defmodule Bolt.Commander.Server do
 
   @commands %{
     ## Meta Commands
+    "paginate" => %{
+      callback: &Cogs.Paginate.command/2,
+      help: "no",
+      usage: ["no"]
+    },
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
       help:
