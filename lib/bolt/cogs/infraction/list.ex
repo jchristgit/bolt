@@ -38,7 +38,7 @@ defmodule Bolt.Cogs.Infraction.List do
             Helpers.datetime_to_human(infr.inserted_at)
           }"
       end)
-      |> Stream.chunk_every(10)
+      |> Stream.chunk_every(6)
       |> Enum.map(fn entry_chunk ->
         %Embed{
           description: Enum.join(entry_chunk, "\n")
