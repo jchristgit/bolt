@@ -1,5 +1,5 @@
 defmodule Bolt.Cogs.Paginate do
-  alias Bolt.LinePaginator
+  alias Bolt.Paginator
   alias Nostrum.Struct.Embed
 
   def command(msg, _args) do
@@ -25,6 +25,6 @@ defmodule Bolt.Cogs.Paginate do
       }
     ]
 
-    LinePaginator.paginate_over(msg, base_page, pages)
+    Paginator.paginate_over(msg, base_page, pages)
   end
 end

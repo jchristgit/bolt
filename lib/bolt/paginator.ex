@@ -1,4 +1,4 @@
-defmodule Bolt.LinePaginator do
+defmodule Bolt.Paginator do
   use GenServer
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -22,7 +22,6 @@ defmodule Bolt.LinePaginator do
       %{Enum.fetch!(pages, 0) | footer: %Footer{text: "Page 1 / #{length(pages)}"}},
       fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
     )
-    |> IO.inspect label: "initial"
     {:ok, msg} = Api.create_message(original_msg.channel_id, embed: initial_embed)
 
     # Add the navigator reactions to the embed. Sleep shortly to respect ratelimits.

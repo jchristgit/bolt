@@ -6,7 +6,7 @@ defmodule Bolt.Application do
       Bolt.Repo,
       {Bolt.Events.Handler, name: Bolt.Events.Handler},
       {Bolt.Commander.Server, name: Bolt.Commander.Server},
-      {Bolt.LinePaginator, name: Bolt.LinePaginator},
+      {Bolt.Paginator, name: Bolt.Paginator},
       Bolt.Consumer
     ]
 
