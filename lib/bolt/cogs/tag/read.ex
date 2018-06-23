@@ -17,7 +17,7 @@ defmodule Bolt.Cogs.Tag.Read do
                         |> Enum.filter(&String.jaro_distance(&1.name, name) > 0.3)
 
         response = if close_matches == [] do
-          "❌ no tag named exactly to or similarly as "
+          "❌ no tag named exactly as or similarly to "
           <> "`#{Helpers.clean_content(name)}` found"
         else
           """
