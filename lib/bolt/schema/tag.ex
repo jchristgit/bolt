@@ -35,6 +35,8 @@ defmodule Bolt.Schema.Tag do
   end
 
   def changeset(tag, params \\ %{}) do
+    alias Bolt.Helpers
+
     tag
     |> cast(params, [:author_id, :guild_id, :name, :content])
     |> validate_required([:author_id, :guild_id, :name, :content])
@@ -52,6 +54,8 @@ defmodule Bolt.Schema.Tag do
           []
       end
     end)
+    |> update_change(:name, &Helpers.clean_content/1)
+    |> update_change(:content, &Helpers.clean_content/1)
     |> unique_constraint(:name, name: "tags_guild_id_name_index")
     |> validate_name_unique_for_guild()
   end
