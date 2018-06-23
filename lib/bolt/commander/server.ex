@@ -244,6 +244,15 @@ defmodule Bolt.Commander.Server do
         "infraction user <user:snowflake|member>"
       ],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+    },
+    "tag" => %{
+      callback: &Cogs.Tag.command/2,
+      help: "Tag manager. Create, read, update, or delete tags.",
+      usage: [
+        "tag <name:str>",
+        "tag create <name:str> <content:str>"
+      ],
+      predicates: [&Checks.guild_only/1]
     }
   }
 
