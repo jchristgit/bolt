@@ -11,9 +11,10 @@ defmodule Bolt.Events.Handler do
     alias Bolt.Events.Deserializer
     alias Bolt.Repo
     alias Bolt.Schema
+    alias Bolt.Schema.Event
     alias Ecto.Changeset
 
-    changeset = Schema.Event.changeset(event)
+    changeset = Schema.Event.changeset(%Event{}, event)
 
     with true <- event.event in Deserializer.valid_events(),
          {:ok, created_event} <- Repo.insert(changeset) do

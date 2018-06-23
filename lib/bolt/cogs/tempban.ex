@@ -4,7 +4,6 @@ defmodule Bolt.Cogs.Tempban do
   alias Bolt.Helpers
   alias Bolt.Parsers
   alias Bolt.Repo
-  alias Bolt.Schema.Event
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -18,7 +17,7 @@ defmodule Bolt.Cogs.Tempban do
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
            {:ok, _event} <-
-             Handler.create(%Event{
+             Handler.create(%{
                timestamp: expiry,
                event: "UNBAN_MEMBER",
                data: %{
@@ -26,7 +25,7 @@ defmodule Bolt.Cogs.Tempban do
                  "user_id" => user_id
                }
              }),
-           infraction <- %Infraction{
+           infraction <- %{
              type: "tempban",
              guild_id: msg.guild_id,
              user_id: user_id,
@@ -34,7 +33,7 @@ defmodule Bolt.Cogs.Tempban do
              reason: if(reason != "", do: reason, else: nil),
              expires_at: expiry
            },
-           changeset <- Infraction.changeset(infraction),
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
         %Embed{
           title: "Temporary ban applied",

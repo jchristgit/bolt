@@ -13,14 +13,14 @@ defmodule Bolt.Cogs.Ban do
       with reason <- Enum.join(reason_list, " "),
            {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
-           infraction <- %Infraction{
+           infraction <- %{
              type: "ban",
              guild_id: msg.guild_id,
              user_id: user_id,
              actor_id: msg.author.id,
              reason: if(reason != "", do: reason, else: nil)
            },
-           changeset <- Infraction.changeset(infraction),
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
         %Embed{
           title: "Ban successful",

@@ -12,14 +12,14 @@ defmodule Bolt.Cogs.Warn do
     response =
       with reason when reason != "" <- Enum.join(reason_list, " "),
            {:ok, member} <- Converters.to_member(msg.guild_id, user),
-           infraction <- %Infraction{
+           infraction <- %{
              type: "warning",
              guild_id: msg.guild_id,
              user_id: member.user.id,
              actor_id: msg.author.id,
              reason: reason
            },
-           changeset <- Infraction.changeset(infraction),
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
         %Embed{
           title: "Warning created",

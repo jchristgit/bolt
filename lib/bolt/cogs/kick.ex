@@ -13,14 +13,14 @@ defmodule Bolt.Cogs.Kick do
       with reason <- Enum.join(reason_list, " "),
            {:ok, member} <- Converters.to_member(msg.guild_id, user),
            {:ok} <- Api.remove_guild_member(msg.guild_id, member.user.id),
-           infraction <- %Infraction{
+           infraction <- %{
              type: "kick",
              guild_id: msg.guild_id,
              user_id: member.user.id,
              actor_id: msg.author.id,
              reason: if(reason != "", do: reason, else: nil)
            },
-           changeset <- Infraction.changeset(infraction),
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
         %Embed{
           title: "Kick successful",

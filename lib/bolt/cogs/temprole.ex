@@ -5,7 +5,6 @@ defmodule Bolt.Cogs.Temprole do
   alias Bolt.Parsers
   alias Bolt.Repo
   alias Bolt.Events.Handler
-  alias Bolt.Schema.Event
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -25,7 +24,7 @@ defmodule Bolt.Cogs.Temprole do
                member.user.id,
                roles: Enum.uniq(member.roles ++ [role.id])
              ),
-           infraction <- %Infraction{
+           infraction <- %{
              type: "temprole",
              guild_id: msg.guild_id,
              user_id: member.user.id,
@@ -36,10 +35,10 @@ defmodule Bolt.Cogs.Temprole do
                "role_id" => role.id
              }
            },
-           changeset <- Infraction.changeset(infraction),
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset),
            {:ok, _event} <-
-             Handler.create(%Event{
+             Handler.create(%{
                timestamp: expiry,
                event: "REMOVE_ROLE",
                data: %{

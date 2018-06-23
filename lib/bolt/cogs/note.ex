@@ -11,14 +11,14 @@ defmodule Bolt.Cogs.Note do
     response =
       with {:ok, member} <- Converters.to_member(msg.guild_id, user),
            note when note != "" <- Enum.join(note_list, " "),
-           infraction = %Infraction{
+           infraction = %{
              type: "note",
              guild_id: msg.guild_id,
              user_id: member.user.id,
              actor_id: msg.author.id,
              reason: note
            },
-           changeset <- Infraction.changeset(infraction),
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
         %Embed{
           title: "Created a note for #{User.full_name(member.user)}",
