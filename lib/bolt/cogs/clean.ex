@@ -261,6 +261,13 @@ defmodule Bolt.Cogs.Clean do
         # Don't delete the original command invocation message.
         |> Enum.reject(&(&1.id == msg.id))
 
+      # Was the `content` option given? If yes, only delete messages with the given content.
+      to_delete = if options[:content] != nil do
+        Enum.filter(to_delete, &String.contains?(&1.content, options[:content]))
+      else
+        to_delete
+      end
+
       # Do we have any users we want to include specifically, instead of
       # scanning through all messages? If yes, only return messages
       # authored by the filtered users. otherwise, return all
