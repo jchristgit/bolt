@@ -11,6 +11,16 @@ defmodule Bolt.Cogs.Tag do
     Create.command(msg, args)
   end
 
+  def command(msg, ["list"]) do
+    alias Bolt.Cogs.Tag.List
+
+    List.command(msg)
+  end
+
+  def command(msg, ["list" | _args]) do
+    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 `list` subcommand expects no arguments")
+  end
+
   def command(msg, name_list) do
     alias Bolt.Cogs.Tag.Read
 
