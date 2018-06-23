@@ -247,10 +247,25 @@ defmodule Bolt.Commander.Server do
     },
     "tag" => %{
       callback: &Cogs.Tag.command/2,
-      help: "Tag manager. Create, read, update, or delete tags.",
+      help: """
+      Tag manager. Create, read, update, or delete tags.
+      Tags can be used for displaying commonly used information to your members on-demand.
+
+      **Subcommands**:
+      • `tag <name:str...>`: View the tag with the given name. Case-insensitive.
+      • `tag create <name:str> <content:str...>`: Create a new tag with the given name and content.
+
+      **Examples**:
+      ```rs
+      // create the tag "music" with some fancy music
+      tag create music https://www.youtube.com/watch?v=DLzxrzFCyOs
+
+      // view the tag "music"
+      tag music
+      """,
       usage: [
-        "tag <name:str>",
-        "tag create <name:str> <content:str>"
+        "tag <name:str...>",
+        "tag create <name:str> <content:str...>"
       ],
       predicates: [&Checks.guild_only/1]
     }
