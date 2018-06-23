@@ -6,19 +6,23 @@ defmodule Bolt.Schema.Tag do
     "@here"
   ]
   @disallowed_names [
-    "update",
+    "create",
+    "del",
+    "help",
     "modify",
     "delete",
-    "remove",
     "del",
+    "edit",
+    "raw",
     "rm",
     "insert",
     "push",
     "pop",
-    "help",
-    "show",
     "recent",
-    "replace"
+    "remove",
+    "replace",
+    "show",
+    "update",
   ]
 
   import Ecto.Changeset
