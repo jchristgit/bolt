@@ -36,7 +36,7 @@ defmodule Bolt.Cogs.Clean do
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ can't fetch channel messages or delete messages: #{message} (status #{status})"
+            "❌ can't fetch channel messages or delete messages: #{message} (status #{status})"
           )
     end
   end
@@ -48,7 +48,7 @@ defmodule Bolt.Cogs.Clean do
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ need `READ_MESSAGE_HISTORY` permission to do that"
+            "❌ need `READ_MESSAGE_HISTORY` permission to do that"
           )
 
       {:ok, messages} ->
@@ -58,7 +58,7 @@ defmodule Bolt.Cogs.Clean do
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ can't fetch messages: #{message} (status #{status})"
+            "❌ can't fetch messages: #{message} (status #{status})"
           )
     end
   end
@@ -73,7 +73,7 @@ defmodule Bolt.Cogs.Clean do
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ expected the message limit as the sole argument, but #{
+            "🚫 expected the message limit as the sole argument, but #{
               Helpers.clean_content(maybe_amount)
             } is not a valid number"
           )
@@ -82,14 +82,14 @@ defmodule Bolt.Cogs.Clean do
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ couldn't find any messages to delete, does the bot have `READ_MESSAGE_HISTORY` permission?"
+            "❌ couldn't find any messages to delete, does the bot have `READ_MESSAGE_HISTORY` permission?"
           )
 
       {:error, %{status_code: status, message: %{"message" => message}}} ->
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ can't fetch messages: #{message} (status #{status})"
+            "❌ can't fetch messages: #{message} (status #{status})"
           )
     end
   end
@@ -99,7 +99,7 @@ defmodule Bolt.Cogs.Clean do
     {:ok, _msg} =
       Api.create_message(
         msg.channel_id,
-        "⚠ expected the message limit as the sole argument, but got `#{
+        "🚫 expected the message limit as the sole argument, but got `#{
           unrecognized_args
           |> Enum.join(" ")
           |> Helpers.clean_content()
@@ -112,7 +112,7 @@ defmodule Bolt.Cogs.Clean do
     {:ok, _msg} =
       Api.create_message(
         msg.channel_id,
-        "⚠ expected either a sole limit argument or exact options, got both"
+        "🚫 expected either a sole limit argument or exact options, got both"
       )
   end
 
@@ -126,14 +126,16 @@ defmodule Bolt.Cogs.Clean do
         {:ok, _msg} =
           Api.create_message(
             msg.channel_id,
-            "⚠ got status #{status} from the API, reason: #{Enum.join(errors, ", ")}"
+            "❌ API error: #{Enum.join(errors, ", ")} (status `#{status}`)"
           )
 
       {:error, reason} ->
-        {:ok, _msg} = Api.create_message(msg.channel_id, "⚠ error: #{reason}")
+        response = "❌ error: #{Helpers.clean_content(reason)}"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
-      anything ->
-        Api.create_message(msg.channel_id, "error: #{inspect(anything)}")
+      _ ->
+        response = "❌ unexpected error, perhaps try again later"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
 
@@ -152,7 +154,7 @@ defmodule Bolt.Cogs.Clean do
     {:ok, _msg} =
       Api.create_message(
         msg.channel_id,
-        "⚠ unrecognized argument(s) or invalid value: #{invalid_args}"
+        "🚫 unrecognized argument(s) or invalid value: #{invalid_args}"
       )
   end
 
@@ -166,7 +168,7 @@ defmodule Bolt.Cogs.Clean do
       value ->
         case Converters.to_channel(msg.guild_id, value) do
           {:ok, channel} -> {:ok, channel.id}
-          {:error, reason} -> {:error, "⚠ #{reason}"}
+          {:error, _reason} = error -> error
         end
     end
   end
@@ -187,7 +189,7 @@ defmodule Bolt.Cogs.Clean do
 
           {:error, _reason} ->
             {:error,
-             "⚠ #{Helpers.clean_content(user)} is not a valid user (of this guild) or snowflake"}
+             "🚫 `#{Helpers.clean_content(user)}` is not a valid user (of this guild) or snowflake"}
         end
     end
   end
@@ -210,7 +212,7 @@ defmodule Bolt.Cogs.Clean do
       |> Enum.reject(&(&1 == :error))
 
     if Enum.empty?(valid_users) do
-      {:error, "⚠ failed to parse any valid users"}
+      {:error, "❌ failed to parse any valid users"}
     else
       {:ok, valid_users}
     end
@@ -280,10 +282,10 @@ defmodule Bolt.Cogs.Clean do
     else
       {:ok, []} ->
         {:error,
-         "⚠ couldn't find any messages in the channel - does the bot have the `READ_MESSAGE_HISTORY` permission?"}
+         "❌ couldn't find any messages in the channel - does the bot have the `READ_MESSAGE_HISTORY` permission?"}
 
       {:error, %{status_code: status, message: %{"message" => message}}} ->
-        {:error, "⚠ #{message} (status code #{status})"}
+        {:error, "❌ API error: #{message} (status code #{status})"}
 
       {:error, reason} ->
         {:error, reason}
