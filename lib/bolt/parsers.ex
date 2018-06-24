@@ -45,7 +45,7 @@ defmodule Bolt.Parsers do
 
   @doc "Parse a 'human' datetime that lies in the future."
   @spec human_future_date(String.t()) :: {:ok, DateTime.t()} | {:error, String.t()}
-  def human_future_date(text) do
+  def human_future_date(text, starting_timestamp \\ DateTime.utc_now()) do
     parsed_seconds =
       text
       |> Helpers.clean_content()
@@ -69,7 +69,7 @@ defmodule Bolt.Parsers do
         parsed_seconds = Enum.map(parsed_seconds, fn {:ok, seconds} -> seconds end)
 
         {:ok, result_timestamp} =
-          DateTime.utc_now()
+          starting_timestamp
           |> DateTime.to_unix()
           |> (fn now -> now + Enum.sum(parsed_seconds) end).()
           |> DateTime.from_unix()
