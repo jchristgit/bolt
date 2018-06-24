@@ -26,7 +26,8 @@ defmodule Bolt.MixProject do
       {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
       {:ecto, "~> 2.2.10"},
       {:postgrex, "~> 0.13.5"},
-      {:timex, "~> 3.1"}
+      {:timex, "~> 3.1"},
+      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
     ]
   end
 end
