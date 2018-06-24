@@ -1,11 +1,8 @@
 defmodule Bolt.Cogs.Ban do
-  alias Bolt.Constants
   alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.User
 
   def command(msg, [user | reason_list]) do
@@ -21,35 +18,25 @@ defmodule Bolt.Cogs.Ban do
              reason: if(reason != "", do: reason, else: nil)
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, created_infraction} <- Repo.insert(changeset) do
-        %Embed{
-          title: "Ban successful",
-          description: """
-          Banned #{
-            if converted_user != nil,
-              do: "#{User.full_name(converted_user)} (`#{converted_user.id}`)",
-              else: user_id
-          }#{if reason != nil, do: ", reason: `#{reason}`"}
-          """,
-          color: Constants.color_green(),
-          footer: %Footer{
-            text: "Infraction created with ID ##{created_infraction.id}"
-          }
-        }
+           {:ok, _created_infraction} <- Repo.insert(changeset) do
+        user_string =
+          if converted_user != nil do
+            "#{User.full_name(converted_user)} (`#{converted_user.id}`)"
+          else
+            "`#{user_id}`"
+          end
+
+        if reason do
+          "👌 banned #{user_string}"
+        else
+          "👌 banned #{user_string} (`#{reason}`)"
+        end
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          %Embed{
-            title: "Cannot ban user",
-            description: "API Error: #{reason} (status code `#{status}`)",
-            color: Constants.color_red()
-          }
+          "❌ API error: #{reason} (status code `#{status}`)"
 
         {:error, reason} ->
-          %Embed{
-            title: "Cannot ban user",
-            description: "Error: #{reason}",
-            color: Constants.color_red()
-          }
+          "❌ error: #{Helpers.clean_content(reason)}"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
