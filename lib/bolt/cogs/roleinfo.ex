@@ -1,5 +1,4 @@
 defmodule Bolt.Cogs.RoleInfo do
-  alias Bolt.Constants
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -52,15 +51,14 @@ defmodule Bolt.Cogs.RoleInfo do
   end
 
   def command(msg, role) do
-    embed =
-      case Converters.to_role(msg.guild_id, role, true) do
-        {:ok, matching_role} ->
-          embed = format_role_info(matching_role)
-          {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+    case Converters.to_role(msg.guild_id, role, true) do
+      {:ok, matching_role} ->
+        embed = format_role_info(matching_role)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
 
-        {:error, reason} ->
-          response = "🚫 invalid argument, expected `role`"
-          {:ok, _msg} = Api.create_message(msg.channel_id, response)
-      end
+      {:error, reason} ->
+        response = "🚫 conversion error: #{Helpers.clean_content(reason)}"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    end
   end
 end
