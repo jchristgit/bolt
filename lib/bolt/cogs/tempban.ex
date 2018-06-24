@@ -57,4 +57,9 @@ defmodule Bolt.Cogs.Tempban do
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
+
+  def command(msg, _args) do
+    response = "🚫 invalid arguments, check `help tempban` for details"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
 end
