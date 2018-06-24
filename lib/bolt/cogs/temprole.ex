@@ -1,5 +1,4 @@
 defmodule Bolt.Cogs.Temprole do
-  alias Bolt.Constants
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Bolt.Parsers
@@ -7,9 +6,6 @@ defmodule Bolt.Cogs.Temprole do
   alias Bolt.Events.Handler
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Embed.Footer
-  alias Nostrum.Struct.Guild.Role
   alias Nostrum.Struct.User
 
   def command(msg, [user, role, duration | reason_list]) do
@@ -36,7 +32,7 @@ defmodule Bolt.Cogs.Temprole do
              }
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, created_infraction} <- Repo.insert(changeset),
+           {:ok, _created_infraction} <- Repo.insert(changeset),
            {:ok, _event} <-
              Handler.create(%{
                timestamp: expiry,
@@ -47,60 +43,24 @@ defmodule Bolt.Cogs.Temprole do
                  "role_id" => role.id
                }
              }) do
-        %Embed{
-          title: "Temporary role applied",
-          description: """
-          Attached the role #{Role.mention(role)} to #{User.mention(member.user)} until #{
-            Helpers.datetime_to_human(expiry)
-          }.
-          An infraction was created with ID `#{created_infraction.id}`.
-          """,
-          color: Constants.color_green(),
-          footer: %Footer{
-            text: "Authored by #{User.full_name(msg.author)} (#{msg.author.id})",
-            icon_url: User.avatar_url(msg.author)
-          }
-        }
+               "👌 temporary role #{role.name} applied to "
+                          <> "#{User.full_name(member.user)} until #{Helpers.datetime_to_human(expiry)}"
       else
         {:error, %{message: %{"message" => reason}, status_code: status}} ->
-          %Embed{
-            title: "Failed to apply temporary role",
-            description: "API Error: #{reason} (status #{status})",
-            color: Constants.color_red()
-          }
+          "❌ API error: #{reason} (status code `#{status}`)"
 
         {:error, %{message: :timeout}} ->
-          %Embed{
-            title: "Failed to apply temporary role",
-            description: "The Discord API did not respond with anything in time. Perhaps retry?",
-            color: Constants.color_red()
-          }
+          "❌ API request timed out, please retry"
 
         {:error, reason} ->
-          %Embed{
-            title: "Failed to apply temporary role",
-            description: "Error: #{reason}",
-            color: Constants.color_red()
-          }
+          "❌ error: #{Helpers.clean_content(reason)}"
       end
 
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
-  def command(msg, incorrect_args) do
-    response = %Embed{
-      title: "Incorrect command invocation",
-      description: """
-      Failed to match
-        `<user:member> <role:role> <duration:duration> [reason:str]`
-      from given arguments '#{incorrect_args}'.
-      """,
-      color: Constants.color_red(),
-      footer: %Footer{
-        text: "Check `help temprole` for more information."
-      }
-    }
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+  def command(msg, _incorrect_args) do
+    response = "🚫 failed to parse arguments, check `help temprole` for details"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
