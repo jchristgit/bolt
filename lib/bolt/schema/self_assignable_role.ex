@@ -6,7 +6,7 @@ defmodule Bolt.Schema.SelfAssignableRoles do
 
   @primary_key {:guild_id, :id, []}
   schema "selfassignableroles" do
-    field :roles, {:array, :id}
+    field(:roles, {:array, :id})
   end
 
   def changeset(selfassignableroles, params \\ %{}) do

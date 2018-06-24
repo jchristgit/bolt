@@ -2,7 +2,11 @@ defmodule Bolt.Cogs.Role do
   alias Nostrum.Api
 
   def command(msg, ["allow"]) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 `allow` subcommand expects a role as its sole argument")
+    {:ok, _msg} =
+      Api.create_message(
+        msg.channel_id,
+        "🚫 `allow` subcommand expects a role as its sole argument"
+      )
   end
 
   def command(msg, ["allow" | role_name_list]) do
@@ -13,7 +17,11 @@ defmodule Bolt.Cogs.Role do
   end
 
   def command(msg, ["deny"]) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 `deny` subcommand expects a role as its sole argument")
+    {:ok, _msg} =
+      Api.create_message(
+        msg.channel_id,
+        "🚫 `deny` subcommand expects a role as its sole argument"
+      )
   end
 
   def command(msg, ["deny" | role_name_list]) do
@@ -24,6 +32,7 @@ defmodule Bolt.Cogs.Role do
   end
 
   def command(msg, _) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 unknown subcommand, see `help role` for information")
+    {:ok, _msg} =
+      Api.create_message(msg.channel_id, "🚫 unknown subcommand, see `help role` for information")
   end
 end

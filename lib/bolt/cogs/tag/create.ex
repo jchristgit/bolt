@@ -31,14 +31,16 @@ defmodule Bolt.Cogs.Tag.Create do
       {:error, changeset} ->
         header = "🚫 invalid arguments:"
 
-          error_map = changeset
+        error_map =
+          changeset
           |> Changeset.traverse_errors(fn {msg, opts} ->
             Enum.reduce(opts, msg, fn {key, value}, acc ->
               String.replace(acc, "%{#{key}}", to_string(value))
             end)
           end)
 
-          response_content = Map.keys(error_map)
+        response_content =
+          Map.keys(error_map)
           |> Stream.map(&"#{&1} #{error_map[&1]}")
           |> Enum.join("\n")
 

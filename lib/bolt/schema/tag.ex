@@ -22,7 +22,7 @@ defmodule Bolt.Schema.Tag do
     "remove",
     "replace",
     "show",
-    "update",
+    "update"
   ]
 
   import Ecto.Changeset

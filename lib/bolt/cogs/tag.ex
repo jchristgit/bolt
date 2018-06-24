@@ -2,7 +2,8 @@ defmodule Bolt.Cogs.Tag do
   alias Nostrum.Api
 
   def command(msg, ["create"]) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 `create` subcommand expects at least two arguments")
+    {:ok, _msg} =
+      Api.create_message(msg.channel_id, "🚫 `create` subcommand expects at least two arguments")
   end
 
   def command(msg, ["create" | args]) do
@@ -12,7 +13,11 @@ defmodule Bolt.Cogs.Tag do
   end
 
   def command(msg, ["delete"]) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 `delete` subcommand expects the tag name as its sole argument")
+    {:ok, _msg} =
+      Api.create_message(
+        msg.channel_id,
+        "🚫 `delete` subcommand expects the tag name as its sole argument"
+      )
   end
 
   def command(msg, ["delete" | tag_name]) do

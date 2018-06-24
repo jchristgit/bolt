@@ -46,7 +46,11 @@ defmodule Bolt.Converters.Role do
   def find_role(roles, text, ilike) do
     case role_mention_to_id(text) do
       {:ok, id} ->
-        case Enum.find(roles, {:error, "No role with ID `#{id}` found on this guild"}, &(&1.id == id)) do
+        case Enum.find(
+               roles,
+               {:error, "No role with ID `#{id}` found on this guild"},
+               &(&1.id == id)
+             ) do
           {:error, _reason} = error -> error
           role -> {:ok, role}
         end

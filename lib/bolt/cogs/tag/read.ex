@@ -11,20 +11,23 @@ defmodule Bolt.Cogs.Tag.Read do
 
   def command(msg, name) do
     guild_tags = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag) |> Repo.all()
-    case Enum.find(guild_tags, &String.downcase(&1.name) == String.downcase(name)) do
-      nil ->
-        close_matches = guild_tags
-                        |> Enum.filter(&String.jaro_distance(&1.name, name) > 0.3)
 
-        response = if close_matches == [] do
-          "❌ no tag named exactly as or similarly to "
-          <> "`#{Helpers.clean_content(name)}` found"
-        else
-          """
-          ❌ no direct match found, but found the following close matches:
-          #{close_matches |> Stream.map(&Helpers.clean_content(&1.name)) |> Enum.join(", ")}
-          """
-        end
+    case Enum.find(guild_tags, &(String.downcase(&1.name) == String.downcase(name))) do
+      nil ->
+        close_matches =
+          guild_tags
+          |> Enum.filter(&(String.jaro_distance(&1.name, name) > 0.3))
+
+        response =
+          if close_matches == [] do
+            "❌ no tag named exactly as or similarly to " <>
+              "`#{Helpers.clean_content(name)}` found"
+          else
+            """
+            ❌ no direct match found, but found the following close matches:
+            #{close_matches |> Stream.map(&Helpers.clean_content(&1.name)) |> Enum.join(", ")}
+            """
+          end
 
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
@@ -34,20 +37,21 @@ defmodule Bolt.Cogs.Tag.Read do
           description: matching_tag.content,
           timestamp: DateTime.to_iso8601(matching_tag.inserted_at),
           color: Constants.color_blue(),
-          footer: (fn ->
-            case Helpers.get_member(msg.guild_id, matching_tag.author_id) do
-              {:ok, member} ->
-                %Footer{
-                  text: "Created by #{User.full_name(member.user)}",
-                  icon_url: User.avatar_url(member.user)
-                }
+          footer:
+            (fn ->
+               case Helpers.get_member(msg.guild_id, matching_tag.author_id) do
+                 {:ok, member} ->
+                   %Footer{
+                     text: "Created by #{User.full_name(member.user)}",
+                     icon_url: User.avatar_url(member.user)
+                   }
 
-              {:error, _reason} ->
-                %Footer{
-                  text: "Created by unknown user #{matching_tag.author_id}"
-                }
-            end
-          end).()
+                 {:error, _reason} ->
+                   %Footer{
+                     text: "Created by unknown user #{matching_tag.author_id}"
+                   }
+               end
+             end).()
         }
 
         {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
