@@ -1,13 +1,10 @@
 defmodule Bolt.Cogs.Tempban do
-  alias Bolt.Constants
   alias Bolt.Events.Handler
   alias Bolt.Helpers
   alias Bolt.Parsers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.User
 
   def command(msg, [user, duration | reason_list]) do
@@ -35,14 +32,14 @@ defmodule Bolt.Cogs.Tempban do
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, _created_infraction} <- Repo.insert(changeset) do
-             user_string =
-               if converted_user == nil do
-                 "`#{user_id}`"
-               else
-                 "#{User.full_name(converted_user)} (`#{user_id}`)"
-               end
-            "temporarily banned #{user_string} until #{Helpers.datetime_to_human(expiry)}"
+        user_string =
+          if converted_user == nil do
+            "`#{user_id}`"
+          else
+            "#{User.full_name(converted_user)} (`#{user_id}`)"
+          end
 
+        "👌 temporarily banned #{user_string} until #{Helpers.datetime_to_human(expiry)}"
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           "🚫 API error: #{reason} (status code `#{status}`)"
