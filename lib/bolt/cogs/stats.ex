@@ -34,12 +34,7 @@ defmodule Bolt.Cogs.Stats do
   end
 
   def command(msg, _unknown_args) do
-    response = %Embed{
-      title: "Invalid invocation",
-      description: "This command does not accept any arguments.",
-      color: Constants.color_red()
-    }
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    response = "🚫 this command takes no arguments"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
