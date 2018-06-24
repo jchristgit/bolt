@@ -5,6 +5,32 @@ defmodule Bolt.Commander.Server do
   use GenServer
 
   @commands %{
+    ## Built-in help with dummy commands,
+    "syntax" => %{
+      callback: &Cogs.Dummy.command/2,
+      help: """
+      Bolt uses various symbols and fancy names to describe how to use a command:
+
+      **Argument syntax**
+      If you want to pass multiple words as a single argument, surround it in quotes, for example `tempban "Some Spammer" 2d`.
+      • `<arg>` is a required argument.
+      • `[arg]` is an optional argument.
+      • `arg...` means the argument will "consume the rest" - if your argument spans more than one word, you don't need to surround it with quotes.
+
+      **Argument types**
+      In argument specifications, the name to the left of `:` stands for the name of the argument, and the name to the right stands for the argument *type*. The following types are supported:
+      • `member`: A guild member. You can specify this with the member ID, by mention, a User#Discrim combination, the username, or the nickname.
+      • `role`: A guild role. You can specify this with the role ID, by mention, or with the role name.
+      • `channel`: A guild channel. You can specify this with the channel ID, by mention, or with the channel name.
+      • `duration`: A duration, usually for expiration dates. For example:
+        `3d4h`: 3 days and 4 hours.
+        `30s`: 30 seconds.
+        `5w3d`: 5 weeks and 3 days.
+        `w` for **w**eeks, `d` for **d**ays, `h` for **h**ours, `m` for **m**inutes, and `s` for **s**econds are supported.
+      """,
+      usage: ["help syntax"]
+    },
+
     ## Meta Commands
     "guildinfo" => %{
       callback: &Cogs.GuildInfo.command/2,
