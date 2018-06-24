@@ -1,7 +1,5 @@
 defmodule Bolt.Commander.Checks do
-  alias Bolt.Constants
   alias Bolt.Helpers
-  alias Nostrum.Struct.Embed
   use Bitwise
 
   @doc """
@@ -13,16 +11,11 @@ defmodule Bolt.Commander.Checks do
   be detected as guild messages properly.
   """
   @spec guild_only(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def guild_only(msg) do
     case msg.guild_id do
       nil ->
-        {:error,
-         %Embed{
-           title: "A required predicate for this command failed",
-           description: "This command can only be used on guilds.",
-           color: Constants.color_red()
-         }}
+        {:error, "this command can only be used on guilds"}
 
       _guild_id ->
         {:ok, msg}
@@ -38,73 +31,50 @@ defmodule Bolt.Commander.Checks do
   # If yes, returns `{:ok, msg}`
   # If no, returns `{:error, embed}`
   # If an error occured, returns `{:error, embed}`
-  @spec has_permission?(Nostrum.Struct.Message.t(), Integer, Embed.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
-  defp has_permission?(msg, to_check, unauthorized_embed) do
+  @spec has_permission?(Nostrum.Struct.Message.t(), Integer, String.t()) ::
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  defp has_permission?(msg, to_check, permission_name) do
     case Helpers.top_role_for(msg.guild_id, msg.author.id) do
       {:ok, role} ->
         case is_admin?(role.permissions) or (role.permissions &&& to_check) == to_check do
           true -> {:ok, msg}
-          false -> {:error, unauthorized_embed}
+          false -> {:error, "🚫 you need the `#{permission_name}` permission to do that"}
         end
 
       {:error, reason} ->
-        {:error,
-         %Embed{
-           title: "Failed to check a required predicate",
-           description: "Cannot obtain permission information: #{reason}",
-           color: Constants.color_red()
-         }}
+        {:error, "❌ cannot check permission information: #{reason}"}
     end
-  end
-
-  @not_allowed_titles [
-    "Nah",
-    "Nope",
-    "I think not...",
-    "Let this be lesson for you",
-    "Go ahead and cry, baby",
-    "The burning you feel? It is shame"
-  ]
-
-  @spec missing_permissions_embed(String.t()) :: Embed.t()
-  defp missing_permissions_embed(content) do
-    %Embed{
-      title: Enum.random(@not_allowed_titles),
-      description: "You're not allowed to do that - required permission: #{content}",
-      color: Constants.color_red()
-    }
   end
 
   @bitflags_manage_roles 0x10000000
   @doc "Checks that the message author has the `MANAGE_ROLES` permission."
   @spec can_manage_roles?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_manage_roles?(msg) do
-    has_permission?(msg, @bitflags_manage_roles, missing_permissions_embed("manage roles"))
+    has_permission?(msg, @bitflags_manage_roles, "MANAGE_ROLES")
   end
 
   @bitflags_manage_messages 0x00002000
   @doc "Checks that the message author has the `MANAGE_MESSSAGES` permission."
   @spec can_manage_messages?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_manage_messages?(msg) do
-    has_permission?(msg, @bitflags_manage_messages, missing_permissions_embed("manage messages"))
+    has_permission?(msg, @bitflags_manage_messages, "MANAGE_MESSAGES")
   end
 
   @bitflags_kick_members 0x00000002
   @doc "Checks that the message author has the `KICK_MEMBERS` permission."
   @spec can_kick_members?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_kick_members?(msg) do
-    has_permission?(msg, @bitflags_kick_members, missing_permissions_embed("kick members"))
+    has_permission?(msg, @bitflags_kick_members, "KICK_MEMBERS")
   end
 
   @bitflags_ban_members 0x00000004
   @doc "Checks that the message author has the `BAN_MEMBERS` permission."
   @spec can_ban_members?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, Embed.t()}
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_ban_members?(msg) do
-    has_permission?(msg, @bitflags_ban_members, missing_permissions_embed("ban members"))
+    has_permission?(msg, @bitflags_ban_members, "BAN_MEMBERS")
   end
 end
