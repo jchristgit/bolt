@@ -254,6 +254,7 @@ defmodule Bolt.Commander.Server do
       **Subcommands**:
       • `tag <name:str...>`: View the tag with the given name. Case-insensitive.
       • `tag create <name:str> <content:str...>`: Create a new tag with the given name and content.
+      • `tag delete <name:str...>`: Delete the tag with the given name. Case-sensitive.
 
       **Examples**:
       ```rs
@@ -262,10 +263,14 @@ defmodule Bolt.Commander.Server do
 
       // view the tag "music"
       tag music
+
+      // delete the tag "music"
+      tag delete music
       """,
       usage: [
         "tag <name:str...>",
-        "tag create <name:str> <content:str...>"
+        "tag create <name:str> <content:str...>",
+        "tag delete <name:str...>"
       ],
       predicates: [&Checks.guild_only/1]
     }
