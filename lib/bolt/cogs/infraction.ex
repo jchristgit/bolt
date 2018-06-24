@@ -10,83 +10,47 @@ defmodule Bolt.Cogs.Infraction do
   alias Nostrum.Struct.Embed
 
   def command(msg, ["detail", maybe_id]) do
-    response =
-      case Integer.parse(maybe_id) do
-        {value, _} when value > 0 ->
-          Detail.get_response(msg, value)
+    case Integer.parse(maybe_id) do
+      {value, _} when value > 0 ->
+        embed = Detail.get_response(msg, value)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
 
-        {_value, _} ->
-          %Embed{
-            title: "Command error: `infraction detail`",
-            description: "The infraction ID to look up may not be negative.",
-            color: Constants.color_red()
-          }
-
-        :error ->
-          %Embed{
-            title: "Command error: `infraction detail`",
-            description:
-              "`infraction detail` expects the infraction ID " <>
-                "as its sole argument, got '#{maybe_id}' instead",
-            color: Constants.color_red()
-          }
-      end
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+      :error ->
+        response = "🚫 invalid argument, expected `int`"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    end
   end
 
   def command(msg, ["detail"]) do
-    response = %Embed{
-      title: "Cannot show infraction detail",
-      description: "An infraction ID to look up is required, e.g. `infr detail 3`.",
-      color: Constants.color_red()
-    }
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    response = "🚫 `detail` subcommand expects the infraction ID as its sole argument"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
   def command(msg, ["reason", maybe_id | reason_list]) do
     response =
       case Integer.parse(maybe_id) do
-        {value, _} when value > 0 ->
+        {value, _} ->
           case Enum.join(reason_list, " ") do
             "" ->
-              %Embed{
-                title: "Command error: `infraction reason`",
-                description: "The new reason may not be empty.",
-                color: Constants.color_red()
-              }
+              response = "🚫 new infraction reason must not be empty"
+              {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
             reason ->
-              Reason.get_response(msg, value, reason)
+              embed = Reason.get_response(msg, value, reason)
+              {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
           end
 
-        {_value, _} ->
-          %Embed{
-            title: "Command error: `infraction reason`",
-            description: "The infraction ID to update may not be negative.",
-            color: Constants.color_red()
-          }
-
         :error ->
-          %Embed{
-            title: "Command error: `infraction reason`",
-            description: "Could not parse an infraction ID from `#{maybe_id}`",
-            color: Constants.color_red()
-          }
+          response = "🚫 invalid argument, expected `int`"
+          {:ok, _msg} = Api.create_message(msg.channel_id, response)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
   end
 
   def command(msg, ["reason"]) do
-    response = %Embed{
-      title: "Cannot update infraction reason",
-      description: "An infraction ID to update is required, e.g. `infr reason 3 spamming`.",
-      color: Constants.color_red()
-    }
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    response = "🚫 expected at least 2 arguments, got 0"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
   def command(msg, ["list" | maybe_type]) do
@@ -101,26 +65,13 @@ defmodule Bolt.Cogs.Infraction do
         Paginator.paginate_over(msg, base_embed, pages)
 
       {:error, reason} ->
-        response = %Embed{
-          title: "invalid command invocation",
-          description: "error while parsing arguments: #{reason}",
-          color: Constants.color_red()
-        }
-
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+        response = "🚫 invalid user or snowflake: #{Helpers.clean_content(reason)}"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
 
-  def command(msg, anything) do
-    response = %Embed{
-      title: "unknown subcommand or args: #{anything}",
-      description: """
-      Valid subcommands: `detail`
-      Use `help infraction` for more information.
-      """,
-      color: Constants.color_red()
-    }
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+  def command(msg, _anything) do
+    response = "🚫 invalid subcommand, view `help infraction` for details"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
