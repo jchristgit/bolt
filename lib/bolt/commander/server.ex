@@ -57,6 +57,12 @@ defmodule Bolt.Commander.Server do
       help: "Show statistics about the bot.",
       usage: ["stats"]
     },
+    "lsar" => %{
+      callback: &Cogs.Lsar.command/2,
+      help: "Show self-assignable roles.",
+      usage: ["lsar"],
+      predicates: [&Checks.guild_only/1]
+    },
 
     ## Moderation Commands
     "clean" => %{
