@@ -20,10 +20,10 @@ defmodule Bolt.Cogs.Remove do
           "🚫 that role is not self-assignable"
 
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          "🚫 API error: #{reason} (status code #{status})"
+          "❌ API error: #{reason} (status code #{status})"
 
         {:error, reason} ->
-          "🚫 #{Helpers.clean_content(reason)}"
+          "❌ error: #{Helpers.clean_content(reason)}"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
