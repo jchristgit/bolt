@@ -34,36 +34,23 @@ defmodule Bolt.Cogs.Tempban do
              expires_at: expiry
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, created_infraction} <- Repo.insert(changeset) do
-        %Embed{
-          title: "Temporary ban applied",
-          description:
-            if(
-              converted_user == nil,
-              do: "`#{user_id}`",
-              else: "#{User.full_name(converted_user)} (`#{user_id}`)"
-            ) <> " has been temporary banned until #{Helpers.datetime_to_human(expiry)}",
-          color: Constants.color_green(),
-          footer: %Footer{
-            text: "Infraction created with ID ##{created_infraction.id}"
-          }
-        }
+           {:ok, _created_infraction} <- Repo.insert(changeset) do
+             user_string =
+               if converted_user == nil do
+                 "`#{user_id}`"
+               else
+                 "#{User.full_name(converted_user)} (`#{user_id}`)"
+               end
+            "temporarily banned #{user_string} until #{Helpers.datetime_to_human(expiry)}"
+
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          %Embed{
-            title: "Cannot tempban user",
-            description: "API Error: #{reason} (status code `#{status}`)",
-            color: Constants.color_red()
-          }
+          "🚫 API error: #{reason} (status code `#{status}`)"
 
         {:error, reason} ->
-          %Embed{
-            title: "Cannot tempban user",
-            description: "Error: #{reason}",
-            color: Constants.color_red()
-          }
+          "🚫 error: #{reason}"
       end
 
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
