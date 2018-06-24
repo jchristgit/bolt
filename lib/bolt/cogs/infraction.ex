@@ -1,13 +1,11 @@
 defmodule Bolt.Cogs.Infraction do
-  alias Bolt.Cogs.Infraction.Detail
-  alias Bolt.Cogs.Infraction.List
-  alias Bolt.Cogs.Infraction.Reason
-  alias Bolt.Cogs.Infraction.User
   alias Bolt.Helpers
   alias Bolt.Paginator
   alias Nostrum.Api
 
   def command(msg, ["detail", maybe_id]) do
+    alias Bolt.Cogs.Infraction.Detail
+
     case Integer.parse(maybe_id) do
       {value, _} when value > 0 ->
         embed = Detail.get_response(msg, value)
@@ -25,6 +23,8 @@ defmodule Bolt.Cogs.Infraction do
   end
 
   def command(msg, ["reason", maybe_id | reason_list]) do
+    alias Bolt.Cogs.Infraction.Reason
+
     response =
       case Integer.parse(maybe_id) do
         {value, _} ->
@@ -52,11 +52,15 @@ defmodule Bolt.Cogs.Infraction do
   end
 
   def command(msg, ["list" | maybe_type]) do
+    alias Bolt.Cogs.Infraction.List
+
     {base_embed, pages} = List.prepare_for_paginator(msg, maybe_type)
     Paginator.paginate_over(msg, base_embed, pages)
   end
 
   def command(msg, ["user" | maybe_user]) do
+    alias Bolt.Cogs.Infraction.User
+
     case Helpers.into_id(msg.guild_id, Enum.join(maybe_user, " ")) do
       {:ok, snowflake, user} ->
         {base_embed, pages} = User.prepare_for_paginator(msg, {snowflake, user})
