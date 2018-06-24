@@ -43,8 +43,14 @@ defmodule Bolt.Cogs.Temprole do
                  "role_id" => role.id
                }
              }) do
-               "👌 temporary role #{role.name} applied to "
-                          <> "#{User.full_name(member.user)} until #{Helpers.datetime_to_human(expiry)}"
+               response = "👌 temporary role `#{role.name}` applied to "
+                      <> "#{User.full_name(member.user)} until #{Helpers.datetime_to_human(expiry)}"
+
+              if reason != "" do
+                response <> " (`#{Helpers.clean_content(reason)}`)"
+              else
+                response
+              end
       else
         {:error, %{message: %{"message" => reason}, status_code: status}} ->
           "❌ API error: #{reason} (status code `#{status}`)"
