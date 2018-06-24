@@ -18,7 +18,7 @@ defmodule Bolt.Commander.Server do
       • `arg...` means the argument will "consume the rest" - if your argument spans more than one word, you don't need to surround it with quotes.
 
       **Argument types**
-      In argument specifications, the name to the left of `:` stands for the name of the argument, and the name to the right stands for the argument *type*. The following types are supported:
+      In argument specifications, the name preceding of `:` stands for the name of the argument, and the name following stands for the argument *type*. The following types are supported:
       • `member`: A guild member. You can specify this with the member ID, by mention, a User#Discrim combination, the username, or the nickname.
       • `role`: A guild role. You can specify this with the role ID, by mention, or with the role name.
       • `channel`: A guild channel. You can specify this with the channel ID, by mention, or with the channel name.
