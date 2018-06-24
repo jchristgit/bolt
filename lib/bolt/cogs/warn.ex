@@ -1,11 +1,9 @@
 defmodule Bolt.Cogs.Warn do
-  alias Bolt.Constants
   alias Bolt.Converters
+  alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.User
 
   def command(msg, [user | reason_list]) do
@@ -20,33 +18,21 @@ defmodule Bolt.Cogs.Warn do
              reason: reason
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, created_infraction} <- Repo.insert(changeset) do
-        %Embed{
-          title: "Warning created",
-          description:
-            "Warned user #{User.mention(member.user)} (ID #{member.user.id}), " <>
-              "reason: `#{reason}`",
-          color: Constants.color_green(),
-          footer: %Footer{
-            text: "Infraction created with ID ##{created_infraction.id}"
-          }
-        }
+           {:ok, _created_infraction} <- Repo.insert(changeset) do
+        "👌 warned #{User.full_name(member.user)} (`#{Helpers.clean_content(reason)}`)"
       else
         "" ->
-          %Embed{
-            title: "Invalid invocation",
-            description: "Must provide a reason to warn the user for.",
-            color: Constants.color_red()
-          }
+          "🚫 must provide a reason to warn the user for"
 
         {:error, reason} ->
-          %Embed{
-            title: "Cannot create warning",
-            description: "Unexpected error: #{reason}",
-            color: Constants.color_red()
-          }
+          "🚫 error: #{Helpers.clean_content(reason)}"
       end
 
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, _anything) do
+    response = "🚫 command expects at least two arguments, see `help warn` for details"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
