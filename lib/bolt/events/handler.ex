@@ -1,4 +1,8 @@
 defmodule Bolt.Events.Handler do
+  alias Bolt.Events.Deserializer
+  alias Bolt.Repo
+  alias Bolt.Schema.Event
+  alias Ecto.Changeset
   use GenServer
 
   ## Client API
@@ -7,27 +11,33 @@ defmodule Bolt.Events.Handler do
     GenServer.start_link(__MODULE__, :ok, options)
   end
 
-  def create(event) do
-    alias Bolt.Events.Deserializer
-    alias Bolt.Repo
-    alias Bolt.Schema
-    alias Bolt.Schema.Event
-    alias Ecto.Changeset
+  def create(event_map) do
+    changeset = Event.changeset(%Event{}, event_map)
 
-    changeset = Schema.Event.changeset(%Event{}, event)
-
-    with true <- event.event in Deserializer.valid_events(),
+    with true <- event_map.event in Deserializer.valid_events(),
          {:ok, created_event} <- Repo.insert(changeset) do
       GenServer.call(__MODULE__, {:create, created_event})
     else
       false ->
-        {:error, "`#{event.type}` is not a valid event type"}
+        {:error, "`#{event_map.type}` is not a valid event type"}
 
       {:error, %Changeset{} = changeset} ->
         {:error, changeset.errors}
 
       {:error, _reason} = error ->
         error
+    end
+  end
+
+  def update(event, changes_map) do
+    changeset = Event.changeset(event, changes_map)
+
+    with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, event.id}),
+         {:ok, updated_event} <- Repo.update(changeset),
+         {:ok, _event} <- GenServer.call(__MODULE__, {:create, event}) do
+      {:ok, updated_event}
+    else
+      {:error, _reason} = error -> error
     end
   end
 
@@ -56,7 +66,7 @@ defmodule Bolt.Events.Handler do
           )
         }
       end)
-      |> Map.new(fn {event, timer} -> {event, timer} end)
+      |> Map.new(fn {event, timer} -> {event.id, timer} end)
 
     {:ok, timers}
   end
@@ -70,9 +80,20 @@ defmodule Bolt.Events.Handler do
          {:expired, event},
          DateTime.diff(event.timestamp, DateTime.utc_now(), :millisecond)
        )}
-      |> (fn {event, timer} -> Map.put(timers, event, timer) end).()
+      |> (fn {event, timer} -> Map.put(timers, event.id, timer) end).()
 
     {:reply, {:ok, event}, timers}
+  end
+
+  @impl true
+  def handle_call({:drop_timer, event_id}, _from, timers) do
+    with {:ok, timer} <- Map.fetch(timers, event_id),
+         left_to_expiry when is_integer(left_to_expiry) <- Process.cancel_timer(timer) do
+      {:reply, {:ok, timer}, Map.delete(timers, event_id)}
+    else
+      :error -> {:reply, {:error, "event is not registered in the event handler"}, timers}
+      _error -> {:reply, {:error, "could not cancel the timer properly"}, timers}
+    end
   end
 
   @impl true
