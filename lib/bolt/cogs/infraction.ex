@@ -3,11 +3,9 @@ defmodule Bolt.Cogs.Infraction do
   alias Bolt.Cogs.Infraction.List
   alias Bolt.Cogs.Infraction.Reason
   alias Bolt.Cogs.Infraction.User
-  alias Bolt.Constants
   alias Bolt.Helpers
   alias Bolt.Paginator
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
 
   def command(msg, ["detail", maybe_id]) do
     case Integer.parse(maybe_id) do
