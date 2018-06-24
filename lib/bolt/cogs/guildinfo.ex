@@ -106,19 +106,14 @@ defmodule Bolt.Cogs.GuildInfo do
 
   @doc "Display information about the given guild ID"
   def command(msg, [guild_id]) do
-    embed =
-      case Nostrum.Struct.Snowflake.cast(guild_id) do
-        {:ok, snowflake} when snowflake != nil ->
-          fetch_and_build(snowflake, "A guild with ID `#{snowflake}`")
+    case Nostrum.Struct.Snowflake.cast(guild_id) do
+      {:ok, snowflake} when snowflake != nil ->
+        embed = fetch_and_build(snowflake, "A guild with ID `#{snowflake}`")
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
 
-        _ ->
-          %Embed{
-            title: "Failed to fetch guild information",
-            description: "`#{guild_id}` is not a valid guild ID.",
-            color: Constants.color_red()
-          }
-      end
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+      _ ->
+        response = "🚫 `#{Helpers.clean_content(guild_id)}` is not a valid guild ID"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    end
   end
 end
