@@ -39,7 +39,14 @@ defmodule Bolt.Cogs.Tempban do
             "#{User.full_name(converted_user)} (`#{user_id}`)"
           end
 
-        "👌 temporarily banned #{user_string} until #{Helpers.datetime_to_human(expiry)}"
+        response =
+          "👌 temporarily banned #{user_string} until #{Helpers.datetime_to_human(expiry)}"
+
+        if reason != "" do
+          response <> " (`#{Helpers.clean_content(reason)}`)"
+        else
+          response
+        end
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           "🚫 API error: #{reason} (status code `#{status}`)"

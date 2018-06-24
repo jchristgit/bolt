@@ -22,6 +22,8 @@ defmodule Bolt.Cogs.Kick do
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, created_infraction} <- Repo.insert(changeset) do
+        "👌 kicked"
+
         %Embed{
           title: "Kick successful",
           description:
