@@ -63,6 +63,13 @@ defmodule Bolt.Commander.Server do
       usage: ["lsar"],
       predicates: [&Checks.guild_only/1]
     },
+    "assign" => %{
+      callback: &Cogs.Assign.command/2,
+      parser: &Parsers.join/1,
+      help: "Assign the given self-assignable role.",
+      usage: ["assign <role:role...>"],
+      predicates: [&Checks.guild_only/1]
+    },
 
     ## Moderation Commands
     "clean" => %{
