@@ -99,7 +99,7 @@ defmodule Bolt.Converters.Member do
                        members,
                        &(&1.user.username == name and &1.user.discriminator == discrim)
                      ) do
-                  nil -> {:error, "There is no member named `#{name}##{discrim}` on this Guild."}
+                  nil -> {:error, "there is no member named `#{name}##{discrim}` on this guild"}
                   member -> {:ok, member}
                 end
 
@@ -108,7 +108,7 @@ defmodule Bolt.Converters.Member do
                   nil ->
                     case Enum.find(members, &(&1.nick == text)) do
                       nil ->
-                        {:error, "Failed to find any member matching `#{text}` on this guild."}
+                        {:error, "failed to find any member matching `#{text}` on this guild"}
 
                       member ->
                         {:ok, member}
@@ -120,7 +120,7 @@ defmodule Bolt.Converters.Member do
             end
 
           {:error, _reason} ->
-            {:error, "This Guild is not in the cache, cannot find any members"}
+            {:error, "this guild is not in the cache, cannot find any members"}
         end
     end
   end
