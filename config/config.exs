@@ -4,7 +4,7 @@ use Mix.Config
 
 config :bolt,
   ecto_repos: [Bolt.Repo],
-  prefix: "."
+  prefix: System.get_env("BOT_PREFIX") || "."
 
 config :bolt, Bolt.Repo,
   adapter: Ecto.Adapters.Postgres,
