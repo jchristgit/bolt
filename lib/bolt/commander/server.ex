@@ -298,7 +298,8 @@ defmodule Bolt.Commander.Server do
       • `detail <id:int>`: View the given infraction ID in detail.
       • `reason <id:int> <reason:str...>`: Update the reason for the given infraction ID.
       • `list [type:str]`: View all infractions, or only infractions with the given type
-      • `user <user:snowflake|member>`: View all infractions for the given user
+      • `user <user:snowflake|member>`: View all infractions for the given user,
+      • `expiry <id:int> <new_expiry:duration>`: Update the expiry of the given infraction, relative to the creation date.
 
       **Examples**:
       ```rs
@@ -313,13 +314,17 @@ defmodule Bolt.Commander.Server do
 
       // view all of Dude's infractions
       infr user @Dude#0001
+
+      // update the expiry of infraction 12 to be 24 hours after it was created
+      infr expiry 12 24h
       ```
       """,
       usage: [
         "infraction detail <id:int>",
         "infraction reason <id:int> <reason:str...>",
         "infraction list [type:str]",
-        "infraction user <user:snowflake|member>"
+        "infraction user <user:snowflake|member>",
+        "infraction expiry <id:int> <new_expiry:duration>"
       ],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     },
