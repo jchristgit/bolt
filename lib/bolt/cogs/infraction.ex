@@ -22,6 +22,18 @@ defmodule Bolt.Cogs.Infraction do
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
+  def command(msg, ["expiry", maybe_id, new_expiry]) do
+    alias Bolt.Cogs.Infraction.Expiry
+
+    response = Expiry.command(msg, maybe_id, new_expiry)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, ["expiry"]) do
+    response = "🚫 `expiry` subcommand expects the infraction ID and the new expiry as arguments"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
   def command(msg, ["reason", maybe_id | reason_list]) do
     alias Bolt.Cogs.Infraction.Reason
 
