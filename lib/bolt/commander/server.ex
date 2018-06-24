@@ -380,6 +380,7 @@ defmodule Bolt.Commander.Server do
     "ginfo" => "guildinfo",
     "guild" => "guildinfo",
     "infr" => "infraction",
+    "man" => "help",
     "minfo" => "memberinfo",
     "member" => "memberinfo",
     "rinfo" => "roleinfo",
