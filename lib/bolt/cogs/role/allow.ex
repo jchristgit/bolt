@@ -6,10 +6,10 @@ defmodule Bolt.Cogs.Role.Allow do
   alias Nostrum.Api
 
   def command(msg, role_name) do
-    case Converters.to_role(msg.guild_id, role_name, true) do
+    response = case Converters.to_role(msg.guild_id, role_name, true) do
       {:ok, role} ->
         existing_row = Repo.get(SelfAssignableRoles, msg.guild_id)
-        response = cond do
+        cond do
           existing_row == nil ->
             new_row = %{
               guild_id: msg.guild_id,
@@ -30,12 +30,12 @@ defmodule Bolt.Cogs.Role.Allow do
             {:ok, _updated_row} = Repo.update(changeset)
             "👌 role `#{Helpers.clean_content(role.name)}` is now self-assignable"
         end
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
 
       {:error, reason} ->
-        response = "🚫 cannot convert `#{Helpers.clean_content(role_name)}` to `role`: #{reason}"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+        "🚫 cannot convert `#{Helpers.clean_content(role_name)}` to `role`: #{reason}"
     end
+
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
