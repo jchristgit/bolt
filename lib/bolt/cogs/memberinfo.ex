@@ -1,5 +1,4 @@
 defmodule Bolt.Cogs.MemberInfo do
-  alias Bolt.Constants
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -57,27 +56,19 @@ defmodule Bolt.Cogs.MemberInfo do
   Returns information about yourself.
   """
   def command(msg, "") do
-    embed =
-      with {:ok, guild} <- GuildCache.get(msg.guild_id),
-           member when member != nil <- Enum.find(guild.members, &(&1.user.id == msg.author.id)) do
-        format_member_info(msg.guild_id, member)
-      else
-        nil ->
-          %Embed{
-            title: "Cannot display member information",
-            description: "Couldn't find you in the guild members. That's a bit odd..",
-            color: Constants.color_red()
-          }
+    with {:ok, guild} <- GuildCache.get(msg.guild_id),
+         member when member != nil <- Enum.find(guild.members, &(&1.user.id == msg.author.id)) do
+      embed = format_member_info(msg.guild_id, member)
+      {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+    else
+      nil ->
+        response = "❌ failed to find you in this guild's members - that's a bit weird"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
-        {:error, reason} ->
-          %Embed{
-            title: "Cannot display member information",
-            description: "This guild is not in the cache. (#{reason})",
-            color: Constants.color_red()
-          }
-      end
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+      {:error, reason} ->
+        response = "❌ error: #{Helpers.clean_content(reason)}"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    end
   end
 
   @doc """
@@ -86,18 +77,13 @@ defmodule Bolt.Cogs.MemberInfo do
   a name#discrim combination, a name, or a nickname.
   """
   def command(msg, member) do
-    embed =
-      with {:ok, fetched_member} <- Converters.to_member(msg.guild_id, member) do
-        format_member_info(msg.guild_id, fetched_member)
-      else
-        {:error, reason} ->
-          %Embed{
-            title: "Failed to fetch member information",
-            description: reason,
-            color: Constants.color_red()
-          }
-      end
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+    with {:ok, fetched_member} <- Converters.to_member(msg.guild_id, member) do
+      embed = format_member_info(msg.guild_id, fetched_member)
+      {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+    else
+      {:error, reason} ->
+        response = "❌ couldn't fetch member information: #{Helpers.clean_content(reason)}"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    end
   end
 end
