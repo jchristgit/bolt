@@ -1,10 +1,9 @@
 defmodule Bolt.Cogs.Note do
-  alias Bolt.Constants
   alias Bolt.Converters
+  alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
   alias Nostrum.Struct.User
 
   def command(msg, [user | note_list]) do
@@ -19,28 +18,16 @@ defmodule Bolt.Cogs.Note do
              reason: note
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, created_infraction} <- Repo.insert(changeset) do
-        %Embed{
-          title: "Created a note for #{User.full_name(member.user)}",
-          description: "Use `infr detail #{created_infraction.id}` to view it.",
-          color: Constants.color_green()
-        }
+           {:ok, _created_infraction} <- Repo.insert(changeset) do
+        "👌 note created for #{User.full_name(member.user)} (`#{member.user.id}`)"
       else
         "" ->
-          %Embed{
-            title: "Invalid arguments given",
-            description: "The note given may not be empty.",
-            color: Constants.color_red()
-          }
+          "🚫 note may not be empty"
 
         {:error, reason} ->
-          %Embed{
-            title: "Failed to create a note",
-            description: reason,
-            color: Constants.color_red()
-          }
+          "🚫 error: #{Helpers.clean_content(reason)}"
       end
 
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
