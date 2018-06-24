@@ -24,15 +24,6 @@ defmodule Bolt.Cogs.Help do
     }
   end
 
-  @spec format_command_not_found(String.t()) :: Embed.t()
-  def format_command_not_found(command_name) do
-    %Embed{
-      title: "Command not found: `#{command_name}`",
-      description: "Hmmm.. I looked everywhere, but couldn't find that command.",
-      color: Constants.color_red()
-    }
-  end
-
   def command(msg, "") do
     embed = %Embed{
       title: "All commands",
@@ -48,15 +39,14 @@ defmodule Bolt.Cogs.Help do
   end
 
   def command(msg, command_name) do
-    embed =
-      case Server.lookup(command_name) do
-        nil ->
-          format_command_not_found(command_name)
+    case Server.lookup(command_name) do
+      nil ->
+        response = "🚫 unknown command"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
-        %{help: help, usage: usage} ->
-          format_command_detail(command_name, usage, help)
-      end
-
-    Api.create_message(msg.channel_id, embed: embed)
+      %{help: help, usage: usage} ->
+        embed = format_command_detail(command_name, usage, help)
+        Api.create_message(msg.channel_id, embed: embed)
+    end
   end
 end
