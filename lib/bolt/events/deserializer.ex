@@ -47,7 +47,7 @@ defmodule Bolt.Events.Deserializer do
     func = fn ->
       alias Nostrum.Api
 
-      {:ok} = Api.remove_guild_ban(guild_id, user_id)
+      Api.remove_guild_ban(guild_id, user_id)
     end
 
     {:ok, func}
