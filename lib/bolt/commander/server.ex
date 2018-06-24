@@ -70,6 +70,13 @@ defmodule Bolt.Commander.Server do
       usage: ["assign <role:role...>"],
       predicates: [&Checks.guild_only/1]
     },
+    "remove" => %{
+      callback: &Cogs.Remove.command/2,
+      parser: &Parsers.join/1,
+      help: "Remove the given self-assignable role.",
+      usage: ["remove <role:role...>"],
+      predicates: [&Checks.guild_only/1]
+    },
 
     ## Moderation Commands
     "clean" => %{
