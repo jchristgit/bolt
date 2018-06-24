@@ -20,20 +20,7 @@ defmodule Bolt.Cogs.Temprole do
                member.user.id,
                roles: Enum.uniq(member.roles ++ [role.id])
              ),
-           infraction <- %{
-             type: "temprole",
-             guild_id: msg.guild_id,
-             user_id: member.user.id,
-             actor_id: msg.author.id,
-             reason: if(reason != "", do: reason, else: nil),
-             expires_at: expiry,
-             data: %{
-               "role_id" => role.id
-             }
-           },
-           changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, _created_infraction} <- Repo.insert(changeset),
-           {:ok, _event} <-
+           {:ok, event} <-
              Handler.create(%{
                timestamp: expiry,
                event: "REMOVE_ROLE",
@@ -42,15 +29,30 @@ defmodule Bolt.Cogs.Temprole do
                  "user_id" => member.user.id,
                  "role_id" => role.id
                }
-             }) do
-               response = "👌 temporary role `#{role.name}` applied to "
-                      <> "#{User.full_name(member.user)} until #{Helpers.datetime_to_human(expiry)}"
+             }),
+           infraction <- %{
+             type: "temprole",
+             guild_id: msg.guild_id,
+             user_id: member.user.id,
+             actor_id: msg.author.id,
+             reason: if(reason != "", do: reason, else: nil),
+             expires_at: expiry,
+             data: %{
+               "event_id" => event.id,
+               "role_id" => role.id
+             }
+           },
+           changeset <- Infraction.changeset(%Infraction{}, infraction),
+           {:ok, _created_infraction} <- Repo.insert(changeset) do
+        response =
+          "👌 temporary role `#{role.name}` applied to " <>
+            "#{User.full_name(member.user)} until #{Helpers.datetime_to_human(expiry)}"
 
-              if reason != "" do
-                response <> " (`#{Helpers.clean_content(reason)}`)"
-              else
-                response
-              end
+        if reason != "" do
+          response <> " (`#{Helpers.clean_content(reason)}`)"
+        else
+          response
+        end
       else
         {:error, %{message: %{"message" => reason}, status_code: status}} ->
           "❌ API error: #{reason} (status code `#{status}`)"

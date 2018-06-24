@@ -13,7 +13,7 @@ defmodule Bolt.Cogs.Tempban do
            {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
-           {:ok, _event} <-
+           {:ok, event} <-
              Handler.create(%{
                timestamp: expiry,
                event: "UNBAN_MEMBER",
@@ -28,7 +28,10 @@ defmodule Bolt.Cogs.Tempban do
              user_id: user_id,
              actor_id: msg.author.id,
              reason: if(reason != "", do: reason, else: nil),
-             expires_at: expiry
+             expires_at: expiry,
+             data: %{
+               "event_id" => event.id
+             }
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, _created_infraction} <- Repo.insert(changeset) do
