@@ -245,6 +245,12 @@ defmodule Bolt.Commander.Server do
       ],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
     },
+    "role" => %{
+      callback: &Cogs.Role.command/2,
+      help: "Manage self-assignable roles.",
+      usage: ["role allow <role:role...>", "role deny <role:role...>"],
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
+    },
     "tag" => %{
       callback: &Cogs.Tag.command/2,
       help: """
