@@ -49,7 +49,7 @@ defmodule Bolt.Commander.Server do
       Show all roles on the guild the command is invoked on.
       When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
       """,
-      usage: ["roles [name:str]"],
+      usage: ["roles [name:str...]"],
       predicates: [&Checks.guild_only/1]
     },
     "stats" => %{
@@ -59,21 +59,53 @@ defmodule Bolt.Commander.Server do
     },
     "lsar" => %{
       callback: &Cogs.Lsar.command/2,
-      help: "Show self-assignable roles.",
+      help: """
+      Show all self-assignable roles on this guild.
+      Self-assignable roles are roles that were configured to be assignable by any member on the guild.
+
+      Related commands: `assign`, `remove`, `role allow`, `role deny`.
+
+      **Examples**:
+      ```rs
+      // make the role 'Movie Nighter' self-assignable
+      role allow movie nighter
+
+      // list self-asignable roles, shows 'Movie Nighter'
+      lsar
+      ```
+      """,
       usage: ["lsar"],
       predicates: [&Checks.guild_only/1]
     },
     "assign" => %{
       callback: &Cogs.Assign.command/2,
       parser: &Parsers.join/1,
-      help: "Assign the given self-assignable role.",
+      help: """
+      Assign the given self-assignable role to yourself.
+      To see which roles are self-assignable, use `lsar`.
+
+      **Examples**:
+      ```rs
+      // assign the role 'Movie Nighter'
+      assign movie nighter
+      ```
+      """,
       usage: ["assign <role:role...>"],
       predicates: [&Checks.guild_only/1]
     },
     "remove" => %{
       callback: &Cogs.Remove.command/2,
       parser: &Parsers.join/1,
-      help: "Remove the given self-assignable role.",
+      help: """
+      Remove the given self-assignable role from yourself.
+      To see which roles are self-assignable, use `lsar`.
+
+      **Examples**:
+      ```rs
+      // unassign the role 'Movie Nighter'
+      remove movie nighter
+      ```
+      """,
       usage: ["remove <role:role...>"],
       predicates: [&Checks.guild_only/1]
     },
@@ -267,7 +299,23 @@ defmodule Bolt.Commander.Server do
     },
     "role" => %{
       callback: &Cogs.Role.command/2,
-      help: "Manage self-assignable roles.",
+      help: """
+      Manage self-assignable roles.
+      Self-assignable roles are special roles that can be assigned my members through bot commands.
+
+      **Subcommands**:
+      - `allow <role:role...>`: Allow self-assignment of the given role.
+      - `deny <role:role...>`: Deny self-assignment of the given role.
+
+      **Examples**:
+      ```rs
+      // allow self-assignment of the 'Movie Nighter' role
+      role allow movie nighter
+
+      // remove it from the self-assignable roles again
+      role deny movie nighter
+      ```
+      """,
       usage: ["role allow <role:role...>", "role deny <role:role...>"],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
     },
