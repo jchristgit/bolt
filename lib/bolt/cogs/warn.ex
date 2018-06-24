@@ -25,7 +25,7 @@ defmodule Bolt.Cogs.Warn do
           "🚫 must provide a reason to warn the user for"
 
         {:error, reason} ->
-          "🚫 error: #{Helpers.clean_content(reason)}"
+          "❌ error: #{Helpers.clean_content(reason)}"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
