@@ -19,4 +19,11 @@ defmodule Bolt.Cogs.ModLog do
 
     Unset.command(msg, args)
   end
+
+  def command(msg, _args) do
+    alias Nostrum.Api
+
+    response = "🚫 unknown subcommand, see `help modlog` for details"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
 end
