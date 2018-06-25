@@ -25,11 +25,13 @@ defmodule Bolt.Cogs.Lsar do
         pages =
           role_row.roles
           |> Stream.map(&Integer.to_string/1)
-          |> Stream.map(&Converters.to_role(msg.guild_id, &1))
-          |> Stream.filter(&match?({:ok, _role}, &1))
-          |> Stream.map(fn {:ok, role} -> role end)
-          |> Enum.sort_by(& &1.name)
-          |> Stream.map(&"• #{&1.name} (#{Role.mention(&1)})")
+          |> Stream.map(fn role_id ->
+            case Converters.to_role(msg.guild_id, role_id) do
+              {:ok, role} -> "• #{role.name} (#{Role.mention(role)})"
+              {:error, _reason} -> "• unknown role (`#{role_id}`)"
+            end
+          end)
+          |> Enum.sort()
           |> Stream.chunk_every(10)
           |> Enum.map(&%Embed{description: Enum.join(&1, "\n")})
 
