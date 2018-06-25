@@ -11,6 +11,21 @@ defmodule Bolt.Cogs.Lsar do
   alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.Guild.Role
 
+  @spec format_roles(Nostrum.Struct.Message.t(), [Role.t()]) :: [Embed.t()]
+  defp format_roles(msg, roles) do
+    roles
+    |> Stream.map(&Integer.to_string/1)
+    |> Stream.map(fn role_id ->
+      case Converters.to_role(msg.guild_id, role_id) do
+        {:ok, role} -> "• #{role.name} (#{Role.mention(role)})"
+        {:error, _reason} -> "• unknown role (`#{role_id}`)"
+      end
+    end)
+    |> Enum.sort()
+    |> Stream.chunk_every(10)
+    |> Enum.map(&%Embed{description: Enum.join(&1, "\n")})
+  end
+
   @spec command(
           Nostrum.Struct.Message.t(),
           [String.t()]
@@ -22,18 +37,7 @@ defmodule Bolt.Cogs.Lsar do
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
       role_row ->
-        pages =
-          role_row.roles
-          |> Stream.map(&Integer.to_string/1)
-          |> Stream.map(fn role_id ->
-            case Converters.to_role(msg.guild_id, role_id) do
-              {:ok, role} -> "• #{role.name} (#{Role.mention(role)})"
-              {:error, _reason} -> "• unknown role (`#{role_id}`)"
-            end
-          end)
-          |> Enum.sort()
-          |> Stream.chunk_every(10)
-          |> Enum.map(&%Embed{description: Enum.join(&1, "\n")})
+        pages = format_roles(msg, role_row.roles)
 
         base_embed = %Embed{
           title: "Self-assignable roles",
