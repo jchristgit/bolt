@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Role do
 
   alias Nostrum.Api
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, ["allow"]) do
     {:ok, _msg} =
       Api.create_message(

@@ -12,6 +12,7 @@ defmodule Bolt.Paginator do
 
   ## Client API
 
+  @spec start_link(GenServer.options) :: GenServer.on_start()
   def start_link(options) do
     GenServer.start_link(__MODULE__, :ok, options)
   end
@@ -148,6 +149,13 @@ defmodule Bolt.Paginator do
   end
 
   ## Internals
+  @spec build_current_page(
+    %{
+      base_page: Nostrum.Struct.Embed.t(),
+      pages: [Nostrum.Struct.Embed.t()],
+      current_page: non_neg_integer()
+    }
+  ) :: Nostrum.Struct.Embed.t()
   defp build_current_page(paginator) do
     paginator.base_page
     |> Map.merge(

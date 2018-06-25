@@ -6,6 +6,7 @@ defmodule Bolt.Cogs.Tag.Delete do
   alias Bolt.Schema.Tag
   alias Nostrum.Api
 
+  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, tag_name) do
     case Repo.get_by(Tag, name: tag_name, guild_id: msg.guild_id) do
       nil ->

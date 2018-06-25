@@ -39,6 +39,10 @@ defmodule Bolt.Converters.Channel do
   # - Channel ID
   # - Channel mention
   # - Channel name
+  @spec find_channel(
+    [Nostrum.Struct.Channel.t()],
+    String.t()
+  ) :: Nostrum.Struct.Channel.t() | {:error, String.t()}
   defp find_channel(channels, text) do
     case channel_mention_to_id(text) do
       {:ok, id} ->

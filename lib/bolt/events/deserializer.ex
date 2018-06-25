@@ -3,6 +3,7 @@ defmodule Bolt.Events.Deserializer do
 
   alias Bolt.Schema.Event
 
+  @spec valid_events :: [String.t()]
   def valid_events do
     [
       "CREATE_MESSAGE",
@@ -11,6 +12,7 @@ defmodule Bolt.Events.Deserializer do
     ]
   end
 
+  @spec deserialize(%Event{}) :: (() -> any())
   def deserialize(%Event{
         event: "CREATE_MESSAGE",
         data: %{"channel_id" => channel_id, "content" => content}
@@ -57,9 +59,5 @@ defmodule Bolt.Events.Deserializer do
 
   def deserialize(%Event{event: unknown_type}) do
     {:error, "Unknown event type: `#{unknown_type}`"}
-  end
-
-  def deserialize(unknown_event) do
-    {:error, "Not an event: #{inspect(unknown_event)}"}
   end
 end

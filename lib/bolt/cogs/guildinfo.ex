@@ -100,6 +100,7 @@ defmodule Bolt.Cogs.GuildInfo do
     end
   end
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   @doc """
   Display information about the guild that
   this command is invoked on.

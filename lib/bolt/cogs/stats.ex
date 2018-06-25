@@ -10,6 +10,7 @@ defmodule Bolt.Cogs.Stats do
   alias Nostrum.Struct.Embed.Thumbnail
   alias Nostrum.Struct.User
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, []) do
     total_guilds = GuildCache.all() |> Enum.count()
     guild_member_counts = GuildCache.select_all(fn guild -> guild.member_count end)

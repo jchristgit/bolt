@@ -43,6 +43,10 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
+  @spec command(
+          Nostrum.Struct.Message.t(),
+          {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
+        ) :: {:ok, Nostrum.Struct.Message.t()}
   @doc "Default invocation: `clean`"
   def command(msg, {[], [], []}) do
     case Api.get_channel_messages(msg.channel_id, 30) do
@@ -184,6 +188,10 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
+  @spec snowflake_or_name_to_snowflake(
+          Nostrum.Struct.Message.t(),
+          String.t()
+        ) :: Nostrum.Struct.Snowflake.t() | :error
   defp snowflake_or_name_to_snowflake(msg, maybe_user) do
     case Integer.parse(maybe_user) do
       {value, _remainder} ->
@@ -198,9 +206,9 @@ defmodule Bolt.Cogs.Clean do
   end
 
   @spec parse_users(
-    Nostrum.Struct.Message.t(),
-    String.t() | [String.t()]
-  ) :: {:ok, [Nostrum.Struct.Snowflake.t()]} | {:error, String.t()}
+          Nostrum.Struct.Message.t(),
+          String.t() | [String.t()]
+        ) :: {:ok, [Nostrum.Struct.Snowflake.t()]} | {:error, String.t()}
   def parse_users(_msg, nil) do
     {:ok, []}
   end
@@ -208,7 +216,8 @@ defmodule Bolt.Cogs.Clean do
   def parse_users(msg, user) when is_bitstring(user) do
     case snowflake_or_name_to_snowflake(msg, user) do
       :error ->
-        {:error, "🚫 `#{Helpers.clean_content(user)}` is not a valid user (of this guild) or snowflake"}
+        {:error,
+         "🚫 `#{Helpers.clean_content(user)}` is not a valid user (of this guild) or snowflake"}
 
       snowflake ->
         {:ok, [snowflake]}

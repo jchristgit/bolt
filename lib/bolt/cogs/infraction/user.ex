@@ -9,16 +9,20 @@ defmodule Bolt.Cogs.Infraction.User do
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.User
 
-  def prepare_for_paginator(msg, {snowflake, maybe_user}) do
+  @spec prepare_for_paginator(
+          Nostrum.Struct.Message.t(),
+          {Nostrum.Struct.Snowflake.t(), Nostrum.Struct.User.t() | nil}
+        ) :: {Embed.t(), [Embed.t()]}
+  def prepare_for_paginator(msg, {user_id, maybe_user}) do
     import Ecto.Query, only: [from: 2]
 
-    query = from(i in Infraction, where: [guild_id: ^msg.guild_id, user_id: ^snowflake])
+    query = from(i in Infraction, where: [guild_id: ^msg.guild_id, user_id: ^user_id])
     queryset = Repo.all(query)
 
     base_embed =
       if maybe_user == nil do
         %Embed{
-          title: "infractions for `#{snowflake}`",
+          title: "infractions for `#{user_id}`",
           color: Constants.color_blue()
         }
       else

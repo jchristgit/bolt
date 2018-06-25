@@ -7,6 +7,10 @@ defmodule Bolt.Cogs.Role.Allow do
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
 
+  @spec command(
+          Nostrum.Struct.Message.t(),
+          String.t()
+        ) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, role_name) do
     response =
       case Converters.to_role(msg.guild_id, role_name, true) do

@@ -11,6 +11,10 @@ defmodule Bolt.Cogs.Lsar do
   alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.Guild.Role
 
+  @spec command(
+          Nostrum.Struct.Message.t(),
+          [String.t()]
+        ) :: {:ok, Nostrum.Struct.Message.t()} | reference()
   def command(msg, []) do
     case Repo.get(SelfAssignableRoles, msg.guild_id) do
       nil ->

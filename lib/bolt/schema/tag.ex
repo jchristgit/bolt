@@ -38,6 +38,7 @@ defmodule Bolt.Schema.Tag do
     timestamps(type: :utc_datetime)
   end
 
+  @spec changeset(%__MODULE__{}, map()) :: Changeset.t()
   def changeset(tag, params \\ %{}) do
     alias Bolt.Helpers
 
@@ -62,6 +63,7 @@ defmodule Bolt.Schema.Tag do
     |> validate_name_unique_for_guild()
   end
 
+  @spec validate_name_unique_for_guild(Changeset.t()) :: Changeset.t()
   defp validate_name_unique_for_guild(changeset) do
     alias Bolt.Helpers
     alias Bolt.Repo

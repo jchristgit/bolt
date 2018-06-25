@@ -26,6 +26,7 @@ defmodule Bolt.Cogs.Help do
     }
   end
 
+  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, "") do
     embed = %Embed{
       title: "All commands",
@@ -37,7 +38,7 @@ defmodule Bolt.Cogs.Help do
       color: Constants.color_blue()
     }
 
-    Api.create_message(msg.channel_id, embed: embed)
+    {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
 
   def command(msg, command_name) do
@@ -48,7 +49,7 @@ defmodule Bolt.Cogs.Help do
 
       %{help: help, usage: usage} ->
         embed = format_command_detail(command_name, usage, help)
-        Api.create_message(msg.channel_id, embed: embed)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     end
   end
 end

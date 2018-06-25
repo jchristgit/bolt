@@ -8,6 +8,7 @@ defmodule Bolt.Cogs.Warn do
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, [user | reason_list]) do
     response =
       with reason when reason != "" <- Enum.join(reason_list, " "),

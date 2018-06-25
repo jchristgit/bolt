@@ -33,6 +33,11 @@ defmodule Bolt.Converters.Role do
     end
   end
 
+  @spec find_by_name(
+    [Nostrum.Struct.Guild.Role.t()],
+    String.t(),
+    boolean()
+  ) :: Nostrum.Struct.Role.t() | {:error, String.t()}
   defp find_by_name(roles, name, case_insensitive) do
     result =
       if case_insensitive do

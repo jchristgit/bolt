@@ -8,6 +8,11 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   alias Bolt.Schema.Event
   alias Bolt.Schema.Infraction
 
+  @spec command(
+          Nostrum.Struct.Message.t(),
+          String.t(),
+          String.t()
+        ) :: String.t()
   def command(msg, maybe_id, new_expiry) do
     with infraction when infraction != nil <-
            Repo.get_by(Infraction, id: maybe_id, guild_id: msg.guild_id),

@@ -6,6 +6,7 @@ defmodule Bolt.Cogs.Tag.Create do
   alias Bolt.Schema.Tag
   alias Nostrum.Api
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, ["", _content]) do
     {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 tag name must not be empty")
   end

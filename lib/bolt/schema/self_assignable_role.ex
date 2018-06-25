@@ -9,6 +9,7 @@ defmodule Bolt.Schema.SelfAssignableRoles do
     field(:roles, {:array, :id})
   end
 
+  @spec changeset(%__MODULE__{}, map()) :: Changeset.t()
   def changeset(selfassignableroles, params \\ %{}) do
     selfassignableroles
     |> cast(params, [:guild_id, :roles])

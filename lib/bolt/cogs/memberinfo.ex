@@ -54,6 +54,7 @@ defmodule Bolt.Cogs.MemberInfo do
     end
   end
 
+  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
   @doc """
   Returns information about yourself.
   """

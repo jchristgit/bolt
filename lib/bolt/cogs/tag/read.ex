@@ -11,6 +11,7 @@ defmodule Bolt.Cogs.Tag.Read do
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
+  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, name) do
     query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag)
     guild_tags = Repo.all(query)

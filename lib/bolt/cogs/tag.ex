@@ -3,6 +3,10 @@ defmodule Bolt.Cogs.Tag do
 
   alias Nostrum.Api
 
+  @spec command(
+          Nostrum.Struct.Message.t(),
+          [String.t()]
+        ) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, ["create"]) do
     {:ok, _msg} =
       Api.create_message(msg.channel_id, "🚫 `create` subcommand expects at least two arguments")

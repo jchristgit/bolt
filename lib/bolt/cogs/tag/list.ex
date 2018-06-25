@@ -9,6 +9,7 @@ defmodule Bolt.Cogs.Tag.List do
   alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
 
+  @spec command(Nostrum.Struct.Message.t()) :: {:ok, Nostrum.Struct.Message.t()} | reference()
   def command(msg) do
     query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag.name)
 

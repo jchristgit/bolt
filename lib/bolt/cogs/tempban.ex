@@ -9,6 +9,7 @@ defmodule Bolt.Cogs.Tempban do
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, [user, duration | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),

@@ -5,6 +5,7 @@ defmodule Bolt.Cogs.Infraction do
   alias Bolt.Paginator
   alias Nostrum.Api
 
+  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, ["detail", maybe_id]) do
     alias Bolt.Cogs.Infraction.Detail
 

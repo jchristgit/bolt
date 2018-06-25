@@ -401,6 +401,7 @@ defmodule Bolt.Commander.Server do
   ## Client API
 
   @doc "Start the command registry."
+  @spec start_link(GenServer.options) :: GenServer.on_start()
   def start_link(options) do
     GenServer.start_link(__MODULE__, :ok, options)
   end

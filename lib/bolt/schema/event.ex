@@ -15,6 +15,7 @@ defmodule Bolt.Schema.Event do
     field(:data, :map)
   end
 
+  @spec changeset(%__MODULE__{}, map()) :: Changeset.t()
   def changeset(event, params \\ %{}) do
     alias Bolt.Events.Deserializer
 

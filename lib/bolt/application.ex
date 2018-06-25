@@ -6,6 +6,11 @@ defmodule Bolt.Application do
 
   use Application
 
+  @impl true
+  @spec start(
+    Application.start_type(),
+    term()
+  ) :: {:ok, pid()} | {:ok, pid(), Application.state()} | {:error, term()}
   def start(_type, _args) do
     children = [
       Bolt.Repo,

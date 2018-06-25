@@ -12,10 +12,23 @@ defmodule Bolt.Events.Handler do
 
   ## Client API
 
+  @spec start_link(GenServer.options) :: GenServer.on_start()
   def start_link(options) do
     GenServer.start_link(__MODULE__, :ok, options)
   end
 
+  @spec create(
+    %{
+      timestamp: DateTime.t(),
+      event: String.t(),
+      data: %{
+        required(String.t()) => any()
+      }
+    }
+  ) :: {:ok, Event}
+  | {:error, String.t()}
+  | {:error, [{atom(), Ecto.Changeset.error()}]}
+  | {:error, any()}
   def create(event_map) do
     changeset = Event.changeset(%Event{}, event_map)
 
@@ -34,6 +47,7 @@ defmodule Bolt.Events.Handler do
     end
   end
 
+  @spec update(%Event{}, map()) :: {:error, any()}
   def update(event, changes_map) do
     changeset = Event.changeset(event, changes_map)
 

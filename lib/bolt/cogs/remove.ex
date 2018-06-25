@@ -7,6 +7,7 @@ defmodule Bolt.Cogs.Remove do
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
 
+  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, role_name) do
     response =
       with roles_row when roles_row != nil <- Repo.get(SelfAssignableRoles, msg.guild_id),

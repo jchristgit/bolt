@@ -6,6 +6,11 @@ defmodule Bolt.Cogs.Infraction.Reason do
   alias Bolt.Schema.Infraction
   alias Nostrum.Struct.Embed
 
+  @spec get_response(
+          Nostrum.Struct.Message.t(),
+          integer,
+          String.t()
+        ) :: Nostrum.Struct.Embed.t()
   def get_response(msg, infraction_id, new_reason) do
     case Repo.get_by(Infraction, id: infraction_id, guild_id: msg.guild_id) do
       nil ->

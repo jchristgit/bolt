@@ -8,6 +8,10 @@ defmodule Bolt.Cogs.Note do
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
+  @spec command(
+          Nostrum.Struct.Message.t(),
+          [String.t()]
+        ) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, [user | note_list]) do
     response =
       with {:ok, member} <- Converters.to_member(msg.guild_id, user),

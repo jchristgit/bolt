@@ -8,6 +8,10 @@ defmodule Bolt.Cogs.Infraction.List do
   alias Bolt.Schema.Infraction
   alias Nostrum.Struct.Embed
 
+  @spec prepare_for_paginator(
+          Nostrum.Struct.Message.t(),
+          String.t()
+        ) :: {Embed.t(), [Embed.t()]}
   def prepare_for_paginator(msg, maybe_type) do
     import Ecto.Query, only: [from: 2]
 

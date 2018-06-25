@@ -18,6 +18,7 @@ defmodule Bolt.Schema.Infraction do
     timestamps(type: :utc_datetime)
   end
 
+  @spec changeset(%__MODULE__{}, map()) :: Changeset.t()
   def changeset(event, params \\ %{}) do
     event
     |> cast(params, [
@@ -46,6 +47,7 @@ defmodule Bolt.Schema.Infraction do
     |> validate_expiry()
   end
 
+  @spec validate_expiry(Changeset.t()) :: Changeset.t()
   defp validate_expiry(changeset) do
     type = get_field(changeset, :type)
     expiry = get_field(changeset, :expires_at)
