@@ -20,6 +20,12 @@ defmodule Bolt.Cogs.ModLog do
     Unset.command(msg, args)
   end
 
+  def command(msg, ["events" | args]) do
+    alias Bolt.Cogs.ModLog.Events
+
+    Events.command(msg, args)
+  end
+
   def command(msg, _args) do
     alias Nostrum.Api
 

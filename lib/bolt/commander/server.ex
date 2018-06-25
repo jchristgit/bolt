@@ -365,8 +365,18 @@ defmodule Bolt.Commander.Server do
 
       **Subcommands**:
       • `status`: show the current configuration
+      • `set <event:str> <channel:textchannel>`: log the given event in the given channel
+      • `unset <event:str>`: stop logging the given event
+      • `events`: list known events
+
+      If `all` is given in place of `event`, bolt will log all events to the given channel (when invoked with `set`) or no longer log anything (when invoked with `unset`).
       """,
-      usage: ["modlog status"],
+      usage: [
+        "modlog status",
+        "modlog set <event:str> <channel:textchannel>",
+        "modlog unset <event:str>",
+        "modlog events"
+      ],
       predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
     "tag" => %{
