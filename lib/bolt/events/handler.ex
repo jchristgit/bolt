@@ -39,7 +39,7 @@ defmodule Bolt.Events.Handler do
 
     with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, event.id}),
          {:ok, updated_event} <- Repo.update(changeset),
-         {:ok, _event} <- GenServer.call(__MODULE__, {:create, event}) do
+         {:ok, _event} <- GenServer.call(__MODULE__, {:create, updated_event}) do
       {:ok, updated_event}
     else
       {:error, _reason} = error -> error
