@@ -3,9 +3,11 @@ defmodule Bolt.Cogs.Role.Allow do
 
   alias Bolt.Converters
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
+  alias Nostrum.Struct.User
 
   @spec command(
           Nostrum.Struct.Message.t(),
@@ -26,6 +28,14 @@ defmodule Bolt.Cogs.Role.Allow do
 
               changeset = SelfAssignableRoles.changeset(%SelfAssignableRoles{}, new_row)
               {:ok, _created_row} = Repo.insert(changeset)
+
+              ModLog.emit(
+                msg.guild_id,
+                "CONFIG_UPDATE",
+                "#{User.full_name(msg.author)} (`#{msg.author.id}`) added" <>
+                  " `#{role.name}` (`#{role.id}`) to self-assignable roles"
+              )
+
               "👌 role `#{Helpers.clean_content(role.name)}` is now self-assignable"
 
             role.id in existing_row.roles ->
@@ -38,6 +48,14 @@ defmodule Bolt.Cogs.Role.Allow do
 
               changeset = SelfAssignableRoles.changeset(existing_row, updated_row)
               {:ok, _updated_row} = Repo.update(changeset)
+
+              ModLog.emit(
+                msg.guild_id,
+                "CONFIG_UPDATE",
+                "#{User.full_name(msg.author)} (`#{msg.author.id}`) added" <>
+                  " `#{role.name}` (`#{role.id}`) to self-assignable roles"
+              )
+
               "👌 role `#{Helpers.clean_content(role.name)}` is now self-assignable"
           end
 

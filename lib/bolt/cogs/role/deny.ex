@@ -3,9 +3,11 @@ defmodule Bolt.Cogs.Role.Deny do
 
   alias Bolt.Converters
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
+  alias Nostrum.Struct.User
 
   @spec command(
           Nostrum.Struct.Message.t(),
@@ -31,6 +33,14 @@ defmodule Bolt.Cogs.Role.Deny do
 
               changeset = SelfAssignableRoles.changeset(existing_row, updated_row)
               {:ok, _updated_row} = Repo.update(changeset)
+
+              ModLog.emit(
+                msg.guild_id,
+                "CONFIG_UPDATE",
+                "#{User.full_name(msg.author)} (`#{msg.author.id}`) removed" <>
+                  " `#{role.name}` (`#{role.id}`) from self-assignable roles"
+              )
+
               "👌 role `#{Helpers.clean_content(role.name)}` is no longer self-assignable"
           end
 
