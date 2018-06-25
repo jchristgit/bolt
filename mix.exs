@@ -27,7 +27,8 @@ defmodule Bolt.MixProject do
       {:ecto, "~> 2.2.10"},
       {:postgrex, "~> 0.13.5"},
       {:timex, "~> 3.1"},
-      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
+      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.2", only: [:dev], runtime: false}
     ]
   end
 end
