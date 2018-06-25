@@ -26,6 +26,12 @@ defmodule Bolt.Cogs.ModLog do
     Events.command(msg, args)
   end
 
+  def command(msg, ["explain" | args]) do
+    alias Bolt.Cogs.ModLog.Explain
+
+    Explain.command(msg, args)
+  end
+
   def command(msg, _args) do
     alias Nostrum.Api
 
