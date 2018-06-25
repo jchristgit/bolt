@@ -62,9 +62,8 @@ defmodule Bolt.Commander do
   the command along with the message.
   Otherwise, the message is ignored.
   """
-  @spec handle_message(
-    Nostrum.Struct.Message.t()
-  ) :: :ignored | {:ok, Nostrum.Struct.Message.t()} | any()
+  @spec handle_message(Nostrum.Struct.Message.t()) ::
+          :ignored | {:ok, Nostrum.Struct.Message.t()} | any()
   def handle_message(msg) do
     with [@prefix <> command_name | args] <- try_split(msg.content),
          command_map when command_map != nil <- Server.lookup(command_name) do

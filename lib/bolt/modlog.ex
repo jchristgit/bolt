@@ -22,10 +22,10 @@ defmodule Bolt.ModLog do
   `Nostrum.Api.create_message/2` call is returned.
   """
   @spec emit(
-    Nostrum.Struct.Snowflake.t(),
-    String.t(),
-    String.t()
-  ) :: {:ok, Nostrum.Struct.Message.t()} | {:error, Nostrum.Error.ApiError.t()} | :noop
+          Nostrum.Struct.Snowflake.t(),
+          String.t(),
+          String.t()
+        ) :: {:ok, Nostrum.Struct.Message.t()} | {:error, Nostrum.Error.ApiError.t()} | :noop
   def emit(guild_id, event, content) do
     case Repo.get_by(ModLogConfig, guild_id: guild_id, event: event) do
       nil ->

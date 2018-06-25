@@ -2,12 +2,12 @@ defmodule Bolt.Cogs.ModLog.Status do
   @moduledoc false
 
   alias Bolt.Constants
+  alias Bolt.Paginator
   alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
-  alias Bolt.Paginator
-  import Ecto.Query, only: [from: 2]
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
+  import Ecto.Query, only: [from: 2]
 
   @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, []) do

@@ -11,7 +11,8 @@ defmodule Bolt.Cogs.Infraction.Reason do
         ) :: String.t()
   def get_response(msg, infraction_id, new_reason) do
     case Repo.get_by(Infraction, id: infraction_id, guild_id: msg.guild_id) do
-      nil -> "❌ no infraction with the given ID found"
+      nil ->
+        "❌ no infraction with the given ID found"
 
       infraction ->
         if msg.author.id != infraction.actor_id do

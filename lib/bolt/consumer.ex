@@ -25,7 +25,7 @@ defmodule Bolt.Consumer do
     case Repo.get(SelfAssignableRoles, guild_id) do
       %SelfAssignableRoles{roles: role_list} = sar_row ->
         if deleted_role.id in role_list do
-          updated_roles = Enum.reject(role_list, & &1 == deleted_role.id)
+          updated_roles = Enum.reject(role_list, &(&1 == deleted_role.id))
           changeset = SelfAssignableRoles.changeset(sar_row, %{roles: updated_roles})
           Repo.update(changeset)
         else
