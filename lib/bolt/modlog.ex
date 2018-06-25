@@ -11,7 +11,11 @@ defmodule Bolt.ModLog do
     "CONFIG_UPDATE" => "📃",
     "INFRACTION_CREATE" => "📟",
     "INFRACTION_UPDATE" => "🖋",
-    "INFRACTION_EVENTS" => "⏲"
+    "INFRACTION_EVENTS" => "⏲",
+    "GUILD_MEMBER_ADD" => "📥",
+    "GUILD_MEMBER_REMOVE" => "📤",
+    "MESSAGE_EDIT" => "🖊",
+    "MESSAGE_DELETE" => "🗑"
   }
 
   @doc """
