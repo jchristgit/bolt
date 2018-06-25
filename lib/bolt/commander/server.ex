@@ -115,6 +115,7 @@ defmodule Bolt.Commander.Server do
       help: """
       Assign the given self-assignable role to yourself.
       To see which roles are self-assignable, use `lsar`.
+      Aliased to `iam`.
 
       **Examples**:
       ```rs
@@ -131,6 +132,7 @@ defmodule Bolt.Commander.Server do
       help: """
       Remove the given self-assignable role from yourself.
       To see which roles are self-assignable, use `lsar`.
+      Aliased to `iamn`.
 
       **Examples**:
       ```rs
@@ -415,6 +417,8 @@ defmodule Bolt.Commander.Server do
   @aliases %{
     "ginfo" => "guildinfo",
     "guild" => "guildinfo",
+    "iam" => "assign",
+    "iamn" => "remove",
     "infr" => "infraction",
     "man" => "help",
     "minfo" => "memberinfo",
