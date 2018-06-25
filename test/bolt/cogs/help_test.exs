@@ -21,19 +21,4 @@ defmodule BoltTest.Cogs.Help do
       assert String.contains?(content, "#{prefix}test usage")
     end
   end
-
-  describe "format_command_not_found/1" do
-    alias Bolt.Cogs.Help
-
-    test "returns an embed" do
-      alias Nostrum.Struct.Embed
-
-      assert %Embed{} = Help.format_command_not_found("test command")
-    end
-
-    test "shows the not found command in embed title" do
-      title = Help.format_command_not_found("test command").title
-      assert String.contains?(title, "test command")
-    end
-  end
 end
