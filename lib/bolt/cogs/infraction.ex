@@ -45,20 +45,17 @@ defmodule Bolt.Cogs.Infraction do
         {value, _} ->
           case Enum.join(reason_list, " ") do
             "" ->
-              response = "🚫 new infraction reason must not be empty"
-              {:ok, _msg} = Api.create_message(msg.channel_id, response)
+              "🚫 new infraction reason must not be empty"
 
             reason ->
-              embed = Reason.get_response(msg, value, reason)
-              {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+              Reason.get_response(msg, value, reason)
           end
 
         :error ->
-          response = "🚫 invalid argument, expected `int`"
-          {:ok, _msg} = Api.create_message(msg.channel_id, response)
+          "🚫 invalid argument, expected `int`"
       end
 
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
   def command(msg, ["reason"]) do
