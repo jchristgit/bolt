@@ -1,4 +1,9 @@
 defmodule Bolt.Events.Handler do
+  @moduledoc """
+  Handles scheduled events persisted to the `events` table.
+  Event IDs are mapped to timers internally.
+  """
+
   alias Bolt.Events.Deserializer
   alias Bolt.Repo
   alias Bolt.Schema.Event
@@ -78,7 +83,10 @@ defmodule Bolt.Events.Handler do
        Process.send_after(
          self(),
          {:expired, event},
-         DateTime.diff(event.timestamp, DateTime.utc_now(), :millisecond)
+         max(
+           DateTime.diff(event.timestamp, DateTime.utc_now(), :millisecond),
+           0
+         )
        )}
       |> (fn {event, timer} -> Map.put(timers, event.id, timer) end).()
 
