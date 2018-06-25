@@ -24,8 +24,8 @@ defmodule Bolt.Commander.Checks do
     end
   end
 
-  @spec is_admin?(integer) :: boolean
-  defp is_admin?(permissions) do
+  @spec has_admin_perms?(integer) :: boolean
+  defp has_admin_perms?(permissions) do
     (permissions &&& 0x8) == 0x8
   end
 
@@ -39,7 +39,7 @@ defmodule Bolt.Commander.Checks do
   defp has_permission?(msg, to_check, permission_name) do
     case Helpers.top_role_for(msg.guild_id, msg.author.id) do
       {:ok, role} ->
-        is_admin = is_admin?(role.permissions)
+        is_admin = has_admin_perms?(role.permissions)
         has_perm = (role.permissions &&& to_check) == to_check
 
         case is_admin or has_perm do
@@ -82,5 +82,13 @@ defmodule Bolt.Commander.Checks do
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_ban_members?(msg) do
     has_permission?(msg, @bitflags_ban_members, "BAN_MEMBERS")
+  end
+
+  @bitflags_admin 0x8
+  @doc "Checks that the message author has the `ADMINISTRATOR` permission."
+  @spec is_admin?(Nostrum.Struct.Message.t()) ::
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  def is_admin?(msg) do
+    has_permission?(msg, @bitflags_admin, "ADMINISTRATOR")
   end
 end
