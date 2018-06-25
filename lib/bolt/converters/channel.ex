@@ -40,9 +40,9 @@ defmodule Bolt.Converters.Channel do
   # - Channel mention
   # - Channel name
   @spec find_channel(
-    [Nostrum.Struct.Channel.t()],
-    String.t()
-  ) :: Nostrum.Struct.Channel.t() | {:error, String.t()}
+          [Nostrum.Struct.Channel.t()],
+          String.t()
+        ) :: Nostrum.Struct.Channel.t() | {:error, String.t()}
   defp find_channel(channels, text) do
     case channel_mention_to_id(text) do
       {:ok, id} ->
@@ -61,18 +61,25 @@ defmodule Bolt.Converters.Channel do
     end
   end
 
+  defp okify({:error, reason}), do: {:error, reason}
+  defp okify(channel), do: {:ok, channel}
+
   @doc "Find a channel on the given `guild_id` matching `text`."
   @spec channel(Nostrum.Struct.Snowflake.t(), String.t()) ::
           {:ok, Nostrum.Struct.Guild.Channel.t()} | {:error, String.t()}
   def channel(guild_id, text) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
-        find_channel(guild.channels, text)
+        guild.channels
+        |> find_channel(text)
+        |> okify
 
       {:error, _reason} ->
         case Api.get_guild_channels(guild_id) do
           {:ok, channels} ->
-            find_channel(channels, text)
+            channels
+            |> find_channel(text)
+            |> okify
 
           {:error, _reason} ->
             {:error, "This guild is not in the cache, nor could it be fetched from the API."}
