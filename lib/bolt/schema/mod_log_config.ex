@@ -4,10 +4,11 @@ defmodule Bolt.Schema.ModLogConfig do
   import Ecto.Changeset
   use Ecto.Schema
 
-  @primary_key {:guild_id, :id, autogenerate: false}
+  @primary_key false
   schema "modlogconfig" do
-    field :channel_id, :id
-    field :event, :string
+    field(:guild_id, :id, primary_key: true)
+    field(:event, :string, primary_key: true)
+    field(:channel_id, :id)
   end
 
   @spec changeset(%__MODULE__{}, map()) :: Changeset.t()
@@ -18,30 +19,48 @@ defmodule Bolt.Schema.ModLogConfig do
   end
 
   @doc "Return all known events that are valid in the database."
-  @spec valid_events :: [String.t]
+  @spec valid_events :: [String.t()]
   def valid_events do
     [
-      # Bot events
-      "AUTOMOD",  # automod events
-      "BOT_UPDATE",  # bot was updated
-      "CONFIG_UPDATE",  # guild configuration update
-      "INFRACTION_CREATE",  # infraction was created
-      "INFRACTION_UPDATE",  # infraction was updated
-      "INFRACTION_EVENTS",  # infraction events emitted through e.g. `tempban`
+      ## BOT EVENTS
+      # automod events
+      "AUTOMOD",
+      # bot was updated
+      "BOT_UPDATE",
+      # guild configuration update
+      "CONFIG_UPDATE",
+      # infraction was created
+      "INFRACTION_CREATE",
+      # infraction was updated
+      "INFRACTION_UPDATE",
+      # infraction events emitted through e.g. `tempban`
+      "INFRACTION_EVENTS",
 
-      # Gateway events
-      "CHANNEL_CREATE",  # channel created
-      "CHANNEL_UPDATE",  # channel updated
-      "CHANNEL_DELETE",  # channel deleted
-      "MESSAGE_EDIT",  # message edited
-      "MESSAGE_DELETE",  # message deleted
-      "GUILD_MEMBER_ADD",  # member joined
-      "GUILD_MEMBER_UPDATE",  # member updated themselves
-      "GUILD_MEMBER_REMOVE",  # member left
-      "GUILD_ROLE_CREATE",  # role created
-      "GUILD_ROLE_UPDATE",  # role updated
-      "GUILD_ROLE_DELETE",  # role deleted
-      "USER_UPDATE"  # user updated themselves
+      ## GATEWAY EVENTS
+      # channel created
+      "CHANNEL_CREATE",
+      # channel updated
+      "CHANNEL_UPDATE",
+      # channel deleted
+      "CHANNEL_DELETE",
+      # message edited
+      "MESSAGE_EDIT",
+      # message deleted
+      "MESSAGE_DELETE",
+      # member joined
+      "GUILD_MEMBER_ADD",
+      # member updated themselves
+      "GUILD_MEMBER_UPDATE",
+      # member left
+      "GUILD_MEMBER_REMOVE",
+      # role created
+      "GUILD_ROLE_CREATE",
+      # role updated
+      "GUILD_ROLE_UPDATE",
+      # role deleted
+      "GUILD_ROLE_DELETE",
+      # user updated themselves
+      "USER_UPDATE"
     ]
   end
 end

@@ -19,15 +19,17 @@ defmodule Bolt.Repo.Migrations.CreateModLogConfigTable do
     )
 
     create table("modlogconfig", primary_key: false, comment: "Moderation log configuration") do
-      add :guild_id, :bigint, primary_key: true, comment: "The guild ID this row applies to"
-      add :event, :modlog_event, null: false, comment: "The event that is configured by this row"
-      add :channel_id, :bigint, null: false, comment: "The channel ID to log this event in"
-    end
+      add(:guild_id, :bigint, primary_key: true, comment: "The guild ID this row applies to")
 
-    create index(
-      "modlogconfig",
-      [:guild_id, :event],
-      unique: true
-    )
+      add(
+        :event,
+        :modlog_event,
+        primary_key: true,
+        null: false,
+        comment: "The event that is configured by this row"
+      )
+
+      add(:channel_id, :bigint, null: false, comment: "The channel ID to log this event in")
+    end
   end
 end
