@@ -3,9 +3,11 @@ defmodule Bolt.Cogs.ModLog.Set do
 
   alias Bolt.Converters
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
+  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
   @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
@@ -24,6 +26,13 @@ defmodule Bolt.Cogs.ModLog.Set do
                }
              ),
            {_total_inserted, _maybe_inserted_rows} <- Repo.insert_all(ModLogConfig, new_configs) do
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) set the log channel" <>
+            " for ALL events to <##{channel.id}>"
+        )
+
         if total_deleted > 0 do
           "👌 deleted #{total_deleted} existing configs," <>
             " will now log all events to <##{channel.id}>"
@@ -52,6 +61,13 @@ defmodule Bolt.Cogs.ModLog.Set do
            },
            changeset <- ModLogConfig.changeset(%ModLogConfig{}, config_map),
            {:ok, _created_config} <- Repo.insert(changeset) do
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) set the log channel" <>
+            " for event `#{event}` to <##{channel.id}>"
+        )
+
         "👌 will now log `#{event}` events in <##{channel.id}>"
       else
         false ->
