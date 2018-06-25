@@ -23,7 +23,7 @@
   "kcl": {:hex, :kcl, "1.0.5", "d4abd1eefefc7b2a03e407d16ad60618f93d32cfe3a025baa37505a5811056ac", [:mix], [{:curve25519, ">= 1.0.2", [hex: :curve25519, repo: "hexpm", optional: false]}, {:ed25519, "~> 1.2", [hex: :ed25519, repo: "hexpm", optional: false]}, {:poly1305, "~> 1.0", [hex: :poly1305, repo: "hexpm", optional: false]}, {:salsa20, "~> 1.0", [hex: :salsa20, repo: "hexpm", optional: false]}], "hexpm"},
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm"},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], [], "hexpm"},
-  "nostrum": {:git, "https://github.com/Kraigie/nostrum.git", "791526d95e48990f57b44ec721acd56e0826ab0d", []},
+  "nostrum": {:git, "https://github.com/Kraigie/nostrum.git", "27979faed3f2d3b4d9593869155fb739554d91ad", []},
   "parse_trans": {:hex, :parse_trans, "3.2.0", "2adfa4daf80c14dc36f522cf190eb5c4ee3e28008fc6394397c16f62a26258c2", [:rebar3], [], "hexpm"},
   "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
   "poly1305": {:hex, :poly1305, "1.0.1", "ed3e39ccb1c5b7994161f54b78906fffb10752ae4ff0d44879bdfb368f1a7e53", [:mix], [{:chacha20, "~> 1.0", [hex: :chacha20, repo: "hexpm", optional: false]}, {:equivalex, "~> 1.0", [hex: :equivalex, repo: "hexpm", optional: false]}], "hexpm"},
