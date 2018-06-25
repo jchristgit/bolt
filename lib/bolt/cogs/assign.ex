@@ -3,9 +3,11 @@ defmodule Bolt.Cogs.Assign do
 
   alias Bolt.Converters
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
+  alias Nostrum.Struct.User
 
   @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, role_name) do
@@ -14,6 +16,13 @@ defmodule Bolt.Cogs.Assign do
            {:ok, role} <- Converters.to_role(msg.guild_id, role_name, true),
            true <- role.id in roles_row.roles,
            {:ok} <- Api.add_guild_member_role(msg.guild_id, msg.author.id, role.id) do
+        ModLog.emit(
+          msg.guild_id,
+          "AUTOMOD",
+          "gave #{User.full_name(msg.author)} (`#{msg.author.id}`)" <>
+            " the self-assignable role `#{role.name}`"
+        )
+
         "👌 gave you the `#{Helpers.clean_content(role.name)}` role"
       else
         nil ->
