@@ -199,7 +199,7 @@ defmodule Bolt.Cogs.Clean do
 
       :error ->
         case Converters.to_member(msg.guild_id, maybe_user) do
-          {:ok, member} -> member.id
+          {:ok, member} -> member.user.id
           {:error, _reason} -> :error
         end
     end
