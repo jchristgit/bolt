@@ -41,7 +41,7 @@ defmodule Bolt.Consumer do
         #{author.username}##{author.discriminator} (`#{author.id}`) edited their message (<#{
           jump_link
         }>) to:
-        #{Helpers.clean_content(String.slice(content, 1..1800))}
+        #{Helpers.clean_content(String.slice(content, 0..1800))}
         """
       )
     end
