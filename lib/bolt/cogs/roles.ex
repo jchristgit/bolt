@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Roles do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Nostrum.Api

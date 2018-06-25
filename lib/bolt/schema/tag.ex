@@ -50,12 +50,10 @@ defmodule Bolt.Schema.Tag do
     |> validate_length(:content, min: 10, max: 2000, count: :codepoints)
     |> validate_exclusion(:name, @disallowed_names)
     |> validate_change(:name, fn :name, name ->
-      cond do
-        Enum.any?(@disallowed_name_tokens, &String.contains?(name, &1)) ->
-          [name: "must not contain @\u200Beveryone or @\u200Bhere"]
-
-        true ->
-          []
+      if Enum.any?(@disallowed_name_tokens, &String.contains?(name, &1)) do
+        [name: "must not contain @\u200Beveryone or @\u200Bhere"]
+      else
+        []
       end
     end)
     |> update_change(:name, &Helpers.clean_content/1)
@@ -65,20 +63,28 @@ defmodule Bolt.Schema.Tag do
   end
 
   defp validate_name_unique_for_guild(changeset) do
-    alias Bolt.Repo
     alias Bolt.Helpers
+    alias Bolt.Repo
     import Ecto.Query, only: [from: 2]
 
     name = get_field(changeset, :name)
     guild_id = get_field(changeset, :guild_id)
 
-    existing_names =
-      from(tag in __MODULE__, where: tag.guild_id == ^guild_id, select: tag.name)
-      |> Repo.all()
+    query =
+      from(
+        tag in __MODULE__,
+        where: tag.guild_id == ^guild_id,
+        select: tag.name
+      )
+
+    existing_names = Repo.all(query)
 
     case Enum.find_index(
            existing_names,
-           &(String.jaro_distance(String.downcase(&1), String.downcase(name)) > 0.7)
+           &(String.jaro_distance(
+               String.downcase(&1),
+               String.downcase(name)
+             ) > 0.7)
          ) do
       nil ->
         changeset

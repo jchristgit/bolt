@@ -1,4 +1,7 @@
 defmodule Bolt.Converters.Role do
+  @moduledoc "A converter that converts text to a guild role."
+
+  alias Bolt.Helpers
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
 
@@ -30,6 +33,33 @@ defmodule Bolt.Converters.Role do
     end
   end
 
+  defp find_by_name(roles, name, case_insensitive) do
+    result =
+      if case_insensitive do
+        downcased_name = String.downcase(name)
+
+        Enum.find(
+          roles,
+          {
+            :error,
+            "no role matching `#{Helpers.clean_content(name)}` found on this guild (case-insensitive)"
+          },
+          &(String.downcase(&1.name) == downcased_name)
+        )
+      else
+        Enum.find(
+          roles,
+          {:error, "no role matching `#{Helpers.clean_content(name)}` found on this guild"},
+          &(&1.name == name)
+        )
+      end
+
+    case result do
+      {:error, _reason} = error -> error
+      role -> {:ok, role}
+    end
+  end
+
   @doc """
   Find a role on the given guild matching `text`.
   The lookup strategy is as follows:
@@ -45,6 +75,7 @@ defmodule Bolt.Converters.Role do
           {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
   def find_role(roles, text, ilike) do
     case role_mention_to_id(text) do
+      # We have a direct snowflake given. Try to find an exact match.
       {:ok, id} ->
         case Enum.find(
                roles,
@@ -55,31 +86,9 @@ defmodule Bolt.Converters.Role do
           role -> {:ok, role}
         end
 
+      # We do not have a snowflake given, assume it's a name and search through the roles by name.
       {:error, _reason} ->
-        case ilike do
-          true ->
-            role_name = String.downcase(text)
-
-            case Enum.find(
-                   roles,
-                   {:error,
-                    "No role matching `#{role_name}` found on this guild (case-insensitive)"},
-                   &(String.downcase(&1.name) == role_name)
-                 ) do
-              {:error, reason} -> {:error, reason}
-              role -> {:ok, role}
-            end
-
-          false ->
-            case Enum.find(
-                   roles,
-                   {:error, "No role matching `#{text}` found on this guild"},
-                   &(&1.name == text)
-                 ) do
-              {:error, reason} -> {:error, reason}
-              role -> {:ok, role}
-            end
-        end
+        find_by_name(roles, text, ilike)
     end
   end
 

@@ -1,8 +1,10 @@
 defmodule Bolt.Consumer do
+  @moduledoc "Consumes events sent by the API gateway."
+
   alias Bolt.Commander
   use Nostrum.Consumer
 
-  def start_link() do
+  def start_link do
     Consumer.start_link(__MODULE__, max_restarts: 0)
   end
 

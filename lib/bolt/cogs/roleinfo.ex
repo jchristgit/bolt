@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.RoleInfo do
+  @moduledoc false
+
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -18,7 +20,10 @@ defmodule Bolt.Cogs.RoleInfo do
         },
         %Embed.Field{
           name: "Creation",
-          value: Snowflake.creation_time(role.id) |> Helpers.datetime_to_human(),
+          value:
+            role.id
+            |> Snowflake.creation_time()
+            |> Helpers.datetime_to_human(),
           inline: true
         },
         %Embed.Field{

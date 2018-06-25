@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Clean do
+  @moduledoc false
+
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -66,7 +68,11 @@ defmodule Bolt.Cogs.Clean do
   @doc "Invocation without options, but args provided: `clean <amount:int>`"
   def command(msg, {[], [maybe_amount | []], []}) do
     with {amount, _rest} <- Integer.parse(maybe_amount),
-         {:ok, messages} when messages != [] <- Api.get_channel_messages(msg.channel_id, amount) do
+         {:ok, messages} when messages != [] <-
+           Api.get_channel_messages(
+             msg.channel_id,
+             amount
+           ) do
       do_prune(msg, Enum.map(messages, & &1.id))
     else
       :error ->
@@ -119,7 +125,12 @@ defmodule Bolt.Cogs.Clean do
   @doc "Invocation with only options, e.g. `clean --bots --limit 40`"
   def command(msg, {options, [], []}) when options != [] do
     with {:ok, channel_id} <- parse_channel(msg, options),
-         {:ok, message_ids} <- get_filtered_message_ids(msg, options, channel_id) do
+         {:ok, message_ids} <-
+           get_filtered_message_ids(
+             msg,
+             options,
+             channel_id
+           ) do
       do_prune(msg, message_ids)
     else
       {:error, %{message: %{"limit" => errors}, status_code: status}} ->
@@ -173,42 +184,41 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
+  defp snowflake_or_name_to_snowflake(msg, maybe_user) do
+    case Integer.parse(maybe_user) do
+      {value, _remainder} ->
+        value
+
+      :error ->
+        case Converters.to_member(msg.guild_id, maybe_user) do
+          {:ok, member} -> member.id
+          {:error, _reason} -> :error
+        end
+    end
+  end
+
+  @spec parse_users(
+    Nostrum.Struct.Message.t(),
+    String.t() | [String.t()]
+  ) :: {:ok, [Nostrum.Struct.Snowflake.t()]} | {:error, String.t()}
   def parse_users(_msg, nil) do
     {:ok, []}
   end
 
   def parse_users(msg, user) when is_bitstring(user) do
-    case Integer.parse(user) do
-      {value, _remainder} ->
-        {:ok, [value]}
-
+    case snowflake_or_name_to_snowflake(msg, user) do
       :error ->
-        case Converters.to_member(msg.guild_id, user) do
-          {:ok, member} ->
-            {:ok, [member.user.id]}
+        {:error, "🚫 `#{Helpers.clean_content(user)}` is not a valid user (of this guild) or snowflake"}
 
-          {:error, _reason} ->
-            {:error,
-             "🚫 `#{Helpers.clean_content(user)}` is not a valid user (of this guild) or snowflake"}
-        end
+      snowflake ->
+        {:ok, [snowflake]}
     end
   end
 
   def parse_users(msg, users) when is_list(users) do
     valid_users =
       users
-      |> Enum.map(fn maybe_user ->
-        case Integer.parse(maybe_user) do
-          {value, _remainder} ->
-            value
-
-          :error ->
-            case Converters.to_member(msg.guild_id, maybe_user) do
-              {:ok, member} -> member.id
-              {:error, _reason} -> :error
-            end
-        end
-      end)
+      |> Enum.map(&snowflake_or_name_to_snowflake(msg, &1))
       |> Enum.reject(&(&1 == :error))
 
     if Enum.empty?(valid_users) do
@@ -243,7 +253,7 @@ defmodule Bolt.Cogs.Clean do
   end
 
   @spec get_filtered_message_ids(
-          Nostrum.Struct.Snowflake.t(),
+          Nostrum.Struct.Message.t(),
           keyword(),
           Nostrum.Struct.Snowflake.t()
         ) ::
@@ -255,7 +265,11 @@ defmodule Bolt.Cogs.Clean do
   defp get_filtered_message_ids(msg, options, channel_id) do
     limit = Keyword.get(options, :limit, 30)
 
-    with {:ok, messages} when messages != [] <- Api.get_channel_messages(channel_id, limit + 1),
+    # Since the command invocation is excluded from the prune,
+    # add one to the limit to ensure the `limit` option is consistent.
+    channel_messages = Api.get_channel_messages(channel_id, limit + 1)
+
+    with {:ok, messages} when messages != [] <- channel_messages,
          {:ok, users} <- parse_users(msg, options[:user]) do
       to_delete =
         messages
@@ -263,10 +277,14 @@ defmodule Bolt.Cogs.Clean do
         # Don't delete the original command invocation message.
         |> Enum.reject(&(&1.id == msg.id))
 
-      # Was the `content` option given? If yes, only delete messages with the given content.
+      # Was the `content` option given?
+      # If yes, only delete messages with the given content.
       to_delete =
         if options[:content] != nil do
-          Enum.filter(to_delete, &String.contains?(&1.content, options[:content]))
+          Enum.filter(
+            to_delete,
+            &String.contains?(&1.content, options[:content])
+          )
         else
           to_delete
         end
@@ -274,10 +292,15 @@ defmodule Bolt.Cogs.Clean do
       # Do we have any users we want to include specifically, instead of
       # scanning through all messages? If yes, only return messages
       # authored by the filtered users. otherwise, return all
-      if !Enum.empty?(users) do
-        {:ok, to_delete |> Enum.filter(&(&1.author.id in users)) |> Enum.map(& &1.id)}
-      else
+      if Enum.empty?(users) do
         {:ok, Enum.map(to_delete, & &1.id)}
+      else
+        {
+          :ok,
+          to_delete
+          |> Enum.filter(&(&1.author.id in users))
+          |> Enum.map(& &1.id)
+        }
       end
     else
       {:ok, []} ->

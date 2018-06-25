@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Role do
+  @moduledoc false
+
   alias Nostrum.Api
 
   def command(msg, ["allow"]) do

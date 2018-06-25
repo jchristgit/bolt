@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Infraction do
+  @moduledoc false
+
   alias Bolt.Helpers
   alias Bolt.Paginator
   alias Nostrum.Api

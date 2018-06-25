@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Tag.Delete do
+  @moduledoc false
+
   alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Tag

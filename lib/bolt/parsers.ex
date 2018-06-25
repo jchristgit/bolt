@@ -66,7 +66,11 @@ defmodule Bolt.Parsers do
         {:error, reason}
 
       nil ->
-        parsed_seconds = Enum.map(parsed_seconds, fn {:ok, seconds} -> seconds end)
+        parsed_seconds =
+          Enum.map(
+            parsed_seconds,
+            fn {:ok, seconds} -> seconds end
+          )
 
         {:ok, result_timestamp} =
           starting_timestamp

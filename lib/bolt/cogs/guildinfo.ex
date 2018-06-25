@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.GuildInfo do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -40,7 +42,10 @@ defmodule Bolt.Cogs.GuildInfo do
         },
         %Embed.Field{
           name: "Creation date",
-          value: Snowflake.creation_time(guild.id) |> Helpers.datetime_to_human(),
+          value:
+            guild.id
+            |> Snowflake.creation_time()
+            |> Helpers.datetime_to_human(),
           inline: true
         },
         %Embed.Field{
@@ -106,7 +111,7 @@ defmodule Bolt.Cogs.GuildInfo do
 
   @doc "Display information about the given guild ID"
   def command(msg, [guild_id]) do
-    case Nostrum.Struct.Snowflake.cast(guild_id) do
+    case Snowflake.cast(guild_id) do
       {:ok, snowflake} when snowflake != nil ->
         embed = fetch_and_build(snowflake, "A guild with ID `#{snowflake}`")
         {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)

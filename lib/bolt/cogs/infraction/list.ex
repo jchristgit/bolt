@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Infraction.List do
+  @moduledoc false
+
   alias Bolt.Cogs.Infraction.General
   alias Bolt.Constants
   alias Bolt.Helpers
@@ -12,17 +14,24 @@ defmodule Bolt.Cogs.Infraction.List do
     {title, queryset} =
       case General.emoji_for_type(maybe_type) do
         "?" ->
-          {
-            "All infractions on this guild",
-            from(i in Infraction, where: [guild_id: ^msg.guild_id]) |> Repo.all()
-          }
+          query =
+            from(
+              infr in Infraction,
+              where: infr.guild_id == ^msg.guild_id,
+              select: infr
+            )
+
+          {"All infractions on this guild", Repo.all(query)}
 
         valid_type ->
-          {
-            "Infractions with type `#{valid_type}` on this guild",
-            from(i in Infraction, where: [guild_id: ^msg.guild_id, type: ^valid_type])
-            |> Repo.all()
-          }
+          query =
+            from(
+              infr in Infraction,
+              where: [guild_id: ^msg.guild_id, type: ^valid_type],
+              select: infr
+            )
+
+          {"Infractions with type `#{valid_type}` on this guild", Repo.all(query)}
       end
 
     base_embed = %Embed{

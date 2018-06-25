@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.MemberInfo do
+  @moduledoc false
+
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Nostrum.Api

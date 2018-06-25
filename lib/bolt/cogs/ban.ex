@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Ban do
+  @moduledoc false
+
   alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction

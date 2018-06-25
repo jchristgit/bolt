@@ -1,6 +1,11 @@
 defmodule Bolt.Converters.Member do
+  @moduledoc "A converter that converts text to a guild member."
+
+  alias Bolt.Helpers
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
+  alias Nostrum.Struct.Member
+  alias Nostrum.Struct.Snowflake
 
   @doc """
   Convert a Discord user mention to an ID.
@@ -70,6 +75,51 @@ defmodule Bolt.Converters.Member do
     end
   end
 
+  @spec find_by_name_and_discrim(
+          [Member.t()],
+          String.t(),
+          pos_integer()
+        ) :: {:ok, Member.t()} | {:error, String.t()}
+  defp find_by_name_and_discrim(members, name, discrim) do
+    result =
+      Enum.find(
+        members,
+        {
+          :error,
+          "there is no member named `#{Helpers.clean_content(name)}##{discrim}` on this guild"
+        },
+        &(&1.user.username == name and &1.user.discriminator == discrim)
+      )
+
+    case result do
+      {:error, _reason} = error -> error
+      member -> {:ok, member}
+    end
+  end
+
+  @spec find_by_name(
+          [Member.t()],
+          String.t()
+        ) :: {:ok, Member.t()} | {:error, String.t()}
+  defp find_by_name(members, name) do
+    case Enum.find(members, &(&1.user.username == name)) do
+      nil ->
+        error_value = {
+          :error,
+          "could not find any member named or " <>
+            "nicknamed `#{Helpers.clean_content(name)}` on this guild"
+        }
+
+        case Enum.find(members, error_value, &(&1.nick == name)) do
+          {:error, _reason} = error -> error
+          member -> {:ok, member}
+        end
+
+      member ->
+        {:ok, member}
+    end
+  end
+
   @doc """
   Try looking up a mentioned member
   in the given text. The lookup of the member
@@ -80,8 +130,7 @@ defmodule Bolt.Converters.Member do
   - name
   - nickname
   """
-  @spec member(Nostrum.Struct.Snowflake.t(), String.t()) ::
-          {:ok, Nostrum.Struct.Member.t()} | {:error, String.t()}
+  @spec member(Snowflake.t(), String.t()) :: {:ok, Member.t()} | {:error, String.t()}
   def member(guild_id, text) do
     with {:ok, user_id} <- user_mention_to_id(text),
          {:ok, fetched_member} <- Api.get_guild_member(guild_id, user_id) do
@@ -94,29 +143,8 @@ defmodule Bolt.Converters.Member do
         case GuildCache.get(guild_id) do
           {:ok, %{members: members}} ->
             case text_to_name_and_discrim(text) do
-              {name, discrim} ->
-                case Enum.find(
-                       members,
-                       &(&1.user.username == name and &1.user.discriminator == discrim)
-                     ) do
-                  nil -> {:error, "there is no member named `#{name}##{discrim}` on this guild"}
-                  member -> {:ok, member}
-                end
-
-              :error ->
-                case Enum.find(members, &(&1.user.username == text)) do
-                  nil ->
-                    case Enum.find(members, &(&1.nick == text)) do
-                      nil ->
-                        {:error, "failed to find any member matching `#{text}` on this guild"}
-
-                      member ->
-                        {:ok, member}
-                    end
-
-                  member ->
-                    {:ok, member}
-                end
+              {name, discrim} -> find_by_name_and_discrim(members, name, discrim)
+              :error -> find_by_name(members, text)
             end
 
           {:error, _reason} ->

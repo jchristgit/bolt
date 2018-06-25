@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Tag.List do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Bolt.Paginator
@@ -8,8 +10,10 @@ defmodule Bolt.Cogs.Tag.List do
   import Ecto.Query, only: [from: 2]
 
   def command(msg) do
+    query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag.name)
+
     pages =
-      from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag.name)
+      query
       |> Repo.all()
       |> Stream.map(&"• #{Helpers.clean_content(&1)}")
       |> Stream.chunk_every(8)

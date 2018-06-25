@@ -1,4 +1,10 @@
 defmodule Bolt.Commander.Server do
+  @moduledoc """
+  The command server holds all commands internally an
+  implements a simple GenServer. While currently rather dumb,
+  it can later be expanded to support runtime modification of commands.
+  """
+
   alias Bolt.Cogs
   alias Bolt.Commander.Checks
   alias Bolt.Commander.Parsers
@@ -400,8 +406,8 @@ defmodule Bolt.Commander.Server do
   end
 
   @doc "Return a map with all available commands."
-  @spec all_commands() :: map
-  def all_commands() do
+  @spec all_commands :: map
+  def all_commands do
     GenServer.call(__MODULE__, :all_commands)
   end
 

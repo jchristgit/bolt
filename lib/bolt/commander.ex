@@ -1,4 +1,10 @@
 defmodule Bolt.Commander do
+  @moduledoc """
+  The brain of bolt. This checks whether a message is a valid command,
+  and if so, applies predicates and then invokes the defined callback
+  for the given command.
+  """
+
   alias Bolt.Commander.Parsers
   alias Bolt.Commander.Server
   alias Nostrum.Api
@@ -43,11 +49,9 @@ defmodule Bolt.Commander do
 
   @spec try_split(String.t()) :: [String.t()]
   def try_split(content) do
-    try do
-      OptionParser.split(content)
-    rescue
-      _ in RuntimeError -> String.split(content)
-    end
+    OptionParser.split(content)
+  rescue
+    _ in RuntimeError -> String.split(content)
   end
 
   @doc """

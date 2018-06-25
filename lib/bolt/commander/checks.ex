@@ -1,4 +1,6 @@
 defmodule Bolt.Commander.Checks do
+  @moduledoc "Implements various checks used by commands."
+
   alias Bolt.Helpers
   use Bitwise
 
@@ -22,21 +24,25 @@ defmodule Bolt.Commander.Checks do
     end
   end
 
-  @spec is_admin?(Integer) :: boolean
+  @spec is_admin?(integer) :: boolean
   defp is_admin?(permissions) do
     (permissions &&& 0x8) == 0x8
   end
 
-  # Checks if the author of `message` has the permissions specified in `to_check`
+  # Checks if the author of `message` has
+  # the permissions specified in `to_check`.
   # If yes, returns `{:ok, msg}`
   # If no, returns `{:error, embed}`
   # If an error occured, returns `{:error, embed}`
-  @spec has_permission?(Nostrum.Struct.Message.t(), Integer, String.t()) ::
+  @spec has_permission?(Nostrum.Struct.Message.t(), integer, String.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   defp has_permission?(msg, to_check, permission_name) do
     case Helpers.top_role_for(msg.guild_id, msg.author.id) do
       {:ok, role} ->
-        case is_admin?(role.permissions) or (role.permissions &&& to_check) == to_check do
+        is_admin = is_admin?(role.permissions)
+        has_perm = (role.permissions &&& to_check) == to_check
+
+        case is_admin or has_perm do
           true -> {:ok, msg}
           false -> {:error, "🚫 you need the `#{permission_name}` permission to do that"}
         end

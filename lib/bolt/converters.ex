@@ -1,4 +1,6 @@
 defmodule Bolt.Converters do
+  @moduledoc "Provides interfaces to converts defined in the `Converters` module."
+
   alias Bolt.Converters.{
     Channel,
     Member,

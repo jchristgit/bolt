@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Tag.Read do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Bolt.Repo
@@ -10,7 +12,8 @@ defmodule Bolt.Cogs.Tag.Read do
   import Ecto.Query, only: [from: 2]
 
   def command(msg, name) do
-    guild_tags = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag) |> Repo.all()
+    query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag)
+    guild_tags = Repo.all(query)
 
     case Enum.find(guild_tags, &(String.downcase(&1.name) == String.downcase(name))) do
       nil ->

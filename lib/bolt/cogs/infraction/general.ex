@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Infraction.General do
+  @moduledoc "General utilities used across the infraction subcommands."
+
   alias Nostrum.Api
   alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.User
@@ -22,7 +24,7 @@ defmodule Bolt.Cogs.Infraction.General do
     Map.get(@type_emojis, type, "?")
   end
 
-  @spec format_user(pos_integer()) :: {:ok, User.t()} | {:error, String.t()}
+  @spec format_user(pos_integer()) :: String.t()
   def format_user(user_id) do
     case UserCache.get(user_id) do
       {:ok, user} ->

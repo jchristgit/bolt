@@ -1,6 +1,8 @@
 defmodule Bolt.Cogs.Help do
-  alias Bolt.Constants
+  @moduledoc false
+
   alias Bolt.Commander.Server
+  alias Bolt.Constants
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 

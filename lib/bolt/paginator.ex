@@ -1,4 +1,9 @@
 defmodule Bolt.Paginator do
+  @moduledoc """
+  Implements a GenServer that can paginate over multiple embed 'pages',
+  which is useful when displaying a lot of results from a command.
+  """
+
   use GenServer
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -21,7 +26,12 @@ defmodule Bolt.Paginator do
     {:ok, _msg} =
       Api.create_message(
         original_msg.channel_id,
-        embed: Map.merge(base_page, page, fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end)
+        embed:
+          Map.merge(
+            base_page,
+            page,
+            fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
+          )
       )
   end
 
@@ -29,13 +39,21 @@ defmodule Bolt.Paginator do
     initial_embed =
       Map.merge(
         base_page,
-        %{Enum.fetch!(pages, 0) | footer: %Footer{text: "Page 1 / #{length(pages)}"}},
+        %{
+          Enum.fetch!(pages, 0)
+          | footer: %Footer{text: "Page 1 / #{length(pages)}"}
+        },
         fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
       )
 
-    {:ok, msg} = Api.create_message(original_msg.channel_id, embed: initial_embed)
+    {:ok, msg} =
+      Api.create_message(
+        original_msg.channel_id,
+        embed: initial_embed
+      )
 
-    # Add the navigator reactions to the embed. Sleep shortly to respect ratelimits.
+    # Add the navigator reactions to the embed.
+    # Sleep shortly inbetween to respect ratelimits.
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "⬅")
     Process.sleep(250)
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "➡")
@@ -70,80 +88,54 @@ defmodule Bolt.Paginator do
   # Handle the MESSAGE_REACTION_ADD event
   @impl true
   def handle_cast({:MESSAGE_REACTION_ADD, reaction}, paginators) do
-    with {:ok, paginator} <- Map.fetch(paginators, reaction.message_id) do
-      if paginator.message.author.id == reaction.user_id do
-        {:noreply, paginators}
-      else
-        case reaction.emoji.name do
-          "⬅" ->
-            Api.delete_user_reaction(
-              paginator.message.channel_id,
-              paginator.message.id,
-              reaction.emoji.name,
-              reaction.user_id
+    with {:ok, paginator} <- Map.fetch(paginators, reaction.message_id),
+         false <- paginator.message.author.id == reaction.user_id do
+      Api.delete_user_reaction(
+        paginator.message.channel_id,
+        paginator.message.id,
+        reaction.emoji.name,
+        reaction.user_id
+      )
+
+      cond do
+        reaction.emoji.name == "⬅" and paginator.current_page > 0 ->
+          {_, paginator} =
+            Map.get_and_update(
+              paginator,
+              :current_page,
+              fn page -> {page, page - 1} end
             )
 
-            # Are we at the first page? If so, ignore the reaction.
-            if paginator.current_page == 0 do
-              {:noreply, paginators}
-            else
-              {_, paginator} =
-                Map.get_and_update(paginator, :current_page, fn page -> {page, page - 1} end)
+          new_page = build_current_page(paginator)
 
-              new_page =
-                Map.merge(
-                  paginator.base_page,
-                  Enum.fetch!(paginator.pages, paginator.current_page),
-                  fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
-                )
+          {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
+          {:noreply, %{paginators | reaction.message_id => paginator}}
 
-              new_page =
-                Map.put(new_page, :footer, %Footer{
-                  text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
-                })
+        reaction.emoji.name == "⬅" ->
+          {:noreply, paginators}
 
-              {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
-              {:noreply, %{paginators | reaction.message_id => paginator}}
-            end
-
-          "➡" ->
-            Api.delete_user_reaction(
-              paginator.message.channel_id,
-              paginator.message.id,
-              reaction.emoji.name,
-              reaction.user_id
+        reaction.emoji.name == "➡" and paginator.current_page < length(paginator.pages) - 1 ->
+          {_, paginator} =
+            Map.get_and_update(
+              paginator,
+              :current_page,
+              fn page -> {page, page + 1} end
             )
 
-            # Are we at the last page? If so, ignore the reaction.
-            if paginator.current_page == length(paginator.pages) - 1 do
-              {:noreply, paginators}
-            else
-              {_, paginator} =
-                Map.get_and_update(paginator, :current_page, fn page -> {page, page + 1} end)
+          new_page = build_current_page(paginator)
 
-              new_page =
-                Map.merge(
-                  paginator.base_page,
-                  Enum.fetch!(paginator.pages, paginator.current_page),
-                  fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
-                )
+          {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
+          {:noreply, %{paginators | reaction.message_id => paginator}}
 
-              new_page =
-                Map.put(new_page, :footer, %Footer{
-                  text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
-                })
+        reaction.emoji.name == "➡" ->
+          {:noreply, paginators}
 
-              {:ok, _msg} = Api.edit_message(paginator.message, embed: new_page)
-              {:noreply, %{paginators | reaction.message_id => paginator}}
-            end
+        reaction.emoji.name == "❌" ->
+          Api.delete_message(paginator.message)
+          {:noreply, Map.delete(paginators, paginator.message.id)}
 
-          "❌" ->
-            Api.delete_message(paginator.message)
-            {:noreply, Map.delete(paginators, paginator.message.id)}
-
-          _any_reaction ->
-            {:noreply, paginators}
-        end
+        true ->
+          {:noreply, paginators}
       end
     else
       _error -> {:noreply, paginators}
@@ -153,5 +145,17 @@ defmodule Bolt.Paginator do
   @impl true
   def handle_info({:drop, msg_id}, paginators) do
     {:noreply, Map.delete(paginators, msg_id)}
+  end
+
+  ## Internals
+  defp build_current_page(paginator) do
+    paginator.base_page
+    |> Map.merge(
+      Enum.fetch!(paginator.pages, paginator.current_page),
+      fn _k, v1, v2 -> if v2 != nil, do: v2, else: v1 end
+    )
+    |> Map.put(:footer, %Footer{
+      text: "Page #{paginator.current_page + 1} / #{length(paginator.pages)}"
+    })
   end
 end

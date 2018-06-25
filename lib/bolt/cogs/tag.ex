@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Tag do
+  @moduledoc false
+
   alias Nostrum.Api
 
   def command(msg, ["create"]) do

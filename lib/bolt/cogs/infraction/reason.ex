@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Infraction.Reason do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Repo
   alias Bolt.Schema.Infraction

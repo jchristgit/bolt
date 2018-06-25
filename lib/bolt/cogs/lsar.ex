@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Lsar do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Converters
   alias Bolt.Paginator

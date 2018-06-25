@@ -1,7 +1,9 @@
 defmodule Bolt.Events.Deserializer do
+  @moduledoc "Deserializes JSONB data from rows from the `events` into Elixir functions."
+
   alias Bolt.Schema.Event
 
-  def valid_events() do
+  def valid_events do
     [
       "CREATE_MESSAGE",
       "REMOVE_ROLE",
@@ -27,8 +29,8 @@ defmodule Bolt.Events.Deserializer do
         data: %{"guild_id" => guild_id, "user_id" => user_id, "role_id" => role_id}
       }) do
     func = fn ->
-      alias Nostrum.Api
       alias Bolt.Helpers
+      alias Nostrum.Api
 
       with {:ok, member} <- Helpers.get_member(guild_id, user_id),
            roles <- Enum.reject(member.roles, &(&1 == role_id)),

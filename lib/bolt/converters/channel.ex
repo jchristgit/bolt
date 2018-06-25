@@ -1,4 +1,6 @@
 defmodule Bolt.Converters.Channel do
+  @moduledoc "A converter that converts text into a guild channel."
+
   alias Bolt.Helpers
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache

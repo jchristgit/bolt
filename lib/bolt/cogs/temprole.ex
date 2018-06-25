@@ -1,9 +1,11 @@
 defmodule Bolt.Cogs.Temprole do
+  @moduledoc false
+
   alias Bolt.Converters
+  alias Bolt.Events.Handler
   alias Bolt.Helpers
   alias Bolt.Parsers
   alias Bolt.Repo
-  alias Bolt.Events.Handler
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User

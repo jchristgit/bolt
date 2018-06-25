@@ -1,4 +1,6 @@
 defmodule Bolt.Helpers do
+  @moduledoc "Various helpers used throughout the bot."
+
   alias Bolt.Converters
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
@@ -28,20 +30,25 @@ defmodule Bolt.Helpers do
   human-readable string in the form
   "dd.mm.yy hh:mm (n [seconds/minutes/hours/days/weeks/months/years] ago)"
   """
-  @spec datetime_to_human(Nostrum.Struct.Snowflake.t()) :: String.t()
+  @spec datetime_to_human(DateTime.t()) :: String.t()
   def datetime_to_human(datetime) do
     "#{Timex.format!(datetime, "%d.%m.%y %H:%M", :strftime)} (#{Timex.from_now(datetime)})"
   end
 
   @doc "Try to return a member of the given guild ID with the given author ID."
-  @spec get_member(Nostrum.Struct.Snowflake.t(), Nostrum.Struct.Snowflake.t()) ::
-          {:ok, Nostrum.Struct.Guild.Member.t()} | {:error, String.t()}
+  @spec get_member(
+          Nostrum.Struct.Snowflake.t(),
+          Nostrum.Struct.Snowflake.t()
+        ) :: {:ok, Nostrum.Struct.Guild.Member.t()} | {:error, String.t()}
   def get_member(guild_id, author_id) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
         case Enum.find(
                guild.members,
-               {:error, "There is no member with ID #{author_id} in this guild"},
+               {
+                 :error,
+                 "there is no member with ID #{author_id} in this guild"
+               },
                &(&1.user.id == author_id)
              ) do
           {:error, reason} -> {:error, reason}
@@ -54,14 +61,19 @@ defmodule Bolt.Helpers do
             {:ok, member}
 
           {:error, _why} ->
-            {:error,
-             "This guild is not in the cache, and no member with the ID #{author_id} could be found"}
+            {
+              :error,
+              "This guild is not in the cache, and no " <>
+                "member with the ID #{author_id} could be found"
+            }
         end
     end
   end
 
-  @spec find_role([Nostrum.Struct.Guild.Role.t()], [Nostrum.Struct.Guild.Role.t()]) ::
-          {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+  @spec find_role(
+          [Nostrum.Struct.Guild.Role.t()],
+          [Nostrum.Struct.Guild.Role.t()]
+        ) :: {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
   defp find_role(guild_roles, member_roles) do
     role_match =
       guild_roles
@@ -75,8 +87,10 @@ defmodule Bolt.Helpers do
   end
 
   @doc "Returns the top role for the given member ID on the given guild, representative for permissions on the given guild ID."
-  @spec top_role_for(Nostrum.Struct.Snowflake.t(), Nostrum.Struct.Snowflake.t()) ::
-          {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+  @spec top_role_for(
+          Nostrum.Struct.Snowflake.t(),
+          Nostrum.Struct.Snowflake.t()
+        ) :: {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
   def top_role_for(guild_id, member_id) do
     with {:ok, member} <- get_member(guild_id, member_id) do
       case GuildCache.get(guild_id) do
@@ -122,5 +136,26 @@ defmodule Bolt.Helpers do
           {:error, _} = error -> error
         end
     end
+  end
+
+  @doc """
+  Given a changeset with errors, format them nicely for humans to understand.
+  Returns a list of strings with the errors, in the form '{key} {error}'.
+  """
+  @spec format_changeset_errors(Ecto.Changeset.t()) :: [String.t()]
+  def format_changeset_errors(changeset) do
+    alias Ecto.Changeset
+
+    error_map =
+      changeset
+      |> Changeset.traverse_errors(fn {msg, opts} ->
+        Enum.reduce(opts, msg, fn {key, value}, acc ->
+          String.replace(acc, "%{#{key}}", to_string(value))
+        end)
+      end)
+
+    error_map
+    |> Map.keys()
+    |> Enum.map(&"#{&1} #{error_map[&1]}")
   end
 end

@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Stats do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache

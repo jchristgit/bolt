@@ -1,8 +1,9 @@
 defmodule Bolt.Cogs.Tag.Create do
+  @moduledoc false
+
   alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Tag
-  alias Ecto.Changeset
   alias Nostrum.Api
 
   def command(msg, ["", _content]) do
@@ -23,28 +24,16 @@ defmodule Bolt.Cogs.Tag.Create do
 
     changeset = Tag.changeset(%Tag{}, new_tag)
 
-    case Repo.insert(changeset) do
-      {:ok, _created_tag} ->
-        response_content = "👌 created the tag `#{Helpers.clean_content(name)}`"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response_content)
+    response =
+      case Repo.insert(changeset) do
+        {:ok, _created_tag} ->
+          "👌 created the tag `#{Helpers.clean_content(name)}`"
 
-      {:error, changeset} ->
-        header = "🚫 invalid arguments:"
+        {:error, changeset} ->
+          errors = Helpers.format_changeset_errors(changeset)
+          "🚫 invalid arguments: \n#{errors}"
+      end
 
-        error_map =
-          changeset
-          |> Changeset.traverse_errors(fn {msg, opts} ->
-            Enum.reduce(opts, msg, fn {key, value}, acc ->
-              String.replace(acc, "%{#{key}}", to_string(value))
-            end)
-          end)
-
-        response_content =
-          Map.keys(error_map)
-          |> Stream.map(&"#{&1} #{error_map[&1]}")
-          |> Enum.join("\n")
-
-        {:ok, _msg} = Api.create_message(msg.channel_id, "#{header}\n#{response_content}")
-    end
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

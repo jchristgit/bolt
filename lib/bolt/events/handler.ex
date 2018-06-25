@@ -39,7 +39,11 @@ defmodule Bolt.Events.Handler do
 
     with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, event.id}),
          {:ok, updated_event} <- Repo.update(changeset),
-         {:ok, _event} <- GenServer.call(__MODULE__, {:create, updated_event}) do
+         {:ok, _event} <-
+           GenServer.call(
+             __MODULE__,
+             {:create, updated_event}
+           ) do
       {:ok, updated_event}
     else
       {:error, _reason} = error -> error
@@ -54,9 +58,11 @@ defmodule Bolt.Events.Handler do
     alias Bolt.Schema.Event
     import Ecto.Query, only: [from: 2]
 
-    # Boot a timer for stale events
+    # Start a timer for stale events
+    query = from(event in Event, select: event)
+
     timers =
-      from(event in Event, select: event)
+      query
       |> Repo.all()
       |> Enum.map(fn event ->
         {
@@ -96,7 +102,7 @@ defmodule Bolt.Events.Handler do
   @impl true
   def handle_call({:drop_timer, event_id}, _from, timers) do
     with {:ok, timer} <- Map.fetch(timers, event_id),
-         left_to_expiry when is_integer(left_to_expiry) <- Process.cancel_timer(timer) do
+         to_expiry when is_integer(to_expiry) <- Process.cancel_timer(timer) do
       {:reply, {:ok, timer}, Map.delete(timers, event_id)}
     else
       :error -> {:reply, {:error, "event is not registered in the event handler"}, timers}

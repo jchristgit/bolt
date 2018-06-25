@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Tempban do
+  @moduledoc false
+
   alias Bolt.Events.Handler
   alias Bolt.Helpers
   alias Bolt.Parsers

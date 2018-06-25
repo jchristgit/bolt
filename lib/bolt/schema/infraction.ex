@@ -20,7 +20,15 @@ defmodule Bolt.Schema.Infraction do
 
   def changeset(event, params \\ %{}) do
     event
-    |> cast(params, [:type, :guild_id, :user_id, :actor_id, :reason, :data, :expires_at])
+    |> cast(params, [
+      :type,
+      :guild_id,
+      :user_id,
+      :actor_id,
+      :reason,
+      :data,
+      :expires_at
+    ])
     |> validate_required([:type, :guild_id, :user_id, :actor_id])
     |> validate_inclusion(:type, [
       "note",

@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Remove do
+  @moduledoc false
+
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Bolt.Repo

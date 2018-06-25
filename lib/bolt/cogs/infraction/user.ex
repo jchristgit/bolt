@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Infraction.User do
+  @moduledoc false
+
   alias Bolt.Cogs.Infraction.General
   alias Bolt.Constants
   alias Bolt.Helpers
@@ -10,8 +12,8 @@ defmodule Bolt.Cogs.Infraction.User do
   def prepare_for_paginator(msg, {snowflake, maybe_user}) do
     import Ecto.Query, only: [from: 2]
 
-    queryset =
-      from(i in Infraction, where: [guild_id: ^msg.guild_id, user_id: ^snowflake]) |> Repo.all()
+    query = from(i in Infraction, where: [guild_id: ^msg.guild_id, user_id: ^snowflake])
+    queryset = Repo.all(query)
 
     base_embed =
       if maybe_user == nil do
