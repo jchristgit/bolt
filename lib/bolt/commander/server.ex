@@ -339,6 +339,7 @@ defmodule Bolt.Commander.Server do
       help: """
       Manage self-assignable roles.
       Self-assignable roles are special roles that can be assigned my members through bot commands.
+      Requires the `MANAGE_ROLES` permission.
 
       **Subcommands**:
       - `allow <role:role...>`: Allow self-assignment of the given role.
@@ -355,6 +356,18 @@ defmodule Bolt.Commander.Server do
       """,
       usage: ["role allow <role:role...>", "role deny <role:role...>"],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
+    },
+    "modlog" => %{
+      callback: &Cogs.ModLog.command/2,
+      help: """
+      Control the moderation log.
+      Requires the `ADMINISTRATOR` permission.
+
+      **Subcommands**:
+      • `status`: show the current configuration
+      """,
+      usage: ["modlog status"],
+      predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
     "tag" => %{
       callback: &Cogs.Tag.command/2,
@@ -401,7 +414,7 @@ defmodule Bolt.Commander.Server do
   ## Client API
 
   @doc "Start the command registry."
-  @spec start_link(GenServer.options) :: GenServer.on_start()
+  @spec start_link(GenServer.options()) :: GenServer.on_start()
   def start_link(options) do
     GenServer.start_link(__MODULE__, :ok, options)
   end
