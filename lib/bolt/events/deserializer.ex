@@ -31,13 +31,22 @@ defmodule Bolt.Events.Deserializer do
         data: %{"guild_id" => guild_id, "user_id" => user_id, "role_id" => role_id}
       }) do
     func = fn ->
-      alias Bolt.Helpers
+      alias Bolt.ModLog
       alias Nostrum.Api
 
-      with {:ok, member} <- Helpers.get_member(guild_id, user_id),
-           roles <- Enum.reject(member.roles, &(&1 == role_id)),
-           {:ok} <- Api.modify_guild_member(guild_id, user_id, roles: roles) do
-        :ok
+      with {:ok} <- Api.remove_guild_member_role(guild_id, user_id, role_id) do
+        ModLog.emit(
+          guild_id,
+          "INFRACTION_EVENTS",
+          "removed temporary role `#{role_id}` from `#{user_id}`"
+        )
+      else
+        _err ->
+          ModLog.emit(
+            guild_id,
+            "INFRACTION_EVENTS",
+            "could NOT remove temporary role `#{role_id}` from `#{user_id}` (unexpected error)"
+          )
       end
     end
 
@@ -49,9 +58,23 @@ defmodule Bolt.Events.Deserializer do
         data: %{"guild_id" => guild_id, "user_id" => user_id}
       }) do
     func = fn ->
+      alias Bolt.ModLog
       alias Nostrum.Api
 
-      Api.remove_guild_ban(guild_id, user_id)
+      with {:ok} <- Api.remove_guild_ban(guild_id, user_id) do
+        ModLog.emit(
+          guild_id,
+          "INFRACTION_EVENTS",
+          "removed temporary ban for `#{user_id}`"
+        )
+      else
+        _err ->
+          ModLog.emit(
+            guild_id,
+            "INFRACTION_EVENTS",
+            "failed to remove temporary ban for `#{user_id}` (unexpected error)"
+          )
+      end
     end
 
     {:ok, func}
