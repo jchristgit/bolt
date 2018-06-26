@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Sudo.Log do
+  @moduledoc false
+
   alias Bolt.ModLog
   alias Nostrum.Api
 

@@ -101,8 +101,8 @@ defmodule Bolt.Commander.Checks do
     if msg.author.id in Application.fetch_env!(:bolt, :superusers) do
       BotLog.emit(
         "🔓 #{User.full_name(msg.author)} (`#{msg.author.id}`) passed the root user check" <>
-          " and is about to invoke `#{Helpers.clean_content(msg.content)}`"
-          <> " in channel `#{msg.channel_id}`"
+          " and is about to invoke `#{Helpers.clean_content(msg.content)}`" <>
+          " in channel `#{msg.channel_id}`"
       )
 
       {:ok, msg}
