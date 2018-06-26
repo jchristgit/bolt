@@ -67,7 +67,9 @@ defmodule Bolt.Commander do
   def handle_message(msg) do
     with [@prefix <> command_name | args] <- try_split(msg.content),
          command_map when command_map != nil <- Server.lookup(command_name) do
-      invoke(command_map, msg, args)
+      unless msg.author.bot do
+        invoke(command_map, msg, args)
+      end
     else
       _err -> :ignored
     end
