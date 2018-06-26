@@ -81,6 +81,12 @@ defmodule Bolt.Consumer do
     GenServer.cast(Bolt.Paginator, {:MESSAGE_REACTION_ADD, reaction})
   end
 
+  def handle_event({:GUILD_CREATE, {guild}, _ws_state}) do
+    BotLog.emit(
+      "📥 joined guild `#{guild.name}` (`#{guild.id}`)," <> " seeing #{guild.member_count} members"
+    )
+  end
+
   def handle_event({:GUILD_DELETE, {guild, _unavailable}, _ws_state}) do
     BotLog.emit("📤 left guild `#{guild.name}` (`#{guild.id}`)")
   end
