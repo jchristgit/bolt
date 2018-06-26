@@ -1,6 +1,7 @@
 defmodule Bolt.Consumer do
   @moduledoc "Consumes events sent by the API gateway."
 
+  alias Bolt.BotLog
   alias Bolt.Commander
   alias Bolt.Helpers
   alias Bolt.ModLog
@@ -80,6 +81,10 @@ defmodule Bolt.Consumer do
     GenServer.cast(Bolt.Paginator, {:MESSAGE_REACTION_ADD, reaction})
   end
 
+  def handle_event({:GUILD_DELETE, {guild, _unavailable}, _ws_state}) do
+    BotLog.emit("📤 left guild `#{guild.name}` (`#{guild.id}`)")
+  end
+
   def handle_event({:GUILD_ROLE_DELETE, {guild_id, deleted_role}, _ws_state}) do
     case Repo.get(SelfAssignableRoles, guild_id) do
       %SelfAssignableRoles{roles: role_list} = sar_row ->
@@ -96,8 +101,11 @@ defmodule Bolt.Consumer do
     end
   end
 
+  def handle_event({:READY, {data}, _ws_state}) do
+    BotLog.emit("⚡ Logged in and ready, seeing `#{length(data.guilds)}` guilds.")
+  end
+
   @impl true
-  def handle_event(_event) do
-    :noop
+  def handle_event(_data) do
   end
 end
