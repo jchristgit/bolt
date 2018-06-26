@@ -26,7 +26,7 @@ defmodule Bolt.USW.Filters.Burst do
           |> Enum.filter(&Timex.after?(Snowflake.creation_time(&1.id), interval_seconds_ago))
 
         if length(during_interval) >= count do
-          IO.puts("beep bop user exceeded limit")
+          IO.puts("beep bop, user hit the limit!")
           :action
         else
           :passthrough

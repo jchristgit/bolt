@@ -36,7 +36,7 @@ defmodule Bolt.USW do
       configurations ->
         configurations
         |> Stream.map(&config_to_fn(msg, &1))
-        |> Enum.find(:ok, &(&1 == :action))
+        |> Enum.find(:ok, &(&1.() == :action))
     end
   end
 end
