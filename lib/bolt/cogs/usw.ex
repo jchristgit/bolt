@@ -18,4 +18,10 @@ defmodule Bolt.Cogs.USW do
 
     Unset.command(msg, args)
   end
+
+  def command(msg, ["punish" | args]) do
+    alias Bolt.Cogs.USW.Punish
+
+    Punish.command(msg, args)
+  end
 end
