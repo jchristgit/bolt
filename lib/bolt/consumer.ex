@@ -8,6 +8,7 @@ defmodule Bolt.Consumer do
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
+  alias Bolt.USW
   alias Nostrum.Struct.Snowflake
   alias Nostrum.Struct.User
   use Nostrum.Consumer
@@ -22,6 +23,7 @@ defmodule Bolt.Consumer do
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
     Commander.handle_message(msg)
     MessageCache.consume(msg)
+    USW.apply(msg)
   end
 
   def handle_event(
