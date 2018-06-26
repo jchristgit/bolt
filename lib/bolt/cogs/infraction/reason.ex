@@ -27,14 +27,16 @@ defmodule Bolt.Cogs.Infraction.Reason do
           ModLog.emit(
             msg.guild_id,
             "INFRACTION_UPDATE",
-            "#{User.full_name(msg.author)} (`#{msg.author.id}`)"
-            <> if(
-              infraction.reason == nil,
-              do: "added the reason `#{Helpers.clean_content(new_reason)}` to ##{infraction.id}",
-              else: "updated the reason of infraction ##{infraction.id} to"
-              <> "`#{Helpers.clean_content(new_reason)}`, was"
-              <> "`#{Helpers.clean_content(infraction.reason)}`"
-            )
+            "#{User.full_name(msg.author)} (`#{msg.author.id}`)" <>
+              if(
+                infraction.reason == nil,
+                do:
+                  "added the reason `#{Helpers.clean_content(new_reason)}` to ##{infraction.id}",
+                else:
+                  "updated the reason of infraction ##{infraction.id} to" <>
+                    "`#{Helpers.clean_content(new_reason)}`, was" <>
+                    "`#{Helpers.clean_content(infraction.reason)}`"
+              )
           )
 
           "👌 updated infraction ##{updated_infraction.id}"

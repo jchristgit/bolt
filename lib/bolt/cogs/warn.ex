@@ -23,12 +23,11 @@ defmodule Bolt.Cogs.Warn do
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, _created_infraction} <- Repo.insert(changeset) do
-
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) has warned"
-          <> " #{User.full_name(member.user)} (`#{member.user.id}`) with reason `#{reason}`"
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) has warned" <>
+            " #{User.full_name(member.user)} (`#{member.user.id}`) with reason `#{reason}`"
         )
 
         "👌 warned #{User.full_name(member.user)} (`#{Helpers.clean_content(reason)}`)"

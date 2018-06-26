@@ -27,13 +27,14 @@ defmodule Bolt.Cogs.Infraction.General do
   @spec format_user(Nostrum.Struct.Snowflake.t(), Nostrum.Struct.Snowflake.t()) :: String.t()
   def format_user(guild_id, user_id) do
     default_string = "unknown user (`#{user_id}`)"
+
     case UserCache.get(user_id) do
       {:ok, user} ->
         "#{User.full_name(user)} (`#{user.id}`)"
 
       {:error, _reason} ->
         case GuildCache.get(guild_id) do
-          {:ok, guild} -> Enum.find(guild.members, default_string, & &1.user.id == user_id)
+          {:ok, guild} -> Enum.find(guild.members, default_string, &(&1.user.id == user_id))
           {:error, _reason} -> default_string
         end
     end
