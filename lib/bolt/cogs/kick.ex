@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Kick do
 
   alias Bolt.Converters
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -26,10 +27,18 @@ defmodule Bolt.Cogs.Kick do
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, _created_infraction} <- Repo.insert(changeset) do
+        ModLog.emit(
+          msg.guild_id,
+          "INFRACTION_CREATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) kicked" <>
+            " #{User.full_name(member.user)} (`#{member.user.id}`)" <>
+            if(reason != "", do: " with reason `#{reason}`", else: "")
+        )
+
         response = "👌 kicked #{User.full_name(member.user)} (`#{member.user.id}`)"
 
         if reason != "" do
-          response <> " (`#{Helpers.clean_content(reason)}`)"
+          response <> " with reason `#{Helpers.clean_content(reason)}`"
         else
           response
         end

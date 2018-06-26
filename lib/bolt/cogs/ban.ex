@@ -2,6 +2,7 @@ defmodule Bolt.Cogs.Ban do
   @moduledoc false
 
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -32,10 +33,17 @@ defmodule Bolt.Cogs.Ban do
             "`#{user_id}`"
           end
 
-        if reason do
-          "👌 banned #{user_string}"
+        ModLog.emit(
+          msg.guild_id,
+          "INFRACTION_CREATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) banned #{user_string}" <>
+            if(reason != "", do: " with reason `#{reason}`", else: "")
+        )
+
+        if reason != "" do
+          "👌 banned #{user_string} with reason `#{reason}`"
         else
-          "👌 banned #{user_string} (`#{reason}`)"
+          "👌 banned #{user_string}"
         end
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
@@ -45,6 +53,6 @@ defmodule Bolt.Cogs.Ban do
           "❌ error: #{Helpers.clean_content(reason)}"
       end
 
-    {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
