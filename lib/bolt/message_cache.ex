@@ -1,6 +1,6 @@
-defmodule Bolt.USW.Tracker do
-  @moduledoc "Tracks a few last messages per channel / member for automatic moderation."
-  @max_messages_per_user 5
+defmodule Bolt.MessageCache do
+  @moduledoc "Caches the most recent x messages sent in channels for moderation."
+  @max_messages_per_channel 50
 
   use Agent
 
@@ -15,19 +15,18 @@ defmodule Bolt.USW.Tracker do
       __MODULE__,
       fn msg_map ->
         new_message_map = %{
-          channel_id: msg.channel_id,
+          author_id: msg.author.id,
           content: msg.content,
-          guild_id: msg.channel_id,
           id: msg.id
         }
 
         updated_map =
           msg_map
           |> Map.update(
-            msg.author.id,
+            msg.channel_id,
             [new_message_map],
             fn messages ->
-              if length(messages) >= @max_messages_per_user do
+              if length(messages) >= @max_messages_per_channel do
                 [new_message_map | Enum.drop(messages, -1)]
               else
                 [new_message_map | messages]

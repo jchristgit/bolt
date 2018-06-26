@@ -4,10 +4,10 @@ defmodule Bolt.Consumer do
   alias Bolt.BotLog
   alias Bolt.Commander
   alias Bolt.Helpers
+  alias Bolt.MessageCache
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
-  alias Bolt.USW.Tracker
   alias Nostrum.Struct.Snowflake
   alias Nostrum.Struct.User
   use Nostrum.Consumer
@@ -21,7 +21,7 @@ defmodule Bolt.Consumer do
   @spec handle_event(Nostrum.Consumer.event()) :: any()
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
     Commander.handle_message(msg)
-    Tracker.consume(msg)
+    MessageCache.consume(msg)
   end
 
   def handle_event(
