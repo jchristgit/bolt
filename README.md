@@ -15,3 +15,5 @@ A high-quality Discord moderation bot, intended for large guilds.
 
 ## Configuration
 You can configure the prefix used by using the environment variable `BOT_PREFIX`.
+If you want to, you can set up a bot log channel with the `BOTLOG_CHANNEL` environment
+variable - set this to the channel ID that you want bot events logged in.
