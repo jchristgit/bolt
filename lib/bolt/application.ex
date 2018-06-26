@@ -18,6 +18,7 @@ defmodule Bolt.Application do
       {Bolt.Commander.Server, name: Bolt.Commander.Server},
       {Bolt.Paginator, name: Bolt.Paginator},
       {Bolt.ModLog.Silencer, name: Bolt.ModLog.Silencer},
+      {Bolt.USW.Tracker, name: Bolt.USW.Tracker},
       Bolt.Consumer
     ]
 
