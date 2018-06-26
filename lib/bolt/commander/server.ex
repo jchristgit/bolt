@@ -387,6 +387,12 @@ defmodule Bolt.Commander.Server do
       ],
       predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
+    "usw" => %{
+      callback: &Cogs.USW.command/2,
+      help: "Uncomplicated spam wall",
+      usage: ["usw"],
+      predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
+    },
     "tag" => %{
       callback: &Cogs.Tag.command/2,
       help: """
