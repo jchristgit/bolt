@@ -1,4 +1,6 @@
 defmodule Bolt.Cogs.Sudo.Guilds do
+  @moduledoc false
+
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Bolt.Paginator
@@ -17,7 +19,7 @@ defmodule Bolt.Cogs.Sudo.Guilds do
           value: """
           ID: `#{&1.id}`
           member count: `#{&1.member_count}`
-          joined at: #{&1 |> DateTime.from_iso8601() |> Helpers.datetime_to_human()}
+          joined at: #{&1.joined_at |> DateTime.from_iso8601() |> elem(1) |> Helpers.datetime_to_human()}
           """,
           inline: true
         }
@@ -30,7 +32,7 @@ defmodule Bolt.Cogs.Sudo.Guilds do
       )
 
     base_page = %Embed{
-      title: "guilds in cache",
+      title: "Guilds in cache",
       color: Constants.color_blue()
     }
 
