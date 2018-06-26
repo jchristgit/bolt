@@ -11,6 +11,15 @@ defmodule Bolt.USW do
              :action | :passthrough)
   defp filter_to_fn(%USWFilterConfig{filter: "BURST"}), do: &Burst.apply/3
 
+  @spec config_to_fn(Nostrum.Struct.Message.t(), USWFilterConfig) ::
+          (() -> :action | :passthrough)
+  defp config_to_fn(msg, config) do
+    fn ->
+      func = filter_to_fn(config)
+      func.(msg, config.count, config.interval)
+    end
+  end
+
   @spec apply(Nostrum.Struct.Message.t()) :: :ok
   def apply(msg) do
     query =
@@ -26,15 +35,8 @@ defmodule Bolt.USW do
 
       configurations ->
         configurations
-        |> Stream.map(fn config ->
-          fn ->
-            func = filter_to_fn(config)
-            func.(msg, config.count, config.interval)
-          end
-        end)
-        |> Enum.find(&(&1 == :action))
-
-        :ok
+        |> Stream.map(&config_to_fn(msg, &1))
+        |> Enum.find(:ok, &(&1 == :action))
     end
   end
 end

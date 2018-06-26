@@ -23,7 +23,7 @@ defmodule Bolt.Schema.USWFilterConfig do
   end
 
   @spec existing_filters :: [String.t()]
-  def existing_filters() do
+  def existing_filters do
     [
       "BURST"
     ]

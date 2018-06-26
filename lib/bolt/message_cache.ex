@@ -22,6 +22,24 @@ defmodule Bolt.MessageCache do
     )
   end
 
+  @spec update_state(Nostrum.Struct.Message.t(), cache_message, cache_message) :: %{
+          Nostrum.Struct.User.id() => cache_message
+        }
+  defp update_state(msg, msg_map, new_message_map) do
+    Map.update(
+      msg_map,
+      msg.channel_id,
+      [new_message_map],
+      fn messages ->
+        if length(messages) >= @max_messages_per_channel do
+          [new_message_map | Enum.drop(messages, -1)]
+        else
+          [new_message_map | messages]
+        end
+      end
+    )
+  end
+
   @spec consume(Nostrum.Struct.Message.t()) :: [Nostrum.Struct.Message.t()]
   def consume(msg) do
     Agent.get_and_update(
@@ -33,20 +51,7 @@ defmodule Bolt.MessageCache do
           id: msg.id
         }
 
-        updated_map =
-          msg_map
-          |> Map.update(
-            msg.channel_id,
-            [new_message_map],
-            fn messages ->
-              if length(messages) >= @max_messages_per_channel do
-                [new_message_map | Enum.drop(messages, -1)]
-              else
-                [new_message_map | messages]
-              end
-            end
-          )
-
+        updated_map = update_state(msg, msg_map, new_message_map)
         {msg_map, updated_map}
       end
     )
