@@ -1,7 +1,9 @@
 defmodule Bolt.Commander.Checks do
   @moduledoc "Implements various checks used by commands."
 
+  alias Bolt.BotLog
   alias Bolt.Helpers
+  alias Nostrum.Struct.User
   use Bitwise
 
   @doc """
@@ -90,5 +92,36 @@ defmodule Bolt.Commander.Checks do
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def is_admin?(msg) do
     has_permission?(msg, @bitflags_admin, "ADMINISTRATOR")
+  end
+
+  @doc "Checks that the message author is in the superuser list."
+  @spec is_superuser?(Nostrum.Struct.Message.t()) ::
+          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  def is_superuser?(msg) do
+    if msg.author.id in Application.fetch_env!(:bolt, :superusers) do
+      BotLog.emit(
+        "🔓 #{User.full_name(msg.author)} (`#{msg.author.id}`) passed the root user check" <>
+          " and is about to invoke `#{Helpers.clean_content(msg.content)}`"
+          <> " in channel `#{msg.channel_id}`"
+      )
+
+      {:ok, msg}
+    else
+      BotLog.emit(
+        "🔒#{User.full_name(msg.author)} (`#{msg.author.id}`) attempted using the root-only" <>
+          " command `#{Helpers.clean_content(msg.content)}` in channel `#{msg.channel_id}`" <>
+          if(
+            msg.guild_id != nil,
+            do: " on guild ID `#{msg.guild_id}`",
+            else: ", which is a direct message channel"
+          )
+      )
+
+      {
+        :error,
+        "🚫 #{User.full_name(msg.author)} is not in the sudoers file." <>
+          " This incident will be reported."
+      }
+    end
   end
 end
