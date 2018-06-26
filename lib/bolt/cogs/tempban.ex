@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Tempban do
 
   alias Bolt.Events.Handler
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Parsers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
@@ -45,11 +46,19 @@ defmodule Bolt.Cogs.Tempban do
             "#{User.full_name(converted_user)} (`#{user_id}`)"
           end
 
+        ModLog.emit(
+          msg.guild_id,
+          "INFRACTION_CREATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) temporarily banned" <>
+            " #{user_string} until #{Helpers.datetime_to_human(expiry)}" <>
+            if(reason != "", do: " with reason `#{Helpers.clean_content(reason)}`", else: "")
+        )
+
         response =
           "👌 temporarily banned #{user_string} until #{Helpers.datetime_to_human(expiry)}"
 
         if reason != "" do
-          response <> " (`#{Helpers.clean_content(reason)}`)"
+          response <> " with reason `#{Helpers.clean_content(reason)}`"
         else
           response
         end

@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Note do
 
   alias Bolt.Converters
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -25,6 +26,13 @@ defmodule Bolt.Cogs.Note do
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, _created_infraction} <- Repo.insert(changeset) do
+        ModLog.emit(
+          msg.guild_id,
+          "INFRACTION_CREATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) added a note to" <>
+            " #{User.full_name(member.user)} (`#{member.user.id}`), contents: `#{note}`"
+        )
+
         "👌 note created for #{User.full_name(member.user)} (`#{member.user.id}`)"
       else
         "" ->
