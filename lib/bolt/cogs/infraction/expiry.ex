@@ -3,10 +3,12 @@ defmodule Bolt.Cogs.Infraction.Expiry do
 
   alias Bolt.Events.Handler
   alias Bolt.Helpers
+  alias Bolt.ModLog
   alias Bolt.Parsers
   alias Bolt.Repo
   alias Bolt.Schema.Event
   alias Bolt.Schema.Infraction
+  alias Nostrum.Struct.User
 
   @spec command(
           Nostrum.Struct.Message.t(),
@@ -26,7 +28,15 @@ defmodule Bolt.Cogs.Infraction.Expiry do
          {:ok, updated_event} <- Handler.update(event, %{timestamp: converted_expiry}),
          infraction_changeset <-
            Infraction.changeset(infraction, %{expires_at: converted_expiry}),
-         {:ok, _updated_infraction} <- Repo.update(infraction_changeset) do
+         {:ok, updated_infraction} <- Repo.update(infraction_changeset) do
+      ModLog.emit(
+        msg.guild_id,
+        "INFRACTION_UPDATE",
+        "#{User.full_name(msg.author)} (`#{msg.author.id}`) changed expiry for ##{infraction.id}" <>
+          " to #{Helpers.datetime_to_human(updated_infraction.expires_at)}" <>
+          ", was #{Helpers.datetime_to_human(infraction.expires_at)}"
+      )
+
       "👌 infraction ##{infraction.id} now expires at #{
         Helpers.datetime_to_human(updated_event.timestamp)
       }"
