@@ -6,8 +6,8 @@ defmodule Bolt.Schema.USWFilterConfig do
 
   @primary_key false
   schema "usw_filter_config" do
-    field(:guild_id, :id)
-    field(:filter, :string)
+    field(:guild_id, :id, primary_key: true)
+    field(:filter, :string, primary_key: true)
     field(:count, :integer)
     field(:interval, :integer)
   end
