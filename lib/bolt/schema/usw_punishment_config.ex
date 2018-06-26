@@ -1,5 +1,5 @@
-defmodule Bolt.Cogs.USWPunishmentConfig do
-  @moduledoc false
+defmodule Bolt.Schema.USWPunishmentConfig do
+  @moduledoc "Configuration for the punishment executed by USW."
 
   import Ecto.Changeset
   use Ecto.Schema
@@ -9,12 +9,13 @@ defmodule Bolt.Cogs.USWPunishmentConfig do
     field(:guild_id, :id, primary_key: true)
     field(:duration, :integer)
     field(:punishment, :string)
+    field(:data, :map, default: %{})
   end
 
   @spec changeset(Changeset.t(), map()) :: Changeset.t()
   def changeset(config, params \\ %{}) do
     config
-    |> cast(params, [:guild_id, :duration, :punishment])
+    |> cast(params, [:guild_id, :duration, :punishment, :data])
     |> validate_required([:guild_id, :duration, :punishment])
     |> validate_inclusion(:punishment, existing_punishments())
   end
