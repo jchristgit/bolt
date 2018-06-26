@@ -117,7 +117,8 @@ defmodule Bolt.Helpers do
   @spec clean_content(String.t()) :: String.t()
   def clean_content(content) do
     content
-    |> String.replace("@", "@\u200B")
+    |> String.replace("@everyone", "@\u200Beveryone")
+    |> String.replace("@here", "@\u200Bhere")
   end
 
   @doc "Convert text into either a raw snowflake or a snowflake + member."
