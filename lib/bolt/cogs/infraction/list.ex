@@ -47,7 +47,7 @@ defmodule Bolt.Cogs.Infraction.List do
       queryset
       |> Stream.map(fn infr ->
         "[`#{infr.id}`] #{General.emoji_for_type(infr.type)} on " <>
-          "#{General.format_user(infr.user_id)} created #{
+          "#{General.format_user(msg.guild_id, infr.user_id)} created #{
             Helpers.datetime_to_human(infr.inserted_at)
           }"
       end)

@@ -48,7 +48,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
           fields: [
             %Field{
               name: "User",
-              value: General.format_user(infraction.user_id),
+              value: General.format_user(msg.guild_id, infraction.user_id),
               inline: true
             },
             %Field{
@@ -99,7 +99,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
             }
           ],
           footer: %Footer{
-            text: "authored by #{General.format_user(infraction.actor_id)}"
+            text: "authored by #{General.format_user(msg.guild_id, infraction.actor_id)}"
           }
         }
         |> add_specific_fields(infraction)
