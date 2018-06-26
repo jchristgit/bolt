@@ -55,4 +55,9 @@ defmodule Bolt.Cogs.Ban do
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
+
+  def command(msg, _args) do
+    response = "🚫 invalid invocation, view `help ban` for details"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
 end
