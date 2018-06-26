@@ -22,7 +22,7 @@ defmodule Bolt.Cogs.USW.Status do
           name: "`#{&1.filter}`",
           value: """
           max: #{&1.count}
-          pre: #{&1.interval}s
+          per: #{&1.interval}s
           """,
           inline: true
         }
