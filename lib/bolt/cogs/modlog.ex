@@ -32,6 +32,18 @@ defmodule Bolt.Cogs.ModLog do
     Explain.command(msg, args)
   end
 
+  def command(msg, ["mute" | args]) do
+    alias Bolt.Cogs.ModLog.Mute
+
+    Mute.command(msg, args)
+  end
+
+  def command(msg, ["unmute" | args]) do
+    alias Bolt.Cogs.ModLog.Unmute
+
+    Unmute.command(msg, args)
+  end
+
   def command(msg, _args) do
     alias Nostrum.Api
 

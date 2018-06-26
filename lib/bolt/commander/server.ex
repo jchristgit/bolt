@@ -371,6 +371,8 @@ defmodule Bolt.Commander.Server do
       • `unset <event:str>`: stop logging the given event
       • `events`: list known events
       • `explain <event:str>`: explain the given event
+      • `mute`: mute the modlog temporarily (will reset if the bot restarts)
+      • `unmute`: unmute the modlog
 
       If `all` is given in place of `event`, bolt will log all events to the given channel (when invoked with `set`) or no longer log anything (when invoked with `unset`).
       """,
@@ -379,7 +381,9 @@ defmodule Bolt.Commander.Server do
         "modlog set <event:str> <channel:textchannel>",
         "modlog unset <event:str>",
         "modlog events",
-        "modlog explain <event:str>"
+        "modlog explain <event:str>",
+        "modlog mute",
+        "modlog unmute"
       ],
       predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
