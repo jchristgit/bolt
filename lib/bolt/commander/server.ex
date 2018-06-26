@@ -389,8 +389,30 @@ defmodule Bolt.Commander.Server do
     },
     "usw" => %{
       callback: &Cogs.USW.command/2,
-      help: "Uncomplicated spam wall",
-      usage: ["usw"],
+      help: """
+      **Uncomplicated spam wall**
+      Provides subcommands for managing the anti-spam subsystem *USW*.
+      Requires the `ADMINISTRATOR` permission.
+
+      **Subcommands**:
+      • `usw status`: show the current configuration
+      • `usw set <filter:str> <count:int> <interval:int>`: enable the given filter and set it to allow `count` objects in an interval of `interval` seconds
+      • `usw unset <filter:str>`: disable the given filter
+
+      **Filters**:
+      • `BURST`: Filters repeated messages in a short amount of time by a single user
+
+      **Examples**:
+      ```rs
+      // enable the `BURST` filter to allow max. 5 messages in 10 seconds
+      usw set BURST 5 10
+      ```
+      """,
+      usage: [
+        "usw status",
+        "usw set <filter:str> <count:int> <interval:int>",
+        "usw unset <filter:str>"
+      ],
       predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
     "tag" => %{
