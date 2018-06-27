@@ -5,10 +5,31 @@ defmodule Bolt.Cogs.USW.Status do
   alias Bolt.Paginator
   alias Bolt.Repo
   alias Bolt.Schema.USWFilterConfig
+  alias Bolt.Schema.USWPunishmentConfig
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field
   import Ecto.Query, only: [from: 2]
+  use Timex
+
+  defp format_punishment_config(guild_id) do
+    case Repo.get(USWPunishmentConfig, guild_id) do
+      nil ->
+        "no punishment is configured for USW on this guild"
+
+      %USWPunishmentConfig{
+        duration: duration,
+        punishment: "TEMPROLE",
+        data: %{"role_id" => role_id}
+      } ->
+        duration_string =
+          duration
+          |> Timex.Duration.from_seconds()
+          |> Timex.format_duration(:humanized)
+
+        "configured punishment: `TEMPROLE` of" <> " role `#{role_id}` for #{duration_string}"
+    end
+  end
 
   def command(msg, []) do
     query =
@@ -38,6 +59,7 @@ defmodule Bolt.Cogs.USW.Status do
       _ ->
         base_embed = %Embed{
           title: "uncomplicated spam wall: status",
+          description: format_punishment_config(msg.guild_id),
           color: Constants.color_blue()
         }
 
