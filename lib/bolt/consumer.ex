@@ -21,9 +21,6 @@ defmodule Bolt.Consumer do
   @impl true
   @spec handle_event(Nostrum.Consumer.event()) :: any()
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
-    IO.inspect(msg.content, label: "content")
-    IO.inspect(msg.author.bot, label: "is bot")
-
     unless msg.author.bot do
       Commander.handle_message(msg)
       MessageCache.consume(msg)
