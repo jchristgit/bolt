@@ -6,6 +6,7 @@ defmodule Bolt.USW do
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
+  alias Bolt.USW.Deduplicator
   alias Bolt.USW.Filters.{Burst}
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -73,12 +74,16 @@ defmodule Bolt.USW do
            }
          },
          {:ok, event} <- Handler.create(event_map) do
-      ModLog.emit(
-        guild_id,
-        "AUTOMOD",
-        "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
-          " for #{expiry_seconds}s: #{description}"
-      )
+      unless Deduplicator.contains?(user.id) do
+        Deduplicator.add(user.id, expiry_seconds)
+
+        ModLog.emit(
+          guild_id,
+          "AUTOMOD",
+          "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
+            " for #{expiry_seconds}s: #{description}"
+        )
+      end
     else
       {:error, %{status_code: status, message: %{"message" => reason}}} ->
         ModLog.emit(
@@ -94,7 +99,7 @@ defmodule Bolt.USW do
           "AUTOMOD",
           "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
             " but could not create an event to remove it after #{expiry_seconds}s:" <>
-            " #{Helpers.format_changeset_errors(changeset) |> Enum.join(", ")}"
+            " #{changeset |> Helpers.format_changeset_errors() |> Enum.join(", ")}"
         )
     end
   end
