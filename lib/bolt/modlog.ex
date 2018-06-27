@@ -5,6 +5,7 @@ defmodule Bolt.ModLog do
   alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
+  alias Nostrum.Struct.Embed
 
   @event_emoji %{
     "AUTOMOD" => "🛡",
@@ -29,18 +30,24 @@ defmodule Bolt.ModLog do
   @spec emit(
           Nostrum.Struct.Snowflake.t(),
           String.t(),
-          String.t()
+          String.t() | Nostrum.Struct.Embed.t()
         ) :: {:ok, Nostrum.Struct.Message.t()} | {:error, Nostrum.Error.ApiError.t()} | :noop
   def emit(guild_id, event, content) do
-    case Repo.get_by(ModLogConfig, guild_id: guild_id, event: event) do
-      nil ->
-        :noop
+    with %ModLogConfig{channel_id: channel_id} <-
+           Repo.get_by(ModLogConfig, guild_id: guild_id, event: event),
+         false <- Silencer.is_silenced?(guild_id) do
+      event_emoji = Map.get(@event_emoji, event, "?")
 
-      %ModLogConfig{channel_id: channel_id} ->
-        unless Silencer.is_silenced?(guild_id) do
-          event_emoji = Map.get(@event_emoji, event, "?")
+      case content do
+        %Embed{} = log_embed ->
+          log_embed = Map.put(log_embed, :title, "#{event_emoji} `#{event}`")
+          Api.create_message(channel_id, embed: log_embed)
+
+        _string ->
           Api.create_message(channel_id, "#{event_emoji} #{content}")
-        end
+      end
+    else
+      _err -> :noop
     end
   end
 end
