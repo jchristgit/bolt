@@ -9,6 +9,7 @@ defmodule Bolt.Cogs.USW.Status do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field
+  alias Timex.Duration
   import Ecto.Query, only: [from: 2]
   use Timex
 
@@ -24,7 +25,7 @@ defmodule Bolt.Cogs.USW.Status do
       } ->
         duration_string =
           duration
-          |> Timex.Duration.from_seconds()
+          |> Duration.from_seconds()
           |> Timex.format_duration(:humanized)
 
         "configured punishment: `TEMPROLE` of" <> " role `#{role_id}` for #{duration_string}"

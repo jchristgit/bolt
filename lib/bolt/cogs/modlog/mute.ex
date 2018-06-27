@@ -16,6 +16,7 @@ defmodule Bolt.Cogs.ModLog.Mute do
           "CONFIG_UPDATE",
           "#{User.full_name(msg.author)} (`#{msg.author.id}`) has muted the modlog"
         )
+
         :ok = Silencer.add(msg.guild_id)
         "👌 mod log is now silenced (non-persistent)"
       end
