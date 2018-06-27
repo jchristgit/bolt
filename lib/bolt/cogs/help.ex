@@ -34,7 +34,9 @@ defmodule Bolt.Cogs.Help do
         Server.all_commands()
         |> Map.keys()
         |> Stream.map(&"`#{@prefix}#{&1}`")
-        |> Enum.join(", "),
+        |> (fn commands ->
+              "#{Enum.join(commands, ", ")}\n\nConfused by this? Check out `#{@prefix}guide`."
+            end).(),
       color: Constants.color_blue()
     }
 

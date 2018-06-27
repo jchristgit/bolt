@@ -11,7 +11,7 @@ defmodule Bolt.Commander.Server do
   use GenServer
 
   @commands %{
-    ## Built-in help with dummy commands,
+    ## Bot meta commands
     "syntax" => %{
       callback: &Cogs.Dummy.command/2,
       help: """
@@ -35,6 +35,11 @@ defmodule Bolt.Commander.Server do
         `w` for **w**eeks, `d` for **d**ays, `h` for **h**ours, `m` for **m**inutes, and `s` for **s**econds are supported.
       """,
       usage: ["help syntax"]
+    },
+    "guide" => %{
+      callback: &Cogs.Guide.command/2,
+      help: "New to bolt? Use this command to Guide you through.",
+      usage: ["guide"]
     },
 
     ## Meta Commands
@@ -423,24 +428,26 @@ defmodule Bolt.Commander.Server do
     "tag" => %{
       callback: &Cogs.Tag.command/2,
       help: """
-      Tag manager. Create, read, update, or delete tags.
+      Tag manager. Create, read, or delete tags.
       Tags can be used for displaying commonly used information to your members on-demand.
 
       **Subcommands**:
       • `tag <name:str...>`: View the tag with the given name. Case-insensitive.
       • `tag create <name:str> <content:str...>`: Create a new tag with the given name and content.
       • `tag delete <name:str...>`: Delete the tag with the given name. Case-sensitive.
+      • `tag list`: List all tags on this guild.
 
       **Examples**:
       ```rs
       // create the tag "music" with some fancy music
-      tag create music https://www.youtube.com/watch?v=DLzxrzFCyOs
+      tag create music www.youtube.com/watch?v=DLzxrzFCyOs
 
       // view the tag "music"
       tag music
 
       // delete the tag "music"
       tag delete music
+      ```
       """,
       usage: [
         "tag <name:str...>",
