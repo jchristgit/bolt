@@ -398,9 +398,13 @@ defmodule Bolt.Commander.Server do
       • `usw status`: show the current configuration
       • `usw set <filter:str> <count:int> <interval:int>`: enable the given filter and set it to allow `count` objects in an interval of `interval` seconds
       • `usw unset <filter:str>`: disable the given filter
+      • `usw punish <punishment...>`: apply the given punishment when the filter hits
 
       **Filters**:
       • `BURST`: Filters repeated messages in a short amount of time by a single user
+
+      **Punishments**:
+      • `temprole <role:role> <duration:duration>`: temporary apply the given role for `duration`
 
       **Examples**:
       ```rs
@@ -411,7 +415,8 @@ defmodule Bolt.Commander.Server do
       usage: [
         "usw status",
         "usw set <filter:str> <count:int> <interval:int>",
-        "usw unset <filter:str>"
+        "usw unset <filter:str>",
+        "usw punish <punishment...>"
       ],
       predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
