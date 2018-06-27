@@ -3,6 +3,7 @@ defmodule Bolt.USW.Filters.Burst do
   @behaviour Bolt.USW.Filter
 
   alias Bolt.MessageCache
+  alias Bolt.USW
   alias Nostrum.Struct.Snowflake
   use Timex
 
@@ -26,7 +27,12 @@ defmodule Bolt.USW.Filters.Burst do
           |> Enum.filter(&Timex.after?(Snowflake.creation_time(&1.id), interval_seconds_ago))
 
         if length(during_interval) >= count do
-          IO.puts("beep bop, user hit the limit!")
+          USW.punish(
+            msg.guild_id,
+            msg.author,
+            "exceeding the message limit (`BURST` filter) "
+          )
+
           :action
         else
           :passthrough
