@@ -58,7 +58,8 @@ defmodule Bolt.USW do
          user,
          description
        ) do
-    with {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id),
+    with false <- Deduplicator.contains?(user.id),
+         {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id),
          event_map <- %{
            timestamp:
              DateTime.utc_now()
@@ -73,18 +74,20 @@ defmodule Bolt.USW do
              "role_id" => role_id
            }
          },
-         {:ok, event} <- Handler.create(event_map) do
-      unless Deduplicator.contains?(user.id) do
-        Deduplicator.add(user.id, expiry_seconds)
+         {:ok, _event} <- Handler.create(event_map) do
+      Deduplicator.add(user.id, expiry_seconds)
 
-        ModLog.emit(
-          guild_id,
-          "AUTOMOD",
-          "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
-            " for #{expiry_seconds}s: #{description}"
-        )
-      end
+      ModLog.emit(
+        guild_id,
+        "AUTOMOD",
+        "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
+          " for #{expiry_seconds}s: #{description}"
+      )
     else
+      # Deduplicator is active
+      true ->
+        :noop
+
       {:error, %{status_code: status, message: %{"message" => reason}}} ->
         ModLog.emit(
           guild_id,
