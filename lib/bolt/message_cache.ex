@@ -14,11 +14,40 @@ defmodule Bolt.MessageCache do
     Agent.start_link(fn -> %{} end, options)
   end
 
+  @spec get(Nostrum.Struct.Channel.id(), Nostrum.Struct.Message.id()) :: cache_message | nil
+  def get(channel_id, message_id) do
+    case recent_in_channel(channel_id) do
+      nil -> nil
+      messages -> Enum.find(messages, &(&1.id == message_id))
+    end
+  end
+
   @spec recent_in_channel(Nostrum.Struct.Snowflake.t()) :: [cache_message] | nil
   def recent_in_channel(channel_id) do
     Agent.get(
       __MODULE__,
       fn state -> Map.get(state, channel_id) end
+    )
+  end
+
+  @spec update(Nostrum.Struct.Message.t()) :: :ok
+  def update(msg) do
+    Agent.get_and_update(
+      __MODULE__,
+      fn state ->
+        with channel_msgs when channel_msgs != nil <- Map.get(state, msg.channel_id),
+             cached_idx when cached_idx != nil <-
+               Enum.find_index(channel_msgs, &(&1.id == msg.id)) do
+          {state,
+           %{
+             state
+             | msg.channel_id =>
+                 List.update_at(channel_msgs, cached_idx, &%{&1 | content: msg.content})
+           }}
+        else
+          _err -> {state, state}
+        end
+      end
     )
   end
 

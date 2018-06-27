@@ -3,12 +3,16 @@ defmodule Bolt.Consumer do
 
   alias Bolt.BotLog
   alias Bolt.Commander
+  alias Bolt.Constants
   alias Bolt.Helpers
   alias Bolt.MessageCache
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
   alias Bolt.USW
+  alias Nostrum.Struct.Embed
+  alias Nostrum.Struct.Embed.Author
+  alias Nostrum.Struct.Embed.Field
   alias Nostrum.Struct.Snowflake
   alias Nostrum.Struct.User
   use Nostrum.Consumer
@@ -36,31 +40,92 @@ defmodule Bolt.Consumer do
             author: author,
             channel_id: channel_id,
             id: msg_id
-          }}, _ws_state}
+          } = msg}, _ws_state}
       ) do
     if content != "" do
-      jump_link = "https://discordapp.com/channels/#{guild_id}/#{channel_id}/#{msg_id}"
+      from_cache = MessageCache.get(channel_id, msg_id)
+
+      embed = %Embed{
+        author: %Author{
+          name: "#{author.username}##{author.discriminator} (#{author.id})"
+          # FIXME: Once the nostrum bug with users being sent as raw maps
+          #        in the event payload is fixed, edit this back in, and change
+          #        the user#discrim building above to User.full_name/1.
+          # icon_url: User.avatar_url(author)
+        },
+        color: Constants.color_blue(),
+        url: "https://discordapp.com/channels/#{guild_id}/#{channel_id}/#{msg_id}",
+        fields: [
+          %Field{
+            name: "Metadata",
+            value: """
+            Channel: <##{channel_id}>
+            Message ID: #{msg_id}
+            """,
+            inline: true
+          },
+          %Field{
+            name: "Old content",
+            value:
+              (fn ->
+                 content =
+                   if(from_cache != nil, do: from_cache.content, else: "*unknown, not in cache*")
+
+                 String.slice(content, 0..1020)
+               end).(),
+            inline: true
+          },
+          %Field{
+            name: "Updated content",
+            value: String.slice(content, 0..1020),
+            inline: true
+          }
+        ]
+      }
 
       ModLog.emit(
         guild_id,
         "MESSAGE_EDIT",
-        """
-        #{author.username}##{author.discriminator} (`#{author.id}`) edited their message (<#{
-          jump_link
-        }>) to:
-        #{Helpers.clean_content(String.slice(content, 0..1800))}
-        """
+        embed
       )
+
+      MessageCache.update(msg)
     end
   end
 
   def handle_event(
         {:MESSAGE_DELETE, {%{channel_id: channel_id, guild_id: guild_id, id: msg_id}}, _ws_state}
       ) do
+    content =
+      case MessageCache.get(channel_id, msg_id) do
+        nil -> "*unknown, message not in cache*"
+        cached_msg -> String.slice(cached_msg.content, 0..1020)
+      end
+
+    embed = %Embed{
+      color: Constants.color_red(),
+      fields: [
+        %Field{
+          name: "Metadata",
+          value: """
+          Channel: <##{channel_id}>
+          Creation: #{msg_id |> Snowflake.creation_time() |> Helpers.datetime_to_human()}
+          Message ID: #{msg_id}
+          """,
+          inline: true
+        },
+        %Field{
+          name: "Content",
+          value: content,
+          inline: true
+        }
+      ]
+    }
+
     ModLog.emit(
       guild_id,
       "MESSAGE_DELETE",
-      "message with ID `#{msg_id}` deleted in <##{channel_id}>"
+      embed
     )
   end
 
