@@ -169,6 +169,13 @@ defmodule Bolt.Consumer do
           updated_roles = Enum.reject(role_list, &(&1 == deleted_role.id))
           changeset = SelfAssignableRoles.changeset(sar_row, %{roles: updated_roles})
           Repo.update(changeset)
+
+          ModLog.emit(
+            guild_id,
+            "CONFIG_UPDATE",
+            "self-assignable role `#{deleted_role.name}` was deleted and" <>
+              " automatically removed from the self-assignable roles"
+          )
         else
           :noop
         end
