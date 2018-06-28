@@ -100,7 +100,12 @@ defmodule Bolt.Cogs.Infraction.Detail do
           fn ->
             %Field{
               name: "Expiry",
-              value: Helpers.datetime_to_human(infraction.expires_at),
+              value:
+                if(
+                  infraction.active,
+                  do: "#{Helpers.datetime_to_human(infraction.expires_at)}",
+                  else: "#{Helpers.datetime_to_human(infraction.expires_at)} *(inactive)*"
+                ),
               inline: true
             }
           end
