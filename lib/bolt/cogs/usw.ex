@@ -24,4 +24,10 @@ defmodule Bolt.Cogs.USW do
 
     Punish.command(msg, args)
   end
+
+  def command(msg, ["escalate" | args]) do
+    alias Bolt.Cogs.USW.Escalate
+
+    Escalate.command(msg, args)
+  end
 end

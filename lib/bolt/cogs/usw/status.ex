@@ -16,10 +16,11 @@ defmodule Bolt.Cogs.USW.Status do
   defp format_punishment_config(guild_id) do
     case Repo.get(USWPunishmentConfig, guild_id) do
       nil ->
-        "no punishment is configured for USW on this guild"
+        "no punishment is configured"
 
       %USWPunishmentConfig{
         duration: duration,
+        escalate: escalate,
         punishment: "TEMPROLE",
         data: %{"role_id" => role_id}
       } ->
@@ -28,7 +29,8 @@ defmodule Bolt.Cogs.USW.Status do
           |> Duration.from_seconds()
           |> Timex.format_duration(:humanized)
 
-        "configured punishment: `TEMPROLE` of" <> " role `#{role_id}` for #{duration_string}"
+        "configured punishment: `TEMPROLE` of role `#{role_id}` for #{duration_string}" <>
+          ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
     end
   end
 

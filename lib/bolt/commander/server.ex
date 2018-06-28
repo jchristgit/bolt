@@ -404,6 +404,7 @@ defmodule Bolt.Commander.Server do
       • `usw set <filter:str> <count:int> <interval:int>`: enable the given filter and set it to allow `count` objects in an interval of `interval` seconds
       • `usw unset <filter:str>`: disable the given filter
       • `usw punish <punishment...>`: apply the given punishment when the filter hits
+      • `usw escalate [on|off]`: enable or disable automatic punishment escalation
 
       **Filters**:
       • `BURST`: Filters repeated messages in a short amount of time by a single user
@@ -421,7 +422,8 @@ defmodule Bolt.Commander.Server do
         "usw status",
         "usw set <filter:str> <count:int> <interval:int>",
         "usw unset <filter:str>",
-        "usw punish <punishment...>"
+        "usw punish <punishment...>",
+        "usw escalate [on|off]"
       ],
       predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
     },
