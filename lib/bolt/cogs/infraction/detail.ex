@@ -31,6 +31,19 @@ defmodule Bolt.Cogs.Infraction.Detail do
     embed
   end
 
+  @spec add_field_if(Embed.t(), boolean(), non_neg_integer(), (() -> Field.t())) :: Embed.t()
+  defp add_field_if(embed, condition, index, field_func) do
+    if condition do
+      Map.put(
+        embed,
+        :fields,
+        List.insert_at(embed.fields, index, field_func.())
+      )
+    else
+      embed
+    end
+  end
+
   @spec get_response(Message.t(), pos_integer) :: Embed.t()
   def get_response(msg, id) do
     case Repo.get_by(Infraction, id: id, guild_id: msg.guild_id) do
@@ -42,6 +55,8 @@ defmodule Bolt.Cogs.Infraction.Detail do
         }
 
       infraction ->
+        IO.inspect(infraction)
+
         %Embed{
           title: "Infraction ##{id}",
           color: Constants.color_blue(),
@@ -61,41 +76,6 @@ defmodule Bolt.Cogs.Infraction.Detail do
               name: "Creation",
               value: Helpers.datetime_to_human(infraction.inserted_at),
               inline: true
-            },
-            %Field{
-              name: "Modification",
-              value:
-                (fn ->
-                   if DateTime.diff(infraction.inserted_at, infraction.updated_at, :seconds) == 0 do
-                     "*never*"
-                   else
-                     Helpers.datetime_to_human(infraction.updated_at)
-                   end
-                 end).(),
-              inline: true
-            },
-            %Field{
-              name: "Reason",
-              value:
-                (fn ->
-                   case infraction.reason do
-                     nil -> "*not specified*"
-                     "" -> "*empty reason specified*"
-                     reason -> reason
-                   end
-                 end).(),
-              inline: true
-            },
-            %Field{
-              name: "Expiry",
-              value:
-                (fn ->
-                   case infraction.expires_at do
-                     nil -> "*not set*"
-                     expiry -> Helpers.datetime_to_human(expiry)
-                   end
-                 end).(),
-              inline: true
             }
           ],
           footer: %Footer{
@@ -103,6 +83,39 @@ defmodule Bolt.Cogs.Infraction.Detail do
           }
         }
         |> add_specific_fields(infraction)
+        |> add_field_if(
+          DateTime.diff(infraction.inserted_at, infraction.updated_at, :seconds) <= 0,
+          3,
+          fn ->
+            %Field{
+              name: "Modification",
+              value: Helpers.datetime_to_human(infraction.updated_at),
+              inline: true
+            }
+          end
+        )
+        |> add_field_if(
+          infraction.expires_at != nil,
+          4,
+          fn ->
+            %Field{
+              name: "Expiry",
+              value: Helpers.datetime_to_human(infraction.expires_at),
+              inline: true
+            }
+          end
+        )
+        |> add_field_if(
+          infraction.reason != nil,
+          5,
+          fn ->
+            %Field{
+              name: "Reason",
+              value: if(infraction.reason != "", do: infraction.reason, else: "(empty reason)"),
+              inline: true
+            }
+          end
+        )
     end
   end
 end
