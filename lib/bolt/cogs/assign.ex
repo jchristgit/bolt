@@ -1,15 +1,17 @@
 defmodule Bolt.Cogs.Assign do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
   @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
+  def command(msg, "") do
+    response = "🚫 expected the role name to assign, got nothing"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
   def command(msg, role_name) do
     response =
       with roles_row when roles_row != nil <- Repo.get(SelfAssignableRoles, msg.guild_id),
