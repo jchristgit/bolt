@@ -8,8 +8,11 @@ defmodule Bolt.Consumer do
   alias Bolt.MessageCache
   alias Bolt.ModLog
   alias Bolt.Repo
+  alias Bolt.Schema.Infraction
   alias Bolt.Schema.SelfAssignableRoles
   alias Bolt.USW
+  import Ecto.Query, only: [from: 2]
+  alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Author
   alias Nostrum.Struct.Embed.Field
@@ -138,6 +141,46 @@ defmodule Bolt.Consumer do
       "#{User.full_name(member.user)} (`#{member.user.id}`) has joined " <>
         "- account created #{Helpers.datetime_to_human(creation_datetime)}"
     )
+
+    query =
+      from(
+        infr in Infraction,
+        where:
+          infr.guild_id == ^guild_id and infr.user_id == ^member.user.id and
+            infr.type == "temprole" and infr.expires_at > ^DateTime.utc_now(),
+        select: infr
+      )
+
+    case Repo.all(query) do
+      [] ->
+        :noop
+
+      infractions ->
+        infractions
+        |> Enum.each(fn temprole_infraction ->
+          with {:ok} <-
+                 Api.add_guild_member_role(
+                   guild_id,
+                   member.user.id,
+                   temprole_infraction.data["role_id"]
+                 ) do
+            ModLog.emit(
+              guild_id,
+              "INFRACTION_EVENTS",
+              "member #{User.full_name(member.user)} (`#{member.user.id}`) with active temprole" <>
+                " (`#{temprole_infraction.data["role_id"]}`) rejoined, temporary role was reapplied"
+            )
+          else
+            {:error, %{message: %{"message" => reason}}} ->
+              ModLog.emit(
+                guild_id,
+                "INFRACTION_EVENTS",
+                "member #{User.full_name(member.user)} (`#{member.user.id}`) with active temprole" <>
+                  " rejoined, but failed to reapply role: `#{reason}`"
+              )
+          end
+        end)
+    end
   end
 
   def handle_event({:GUILD_MEMBER_REMOVE, {guild_id, member}, _ws_state}) do
