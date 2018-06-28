@@ -6,8 +6,11 @@ defmodule Bolt.Cogs.Temprole do
   alias Bolt.Helpers
   alias Bolt.ModLog
   alias Bolt.Parsers
+  alias Bolt.Repo
+  alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
+  import Ecto.Query, only: [from: 2]
 
   @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, [user, role, duration | reason_list]) do
@@ -15,6 +18,17 @@ defmodule Bolt.Cogs.Temprole do
       with reason <- Enum.join(reason_list, " "),
            {:ok, member} <- Converters.to_member(msg.guild_id, user),
            {:ok, role} <- Converters.to_role(msg.guild_id, role),
+           query <-
+             from(
+               infr in Infraction,
+               where:
+                 infr.active and infr.user_id == ^member.user.id and
+                   infr.guild_id == ^msg.guild_id and infr.type == "temprole" and
+                   fragment("data->'role_id' = ?", ^role.id),
+               limit: 1,
+               select: {infr.id, infr.expires_at}
+             ),
+           [] <- Repo.all(query),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <-
              Api.modify_guild_member(
@@ -61,6 +75,10 @@ defmodule Bolt.Cogs.Temprole do
 
         {:error, reason} ->
           "❌ error: #{Helpers.clean_content(reason)}"
+
+        [{existing_id, existing_expiry}] ->
+          "❌ there already is an infraction applying that role under ID ##{existing_id}" <>
+            " which will expire on #{Helpers.datetime_to_human(existing_expiry)}"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
