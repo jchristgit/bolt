@@ -118,8 +118,10 @@ defmodule Bolt.Events.Handler do
       {:reply, {:ok, timer}, Map.delete(timers, infraction_id)}
     else
       :error ->
-        {:reply, {:error, "infraction `#{infraction_id}` is not registered in the event handler"},
-         timers}
+        {:reply,
+         {:error,
+          "infraction `#{infraction_id}` is not registered" <>
+            " in the event handler, did it already expire?"}, timers}
 
       _error ->
         {:reply, {:error, "could not cancel the timer properly"}, timers}
@@ -133,7 +135,7 @@ defmodule Bolt.Events.Handler do
 
     {:ok, func} = Deserializer.deserialize(infraction)
     func.()
-    timers = Map.delete(timers, infraction)
+    timers = Map.delete(timers, infraction.id)
     changeset = Infraction.changeset(infraction, %{active: false})
     {:ok, _updated_infraction} = Repo.update(changeset)
 
