@@ -9,14 +9,14 @@ defmodule Bolt.Schema.USWPunishmentConfig do
     field(:guild_id, :id, primary_key: true)
     field(:duration, :integer)
     field(:punishment, :string)
-    field(:escalate_by, :float, default: nil)
+    field(:escalate, :boolean, default: false)
     field(:data, :map, default: %{})
   end
 
   @spec changeset(Changeset.t(), map()) :: Changeset.t()
   def changeset(config, params \\ %{}) do
     config
-    |> cast(params, [:guild_id, :duration, :punishment, :data])
+    |> cast(params, [:guild_id, :duration, :punishment, :escalate, :data])
     |> validate_required([:guild_id, :duration, :punishment])
     |> validate_inclusion(:punishment, existing_punishments())
   end
