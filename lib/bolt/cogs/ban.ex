@@ -10,6 +10,38 @@ defmodule Bolt.Cogs.Ban do
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
+  @spec check_tempban(String.t(), User.id(), Nostrum.Struct.Message.t()) :: :ok
+  def check_tempban(base_string, user_id, msg) do
+    tempban_query =
+      from(
+        infr in Infraction,
+        where:
+          infr.active and infr.user_id == ^user_id and infr.guild_id == ^msg.guild_id and
+            infr.type == "tempban",
+        limit: 1,
+        select: infr
+      )
+
+    case Repo.all(tempban_query) do
+      [infr] ->
+        {:ok, _updated_infraction} = Handler.update(infr, %{active: false})
+
+        ModLog.emit(
+          msg.guild_id,
+          "INFRACTION_UPDATE",
+          "tempban ##{infr.id} was obsoleted by ban from #{User.full_name(msg.author)}"
+        )
+
+        base_string <>
+          " - the existing tempban expiring on " <>
+          "#{Helpers.datetime_to_human(infr.expires_at)} was set to" <>
+          " inactive and I will not automatically unban the user"
+
+      [] ->
+        base_string
+    end
+  end
+
   @spec command(
           Nostrum.Struct.Message.t(),
           [String.t() | String.t()]
@@ -43,40 +75,13 @@ defmodule Bolt.Cogs.Ban do
         )
 
         base_string =
-          if reason != "" do
-            "👌 banned #{user_string} with reason `#{reason}`"
-          else
-            "👌 banned #{user_string}"
-          end
-
-        tempban_query =
-          from(
-            infr in Infraction,
-            where:
-              infr.active and infr.user_id == ^user_id and infr.guild_id == ^msg.guild_id and
-                infr.type == "tempban",
-            limit: 1,
-            select: infr
+          if(
+            reason != "",
+            do: "👌 banned #{user_string} with reason `#{reason}`",
+            else: "👌 banned #{user_string}"
           )
 
-        case Repo.all(tempban_query) do
-          [infr] ->
-            {:ok, _updated_infraction} = Handler.update(infr, %{active: false})
-
-            ModLog.emit(
-              msg.guild_id,
-              "INFRACTION_UPDATE",
-              "tempban ##{infr.id} was obsoleted by ban from #{User.full_name(msg.author)}"
-            )
-
-            base_string <>
-              " - the existing tempban expiring on " <>
-              "#{Helpers.datetime_to_human(infr.expires_at)} was set to" <>
-              " inactive and I will not automatically unban the user"
-
-          [] ->
-            base_string
-        end
+        check_tempban(base_string, user_id, msg)
       else
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           "❌ API error: #{reason} (status code `#{status}`)"
