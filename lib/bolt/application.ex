@@ -19,6 +19,7 @@ defmodule Bolt.Application do
       {Bolt.Paginator, name: Bolt.Paginator},
       {Bolt.ModLog.Silencer, name: Bolt.ModLog.Silencer},
       {Bolt.USW.Deduplicator, name: Bolt.USW.Deduplicator},
+      {Bolt.USW.Escalator, name: Bolt.USW.Escalator},
       {Bolt.MessageCache, name: Bolt.MessageCache},
       Bolt.Consumer
     ]
