@@ -9,6 +9,7 @@ defmodule Bolt.Schema.USWPunishmentConfig do
     field(:guild_id, :id, primary_key: true)
     field(:duration, :integer)
     field(:punishment, :string)
+    field(:escalate_by, :float, default: nil)
     field(:data, :map, default: %{})
   end
 
