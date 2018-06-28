@@ -4,6 +4,7 @@ defmodule Bolt.Consumer do
   alias Bolt.BotLog
   alias Bolt.Commander
   alias Bolt.Constants
+  alias Bolt.Events.Handler
   alias Bolt.Helpers
   alias Bolt.MessageCache
   alias Bolt.ModLog
@@ -189,6 +190,34 @@ defmodule Bolt.Consumer do
       "GUILD_MEMBER_REMOVE",
       "#{User.full_name(member.user)} (`#{member.user.id}`) has left"
     )
+  end
+
+  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, old_member, new_member}, _ws_state}) do
+    with role_diff <- List.myers_difference(old_member.roles, new_member.roles),
+         removed_roles when removed_roles != [] <- Keyword.get(role_diff, :del, []),
+         removed_role_id <- List.first(removed_roles),
+         query <-
+           from(
+             infr in Infraction,
+             where:
+               infr.guild_id == ^guild_id and infr.user_id == ^new_member.user.id and infr.active and
+                 fragment("data->'role_id' = ?", ^removed_role_id) and infr.type == "temprole",
+             limit: 1,
+             select: infr
+           ),
+         active_temproles when active_temproles != [] <- Repo.all(query),
+         active_temprole <- List.first(active_temproles),
+         {:ok, _updated_infraction} <- Handler.update(active_temprole, %{active: false}) do
+      ModLog.emit(
+        guild_id,
+        "INFRACTION_UPDATE",
+        "role `#{removed_role_id}` was manually removed from #{User.full_name(new_member.user)}" <>
+          " (`#{new_member.user.id}`) while a temprole was active (##{active_temprole.id})" <>
+          ", the infraction is now inactive and bolt will not attempt to remove the role"
+      )
+    else
+      _err -> :ignored
+    end
   end
 
   def handle_event({:MESSAGE_REACTION_ADD, {reaction}, _ws_state}) do

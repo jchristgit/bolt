@@ -44,15 +44,17 @@ defmodule Bolt.Events.Handler do
 
   @spec update(%Infraction{}, map()) :: {:ok, Infraction} | {:error, any()}
   def update(infraction, changes_map) do
-    changeset = Infraction.changeset(Infraction, changes_map)
+    changeset = Infraction.changeset(infraction, changes_map)
 
     with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, infraction.id}),
-         {:ok, updated_infraction} <- Repo.update(changeset),
-         {:ok, _event} <-
-           GenServer.call(
-             __MODULE__,
-             {:create, updated_infraction}
-           ) do
+         {:ok, updated_infraction} <- Repo.update(changeset) do
+      if updated_infraction.active do
+        GenServer.call(
+          __MODULE__,
+          {:create, updated_infraction}
+        )
+      end
+
       {:ok, updated_infraction}
     else
       {:error, _reason} = error -> error

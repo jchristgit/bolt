@@ -55,8 +55,6 @@ defmodule Bolt.Cogs.Infraction.Detail do
         }
 
       infraction ->
-        IO.inspect(infraction)
-
         %Embed{
           title: "Infraction ##{id}",
           color: Constants.color_blue(),
