@@ -5,7 +5,8 @@ defmodule Bolt.ModLog do
   alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
+  alias Nostrum.Error.ApiError
+  alias Nostrum.Struct.{Embed, Message, Snowflake}
 
   @event_emoji %{
     "AUTOMOD" => "🛡",
@@ -20,6 +21,9 @@ defmodule Bolt.ModLog do
     "MESSAGE_DELETE" => "🗑"
   }
 
+  @typedoc "The return type used by `emit`. Set as a type for convenience."
+  @type on_emit :: {:ok, Message.t()} | {:error, ApiError.t()} | :noop
+
   @doc """
   Emits the given `content` to the mod log
   of the given Guild ID. If the guild does not
@@ -28,10 +32,10 @@ defmodule Bolt.ModLog do
   `Nostrum.Api.create_message/2` call is returned.
   """
   @spec emit(
-          Nostrum.Struct.Snowflake.t(),
+          Snowflake.t(),
           String.t(),
-          String.t() | Nostrum.Struct.Embed.t()
-        ) :: {:ok, Nostrum.Struct.Message.t()} | {:error, Nostrum.Error.ApiError.t()} | :noop
+          String.t() | Embed.t()
+        ) :: on_emit()
   def emit(guild_id, event, content) do
     with %ModLogConfig{channel_id: channel_id} <-
            Repo.get_by(ModLogConfig, guild_id: guild_id, event: event),

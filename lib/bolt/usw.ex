@@ -2,9 +2,7 @@ defmodule Bolt.USW do
   @moduledoc "USW - Uncomplicated Spam Wall"
 
   alias Bolt.Events.Handler
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
   alias Bolt.USW.Deduplicator
   alias Bolt.USW.Filters.{Burst}
