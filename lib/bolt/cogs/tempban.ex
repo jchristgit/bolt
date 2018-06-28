@@ -22,7 +22,7 @@ defmodule Bolt.Cogs.Tempban do
                infr in Infraction,
                where:
                  infr.active and infr.user_id == ^user_id and infr.guild_id == ^msg.guild_id and
-                   infr.type in ^["tempban", "ban"],
+                   infr.type == "tempban",
                limit: 1,
                select: {infr.id, infr.expires_at}
              ),
@@ -68,15 +68,8 @@ defmodule Bolt.Cogs.Tempban do
           "❌ error: #{reason}"
 
         [{existing_id, existing_expiry}] ->
-          case existing_expiry do
-            nil ->
-              "❌ that member is already permanently banned according to my records"
-
-            _expiry ->
-              "❌ there already is a tempban for that member under ID" <>
-                " ##{existing_id} which will expire on " <>
-                Helpers.datetime_to_human(existing_expiry)
-          end
+          "❌ there already is a tempban for that member under ID" <>
+            " ##{existing_id} which will expire on " <> Helpers.datetime_to_human(existing_expiry)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
