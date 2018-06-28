@@ -41,7 +41,14 @@ defmodule Bolt.Events.Deserializer do
           "removed temporary role `#{role_id}` from `#{user_id}`"
         )
       else
-        _err ->
+        {:error, %{message: %{"message" => reason}}} ->
+          ModLog.emit(
+            guild_id,
+            "INFRACTION_EVENTS",
+            "could NOT remove temporary role `#{role_id}` from `#{user_id}` (#{reason})"
+          )
+
+        _error ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
