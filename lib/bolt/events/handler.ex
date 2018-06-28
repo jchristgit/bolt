@@ -1,13 +1,15 @@
 defmodule Bolt.Events.Handler do
   @moduledoc """
-  Handles scheduled events persisted to the `events` table.
-  Event IDs are mapped to timers internally.
+  Handles scheduled infractions persisted to the `infractions` table.
+  Infraction IDs are mapped to timers internally.
   """
 
   alias Bolt.Events.Deserializer
+  alias Bolt.Helpers
   alias Bolt.Repo
-  alias Bolt.Schema.Event
+  alias Bolt.Schema.Infraction
   alias Ecto.Changeset
+  import Ecto.Query, only: [from: 2]
   use GenServer
 
   ## Client API
@@ -18,46 +20,40 @@ defmodule Bolt.Events.Handler do
   end
 
   @spec create(%{
-          timestamp: DateTime.t(),
-          event: String.t(),
+          type: String.t(),
           data: %{
             required(String.t()) => any()
           }
         }) ::
-          {:ok, Event}
+          {:ok, Infraction}
           | {:error, String.t()}
-          | {:error, [{atom(), Ecto.Changeset.error()}]}
-          | {:error, any()}
-  def create(event_map) do
-    changeset = Event.changeset(%Event{}, event_map)
+  def create(infraction_map) do
+    changeset = Infraction.changeset(%Infraction{}, infraction_map)
 
-    with true <- event_map.event in Deserializer.valid_events(),
-         {:ok, created_event} <- Repo.insert(changeset) do
-      GenServer.call(__MODULE__, {:create, created_event})
+    with true <- infraction_map.type in Infraction.known_types(),
+         {:ok, created_infraction} <- Repo.insert(changeset) do
+      GenServer.call(__MODULE__, {:create, created_infraction})
     else
       false ->
-        {:error, "`#{event_map.type}` is not a valid event type"}
+        {:error, "`#{infraction_map.type}` is not a valid event type"}
 
       {:error, %Changeset{} = changeset} ->
-        {:error, changeset.errors}
-
-      {:error, _reason} = error ->
-        error
+        {:error, changeset |> Helpers.format_changeset_errors() |> Enum.join("\n")}
     end
   end
 
-  @spec update(%Event{}, map()) :: {:error, any()}
-  def update(event, changes_map) do
-    changeset = Event.changeset(event, changes_map)
+  @spec update(%Infraction{}, map()) :: {:ok, Infraction} | {:error, any()}
+  def update(infraction, changes_map) do
+    changeset = Infraction.changeset(Infraction, changes_map)
 
-    with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, event.id}),
-         {:ok, updated_event} <- Repo.update(changeset),
+    with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, infraction.id}),
+         {:ok, updated_infraction} <- Repo.update(changeset),
          {:ok, _event} <-
            GenServer.call(
              __MODULE__,
-             {:create, updated_event}
+             {:create, updated_infraction}
            ) do
-      {:ok, updated_event}
+      {:ok, updated_infraction}
     else
       {:error, _reason} = error -> error
     end
@@ -67,71 +63,77 @@ defmodule Bolt.Events.Handler do
 
   @impl true
   def init(:ok) do
-    alias Bolt.Repo
-    alias Bolt.Schema.Event
-    import Ecto.Query, only: [from: 2]
-
     # Start a timer for stale events
-    query = from(event in Event, select: event)
+    query =
+      from(
+        infr in Infraction,
+        where: infr.active and not is_nil(infr.expires_at),
+        select: infr
+      )
 
     timers =
       query
       |> Repo.all()
-      |> Enum.map(fn event ->
+      |> Enum.map(fn infraction ->
         {
-          event,
+          infraction,
           Process.send_after(
             self(),
-            {:expired, event},
+            {:expired, infraction},
             max(
-              DateTime.diff(event.timestamp, DateTime.utc_now(), :millisecond),
+              DateTime.diff(infraction.expires_at, DateTime.utc_now(), :millisecond),
               0
             )
           )
         }
       end)
-      |> Map.new(fn {event, timer} -> {event.id, timer} end)
+      |> Map.new(fn {infraction, timer} -> {infraction.id, timer} end)
 
     {:ok, timers}
   end
 
   @impl true
-  def handle_call({:create, event}, _from, timers) do
+  def handle_call({:create, infraction}, _from, timers) do
     timers =
-      {event,
+      {infraction,
        Process.send_after(
          self(),
-         {:expired, event},
+         {:expired, infraction},
          max(
-           DateTime.diff(event.timestamp, DateTime.utc_now(), :millisecond),
+           DateTime.diff(infraction.expires_at, DateTime.utc_now(), :millisecond),
            0
          )
        )}
-      |> (fn {event, timer} -> Map.put(timers, event.id, timer) end).()
+      |> (fn {infraction, timer} -> Map.put(timers, infraction.id, timer) end).()
 
-    {:reply, {:ok, event}, timers}
+    {:reply, {:ok, infraction}, timers}
   end
 
   @impl true
-  def handle_call({:drop_timer, event_id}, _from, timers) do
-    with {:ok, timer} <- Map.fetch(timers, event_id),
+  def handle_call({:drop_timer, infraction_id}, _from, timers) do
+    with {:ok, timer} <- Map.fetch(timers, infraction_id),
          to_expiry when is_integer(to_expiry) <- Process.cancel_timer(timer) do
-      {:reply, {:ok, timer}, Map.delete(timers, event_id)}
+      {:reply, {:ok, timer}, Map.delete(timers, infraction_id)}
     else
-      :error -> {:reply, {:error, "event is not registered in the event handler"}, timers}
-      _error -> {:reply, {:error, "could not cancel the timer properly"}, timers}
+      :error ->
+        {:reply, {:error, "infraction `#{infraction_id}` is not registered in the event handler"},
+         timers}
+
+      _error ->
+        {:reply, {:error, "could not cancel the timer properly"}, timers}
     end
   end
 
   @impl true
-  def handle_info({:expired, event}, timers) do
+  def handle_info({:expired, infraction}, timers) do
     alias Bolt.Events.Deserializer
     alias Bolt.Repo
 
-    {:ok, func} = Deserializer.deserialize(event)
+    {:ok, func} = Deserializer.deserialize(infraction)
     func.()
-    timers = Map.delete(timers, event)
-    {:ok, _deleted_event} = Repo.delete(event)
+    timers = Map.delete(timers, infraction)
+    changeset = Infraction.changeset(infraction, %{active: false})
+    {:ok, _updated_infraction} = Repo.update(changeset)
 
     {:noreply, timers}
   end

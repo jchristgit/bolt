@@ -1,34 +1,14 @@
 defmodule Bolt.Events.Deserializer do
   @moduledoc "Deserializes JSONB data from rows from the `events` into Elixir functions."
 
-  alias Bolt.Schema.Event
+  alias Bolt.Schema.Infraction
 
-  @spec valid_events :: [String.t()]
-  def valid_events do
-    [
-      "CREATE_MESSAGE",
-      "REMOVE_ROLE",
-      "UNBAN_MEMBER"
-    ]
-  end
-
-  @spec deserialize(%Event{}) :: (() -> any())
-  def deserialize(%Event{
-        event: "CREATE_MESSAGE",
-        data: %{"channel_id" => channel_id, "content" => content}
-      }) do
-    func = fn ->
-      alias Nostrum.Api
-
-      Api.create_message(channel_id, content)
-    end
-
-    {:ok, func}
-  end
-
-  def deserialize(%Event{
-        event: "REMOVE_ROLE",
-        data: %{"guild_id" => guild_id, "user_id" => user_id, "role_id" => role_id}
+  @spec deserialize(Infraction) :: (() -> any())
+  def deserialize(%Infraction{
+        type: "temprole",
+        guild_id: guild_id,
+        user_id: user_id,
+        data: %{"role_id" => role_id}
       }) do
     func = fn ->
       alias Bolt.ModLog
@@ -60,9 +40,10 @@ defmodule Bolt.Events.Deserializer do
     {:ok, func}
   end
 
-  def deserialize(%Event{
-        event: "UNBAN_MEMBER",
-        data: %{"guild_id" => guild_id, "user_id" => user_id}
+  def deserialize(%Infraction{
+        type: "tempban",
+        guild_id: guild_id,
+        user_id: user_id
       }) do
     func = fn ->
       alias Bolt.ModLog
@@ -85,9 +66,5 @@ defmodule Bolt.Events.Deserializer do
     end
 
     {:ok, func}
-  end
-
-  def deserialize(%Event{event: unknown_type}) do
-    {:error, "Unknown event type: `#{unknown_type}`"}
   end
 end

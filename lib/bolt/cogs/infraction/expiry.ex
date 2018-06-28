@@ -6,7 +6,6 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   alias Bolt.ModLog
   alias Bolt.Parsers
   alias Bolt.Repo
-  alias Bolt.Schema.Event
   alias Bolt.Schema.Infraction
   alias Nostrum.Struct.User
 
@@ -23,12 +22,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
              new_expiry,
              infraction.inserted_at
            ),
-         {:ok, event_id} <- Map.fetch(infraction.data, "event_id"),
-         event when event != nil <- Repo.get(Event, event_id),
-         {:ok, updated_event} <- Handler.update(event, %{timestamp: converted_expiry}),
-         infraction_changeset <-
-           Infraction.changeset(infraction, %{expires_at: converted_expiry}),
-         {:ok, updated_infraction} <- Repo.update(infraction_changeset) do
+         {:ok, updated_infraction} <- Handler.update(infraction, %{expires_at: converted_expiry}) do
       ModLog.emit(
         msg.guild_id,
         "INFRACTION_UPDATE",
@@ -38,7 +32,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
       )
 
       "👌 infraction ##{infraction.id} now expires at #{
-        Helpers.datetime_to_human(updated_event.timestamp)
+        Helpers.datetime_to_human(updated_infraction.expires_at)
       }"
     else
       nil ->

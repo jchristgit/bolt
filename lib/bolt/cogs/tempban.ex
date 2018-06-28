@@ -5,8 +5,6 @@ defmodule Bolt.Cogs.Tempban do
   alias Bolt.Helpers
   alias Bolt.ModLog
   alias Bolt.Parsers
-  alias Bolt.Repo
-  alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
@@ -17,28 +15,15 @@ defmodule Bolt.Cogs.Tempban do
            {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
-           {:ok, event} <-
-             Handler.create(%{
-               timestamp: expiry,
-               event: "UNBAN_MEMBER",
-               data: %{
-                 "guild_id" => msg.guild_id,
-                 "user_id" => user_id
-               }
-             }),
-           infraction <- %{
+           infraction_map <- %{
              type: "tempban",
              guild_id: msg.guild_id,
              user_id: user_id,
              actor_id: msg.author.id,
              reason: if(reason != "", do: reason, else: nil),
-             expires_at: expiry,
-             data: %{
-               "event_id" => event.id
-             }
+             expires_at: expiry
            },
-           changeset <- Infraction.changeset(%Infraction{}, infraction),
-           {:ok, _created_infraction} <- Repo.insert(changeset) do
+           {:ok, _created_infraction} <- Handler.create(infraction_map) do
         user_string =
           if converted_user == nil do
             "`#{user_id}`"

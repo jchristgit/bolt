@@ -15,6 +15,7 @@ defmodule Bolt.Schema.Infraction do
     field(:data, :map, default: %{})
 
     field(:expires_at, :utc_datetime, default: nil)
+    field(:active, :boolean, default: true)
     timestamps(type: :utc_datetime)
   end
 
@@ -28,22 +29,11 @@ defmodule Bolt.Schema.Infraction do
       :actor_id,
       :reason,
       :data,
-      :expires_at
+      :expires_at,
+      :active
     ])
     |> validate_required([:type, :guild_id, :user_id, :actor_id])
-    |> validate_inclusion(:type, [
-      "note",
-      "tempmute",
-      "mute",
-      "unmute",
-      "temprole",
-      "warning",
-      "kick",
-      "softban",
-      "tempban",
-      "ban",
-      "unban"
-    ])
+    |> validate_inclusion(:type, known_types())
     |> validate_expiry()
   end
 
@@ -57,5 +47,21 @@ defmodule Bolt.Schema.Infraction do
     else
       changeset
     end
+  end
+
+  def known_types do
+    [
+      "note",
+      "tempmute",
+      "mute",
+      "unmute",
+      "temprole",
+      "warning",
+      "kick",
+      "softban",
+      "tempban",
+      "ban",
+      "unban"
+    ]
   end
 end

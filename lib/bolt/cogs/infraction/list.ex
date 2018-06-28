@@ -22,6 +22,7 @@ defmodule Bolt.Cogs.Infraction.List do
             from(
               infr in Infraction,
               where: infr.guild_id == ^msg.guild_id,
+              order_by: [desc: infr.inserted_at],
               select: infr
             )
 
@@ -32,6 +33,7 @@ defmodule Bolt.Cogs.Infraction.List do
             from(
               infr in Infraction,
               where: [guild_id: ^msg.guild_id, type: ^valid_type],
+              order_by: [desc: infr.inserted_at],
               select: infr
             )
 

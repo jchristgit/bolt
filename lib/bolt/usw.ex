@@ -9,6 +9,7 @@ defmodule Bolt.USW do
   alias Bolt.USW.Deduplicator
   alias Bolt.USW.Filters.{Burst}
   alias Nostrum.Api
+  alias Nostrum.Cache.Me
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
@@ -60,21 +61,21 @@ defmodule Bolt.USW do
        ) do
     with false <- Deduplicator.contains?(user.id),
          {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id),
-         event_map <- %{
-           timestamp:
+         infraction_map <- %{
+           type: "temprole",
+           guild_id: guild_id,
+           user_id: user.id,
+           actor_id: Me.get().id,
+           reason: "(automod) #{description}",
+           expires_at:
              DateTime.utc_now()
              |> DateTime.to_unix()
              |> Kernel.+(expiry_seconds)
              |> DateTime.from_unix()
              |> elem(1),
-           event: "REMOVE_ROLE",
-           data: %{
-             "guild_id" => guild_id,
-             "user_id" => user.id,
-             "role_id" => role_id
-           }
+           data: %{"role_id" => role_id}
          },
-         {:ok, _event} <- Handler.create(event_map) do
+         {:ok, _event} <- Handler.create(infraction_map) do
       Deduplicator.add(user.id, expiry_seconds)
 
       ModLog.emit(
