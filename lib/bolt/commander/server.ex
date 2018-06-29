@@ -454,7 +454,8 @@ defmodule Bolt.Commander.Server do
       usage: [
         "tag <name:str...>",
         "tag create <name:str> <content:str...>",
-        "tag delete <name:str...>"
+        "tag delete <name:str...>",
+        "tag list"
       ],
       predicates: [&Checks.guild_only/1]
     },
