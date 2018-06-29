@@ -4,12 +4,13 @@ defmodule Bolt.USW do
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
-  alias Bolt.USW.Deduplicator
+  alias Bolt.USW.{Deduplicator, Escalator}
   alias Bolt.USW.Filters.{Burst}
   alias Nostrum.Api
   alias Nostrum.Cache.Me
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
+  require Logger
 
   @spec filter_to_fn(USWFilterConfig) ::
           (Nostrum.Struct.Message.t(), non_neg_integer(), non_neg_integer() ->
@@ -50,6 +51,7 @@ defmodule Bolt.USW do
   defp execute_config(
          %USWPunishmentConfig{
            guild_id: guild_id,
+           escalate: escalator_enabled,
            punishment: "TEMPROLE",
            data: %{"role_id" => role_id},
            duration: expiry_seconds
@@ -58,34 +60,56 @@ defmodule Bolt.USW do
          description
        ) do
     with false <- Deduplicator.contains?(user.id),
-         {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id),
-         infraction_map <- %{
-           type: "temprole",
-           guild_id: guild_id,
-           user_id: user.id,
-           actor_id: Me.get().id,
-           reason: "(automod) #{description}",
-           expires_at:
-             DateTime.utc_now()
-             |> DateTime.to_unix()
-             |> Kernel.+(expiry_seconds)
-             |> DateTime.from_unix()
-             |> elem(1),
-           data: %{"role_id" => role_id}
-         },
-         {:ok, _event} <- Handler.create(infraction_map) do
+         {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id) do
+      escalator_level = Escalator.level_for(user.id)
+
+      expiry_seconds =
+        if escalator_enabled do
+          expiry_seconds + expiry_seconds * escalator_level
+        else
+          expiry_seconds
+        end
+
       Deduplicator.add(user.id, expiry_seconds)
+
+      level_string =
+        if escalator_enabled do
+          level_description =
+            if(escalator_level == 0, do: "", else: " - escalation level #{escalator_level}")
+
+          Escalator.bump(user.id, expiry_seconds * 2)
+          level_description
+        else
+          ""
+        end
+
+      infraction_map = %{
+        type: "temprole",
+        guild_id: guild_id,
+        user_id: user.id,
+        actor_id: Me.get().id,
+        reason: "(automod) #{description}" <> level_string,
+        expires_at:
+          DateTime.utc_now()
+          |> DateTime.to_unix()
+          |> Kernel.+(expiry_seconds)
+          |> DateTime.from_unix()
+          |> elem(1),
+        data: %{"role_id" => role_id}
+      }
+
+      {:ok, _event} = Handler.create(infraction_map)
 
       ModLog.emit(
         guild_id,
         "AUTOMOD",
         "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
-          " for #{expiry_seconds}s: #{description}"
+          " for #{expiry_seconds}s: #{description}" <> level_string
       )
     else
       # Deduplicator is active
       true ->
-        :noop
+        Logger.debug("Deduplicator is active. Not applying temporary role.")
 
       {:error, %{status_code: status, message: %{"message" => reason}}} ->
         ModLog.emit(

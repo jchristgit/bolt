@@ -2,6 +2,7 @@ defmodule Bolt.USW.Escalator do
   @moduledoc "Tracks members and their punishment 'level'. Escalates it if applicable."
 
   alias Nostrum.Struct.User
+  require Logger
   use Agent
 
   def start_link(options) do
@@ -9,38 +10,53 @@ defmodule Bolt.USW.Escalator do
   end
 
   @spec bump(User.id(), Calendar.second()) :: {:ok, reference()}
-  def bump(user_id, drop_after) do
+  def bump(user_id, decrement_after) do
     Agent.update(
       __MODULE__,
-      &Map.get_and_update(
-        &1,
-        user_id,
-        fn level ->
-          if level == nil do
-            {level, 1}
-          else
-            {level, level + 1}
-          end
-        end
-      )
-    )
+      &(Map.get_and_update(
+          &1,
+          user_id,
+          fn settings ->
+            {:ok, timer_reference} =
+              :timer.apply_after(
+                decrement_after * 1000,
+                __MODULE__,
+                :drop,
+                [user_id]
+              )
 
-    {:ok, _reference} =
-      :timer.apply_after(
-        drop_after,
-        __MODULE__,
-        &remove/1,
-        [user_id]
-      )
+            case settings do
+              {level, timer} ->
+                {:ok, :cancel} = :timer.cancel(timer)
+
+                if level == nil do
+                  {settings, {1, timer_reference}}
+                else
+                  {settings, {level + 1, timer_reference}}
+                end
+
+              nil ->
+                {nil, {1, timer_reference}}
+            end
+          end
+        )
+        |> elem(1))
+    )
   end
 
-  @spec remove(User.id()) :: :ok
-  def remove(user_id) do
-    Agent.update(
+  @spec level_for(User.id()) :: pos_integer()
+  def level_for(user_id) do
+    Agent.get(
       __MODULE__,
-      fn users ->
-        Map.delete(users, user_id)
+      fn levels ->
+        {level, _tref} = Map.get(levels, user_id, {0, nil})
+        level
       end
     )
+  end
+
+  @spec drop(User.id()) :: :ok
+  def drop(user_id) do
+    Agent.update(__MODULE__, &Map.delete(&1, user_id))
   end
 end
