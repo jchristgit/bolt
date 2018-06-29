@@ -10,10 +10,10 @@ defmodule Bolt.Parsers do
   defp parse_pos_integer(number) do
     case Integer.parse(number) do
       {value, _remainder} ->
-        cond do
-          value < 0 -> {:error, "number must not be negative (parsed #{value} from #{number})"}
-          value == 0 -> {:error, "number must not be `0` (parsed from #{number})"}
-          value > 0 -> {:ok, value}
+        if value < 0 do
+          {:error, "number must not be negative (parsed #{value} from #{number})"}
+        else
+          {:ok, value}
         end
 
       :error ->
@@ -43,42 +43,56 @@ defmodule Bolt.Parsers do
     end
   end
 
+  @doc """
+  Parse a duration string, e.g. `3h30m`, to seconds.
+  """
+  @spec duration_string_to_seconds(String.t()) :: {:ok, Calendar.second()} | {:error, String.t()}
+  def duration_string_to_seconds(text) do
+    if String.trim(text) == "" do
+      {:error, "cannot parse a duration from an empty string"}
+    else
+      parsed_seconds =
+        text
+        |> Helpers.clean_content()
+        |> String.codepoints()
+        # Thanks to https://github.com/JoeBanks13
+        # for coming up with this smart solution.
+        |> Enum.reduce("", fn char, acc ->
+          case Integer.parse(char) do
+            :error -> acc <> char <> " "
+            _value -> acc <> char
+          end
+        end)
+        |> String.split()
+        |> Enum.map(&seconds/1)
+
+      case Enum.find(parsed_seconds, &match?({:error, _}, &1)) do
+        {:error, reason} ->
+          {:error, reason}
+
+        nil ->
+          total_seconds =
+            parsed_seconds
+            |> Stream.map(fn {:ok, seconds} -> seconds end)
+            |> Enum.sum()
+
+          {:ok, total_seconds}
+      end
+    end
+  end
+
   @doc "Parse a 'human' datetime that lies in the future."
   @spec human_future_date(String.t()) :: {:ok, DateTime.t()} | {:error, String.t()}
   def human_future_date(text, starting_timestamp \\ DateTime.utc_now()) do
-    parsed_seconds =
-      text
-      |> Helpers.clean_content()
-      |> String.codepoints()
-      # Thanks to https://github.com/JoeBanks13
-      # for coming up with this smart solution.
-      |> Enum.reduce("", fn char, acc ->
-        case Integer.parse(char) do
-          :error -> acc <> char <> " "
-          _value -> acc <> char
-        end
-      end)
-      |> String.split()
-      |> Enum.map(&seconds/1)
+    case duration_string_to_seconds(text) do
+      {:ok, total_seconds} ->
+        starting_timestamp
+        |> DateTime.to_unix()
+        |> Kernel.+(total_seconds)
+        |> DateTime.from_unix()
 
-    case Enum.find(parsed_seconds, &match?({:error, _}, &1)) do
-      {:error, reason} ->
-        {:error, reason}
-
-      nil ->
-        parsed_seconds =
-          Enum.map(
-            parsed_seconds,
-            fn {:ok, seconds} -> seconds end
-          )
-
-        {:ok, result_timestamp} =
-          starting_timestamp
-          |> DateTime.to_unix()
-          |> (fn now -> now + Enum.sum(parsed_seconds) end).()
-          |> DateTime.from_unix()
-
-        {:ok, result_timestamp}
+      {:error, _reason} = error ->
+        error
     end
   end
 end

@@ -12,8 +12,7 @@ defmodule Bolt.Cogs.USW.Punish do
   def command(msg, ["temprole", role, duration]) do
     response =
       with {:ok, role} <- Converters.to_role(msg.guild_id, role),
-           {:ok, expiry} <- Parsers.human_future_date(duration),
-           total_seconds <- DateTime.diff(expiry, DateTime.utc_now()),
+           {:ok, total_seconds} <- Parsers.duration_string_to_seconds(duration),
            new_config <- %{
              guild_id: msg.guild_id,
              duration: total_seconds,
