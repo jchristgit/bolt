@@ -1,8 +1,8 @@
-# Meta commands
+# Meta
 Meta commands are not strictly necessary, but they often prove useful. For example, you might want to find out when a user joined, or view general statistics for your guild.
 
 
-## Guild, Role and Member information
+## Commands
 ### `.guildinfo [guild:snowflake]`
 Provides general information about the guild the command is used on.
 If you have a specific guild ID you want to look up, you can pass it as an argument.
@@ -53,8 +53,6 @@ Aliased to `.minfo` and `.member`.
 .memberinfo bolt
 ```
 
-
-## Bot information
 ### `.help [command:str]`
 Show help for the given command or command group. When no command or command group is given, shows all available commands.
 `syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, bolt will explain how to interpret command help.

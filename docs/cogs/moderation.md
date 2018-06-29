@@ -1,8 +1,9 @@
-# Moderation commands
+# Moderation
 This page showcases the general moderational tools available at your disposal. Infraction management and automod configuration documentation is available on their own pages.
 
 
-## `.warn <user:member> <reason:str...>`
+## Commands
+### `.warn <user:member> <reason:str...>`
 Warns the given user for the specified reason. The warning is stored in the infraction database, and can be retrieved later.
 Requires the `MANAGE_MESSAGES` permission.
 ```js
@@ -13,7 +14,7 @@ Requires the `MANAGE_MESSAGES` permission.
 .warn 252908391075151874 repeated spamming in voice chat
 ```
 
-## `.temprole <user:member> <role:role> <duration:duration> [reason:str...]`
+### `.temprole <user:member> <role:role> <duration:duration> [reason:str...]`
 Temporarily apply the given role to the given user. Bolt will remove the role after the given duration.
 An infraction will be created and stored in the infraction database.
 If the role is removed from the member manually while the temprole is active, bolt will not attempt to automatically remove it. If this happens, bolt logs it under *INFRACTION_UPDATE*.
@@ -29,7 +30,7 @@ Requires the `MANAGE_ROLES` permission.
 .temprole @Guy Muted 2h spamming #general with nonsense after prior warning
 ```
 
-## `.kick <user:member> [reason:str...]`
+### `.kick <user:member> [reason:str...]`
 Kicks the given member with an optional reason.
 An infraction will be created and stored in the infraction database.
 Requires the `KICK_MEMBERS` permission.
@@ -41,7 +42,7 @@ Requires the `KICK_MEMBERS` permission.
 .kick @Guy complaining about repeated punishments to write documentation
 ```
 
-## `.tempban <user:snowflake|member> <duration:duration> [reason:str...]`
+### `.tempban <user:snowflake|member> <duration:duration> [reason:str...]`
 Temporarily bans the given user with an optional reason. Bolt will remove the ban after the given duration.
 An infraction will be created and stored in the infraction database.
 If the user is not a member of the guild, it's possible to directly pass the ID as the `user` argument.
@@ -57,7 +58,7 @@ Requires the `BAN_MEMBERS` permission.
 .tempban @Guy 2d escalation from previous kick
 ```
 
-## `.ban <user:snowflake|member> [reason:str...]`
+### `.ban <user:snowflake|member> [reason:str...]`
 Bans the given user with an optional reason.
 An infraction will be created and stored in the infraction database.
 If the user is not a member of the guild, it's possible to directly pass the ID as the `user` argument.

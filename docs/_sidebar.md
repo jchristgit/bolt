@@ -1,10 +1,10 @@
 * [Introduction](/)
 * Commands
-  * [Automod](commands/automod)
-  * [Infractions](commands/infractions)
-  * [Meta](commands/meta)
-  * [Moderation](commands/moderation)
-  * [Modlog](commands/modlog)
-  * [Self-assignable roles](commands/self_assignable_roles)
-  * [Tags](commands/tags)
+  * [Automod](cogs/automod)
+  * [Infractions](cogs/infractions)
+  * [Meta](cogs/meta)
+  * [Moderation](cogs/moderation)
+  * [Modlog](cogs/modlog)
+  * [Self-assignable roles](cogs/self_assignable_roles)
+  * [Tags](cogs/tags)
 

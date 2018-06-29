@@ -1,4 +1,4 @@
-# Modlog commands
+# Modlog
 Bolt includes a modllog for logging events happening on your server.
 A fine-grained configuration of which events get logged where is possible.
 For example, one might want to log message edits and deletes in one channel, but moderator actions in another.
@@ -26,7 +26,7 @@ Bolt knows the following events:
 - `INFRACTION_CREATE`
 
   Emitted when an infraction is created by a command.
-  View [Moderation commands](commands/moderation) and [Infraction commands](commands/infractions)
+  View [Moderation commands](cogs/moderation) and [Infraction commands](cogs/infractions)
   for more information.
 
 - `INFRACTION_UPDATE`
@@ -113,7 +113,7 @@ Requires the `ADMINISTRATOR` permission.
 .modlog status
 ```
 
-## `.modlog set <event:str> <channel:textchannel>`
+### `.modlog set <event:str> <channel:textchannel>`
 Log the given `event` in the given `channel`.
 When 'all' is given for `event`, logs all events in the given `channel`.
 Requires the `ADMINISTRATOR` permission.
@@ -125,7 +125,7 @@ Requires the `ADMINISTRATOR` permission.
 .modlog set all #stafflog
 ```
 
-## `.modlog unset <event:str>`
+### `.modlog unset <event:str>`
 Stop logging the given `event` in the currently configured channel.
 When 'all' is given for `event`, stops logging all events.
 Requires the `ADMINISTRATOR` permission.
@@ -137,7 +137,7 @@ Requires the `ADMINISTRATOR` permission.
 .modlog unset all
 ```
 
-## `.modlog events`
+### `.modlog events`
 Shows all events known to bolt.
 This can be useful in conjunction with the `.modlog explain` command documented below.
 Requires the `ADMINISTRATOR` permission.
@@ -146,7 +146,7 @@ Requires the `ADMINISTRATOR` permission.
 .modlog events
 ```
 
-## `.modlog explain <event:str>`
+### `.modlog explain <event:str>`
 Built-in event reference. Explains the given `event`.
 Requires the `ADMINISTRATOR` permission.
 ```js
@@ -154,7 +154,7 @@ Requires the `ADMINISTRATOR` permission.
 .modlog explain AUTOMOD
 ```
 
-## `.modlog mute`
+### `.modlog mute`
 Temporarily mutes the mod log.
 This is NOT persistent across restarts of bolt.
 Unset mod logging with `.modlog unset all` if you disable mod logging for a prolonged period of time.
@@ -164,7 +164,7 @@ Requires the `ADMINISTRATOR` permission.
 .modlog mute
 ```
 
-## `.modlog unmute`
+### `.modlog unmute`
 Unmute the mod log again, if it was previously muted through `.modlog mute`.
 Requires the `ADMINISTRATOR` permission.
 ```js

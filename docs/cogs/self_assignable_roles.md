@@ -1,8 +1,8 @@
-# Self-assignable role commands
+# Self-assignable roles
 Larger guilds often have a bunch of roles that members should be able to assign themselves. Self-assignable roles take the work off moderators and allow members to assign those roles directly through bolt.
 
 
-## Role assignment by members
+## Commands
 ### `.assign <role:role...>`
 Assigns the given self-assignable role from the message author.
 Aliased to `.iam`.
@@ -32,8 +32,6 @@ Lists all self-assignable roles in a paginated embed.
 .lsar
 ```
 
-
-## Management
 ### `.role allow <role:role...>`
 Adds the given role to the self-assignable roles.
 Requires the `MANAGE_ROLES` permission.
