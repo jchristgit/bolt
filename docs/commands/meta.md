@@ -1,0 +1,86 @@
+# Meta commands
+Meta commands are not strictly necessary, but they often prove useful. For example, you might want to find out when a user joined, or view general statistics for your guild.
+
+
+## Guild, Role and Member information
+### `.guildinfo [guild:snowflake]`
+Provides general information about the guild the command is used on.
+If you have a specific guild ID you want to look up, you can pass it as an argument.
+You can obtain a guild ID to look up from this command, or by right-clicking a guild in your server list and clicking *Copy ID*. This requires Developer Mode to be enabled.
+Aliased to `.ginfo` and `.guild`.
+```js
+// Look up information for the current guild.
+.guildinfo
+
+// Look up information for the guild with the given ID.
+.guildinfo 451824027976073216
+```
+
+### `.roleinfo <role:role...>`
+Shows information about the given role.
+Aliased to `.rinfo` and `.role`.
+```js
+// Show information for the role named 'Admin'.
+.roleinfo Admin
+
+// The `role` argument is case-insensitive, so the following will work the same way:
+.roleinfo admin
+
+// Show information by role ID.
+.roleinfo 451824750399062036
+
+// Show information by role mention.
+.roleinfo @Admin
+```
+
+### `.memberinfo [member:member...]`
+Show information about the given member. When no member is given, shows information about yourself.
+Aliased to `.minfo` and `.member`.
+```js
+// Show information about yourself.
+.memberinfo
+
+// Show information about the member bolt#5275.
+.memberinfo bolt#5275
+
+// Same as above, but mention the member directly.
+.memberinfo @bolt
+
+// Same as above, but pass the member's ID.
+.memberinfo 252908391075151874
+
+// Same as above, but pass the member's username.
+.memberinfo bolt
+```
+
+
+## Bot information
+### `.help [command:str]`
+Show help for the given command or command group. When no command or command group is given, shows all available commands.
+`syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, bolt will explain how to interpret command help.
+Aliased to `.man`.
+```js
+// Show all available commands.
+.help
+
+// Show help for the given command or command group.
+.help tempban
+
+// Show the explanation for the way command help is written.
+.help syntax
+```
+
+### `.guide`
+A paginated overview that guides you through setting up bolt on your server.
+Keep in mind that paginated embeds automatically expire after 15 minutes. Feel free to re-run the command if it expires and you're still reading.
+```js
+// Show bolt's built-in guide.
+.guide
+```
+
+### `.stats`
+Shows general statistics over the bot - for example, in how many guilds he is, how many members he sees, and potentially some more interesting information.
+```js
+// Show bot statistics.
+.stats
+```
