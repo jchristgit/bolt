@@ -1,5 +1,5 @@
 * [Introduction](/)
-* Commands
+* Functionality
   * [Automod](cogs/automod)
   * [Infractions](cogs/infractions)
   * [Meta](cogs/meta)
