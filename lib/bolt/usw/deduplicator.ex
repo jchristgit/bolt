@@ -9,10 +9,10 @@ defmodule Bolt.USW.Deduplicator do
     Agent.start_link(fn -> MapSet.new() end, options)
   end
 
-  @spec add(User.id(), Calendar.millisecond()) :: {:ok, reference()}
-  def add(user_id, expire_after) do
+  @spec add(pid(), User.id(), Calendar.millisecond()) :: {:ok, reference()}
+  def add(deduplicator \\ __MODULE__, user_id, expire_after) do
     Agent.update(
-      __MODULE__,
+      deduplicator,
       fn users ->
         MapSet.put(users, user_id)
       end
@@ -27,26 +27,26 @@ defmodule Bolt.USW.Deduplicator do
         expire_after,
         __MODULE__,
         :remove,
-        [user_id]
+        [deduplicator, user_id]
       )
   end
 
-  @spec remove(User.id()) :: :ok
-  def remove(user_id) do
+  @spec remove(pid(), User.id()) :: :ok
+  def remove(deduplicator \\ __MODULE__, user_id) do
     Logger.debug(fn -> "Removing #{user_id} from the USW deduplicator" end)
 
     Agent.update(
-      __MODULE__,
+      deduplicator,
       fn users ->
         MapSet.delete(users, user_id)
       end
     )
   end
 
-  @spec contains?(User.id()) :: boolean()
-  def contains?(user_id) do
+  @spec contains?(pid(), User.id()) :: boolean()
+  def contains?(deduplicator \\ __MODULE__, user_id) do
     Agent.get(
-      __MODULE__,
+      deduplicator,
       fn users ->
         MapSet.member?(users, user_id)
       end
