@@ -9,8 +9,8 @@ defmodule Bolt.USW.Deduplicator do
     Agent.start_link(fn -> MapSet.new() end, options)
   end
 
-  @spec add(User.id(), Calendar.second()) :: {:ok, reference()}
-  def add(user_id, expiry_seconds) do
+  @spec add(User.id(), Calendar.millisecond()) :: {:ok, reference()}
+  def add(user_id, expire_after) do
     Agent.update(
       __MODULE__,
       fn users ->
@@ -19,12 +19,12 @@ defmodule Bolt.USW.Deduplicator do
     )
 
     Logger.debug(fn ->
-      "Added #{user_id} to the USW deduplicator, expiry after #{expiry_seconds}s"
+      "Added #{user_id} to the USW deduplicator, expiry after #{expire_after}ms"
     end)
 
     {:ok, _reference} =
       :timer.apply_after(
-        expiry_seconds * 1000,
+        expire_after,
         __MODULE__,
         :remove,
         [user_id]

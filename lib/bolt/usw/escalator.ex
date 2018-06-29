@@ -9,8 +9,8 @@ defmodule Bolt.USW.Escalator do
     Agent.start_link(fn -> %{} end, options)
   end
 
-  @spec bump(User.id(), Calendar.second()) :: {:ok, reference()}
-  def bump(user_id, decrement_after) do
+  @spec bump(User.id(), Calendar.millisecond()) :: {:ok, reference()}
+  def bump(user_id, expire_after) do
     Agent.update(
       __MODULE__,
       &(Map.get_and_update(
@@ -19,7 +19,7 @@ defmodule Bolt.USW.Escalator do
           fn settings ->
             {:ok, timer_reference} =
               :timer.apply_after(
-                decrement_after * 1000,
+                expire_after,
                 __MODULE__,
                 :drop,
                 [user_id]

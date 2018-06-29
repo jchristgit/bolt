@@ -70,14 +70,14 @@ defmodule Bolt.USW do
           expiry_seconds
         end
 
-      Deduplicator.add(user.id, expiry_seconds)
+      Deduplicator.add(user.id, expiry_seconds * 1000)
 
       level_string =
         if escalator_enabled do
           level_description =
             if(escalator_level == 0, do: "", else: " - escalation level #{escalator_level}")
 
-          Escalator.bump(user.id, expiry_seconds * 2)
+          Escalator.bump(user.id, expiry_seconds * 1000 * 2)
           level_description
         else
           ""
