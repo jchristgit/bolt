@@ -96,7 +96,7 @@ Bolt knows the following events:
 - `USER_UPDATE`
 
   Emitted when a user updates themselves. This is different from
-  the `GUILD_MEMBER_UPDATE` update because Discord differs between
+  the `GUILD_MEMBER_UPDATE` because Discord differentiates between
   users and members. For example, a user updating their username or
   avatar will emit this event.
 
@@ -114,14 +114,14 @@ Requires the `ADMINISTRATOR` permission.
 ```
 
 ### `.modlog set <event:str> <channel:textchannel>`
-Log the given `event` in the given `channel`.
+Start logging the given `event` in the given `channel`.
 When 'all' is given for `event`, logs all events in the given `channel`.
 Requires the `ADMINISTRATOR` permission.
 ```js
-// Log the `INFRACTION_CREATE` event in the #stafflog channel.
+// Start logging the `INFRACTION_CREATE` event in the #stafflog channel.
 .modlog set INFRACTION_CREATE #stafflog
 
-// Log all events in the #stafflog channel.
+// Start logging all events in the #stafflog channel.
 .modlog set all #stafflog
 ```
 
