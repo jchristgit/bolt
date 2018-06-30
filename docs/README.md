@@ -45,6 +45,7 @@ If you're new here or simply need a refresher, check out [Documentation syntax](
       * [`.kick`](cogs/moderation#kick-ltusermembergt-reasonstr)
       * [`.tempban`](cogs/moderation#tempban-ltusersnowflakemembergt-ltdurationdurationgt-reasonstr)
       * [`.ban`](cogs/moderation#ban-ltusersnowflakemembergt-reasonstr)
+      * [`.clean`](cogs/moderation#clean)
   * [Modlog](cogs/modlog)
     * [Events](cogs/modlog#events)
     * [Commands](cogs/modlog#commands)

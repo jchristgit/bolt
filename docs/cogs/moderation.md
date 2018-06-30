@@ -73,3 +73,34 @@ Requires the `BAN_MEMBERS` permission.
 // Same as above, but provide a reason.
 .ban @Guy repeated spamming after multiple warnings
 ```
+
+### `.clean`
+`clean` is a special command that uses its own argument parser.
+There are three ways to invoke `.clean`:
+- `.clean` only: deletes the last 30 messages
+- `.clean <limit:int>`: deletes up to `limit` messages
+- `.clean <options...>`: deletes messages matching options, see below
+
+`clean` supports special commands that you can specify:
+* `--user <user:snowflake|user>`: delete only messages by `user`, can be specified multiple times
+* `--bots`: delete only bot messages
+* `--no-bots`: don't delete any bot messages
+* `--content <text:str>`: delete only messages containing `text`
+* `--limit <limit:int>`: deletes up to `limit` messages
+
+```js
+// Delete the last 30 messages
+.clean
+
+// Delete the last 80 messages
+.clean 80
+
+// Delete up to 100 messages sent by @Guy
+.clean --user @Guy --limit 100
+
+// Delete only bot messages in the past 100 messages
+.clean --bots --limit 100
+
+// Delete only messages containing '.clean' sent by non-bots in the past 40 messages
+.clean --no-bots --content .clean --limit 40
+```
