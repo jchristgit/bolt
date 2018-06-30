@@ -3,13 +3,14 @@ defmodule Bolt.Cogs.Sudo.Send do
 
   alias Bolt.Converters
   alias Nostrum.Api
+  alias Nostrum.Struct.{Message, Snowflake}
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
   def command(msg, [channel_or_snowflake | content_list]) do
     channel_id =
       case Converters.to_channel(msg.guild_id, channel_or_snowflake) do
         {:ok, channel} -> channel.id
-        {:error, _} -> channel_or_snowflake
+        {:error, _} -> Snowflake.cast!(channel_or_snowflake)
       end
 
     response =
