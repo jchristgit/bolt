@@ -1,4 +1,5 @@
 * [Introduction](/)
+* [Documentation syntax](documentation_syntax)
 * Functionality
   * [Automod](cogs/automod)
   * [Infractions](cogs/infractions)

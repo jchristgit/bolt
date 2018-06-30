@@ -15,9 +15,9 @@ Requires the `MANAGE_MESSAGES` permission.
 ```
 
 ### `.temprole <user:member> <role:role> <duration:duration> [reason:str...]`
-Temporarily apply the given role to the given user. Bolt will remove the role after the given duration.
+Temporarily applies the given role to the given user. Bolt will remove the role after the given duration.
 An infraction will be created and stored in the infraction database.
-If the role is removed from the member manually while the temprole is active, bolt will not attempt to automatically remove it. If this happens, bolt logs it under *INFRACTION_UPDATE*.
+If the role is removed from the member manually while the temprole is active, Bolt will not attempt to automatically remove it. If this happens, Bolt logs it under *INFRACTION_UPDATE*.
 Requires the `MANAGE_ROLES` permission.
 ```js
 // Apply the given role to the given user for 2 hours.

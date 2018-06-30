@@ -5,7 +5,7 @@ Bolt's tags feature is built for helping out with this task.
 
 ## Commands
 ### `.tag <name:str...>`
-Shows the tag with the given `name` (case-insensitive). If bolt could not find any tags matching that name, it will display tags with similar names.
+Shows the tag with the given `name` (case-insensitive). If Bolt could not find any tags matching that name, it will display tags with similar names.
 ```js
 // Look up the tag named 'Music'.
 .tag music
@@ -13,7 +13,6 @@ Shows the tag with the given `name` (case-insensitive). If bolt could not find a
 
 ### `.tag create <name:str> <content:str...>`
 Create a new tag with the given name and content. The name must be unique on the server.
-Due to the way bolt's command parsing works, tag names spanning multiple words must be surrounded in quotes. This is not necessary for the tag content.
 ```js
 // Create a tag named 'Music' with a link as content.
 .tag create Music www.youtube.com/watch?v=DLzxrzFCyOs

@@ -15,7 +15,7 @@ Bolt supports the following infraction types:
 - `tempban`
 - `ban`
 - `unban`
-These are not created directly, instead, they are created by bolt automatically through the moderation commands.
+These are not created directly, instead, they are created by Bolt automatically through the moderation commands.
 
 
 ## Commands
@@ -32,7 +32,8 @@ Requires the `MANAGE_MESSAGES` permission.
 ```
 
 ### `.infr detail <id:int>`
-View the given infraction ID in detail. The ID can be retrieved from the `infr list` or `infr user` commands, documented below.
+Shows the infraction with the given infraction ID in detail.
+The ID can be retrieved from the `infr list` or `infr user` commands, documented below.
 Requires the `MANAGE_MESSAGES` permission.
 ```js
 // View infraction ID `3` in detail.
@@ -40,7 +41,7 @@ Requires the `MANAGE_MESSAGES` permission.
 ```
 
 ### `.infr list [type:str]`
-Lists all infractions on this guild When given a type out of the types listed above, shows only infractions with the given types.
+Lists all infractions on this guild. When given a type out of the types listed above, shows only infractions with the given types.
 Requires the `MANAGE_MESSAGES` permission.
 ```js
 // Show all infractions on this guild.

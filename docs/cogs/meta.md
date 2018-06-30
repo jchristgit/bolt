@@ -34,7 +34,7 @@ Aliased to `.rinfo` and `.role`.
 ```
 
 ### `.memberinfo [member:member...]`
-Show information about the given member. When no member is given, shows information about yourself.
+Shows information about the given member. When no member is given, shows information about yourself.
 Aliased to `.minfo` and `.member`.
 ```js
 // Show information about yourself.
@@ -54,8 +54,8 @@ Aliased to `.minfo` and `.member`.
 ```
 
 ### `.help [command:str]`
-Show help for the given command or command group. When no command or command group is given, shows all available commands.
-`syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, bolt will explain how to interpret command help.
+Shows help for the given command or command group. When no command or command group is given, shows all available commands.
+`syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.
 Aliased to `.man`.
 ```js
 // Show all available commands.
@@ -69,7 +69,7 @@ Aliased to `.man`.
 ```
 
 ### `.guide`
-A paginated overview that guides you through setting up bolt on your server.
+A paginated overview that guides you through setting up Bolt on your server.
 Keep in mind that paginated embeds automatically expire after 15 minutes. Feel free to re-run the command if it expires and you're still reading.
 ```js
 // Show bolt's built-in guide.

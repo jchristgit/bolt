@@ -3,12 +3,12 @@ Bolt includes automod functionality named Uncomplicated Spam Wall (USW).
 When configured properly, this can take a lot of work of moderators. This page describes how to do so.
 
 USW functions by applying *filters* on messages sent by users.
-When a message comes in, bolt checks for configured filters and applies all of them on the message.
+When a message comes in, Bolt checks for configured filters and applies all of them on the message.
 If the message hits one of the limits that were configured on your guild, Bolt will apply the configured punishment.
 Punishment escalation can be enabled to increase the punishment duration on repeated offenders.
 
 **Warning**: Be very careful when configuring filters.
-A too strict configuration *will* punish innocent members.
+An overly strict configuration *will* punish innocent members.
 The filters here contain recommended configuration that generally works well.
 
 
@@ -42,7 +42,7 @@ of the user (starting from `0`).
 ### `.usw status`
 Shows the current status of the spam wall, including the current configuration,
 whether automatic punishment escalation is enabled,
-and which filters are configured at which rates.
+which filters are configured and at which rates.
 Requires the `ADMINISTRATOR` permission.
 ```js
 // Show the current USW configuration.
@@ -55,7 +55,7 @@ Activate the given `filter` to allow `count` objects to pass through during `int
 For more information on filters, see [Filters](#filters).
 Requires the `ADMINISTRATOR` permission.
 ```js
-// Configure the `BURST` filter to allow 5 messages during 10 seconds.
+// Activate the `BURST` filter to allow 5 messages during 10 seconds.
 .usw set BURST 5 10
 ```
 
@@ -81,7 +81,7 @@ Requires the `ADMINISTRATOR` permission.
 
 ### `.usw escalate [on|off]`
 Enable or disable automatic punishment escalation.
-When not given any arguments, show whether automatic punishment escalation is currently enabled.
+When not given any arguments, shows whether automatic punishment escalation is currently enabled.
 See [Automatic punishment escalation](#automatic-punishment-escalation) for more details.
 Requires the `ADMINISTRATOR` permission.
 ```js

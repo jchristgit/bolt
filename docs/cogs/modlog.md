@@ -1,5 +1,5 @@
 # Modlog
-Bolt includes a modllog for logging events happening on your server.
+Bolt includes a modlog for logging events happening on your server.
 A fine-grained configuration of which events get logged where is possible.
 For example, one might want to log message edits and deletes in one channel, but moderator actions in another.
 
@@ -15,7 +15,7 @@ Bolt knows the following events:
 - `BOT_UPDATE`
 
   Emitted when the bot administrator performs an action on the bot
-  that should be known by guilds using bolt.
+  that should be known by guilds using Bolt.
 
 - `CONFIG_UPDATE`
 
@@ -31,16 +31,16 @@ Bolt knows the following events:
 
 - `INFRACTION_UPDATE`
 
-  Emitted when an infraction is updated by a user or by bolt.
+  Emitted when an infraction is updated by a user or by Bolt.
   Updating the infraction reason or expiry will pop this event.
   Bolt will pop this event if he updates an infraction himself -
   for example, if an active temporary role is manually removed by a moderator
-  and bolt switches the infraction to inactive.
+  and Bolt switches the infraction to inactive.
 
 - `INFRACTION_EVENTS`
 
-  Emitted by bolt when an infraction causes him to perform an action.
-  For example, the `temprole` command will cause bolt to log when it
+  Emitted by Bolt when an infraction causes him to perform an action.
+  For example, the `temprole` command will cause Bolt to log when it
   removes the temporary role from a user (or if that fails for some reason).
 
 - `CHANNEL_CREATE`
@@ -138,7 +138,7 @@ Requires the `ADMINISTRATOR` permission.
 ```
 
 ### `.modlog events`
-Shows all events known to bolt.
+Shows all events known to Bolt.
 This can be useful in conjunction with the `.modlog explain` command documented below.
 Requires the `ADMINISTRATOR` permission.
 ```js
@@ -156,7 +156,7 @@ Requires the `ADMINISTRATOR` permission.
 
 ### `.modlog mute`
 Temporarily mutes the mod log.
-This is NOT persistent across restarts of bolt.
+This is NOT persistent across restarts of Bolt.
 Unset mod logging with `.modlog unset all` if you disable mod logging for a prolonged period of time.
 Requires the `ADMINISTRATOR` permission.
 ```js
