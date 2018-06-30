@@ -27,7 +27,7 @@ defmodule Bolt.Cogs.Infraction.Reason do
           ModLog.emit(
             msg.guild_id,
             "INFRACTION_UPDATE",
-            "#{User.full_name(msg.author)} (`#{msg.author.id}`)" <>
+            "#{User.full_name(msg.author)} (`#{msg.author.id}`) " <>
               if(
                 infraction.reason == nil,
                 do:
