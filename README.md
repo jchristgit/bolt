@@ -1,5 +1,5 @@
 # Bolt
-A high-quality Discord moderation bot, intended for large guilds.
+A Discord guild moderation bot for managing large servers.
 
 
 ## Running locally
