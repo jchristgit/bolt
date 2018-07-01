@@ -75,6 +75,8 @@ Requires the `BAN_MEMBERS` permission.
 ```
 
 ### `.clean`
+Deletes a bunch of messages at once.
+Due to limitations of the Discord API, this command cannot delete messages older than 2 weeks, and will ignore any that it finds in the command invocation.
 `clean` is a special command that uses its own argument parser.
 There are three ways to invoke `.clean`:
 - `.clean` only: deletes the last 30 messages
@@ -83,10 +85,11 @@ There are three ways to invoke `.clean`:
 
 `clean` supports special commands that you can specify:
 * `--user <user:snowflake|user>`: delete only messages by `user`, can be specified multiple times
+* `--channel <channel:textchannel>`: delete messages in `channel`, defaults to the current channel
 * `--bots`: delete only bot messages
 * `--no-bots`: don't delete any bot messages
 * `--content <text:str>`: delete only messages containing `text`
-* `--limit <limit:int>`: deletes up to `limit` messages
+* `--limit <limit:int>`: deletes up to `limit` messages, defaults to 30
 
 ```js
 // Delete the last 30 messages
