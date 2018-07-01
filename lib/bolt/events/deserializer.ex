@@ -56,6 +56,13 @@ defmodule Bolt.Events.Deserializer do
           "removed temporary ban for `#{user_id}`"
         )
       else
+        {:error, %{message: %{"message" => reason}}} ->
+          ModLog.emit(
+            guild_id,
+            "INFRACTION_EVENTS",
+            "could NOT remove temporary ban for `#{user_id}` (#{reason})"
+          )
+
         _err ->
           ModLog.emit(
             guild_id,
