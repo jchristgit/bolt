@@ -2,6 +2,7 @@ defmodule Bolt.Consumer do
   @moduledoc "Consumes events sent by the API gateway."
 
   alias Bolt.Consumer.{
+    GuildBanRemove,
     GuildCreate,
     GuildDelete,
     GuildMemberAdd,
@@ -38,6 +39,10 @@ defmodule Bolt.Consumer do
     MessageDelete.handle(channel_id, guild_id, msg_id)
   end
 
+  def handle_event({:GUILD_BAN_REMOVE, {guild_id, partial_member}, _ws_state}) do
+    GuildBanRemove.handle(guild_id, partial_member)
+  end
+
   def handle_event({:GUILD_MEMBER_ADD, {guild_id, member}, _ws_state}) do
     GuildMemberAdd.handle(guild_id, member)
   end
@@ -70,7 +75,6 @@ defmodule Bolt.Consumer do
     Ready.handle(data)
   end
 
-  @impl true
   def handle_event(_data) do
   end
 end
