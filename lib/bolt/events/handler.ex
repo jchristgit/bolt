@@ -134,10 +134,13 @@ defmodule Bolt.Events.Handler do
     alias Bolt.Repo
 
     {:ok, func} = Deserializer.deserialize(infraction)
-    func.()
-    timers = Map.delete(timers, infraction.id)
+
+    # Update the infraction before handling it to prevent race conditions.
     changeset = Infraction.changeset(infraction, %{active: false})
     {:ok, _updated_infraction} = Repo.update(changeset)
+
+    func.()
+    timers = Map.delete(timers, infraction.id)
 
     {:noreply, timers}
   end
