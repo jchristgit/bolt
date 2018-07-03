@@ -1,18 +1,34 @@
 defmodule Bolt.Cogs.Note do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, User}
 
-  @spec command(
-          Nostrum.Struct.Message.t(),
-          [String.t()]
-        ) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["note <user:member> <note:str...>"]
+
+  @impl true
+  def description,
+    do: """
+    Create a note for the given user.
+    The note is stored in the infraction database, and can be retrieved later.
+    Requires the `MANAGE_MESSAGES` permission.
+
+    **Examples**:
+    ```rs
+    note @Dude#0001 has an odd affection to ducks
+    ```
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
   def command(msg, [user | note_list]) do
     response =
       with {:ok, member} <- Converters.to_member(msg.guild_id, user),
@@ -42,6 +58,11 @@ defmodule Bolt.Cogs.Note do
           "🚫 error: #{Helpers.clean_content(reason)}"
       end
 
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `note <user:member> <note:str...>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

@@ -29,24 +29,6 @@ defmodule Bolt.Commander.Server do
     ## Moderation Commands
     "clean" => Cogs.Clean,
     "note" => Cogs.Note,
-    "note" => %{
-      callback: &Cogs.Note.command/2,
-      help: """
-      Create a note for the given user.
-      The note is stored in the infraction database, and can be retrieved later.
-      Requires the `MANAGE_MESSAGES` permission.
-
-      **Examples**:
-      ```rs
-      note @Dude#0001 has an odd affection to ducks
-      ```
-      """,
-      usage: ["note <user:member> <note:str...>"],
-      predicates: [
-        &Checks.guild_only/1,
-        &Checks.can_manage_messages?/1
-      ]
-    },
     "warn" => %{
       callback: &Cogs.Warn.command/2,
       help: """
