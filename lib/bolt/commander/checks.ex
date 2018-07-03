@@ -1,8 +1,9 @@
 defmodule Bolt.Commander.Checks do
   @moduledoc "Implements various checks used by commands."
 
-  alias Bolt.BotLog
-  alias Bolt.Helpers
+  alias Bolt.{BotLog, Helpers}
+  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Struct.Guild.Member
   alias Nostrum.Struct.User
   use Bitwise
 
@@ -26,72 +27,65 @@ defmodule Bolt.Commander.Checks do
     end
   end
 
-  @spec has_admin_perms?(integer) :: boolean
-  defp has_admin_perms?(permissions) do
-    (permissions &&& 0x8) == 0x8
-  end
-
   # Checks if the author of `message` has
   # the permissions specified in `to_check`.
   # If yes, returns `{:ok, msg}`
   # If no, returns `{:error, embed}`
   # If an error occured, returns `{:error, embed}`
-  @spec has_permission?(Nostrum.Struct.Message.t(), integer, String.t()) ::
+  @spec has_permission?(Nostrum.Struct.Message.t(), atom) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
-  defp has_permission?(msg, to_check, permission_name) do
-    case Helpers.top_role_for(msg.guild_id, msg.author.id) do
-      {:ok, role} ->
-        is_admin = has_admin_perms?(role.permissions)
-        has_perm = (role.permissions &&& to_check) == to_check
+  defp has_permission?(msg, permission) do
+    with {:ok, guild} <- GuildCache.get(msg.guild_id),
+         member when member != nil <- Enum.find(guild.members, &(&1.user.id === msg.author.id)) do
+      if permission in Member.guild_permissions(member, guild) do
+        {:ok, msg}
+      else
+        permission_string =
+          permission
+          |> Atom.to_string()
+          |> String.upcase()
 
-        case is_admin or has_perm do
-          true -> {:ok, msg}
-          false -> {:error, "🚫 you need the `#{permission_name}` permission to do that"}
-        end
-
-      {:error, reason} ->
-        {:error, "❌ cannot check permission information: #{reason}"}
+        {:error, "🚫 you need the `#{permission_string}` permission to do that"}
+      end
+    else
+      {:error, _reason} -> {:error, "❌ this guild is not in the cache, can't check perms"}
+      nil -> {:error, "❌ you're not in the guild member cache, can't check perms"}
     end
   end
 
-  @bitflags_manage_roles 0x10000000
   @doc "Checks that the message author has the `MANAGE_ROLES` permission."
   @spec can_manage_roles?(Nostrum.Struct.Message.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_manage_roles?(msg) do
-    has_permission?(msg, @bitflags_manage_roles, "MANAGE_ROLES")
+    has_permission?(msg, :manage_roles)
   end
 
-  @bitflags_manage_messages 0x00002000
   @doc "Checks that the message author has the `MANAGE_MESSSAGES` permission."
   @spec can_manage_messages?(Nostrum.Struct.Message.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_manage_messages?(msg) do
-    has_permission?(msg, @bitflags_manage_messages, "MANAGE_MESSAGES")
+    has_permission?(msg, :manage_messages)
   end
 
-  @bitflags_kick_members 0x00000002
   @doc "Checks that the message author has the `KICK_MEMBERS` permission."
   @spec can_kick_members?(Nostrum.Struct.Message.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_kick_members?(msg) do
-    has_permission?(msg, @bitflags_kick_members, "KICK_MEMBERS")
+    has_permission?(msg, :kick_members)
   end
 
-  @bitflags_ban_members 0x00000004
   @doc "Checks that the message author has the `BAN_MEMBERS` permission."
   @spec can_ban_members?(Nostrum.Struct.Message.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def can_ban_members?(msg) do
-    has_permission?(msg, @bitflags_ban_members, "BAN_MEMBERS")
+    has_permission?(msg, :ban_members)
   end
 
-  @bitflags_admin 0x8
   @doc "Checks that the message author has the `ADMINISTRATOR` permission."
   @spec is_admin?(Nostrum.Struct.Message.t()) ::
           {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
   def is_admin?(msg) do
-    has_permission?(msg, @bitflags_admin, "ADMINISTRATOR")
+    has_permission?(msg, :administrator)
   end
 
   @doc "Checks that the message author is in the superuser list."
