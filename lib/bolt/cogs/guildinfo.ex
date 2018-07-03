@@ -1,13 +1,12 @@
 defmodule Bolt.Cogs.GuildInfo do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Helpers
+  @behaviour Bolt.Command
+
+  alias Bolt.{Constants, Helpers}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Guild
-  alias Nostrum.Struct.Snowflake
+  alias Nostrum.Struct.{Embed, Guild, Snowflake}
   use Timex
 
   @spec format_guild_info(Guild.t()) :: Embed.t()
@@ -100,11 +99,24 @@ defmodule Bolt.Cogs.GuildInfo do
     end
   end
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["guildinfo [guild:snowflake]"]
+
+  @impl true
+  def description,
+    do: """
+    Show information about the current guild, or a given guild ID.
+    Aliased to `ginfo` and `guild`.
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
   @doc """
   Display information about the guild that
   this command is invoked on.
   """
+  @impl true
   def command(msg, []) do
     embed = fetch_and_build(msg.guild_id, "This guild")
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
@@ -121,5 +133,10 @@ defmodule Bolt.Cogs.GuildInfo do
         response = "🚫 `#{Helpers.clean_content(guild_id)}` is not a valid guild ID"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `guildinfo [guild:snowflake]`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
