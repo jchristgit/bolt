@@ -1,15 +1,42 @@
 defmodule Bolt.Cogs.Remove do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, User}
 
-  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["remove <role:role...>"]
+
+  @impl true
+  def description,
+    do: """
+    Remove the given self-assignable role from yourself.
+    To see which roles are self-assignable, use `lsar`.
+    Aliased to `iamn`.
+
+    **Examples**:
+    ```rs
+    // unassign the role 'Movie Nighter'
+    remove movie nighter
+    ```
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
+  def command(msg, "") do
+    response = "🚫 expected the role name to remove, got nothing"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
   def command(msg, role_name) do
     response =
       with roles_row when roles_row != nil <- Repo.get(SelfAssignableRoles, msg.guild_id),

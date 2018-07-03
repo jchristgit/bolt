@@ -25,23 +25,7 @@ defmodule Bolt.Commander.Server do
     ## Self-assignable roles
     "lsar" => Cogs.Lsar,
     "assign" => Cogs.Assign,
-    "remove" => %{
-      callback: &Cogs.Remove.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Remove the given self-assignable role from yourself.
-      To see which roles are self-assignable, use `lsar`.
-      Aliased to `iamn`.
-
-      **Examples**:
-      ```rs
-      // unassign the role 'Movie Nighter'
-      remove movie nighter
-      ```
-      """,
-      usage: ["remove <role:role...>"],
-      predicates: [&Checks.guild_only/1]
-    },
+    "remove" => Cogs.Remove,
 
     ## Moderation Commands
     "clean" => %{
