@@ -6,7 +6,7 @@ defmodule Bolt.Cogs.Note do
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["note <user:member> <note:str...>"]
