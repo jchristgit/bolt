@@ -2,44 +2,25 @@ defmodule Bolt.Cogs.Tag do
   @moduledoc false
 
   alias Nostrum.Api
+  alias Nostrum.Struct.Message
 
-  @spec command(
-          Nostrum.Struct.Message.t(),
-          [String.t()]
-        ) :: {:ok, Nostrum.Struct.Message.t()}
-  def command(msg, ["create"]) do
-    {:ok, _msg} =
-      Api.create_message(msg.channel_id, "🚫 `create` subcommand expects at least two arguments")
-  end
-
+  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()} | reference()
   def command(msg, ["create" | args]) do
     alias Bolt.Cogs.Tag.Create
 
     Create.command(msg, args)
   end
 
-  def command(msg, ["delete"]) do
-    {:ok, _msg} =
-      Api.create_message(
-        msg.channel_id,
-        "🚫 `delete` subcommand expects the tag name as its sole argument"
-      )
-  end
-
-  def command(msg, ["delete" | tag_name]) do
+  def command(msg, ["delete" | args]) do
     alias Bolt.Cogs.Tag.Delete
 
-    Delete.command(msg, Enum.join(tag_name, " "))
+    Delete.command(msg, args)
   end
 
-  def command(msg, ["list"]) do
+  def command(msg, ["list" | args]) do
     alias Bolt.Cogs.Tag.List
 
-    List.command(msg)
-  end
-
-  def command(msg, ["list" | _args]) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 `list` subcommand expects no arguments")
+    List.command(msg, args)
   end
 
   def command(msg, []) do
@@ -47,10 +28,9 @@ defmodule Bolt.Cogs.Tag do
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
-  def command(msg, name_list) do
+  def command(msg, args) do
     alias Bolt.Cogs.Tag.Read
 
-    name = Enum.join(name_list, " ")
-    Read.command(msg, name)
+    Read.command(msg, args)
   end
 end

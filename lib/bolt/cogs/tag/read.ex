@@ -8,11 +8,13 @@ defmodule Bolt.Cogs.Tag.Read do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Footer
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, User}
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
-  def command(msg, name) do
+  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
+  def command(msg, args) when args != [] do
+    name = Enum.join(args, " ")
+
     query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag)
     guild_tags = Repo.all(query)
 

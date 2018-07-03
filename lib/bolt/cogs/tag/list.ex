@@ -1,22 +1,20 @@
 defmodule Bolt.Cogs.Tag.List do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Helpers
-  alias Bolt.Paginator
-  alias Bolt.Repo
+  alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.Tag
-  alias Nostrum.Struct.Embed
+  alias Nostrum.Api
+  alias Nostrum.Struct.{Embed, Message}
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Nostrum.Struct.Message.t()) :: {:ok, Nostrum.Struct.Message.t()} | reference()
-  def command(msg) do
+  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()} | reference()
+  def command(msg, []) do
     query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag.name)
 
     pages =
       query
       |> Repo.all()
-      |> Stream.map(&"• #{Helpers.clean_content(&1)}")
+      |> Stream.map(&"• #{&1}")
       |> Stream.chunk_every(8)
       |> Enum.map(fn chunk ->
         %Embed{
@@ -30,5 +28,10 @@ defmodule Bolt.Cogs.Tag.List do
     }
 
     Paginator.paginate_over(msg, base_page, pages)
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `tag list`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
