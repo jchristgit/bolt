@@ -6,23 +6,10 @@ defmodule Bolt.Cogs.Infraction do
   alias Nostrum.Api
 
   @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
-  def command(msg, ["detail", maybe_id]) do
+  def command(msg, ["detail" | args]) do
     alias Bolt.Cogs.Infraction.Detail
 
-    case Integer.parse(maybe_id) do
-      {value, _} when value > 0 ->
-        embed = Detail.get_response(msg, value)
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
-
-      :error ->
-        response = "🚫 invalid argument, expected `int`"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
-    end
-  end
-
-  def command(msg, ["detail"]) do
-    response = "🚫 `detail` subcommand expects the infraction ID as its sole argument"
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    Detail.command(msg, args)
   end
 
   def command(msg, ["expiry", maybe_id, new_expiry]) do
