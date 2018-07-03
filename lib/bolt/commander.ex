@@ -99,7 +99,6 @@ defmodule Bolt.Commander do
   def handle_message(msg) do
     with [@prefix <> command_name | args] <- try_split(msg.content),
          cmd_module_or_map when cmd_module_or_map != nil <- Server.lookup(command_name) do
-      IO.inspect(cmd_module_or_map, label: "command module or map")
       handle_command(cmd_module_or_map, msg, args)
     else
       _err -> :ignored
