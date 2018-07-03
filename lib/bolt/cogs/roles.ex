@@ -1,6 +1,8 @@
 defmodule Bolt.Cogs.Roles do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Constants
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -25,6 +27,23 @@ defmodule Bolt.Cogs.Roles do
     end
   end
 
+  @impl true
+  def usage, do: ["roles [name:str]"]
+
+  @impl true
+  def description,
+    do: """
+    Show all roles on the guild the command is invoked on.
+    When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
   def command(msg, "") do
     case get_role_list(msg.guild_id) do
       {:ok, roles} ->

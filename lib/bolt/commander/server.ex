@@ -19,16 +19,7 @@ defmodule Bolt.Commander.Server do
     "guildinfo" => Cogs.GuildInfo,
     "memberinfo" => Cogs.MemberInfo,
     "roleinfo" => Cogs.RoleInfo,
-    "roles" => %{
-      callback: &Cogs.Roles.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Show all roles on the guild the command is invoked on.
-      When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
-      """,
-      usage: ["roles [name:str...]"],
-      predicates: [&Checks.guild_only/1]
-    },
+    "roles" => Cogs.Roles,
     "stats" => %{
       callback: &Cogs.Stats.command/2,
       help: "Show statistics about the bot.",
