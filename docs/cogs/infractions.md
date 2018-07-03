@@ -74,7 +74,7 @@ Additionally, requires the `MANAGE_MESSAGES` permission.
 ### `.infr expiry <id:int> <new_expiry:duration>`
 Updates the infraction expiry. The new expiry is interpreted relative to the infraction creation.
 Only applicable to timed (temporary) infractions that have not expired yet.
-Requires the `MANAGE_MESSAGES` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Change the expiry for infraction #35 to 2 days after creation.
 .infr expiry 35 2d

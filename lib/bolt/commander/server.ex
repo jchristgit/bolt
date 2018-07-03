@@ -28,51 +28,20 @@ defmodule Bolt.Commander.Server do
 
     ## Moderation Commands
     "clean" => Cogs.Clean,
-    "note" => Cogs.Note,
     "warn" => Cogs.Warn,
     "temprole" => Cogs.Temprole,
     "kick" => Cogs.Kick,
     "tempban" => Cogs.Tempban,
     "ban" => Cogs.Ban,
+
+    ## Infraction database operations
+    "note" => Cogs.Note,
     "infraction" => %{
-      callback: &Cogs.Infraction.command/2,
-      help: """
-      Operations on the infraction database.
-      Requires the `MANAGE_MESSAGES` permission.
-
-      **Subcommands**:
-      • `detail <id:int>`: View the given infraction ID in detail.
-      • `reason <id:int> <reason:str...>`: Update the reason for the given infraction ID.
-      • `list [type:str]`: View all infractions, or only infractions with the given type
-      • `user <user:snowflake|member>`: View all infractions for the given user,
-      • `expiry <id:int> <new_expiry:duration>`: Update the expiry of the given infraction, relative to the creation date.
-
-      **Examples**:
-      ```rs
-      // view infraction #538
-      infr detail 538
-
-      // set infraction #32's reason to "spamming"
-      infr reason 32 spamming
-
-      // view all infractions with the type "tempban"
-      infr list tempban
-
-      // view all of Dude's infractions
-      infr user @Dude#0001
-
-      // update the expiry of infraction 12 to be 24 hours after it was created
-      infr expiry 12 24h
-      ```
-      """,
-      usage: [
-        "infraction detail <id:int>",
-        "infraction reason <id:int> <reason:str...>",
-        "infraction list [type:str]",
-        "infraction user <user:snowflake|member...>",
-        "infraction expiry <id:int> <new_expiry:duration>"
-      ],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+      "detail" => Cogs.Infraction.Detail,
+      "reason" => Cogs.Infraction.Reason,
+      "list" => Cogs.Infraction.List,
+      "user" => Cogs.Infraction.User,
+      "expiry" => Cogs.Infraction.Expiry
     },
     "role" => %{
       callback: &Cogs.Role.command/2,

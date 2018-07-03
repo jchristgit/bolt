@@ -1,14 +1,30 @@
 defmodule Bolt.Cogs.Infraction.List do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Cogs.Infraction.General
   alias Bolt.{Constants, Helpers, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Embed, Message}
+  alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
+  @impl true
+  def usage, do: ["infraction list"]
+
+  @impl true
+  def description,
+    do: """
+    List all infractions on this guild.
+    Requires the `MANAGE_MESSAGES` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
   def command(msg, []) do
     query =
       from(

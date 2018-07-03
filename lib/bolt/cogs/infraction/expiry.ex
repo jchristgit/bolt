@@ -1,14 +1,31 @@
 defmodule Bolt.Cogs.Infraction.Expiry do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.User
   require Logger
 
-  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
+  @impl true
+  def usage, do: ["infraction expiry <id:int> <expiry:duration>"]
+
+  @impl true
+  def description,
+    do: """
+    Update the expiration date of the given infraction ID.
+    This is only applicable to timed (temporary) infractions that have not expired yet.
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, [maybe_id, new_expiry]) do
     response =
       with {id, _rest} <- Integer.parse(maybe_id),
@@ -55,7 +72,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   end
 
   def command(msg, _args) do
-    response = "ℹ️ usage: `infr expiry <id:int> <expiry:duration>`"
+    response = "ℹ️ usage: `infraction expiry <id:int> <expiry:duration>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

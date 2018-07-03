@@ -1,6 +1,8 @@
 defmodule Bolt.Cogs.Infraction.Detail do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Cogs.Infraction.General
   alias Bolt.{Constants, Helpers, Repo}
   alias Bolt.Schema.Infraction
@@ -43,7 +45,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
   end
 
   @spec format_detail(Message.t(), Infraction) :: Embed.t()
-  def format_detail(msg, infraction) do
+  defp format_detail(msg, infraction) do
     %Embed{
       title: "Infraction ##{infraction.id}",
       color: Constants.color_blue(),
@@ -110,7 +112,21 @@ defmodule Bolt.Cogs.Infraction.Detail do
     )
   end
 
-  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
+  @impl true
+  def usage, do: ["infraction detail <id:int>"]
+
+  @impl true
+  def description,
+    do: """
+    View the given infraction ID in detail.
+    Requires the `MANAGE_MESSAGES` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
   def command(msg, [maybe_id]) do
     with {id, _} <- Integer.parse(maybe_id),
          infraction when infraction != nil <-
@@ -128,13 +144,8 @@ defmodule Bolt.Cogs.Infraction.Detail do
     end
   end
 
-  def command(msg, []) do
-    response = "🚫 the infraction ID to look up is a required argument"
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
-  end
-
   def command(msg, _args) do
-    response = "🚫 expected an infraction ID to look up as the sole argument"
+    response = "ℹ️ usage: `infraction detail <id:int>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

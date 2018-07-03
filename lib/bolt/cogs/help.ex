@@ -73,7 +73,11 @@ defmodule Bolt.Cogs.Help do
           format_command_detail(command_name, subcommand_map.default)
         else
           subcommand_string =
-            subcommand_map |> Map.keys() |> Stream.map(&"`#{&1}`") |> Enum.join(", ")
+            subcommand_map
+            |> Map.keys()
+            |> Stream.reject(&(&1 === :default))
+            |> Stream.map(&"`#{&1}`")
+            |> Enum.join(", ")
 
           response = %Embed{
             title: "`#{command_name}` - subcommands",
@@ -84,7 +88,7 @@ defmodule Bolt.Cogs.Help do
             }
           }
 
-          {:ok, _msg} = Api.create_message(msg.channel_id, response)
+          {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
         end
     end
   end

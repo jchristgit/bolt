@@ -1,13 +1,32 @@
 defmodule Bolt.Cogs.Infraction.Reason do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.User
 
-  @spec command(Message.t(), [String.t()]) :: String.t()
-  def command(msg, [maybe_id, new_reason]) do
+  @impl true
+  def usage, do: ["infraction reason <id:int> <new_reason:str...>"]
+
+  @impl true
+  def description,
+    do: """
+    Updates the reason on the given infraction ID.
+    Only the infraction creator can update its reason.
+    Requires the `MANAGE_MESSAGES` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
+  def command(msg, [maybe_id | reason_list]) do
+    new_reason = Enum.join(reason_list, " ")
+
     response =
       with {id, _rest} <- Integer.parse(maybe_id),
            infraction when infraction != nil <-
@@ -47,7 +66,7 @@ defmodule Bolt.Cogs.Infraction.Reason do
   end
 
   def command(msg, _args) do
-    response = "ℹ️ usage: `infr reason <id:int> <new_reason:str...>`"
+    response = "ℹ️ usage: `infraction reason <id:int> <new_reason:str...>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

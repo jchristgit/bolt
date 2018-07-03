@@ -1,14 +1,31 @@
 defmodule Bolt.Cogs.Infraction.User do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Cogs.Infraction.General
   alias Bolt.{Constants, Helpers, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Embed, Message}
+  alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Message.t()}
+  @impl true
+  def usage, do: ["infraction user <user:snowflake|member...>"]
+
+  @impl true
+  def description,
+    do: """
+    View all infractions for the given user.
+    The user can be given as a snowflake if they are now longer present on this guild.
+    Requires the `MANAGE_MESSAGES` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
   def command(msg, args) when args != [] do
     user_text = Enum.join(args, " ")
 
@@ -47,7 +64,7 @@ defmodule Bolt.Cogs.Infraction.User do
   end
 
   def command(msg, _args) do
-    response = "ℹ️ usage: `infr user <user:snowflake|member...>`"
+    response = "ℹ️ usage: `infraction user <user:snowflake|member...>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
