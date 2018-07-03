@@ -1,5 +1,6 @@
 defmodule Bolt.Cogs.Guide do
   @moduledoc false
+  @behaviour Bolt.Command
 
   alias Bolt.Constants
   alias Bolt.Paginator
@@ -170,6 +171,16 @@ defmodule Bolt.Cogs.Guide do
     }
   ]
 
+  @impl true
+  def usage, do: ["guide"]
+
+  @impl true
+  def description,
+    do: """
+    New to bolt? This command is a paginated overview showcasing how to use bolt on your server.
+    """
+
+  @impl true
   def command(msg, _args) do
     base_embed = %Embed{
       color: Constants.color_blue()
