@@ -69,27 +69,28 @@ defmodule Bolt.Cogs.Help do
         {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
 
       subcommand_map ->
-        if Map.has_key?(subcommand_map, :default) do
-          format_command_detail(command_name, subcommand_map.default)
-        else
-          subcommand_string =
-            subcommand_map
-            |> Map.keys()
-            |> Stream.reject(&(&1 === :default))
-            |> Stream.map(&"`#{&1}`")
-            |> Enum.join(", ")
+        embed =
+          if Map.has_key?(subcommand_map, :default) do
+            format_command_detail(command_name, subcommand_map.default)
+          else
+            subcommand_string =
+              subcommand_map
+              |> Map.keys()
+              |> Stream.reject(&(&1 === :default))
+              |> Stream.map(&"`#{&1}`")
+              |> Enum.join(", ")
 
-          response = %Embed{
-            title: "`#{command_name}` - subcommands",
-            description: subcommand_string,
-            color: Constants.color_blue(),
-            footer: %Embed.Footer{
-              text: "View `help #{command_name} <subcommand>` for details"
+            %Embed{
+              title: "`#{command_name}` - subcommands",
+              description: subcommand_string,
+              color: Constants.color_blue(),
+              footer: %Embed.Footer{
+                text: "View `help #{command_name} <subcommand>` for details"
+              }
             }
-          }
+          end
 
-          {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
-        end
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     end
   end
 
