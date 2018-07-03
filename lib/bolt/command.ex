@@ -35,5 +35,5 @@ defmodule Bolt.Command do
   """
   @callback command(msg :: Message.t(), args :: [String.t()] | any()) :: any()
 
-  @optional_callbacks [parse_args: 1]
+  @optional_callbacks [parse_args: 1, predicates: 0]
 end
