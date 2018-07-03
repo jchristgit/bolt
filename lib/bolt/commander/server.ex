@@ -336,7 +336,7 @@ defmodule Bolt.Commander.Server do
         "infraction detail <id:int>",
         "infraction reason <id:int> <reason:str...>",
         "infraction list [type:str]",
-        "infraction user <user:snowflake|member>",
+        "infraction user <user:snowflake|member...>",
         "infraction expiry <id:int> <new_expiry:duration>"
       ],
       predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]

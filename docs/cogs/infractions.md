@@ -51,7 +51,7 @@ Requires the `MANAGE_MESSAGES` permission.
 .infr list tempban
 ```
 
-### `.infr user <user:snowflake|member>`
+### `.infr user <user:snowflake|member...>`
 Lists all infractions for the given user. It is possible to pass an ID directly to look up infractions for a member that left the guild.
 Requires the `MANAGE_MESSAGES` permission.
 ```js
