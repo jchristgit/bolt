@@ -1,11 +1,10 @@
 defmodule Bolt.Cogs.USW.Status do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Paginator
-  alias Bolt.Repo
-  alias Bolt.Schema.USWFilterConfig
-  alias Bolt.Schema.USWPunishmentConfig
+  @behaviour Bolt.Command
+
+  alias Bolt.{Constants, Paginator, Repo}
+  alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field
@@ -34,6 +33,21 @@ defmodule Bolt.Cogs.USW.Status do
     end
   end
 
+  @impl true
+  def usage, do: ["usw status"]
+
+  @impl true
+  def description,
+    do: """
+    Shows the current status of USW.
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, []) do
     query =
       from(config in USWFilterConfig, where: config.guild_id == ^msg.guild_id, select: config)
@@ -71,7 +85,7 @@ defmodule Bolt.Cogs.USW.Status do
   end
 
   def command(msg, _args) do
-    response = "🚫 this subcommand accepts no arguments"
+    response = "ℹ️ usage: `usw status`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

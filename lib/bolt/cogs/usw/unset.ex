@@ -1,12 +1,29 @@
 defmodule Bolt.Cogs.USW.Unset do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.USWFilterConfig
   alias Nostrum.Api
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["usw unset <filter:str>"]
+
+  @impl true
+  def description,
+    do: """
+    Unsets configuration for the given filter, effectively disabling it.
+
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, [filter]) do
     filter = String.upcase(filter)
 

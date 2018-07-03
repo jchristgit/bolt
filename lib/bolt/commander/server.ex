@@ -61,39 +61,11 @@ defmodule Bolt.Commander.Server do
 
     ## Spam wall management
     "usw" => %{
-      callback: &Cogs.USW.command/2,
-      help: """
-      **Uncomplicated spam wall**
-      Provides subcommands for managing the anti-spam subsystem *USW*.
-      Requires the `MANAGE_GUILD` permission.
-
-      **Subcommands**:
-      • `usw status`: show the current configuration
-      • `usw set <filter:str> <count:int> <interval:int>`: enable the given filter and set it to allow `count` objects in an interval of `interval` seconds
-      • `usw unset <filter:str>`: disable the given filter
-      • `usw punish <punishment...>`: apply the given punishment when the filter hits
-      • `usw escalate [on|off]`: enable or disable automatic punishment escalation
-
-      **Filters**:
-      • `BURST`: Filters repeated messages in a short amount of time by a single user
-
-      **Punishments**:
-      • `temprole <role:role> <duration:duration>`: temporary apply the given role for `duration`
-
-      **Examples**:
-      ```rs
-      // enable the `BURST` filter to allow max. 5 messages in 10 seconds
-      usw set BURST 5 10
-      ```
-      """,
-      usage: [
-        "usw status",
-        "usw set <filter:str> <count:int> <interval:int>",
-        "usw unset <filter:str>",
-        "usw punish <punishment...>",
-        "usw escalate [on|off]"
-      ],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+      "status" => Cogs.USW.Status,
+      "set" => Cogs.USW.Set,
+      "unset" => Cogs.USW.Unset,
+      "punish" => Cogs.USW.Punish,
+      "escalate" => Cogs.USW.Escalate
     },
     "tag" => %{
       callback: &Cogs.Tag.command/2,

@@ -1,10 +1,30 @@
 defmodule Bolt.Cogs.USW.Escalate do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Repo
   alias Bolt.Schema.USWPunishmentConfig
   alias Nostrum.Api
 
+  @impl true
+  def usage, do: ["usw escalate [on|off]"]
+
+  @impl true
+  def description,
+    do: """
+    Toggles automatic punishment escalation.
+    Use the command without any argument to show whether automatic punishment is currently enabled.
+    Enable it using `on`, disable it again using `off`.
+
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, []) do
     response =
       case Repo.get(USWPunishmentConfig, msg.guild_id) do
@@ -46,5 +66,10 @@ defmodule Bolt.Cogs.USW.Escalate do
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `usw escalate [on|off]`"
+    {:ok, _msg} = Api.create_message(msg.channeL_id, response)
   end
 end

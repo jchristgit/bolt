@@ -1,12 +1,33 @@
 defmodule Bolt.Cogs.USW.Set do
   @moduledoc false
 
-  alias Bolt.Helpers
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.USWFilterConfig
   alias Nostrum.Api
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["usw set <filter:str> <count:int> <interval:int>"]
+
+  @impl true
+  def description,
+    do: """
+    Sets the given `filter` to allow `count` objects to pass through within `interval` seconds.
+
+    Existing filters:
+    • `BURST`: Allows `count` messages by the same author within `interval` seconds.
+
+    For example, to allow 5 messages by the same user within 7 seconds (using the `BURST` filter), one would use `usw set BURST 5 7`.
+
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, [filter, count_str, interval_str]) do
     filter = String.upcase(filter)
 

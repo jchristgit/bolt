@@ -1,14 +1,31 @@
 defmodule Bolt.Cogs.USW.Punish do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.Parsers
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, Parsers, Repo}
   alias Bolt.Schema.USWPunishmentConfig
   alias Nostrum.Api
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["usw punish <punishment...>"]
+
+  @impl true
+  def description,
+    do: """
+    Sets the punishment to be applied when a filter triggers.
+
+    Existing punishments:
+    • `temprole <role:role> <duration:duration>`: Temporarily `role` for `duration`. This can be useful to mute members temporarily.
+
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, ["temprole", role, duration]) do
     response =
       with {:ok, role} <- Converters.to_role(msg.guild_id, role),
@@ -35,6 +52,11 @@ defmodule Bolt.Cogs.USW.Punish do
           "🚫 error: #{Helpers.clean_content(reason)}"
       end
 
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, [_unknown_type | _args]) do
+    response = "🚫 unknown punishment type"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

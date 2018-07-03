@@ -43,7 +43,7 @@ of the user (starting from `0`).
 Shows the current status of the spam wall, including the current configuration,
 whether automatic punishment escalation is enabled,
 which filters are configured and at which rates.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Show the current USW configuration.
 .usw status
@@ -53,7 +53,7 @@ Requires the `ADMINISTRATOR` permission.
 ### `.usw set <filter:str> <count:int> <interval:int>`
 Activate the given `filter` to allow `count` objects to pass through during `interval` seconds.
 For more information on filters, see [Filters](#filters).
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Activate the `BURST` filter to allow 5 messages during 10 seconds.
 .usw set BURST 5 10
@@ -62,7 +62,7 @@ Requires the `ADMINISTRATOR` permission.
 
 ### `.usw unset <filter:str>`
 Deactivate the given `filter` (case-insensitive).
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Disable the `BURST` filter.
 .usw unset BURST
@@ -72,7 +72,7 @@ Requires the `ADMINISTRATOR` permission.
 ### `.usw punish <punishment...>`
 Configures the punishment applied when a message hits one of the configured filters.
 See [Punishments](#punishments) for details.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Punish offenders with the temporary role 'Muted' for 10 minutes.
 .usw punish temprole Muted 10m
@@ -83,7 +83,7 @@ Requires the `ADMINISTRATOR` permission.
 Enable or disable automatic punishment escalation.
 When not given any arguments, shows whether automatic punishment escalation is currently enabled.
 See [Automatic punishment escalation](#automatic-punishment-escalation) for more details.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Show whether automatic punishment escalation is currently enabled.
 .usw escalate
