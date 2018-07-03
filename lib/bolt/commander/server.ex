@@ -14,31 +14,17 @@ defmodule Bolt.Commander.Server do
     ## Bot meta commands
     "help" => Cogs.Help,
     "guide" => Cogs.Guide,
+    "stats" => Cogs.Stats,
 
     ## Meta Commands
     "guildinfo" => Cogs.GuildInfo,
     "memberinfo" => Cogs.MemberInfo,
     "roleinfo" => Cogs.RoleInfo,
     "roles" => Cogs.Roles,
-    "stats" => Cogs.Stats,
-    "lsar" => Cogs.Lsar,
-    "assign" => %{
-      callback: &Cogs.Assign.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Assign the given self-assignable role to yourself.
-      To see which roles are self-assignable, use `lsar`.
-      Aliased to `iam`.
 
-      **Examples**:
-      ```rs
-      // assign the role 'Movie Nighter'
-      assign movie nighter
-      ```
-      """,
-      usage: ["assign <role:role...>"],
-      predicates: [&Checks.guild_only/1]
-    },
+    ## Self-assignable roles
+    "lsar" => Cogs.Lsar,
+    "assign" => Cogs.Assign,
     "remove" => %{
       callback: &Cogs.Remove.command/2,
       parser: &Parsers.join/1,

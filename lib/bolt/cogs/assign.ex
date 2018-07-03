@@ -1,12 +1,37 @@
 defmodule Bolt.Cogs.Assign do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, User}
 
-  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["assign <role:role...>"]
+
+  @impl true
+  def description,
+    do: """
+    Assigns the given self-assignable role to yourself.
+    To see which roles are self-assignable, use `lsar`.
+    Aliased to `iam`.
+
+    **Examples**:
+    ```rs
+    // Assign the role 'Movie Nighter'
+    assign movie nighter
+    ```
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
   def command(msg, "") do
     response = "🚫 expected the role name to assign, got nothing"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
