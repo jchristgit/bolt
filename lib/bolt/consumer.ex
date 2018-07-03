@@ -8,6 +8,7 @@ defmodule Bolt.Consumer do
     GuildMemberAdd,
     GuildMemberRemove,
     GuildMemberUpdate,
+    GuildRoleCreate,
     GuildRoleDelete,
     MessageCreate,
     MessageDelete,
@@ -65,6 +66,10 @@ defmodule Bolt.Consumer do
 
   def handle_event({:GUILD_DELETE, {guild, _unavailable}, _ws_state}) do
     GuildDelete.handle(guild)
+  end
+
+  def handle_event({:GUILD_ROLE_CREATE, {guild_id, created_role}, _ws_state}) do
+    GuildRoleCreate.handle(guild_id, created_role)
   end
 
   def handle_event({:GUILD_ROLE_DELETE, {guild_id, deleted_role}, _ws_state}) do

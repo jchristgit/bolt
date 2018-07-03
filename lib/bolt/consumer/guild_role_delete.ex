@@ -28,5 +28,11 @@ defmodule Bolt.Consumer.GuildRoleDelete do
       _ ->
         :noop
     end
+
+    ModLog.emit(
+      guild_id,
+      "GUILD_ROLE_DELETE",
+      "role #{deleted_role.name} (`#{deleted_role.id}`) was deleted"
+    )
   end
 end
