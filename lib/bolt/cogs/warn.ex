@@ -1,15 +1,34 @@
 defmodule Bolt.Cogs.Warn do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, User}
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["warn <user:member> <reason:str...>"]
+
+  @impl true
+  def description,
+    do: """
+    Warn the given user for the specified reason.
+    The warning is stored in the infraction database, and can be retrieved later.
+    Requires the `MANAGE_MESSAGES` permission.
+
+    **Examples**:
+    ```rs
+    warn @Dude#0001 spamming duck images at #dog-pics
+    ```
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
   def command(msg, [user | reason_list]) do
     response =
       with reason when reason != "" <- Enum.join(reason_list, " "),
@@ -43,7 +62,7 @@ defmodule Bolt.Cogs.Warn do
   end
 
   def command(msg, _anything) do
-    response = "🚫 command expects at least two arguments, see `help warn` for details"
+    response = "ℹ️ usage: `warn <user:member> <reason:str...>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

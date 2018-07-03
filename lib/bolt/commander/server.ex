@@ -29,21 +29,7 @@ defmodule Bolt.Commander.Server do
     ## Moderation Commands
     "clean" => Cogs.Clean,
     "note" => Cogs.Note,
-    "warn" => %{
-      callback: &Cogs.Warn.command/2,
-      help: """
-      Warn the given user for the specified reason.
-      The warning is stored in the infraction database, and can be retrieved later.
-      Requires the `MANAGE_MESSAGES` permission.
-
-      **Examples**:
-      ```rs
-      warn @Dude#0001 spamming duck images at #dog-pics
-      ```
-      """,
-      usage: ["warn <user:member> <reason:str...>"],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
-    },
+    "warn" => Cogs.Warn,
     "temprole" => %{
       callback: &Cogs.Temprole.command/2,
       help: """
