@@ -39,6 +39,9 @@ defmodule Bolt.Cogs.Help do
     """
 
   @impl true
+  def predicates, do: []
+
+  @impl true
   def command(msg, []) do
     embed = %Embed{
       title: "All commands",

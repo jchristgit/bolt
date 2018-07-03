@@ -28,6 +28,7 @@ defmodule Bolt.Commander.Server do
 
     ## Moderation Commands
     "clean" => Cogs.Clean,
+    "note" => Cogs.Note,
     "note" => %{
       callback: &Cogs.Note.command/2,
       help: """

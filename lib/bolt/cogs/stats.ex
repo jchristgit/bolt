@@ -17,6 +17,9 @@ defmodule Bolt.Cogs.Stats do
   def description, do: "Show general statistics about the bot."
 
   @impl true
+  def predicates, do: []
+
+  @impl true
   def command(msg, []) do
     total_guilds = GuildCache.all() |> Enum.count()
     guild_member_counts = GuildCache.select_all(fn guild -> guild.member_count end)

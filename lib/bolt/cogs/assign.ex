@@ -6,7 +6,7 @@ defmodule Bolt.Cogs.Assign do
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["assign <role:role...>"]

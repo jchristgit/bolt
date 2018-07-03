@@ -181,6 +181,9 @@ defmodule Bolt.Cogs.Guide do
     """
 
   @impl true
+  def predicates, do: []
+
+  @impl true
   def command(msg, _args) do
     base_embed = %Embed{
       color: Constants.color_blue()

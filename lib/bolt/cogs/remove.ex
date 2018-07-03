@@ -6,7 +6,7 @@ defmodule Bolt.Cogs.Remove do
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["remove <role:role...>"]
