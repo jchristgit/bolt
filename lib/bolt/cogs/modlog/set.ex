@@ -1,16 +1,30 @@
 defmodule Bolt.Cogs.ModLog.Set do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["modlog set <event:str> <channel:textchannel>"]
+
+  @impl true
+  def description,
+    do: """
+    Set the given `event` to be logged in `channel`.
+    `all` can be given in place of `event` in order to delete any existing configuration(s) and log all events to `channel`.
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, ["all", channel]) do
     response =
       with {:ok, channel} <- Converters.to_channel(msg.guild_id, channel),
@@ -88,7 +102,7 @@ defmodule Bolt.Cogs.ModLog.Set do
   end
 
   def command(msg, _args) do
-    response = "🚫 subcommand expects two arguments: event to log (or `all`) and channel to log in"
+    response = "ℹ️ usage: `modlog set <event:str> <channel:textchannel>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

@@ -47,34 +47,19 @@ defmodule Bolt.Commander.Server do
       "user" => Cogs.Infraction.User,
       "expiry" => Cogs.Infraction.Expiry
     },
+
+    ## Mod Log management
     "modlog" => %{
-      callback: &Cogs.ModLog.command/2,
-      help: """
-      Control the moderation log.
-      Requires the `MANAGE_GUILD` permission.
-
-      **Subcommands**:
-      • `status`: show the current configuration
-      • `set <event:str> <channel:textchannel>`: log the given event in the given channel
-      • `unset <event:str>`: stop logging the given event
-      • `events`: list known events
-      • `explain <event:str>`: explain the given event
-      • `mute`: mute the modlog temporarily (will reset if the bot restarts)
-      • `unmute`: unmute the modlog
-
-      If `all` is given in place of `event`, bolt will log all events to the given channel (when invoked with `set`) or no longer log anything (when invoked with `unset`).
-      """,
-      usage: [
-        "modlog status",
-        "modlog set <event:str> <channel:textchannel>",
-        "modlog unset <event:str>",
-        "modlog events",
-        "modlog explain <event:str>",
-        "modlog mute",
-        "modlog unmute"
-      ],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+      "status" => Cogs.ModLog.Status,
+      "set" => Cogs.ModLog.Set,
+      "unset" => Cogs.ModLog.Unset,
+      "events" => Cogs.ModLog.Events,
+      "explain" => Cogs.ModLog.Explain,
+      "mute" => Cogs.ModLog.Mute,
+      "unmute" => Cogs.ModLog.Unmute
     },
+
+    ## Spam wall management
     "usw" => %{
       callback: &Cogs.USW.command/2,
       help: """

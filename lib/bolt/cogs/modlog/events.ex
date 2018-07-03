@@ -1,12 +1,28 @@
 defmodule Bolt.Cogs.ModLog.Events do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Paginator
+  @behaviour Bolt.Command
+
+  alias Bolt.{Constants, Paginator}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
+  @impl true
+  def usage, do: ["modlog events"]
+
+  @impl true
+  def description,
+    do: """
+    Show all known modlog events.
+    This can be useful to find out which event you want to log where.
+    To get further details on a single event, use `modlog explain <event:str>`.
+    """
+
+  @impl true
+  def predicates, do: []
+
+  @impl true
   def command(msg, []) do
     pages =
       ModLogConfig.valid_events()
@@ -27,7 +43,7 @@ defmodule Bolt.Cogs.ModLog.Events do
   end
 
   def command(msg, _args) do
-    response = "🚫 this subcommand accepts no arguments"
+    response = "ℹ️ usage: `modlog events`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

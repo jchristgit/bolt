@@ -1,15 +1,30 @@
 defmodule Bolt.Cogs.ModLog.Status do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Paginator
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["modlog status"]
+
+  @impl true
+  def description,
+    do: """
+    View the current configuration of the mod log.
+    Shows which events are logged in which channel(s).
+    Requires the MANAGE_MESSAGES permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
   def command(msg, []) do
     query = from(config in ModLogConfig, where: config.guild_id == ^msg.guild_id, select: config)
 
@@ -49,7 +64,7 @@ defmodule Bolt.Cogs.ModLog.Status do
   end
 
   def command(msg, _args) do
-    response = "🚫 this subcommand takes no arguments"
+    response = "ℹ️ usage: `modlog status`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

@@ -1,8 +1,9 @@
 defmodule Bolt.Cogs.ModLog.Explain do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Helpers
+  @behaviour Bolt.Command
+
+  alias Bolt.{Constants, Helpers}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -42,6 +43,20 @@ defmodule Bolt.Cogs.ModLog.Explain do
     "GUILD_ROLE_UPDATE" => "Emitted when a role is updated."
   }
 
+  @impl true
+  def usage, do: ["modlog explain <event:str>"]
+
+  @impl true
+  def description,
+    do: """
+    Explains the given `event`.
+    To find out which events are known by bolt, use `modlog events`.
+    """
+
+  @impl true
+  def predicates, do: []
+
+  @impl true
   def command(msg, [event_name]) do
     event_name = String.upcase(event_name)
 
@@ -67,13 +82,8 @@ defmodule Bolt.Cogs.ModLog.Explain do
     end
   end
 
-  def command(msg, []) do
-    response = "❔ usage: `modlog explain <event:str>`"
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
-  end
-
   def command(msg, _args) do
-    response = "🚫 expected at most one argument (the event to explain)"
+    response = "ℹ️ usage: `modlog explain <event:str>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

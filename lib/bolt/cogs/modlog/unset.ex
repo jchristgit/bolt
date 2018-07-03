@@ -1,14 +1,29 @@
 defmodule Bolt.Cogs.ModLog.Unset do
   @moduledoc false
 
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["modlog unset <event:str>"]
+
+  @impl true
+  def description,
+    do: """
+    Disables logging of the given `event`.
+    `all` can be given in place of `event` in order to stop logging all events.
+    Requires the `MANAGE_GUILD` permission.
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+
+  @impl true
   def command(msg, ["all"]) do
     import Ecto.Query, only: [from: 2]
 
@@ -56,7 +71,7 @@ defmodule Bolt.Cogs.ModLog.Unset do
   end
 
   def command(msg, _args) do
-    response = "🚫 subcommand expects one arguments: event to unset, or `all`"
+    response = "ℹ️ usage: `modlog unset <event:str>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
