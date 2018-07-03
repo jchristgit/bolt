@@ -4,9 +4,8 @@ defmodule Bolt.USW.Filters.Burst do
 
   alias Bolt.{MessageCache, USW}
   alias Nostrum.Struct.{Message, Snowflake}
-  use Timex
 
-  ## Filter implementation
+  @impl true
   @spec apply(Message.t(), non_neg_integer(), non_neg_integer()) :: :action | :passthrough
   def apply(msg, count, interval) do
     interval_seconds_ago_snowflake =
