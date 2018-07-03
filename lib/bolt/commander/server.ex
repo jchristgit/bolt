@@ -25,6 +25,10 @@ defmodule Bolt.Commander.Server do
     "lsar" => Cogs.Lsar,
     "assign" => Cogs.Assign,
     "remove" => Cogs.Remove,
+    "role" => %{
+      "allow" => Cogs.Role.Allow,
+      "deny" => Cogs.Role.Deny
+    },
 
     ## Moderation Commands
     "clean" => Cogs.Clean,
@@ -42,29 +46,6 @@ defmodule Bolt.Commander.Server do
       "list" => Cogs.Infraction.List,
       "user" => Cogs.Infraction.User,
       "expiry" => Cogs.Infraction.Expiry
-    },
-    "role" => %{
-      callback: &Cogs.Role.command/2,
-      help: """
-      Manage self-assignable roles.
-      Self-assignable roles are special roles that can be assigned my members through bot commands.
-      Requires the `MANAGE_ROLES` permission.
-
-      **Subcommands**:
-      - `allow <role:role...>`: Allow self-assignment of the given role.
-      - `deny <role:role...>`: Deny self-assignment of the given role.
-
-      **Examples**:
-      ```rs
-      // allow self-assignment of the 'Movie Nighter' role
-      role allow movie nighter
-
-      // remove it from the self-assignable roles again
-      role deny movie nighter
-      ```
-      """,
-      usage: ["role allow <role:role...>", "role deny <role:role...>"],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
     },
     "modlog" => %{
       callback: &Cogs.ModLog.command/2,

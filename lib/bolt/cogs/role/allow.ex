@@ -1,18 +1,43 @@
 defmodule Bolt.Cogs.Role.Allow do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
-  @spec command(
-          Nostrum.Struct.Message.t(),
-          String.t()
-        ) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["role allow <role:role...>"]
+
+  @impl true
+  def description,
+    do: """
+    Allow self-assignment of the given role.
+    Self-assignable roles are special roles that can be assigned my members through bot commands.
+    Requires the `MANAGE_ROLES` permission.
+
+    **Examples**:
+    ```rs
+    // allow self-assginment of the 'Movie Nighter' role
+    role allow movie nighter
+    ```
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_roles?/1]
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
+  def command(msg, "") do
+    response = "ℹ️ usage: `role allow <role:role>`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
   def command(msg, role_name) do
     response =
       case Converters.to_role(msg.guild_id, role_name, true) do
