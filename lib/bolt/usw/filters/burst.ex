@@ -3,12 +3,11 @@ defmodule Bolt.USW.Filters.Burst do
   @behaviour Bolt.USW.Filter
 
   alias Bolt.{MessageCache, USW}
-  alias Nostrum.Struct.Snowflake
+  alias Nostrum.Struct.{Message, Snowflake}
   use Timex
 
   ## Filter implementation
-  @spec apply(Nostrum.Struct.Message.t(), non_neg_integer(), non_neg_integer()) ::
-          :action | :passthrough
+  @spec apply(Message.t(), non_neg_integer(), non_neg_integer()) :: :action | :passthrough
   def apply(msg, count, interval) do
     interval_seconds_ago_snowflake =
       DateTime.utc_now()
@@ -24,7 +23,7 @@ defmodule Bolt.USW.Filters.Burst do
       |> Stream.filter(&(&1.author_id == msg.author.id))
       |> Enum.take(count)
 
-    if length(relevant_messages) == count do
+    if length(relevant_messages) >= count do
       USW.punish(
         msg.guild_id,
         msg.author,
