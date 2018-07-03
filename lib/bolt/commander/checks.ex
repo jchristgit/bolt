@@ -4,7 +4,7 @@ defmodule Bolt.Commander.Checks do
   alias Bolt.{BotLog, Helpers}
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild.Member
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, User}
   use Bitwise
 
   @doc """
@@ -15,8 +15,7 @@ defmodule Bolt.Commander.Checks do
   attribute set, and thus, will not
   be detected as guild messages properly.
   """
-  @spec guild_only(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec guild_only(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def guild_only(msg) do
     case msg.guild_id do
       nil ->
@@ -32,8 +31,7 @@ defmodule Bolt.Commander.Checks do
   # If yes, returns `{:ok, msg}`
   # If no, returns `{:error, embed}`
   # If an error occured, returns `{:error, embed}`
-  @spec has_permission?(Nostrum.Struct.Message.t(), atom) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec has_permission?(Message.t(), atom) :: {:ok, Message.t()} | {:error, String.t()}
   defp has_permission?(msg, permission) do
     with {:ok, guild} <- GuildCache.get(msg.guild_id),
          member when member != nil <- Enum.find(guild.members, &(&1.user.id === msg.author.id)) do
@@ -54,43 +52,37 @@ defmodule Bolt.Commander.Checks do
   end
 
   @doc "Checks that the message author has the `MANAGE_ROLES` permission."
-  @spec can_manage_roles?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec can_manage_roles?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def can_manage_roles?(msg) do
     has_permission?(msg, :manage_roles)
   end
 
   @doc "Checks that the message author has the `MANAGE_MESSSAGES` permission."
-  @spec can_manage_messages?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec can_manage_messages?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def can_manage_messages?(msg) do
     has_permission?(msg, :manage_messages)
   end
 
   @doc "Checks that the message author has the `KICK_MEMBERS` permission."
-  @spec can_kick_members?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec can_kick_members?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def can_kick_members?(msg) do
     has_permission?(msg, :kick_members)
   end
 
   @doc "Checks that the message author has the `BAN_MEMBERS` permission."
-  @spec can_ban_members?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec can_ban_members?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def can_ban_members?(msg) do
     has_permission?(msg, :ban_members)
   end
 
-  @doc "Checks that the message author has the `ADMINISTRATOR` permission."
-  @spec is_admin?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
-  def is_admin?(msg) do
-    has_permission?(msg, :administrator)
+  @doc "Checks that the message author has the `MANAGE_GUILD` permission."
+  @spec can_manage_guild?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
+  def can_manage_guild?(msg) do
+    has_permission?(msg, :manage_guild)
   end
 
   @doc "Checks that the message author is in the superuser list."
-  @spec is_superuser?(Nostrum.Struct.Message.t()) ::
-          {:ok, Nostrum.Struct.Message.t()} | {:error, String.t()}
+  @spec is_superuser?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def is_superuser?(msg) do
     if msg.author.id in Application.fetch_env!(:bolt, :superusers) do
       BotLog.emit(

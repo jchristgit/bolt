@@ -368,7 +368,7 @@ defmodule Bolt.Commander.Server do
       callback: &Cogs.ModLog.command/2,
       help: """
       Control the moderation log.
-      Requires the `ADMINISTRATOR` permission.
+      Requires the `MANAGE_GUILD` permission.
 
       **Subcommands**:
       • `status`: show the current configuration
@@ -390,14 +390,14 @@ defmodule Bolt.Commander.Server do
         "modlog mute",
         "modlog unmute"
       ],
-      predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
     },
     "usw" => %{
       callback: &Cogs.USW.command/2,
       help: """
       **Uncomplicated spam wall**
       Provides subcommands for managing the anti-spam subsystem *USW*.
-      Requires the `ADMINISTRATOR` permission.
+      Requires the `MANAGE_GUILD` permission.
 
       **Subcommands**:
       • `usw status`: show the current configuration
@@ -425,7 +425,7 @@ defmodule Bolt.Commander.Server do
         "usw punish <punishment...>",
         "usw escalate [on|off]"
       ],
-      predicates: [&Checks.guild_only/1, &Checks.is_admin?/1]
+      predicates: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
     },
     "tag" => %{
       callback: &Cogs.Tag.command/2,
