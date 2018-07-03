@@ -17,18 +17,7 @@ defmodule Bolt.Commander.Server do
 
     ## Meta Commands
     "guildinfo" => Cogs.GuildInfo,
-    "memberinfo" => %{
-      callback: &Cogs.MemberInfo.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Without arguments, show information about yourself.
-      When given a member, show information about the member instead of yourself.
-      """,
-      usage: [
-        "memberinfo [user:member]"
-      ],
-      predicates: [&Checks.guild_only/1]
-    },
+    "memberinfo" => Cogs.MemberInfo,
     "roleinfo" => %{
       callback: &Cogs.RoleInfo.command/2,
       parser: &Parsers.join/1,

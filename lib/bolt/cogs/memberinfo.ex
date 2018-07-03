@@ -1,6 +1,8 @@
 defmodule Bolt.Cogs.MemberInfo do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Converters
   alias Bolt.Helpers
   alias Nostrum.Api
@@ -54,10 +56,23 @@ defmodule Bolt.Cogs.MemberInfo do
     end
   end
 
-  @spec command(Nostrum.Struct.Message.t(), String.t()) :: {:ok, Nostrum.Struct.Message.t()}
-  @doc """
-  Returns information about yourself.
-  """
+  @impl true
+  def usage, do: ["memberinfo [member:member]"]
+
+  @impl true
+  def description,
+    do: """
+    Look up information about the given `member`.
+    When no argument is given, shows information about yourself.
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
   def command(msg, "") do
     with {:ok, guild} <- GuildCache.get(msg.guild_id),
          member when member != nil <- Enum.find(guild.members, &(&1.user.id == msg.author.id)) do
@@ -74,13 +89,8 @@ defmodule Bolt.Cogs.MemberInfo do
     end
   end
 
-  @doc """
-  Returns information about the given member.
-  The member given can either be an ID, a mention,
-  a name#discrim combination, a name, or a nickname.
-  """
-  def command(msg, member) do
-    with {:ok, fetched_member} <- Converters.to_member(msg.guild_id, member) do
+  def command(msg, maybe_member) do
+    with {:ok, fetched_member} <- Converters.to_member(msg.guild_id, maybe_member) do
       embed = format_member_info(msg.guild_id, fetched_member)
       {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     else
