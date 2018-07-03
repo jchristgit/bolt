@@ -1,13 +1,14 @@
 defmodule Bolt.Cogs.RoleInfo do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Nostrum.Api
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Snowflake
+  @behaviour Bolt.Command
 
-  @spec format_role_info(Nostrum.Struct.Guild.Role.t()) :: Embed.t()
+  alias Bolt.{Converters, Helpers}
+  alias Nostrum.Api
+  alias Nostrum.Struct.{Embed, Snowflake}
+  alias Nostrum.Struct.Guild.Role
+
+  @spec format_role_info(Role.t()) :: Embed.t()
   defp format_role_info(role) do
     %Embed{
       title: role.name,
@@ -50,6 +51,23 @@ defmodule Bolt.Cogs.RoleInfo do
     }
   end
 
+  @impl true
+  def usage, do: ["roleinfo <role:role>"]
+
+  @impl true
+  def description,
+    do: """
+    Show information about the given role.
+    The role can be given as either by ID, its name, or a role mention.
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
   def command(msg, "") do
     response = "🚫 expected role to lookup as sole argument"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

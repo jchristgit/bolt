@@ -18,16 +18,7 @@ defmodule Bolt.Commander.Server do
     ## Meta Commands
     "guildinfo" => Cogs.GuildInfo,
     "memberinfo" => Cogs.MemberInfo,
-    "roleinfo" => %{
-      callback: &Cogs.RoleInfo.command/2,
-      parser: &Parsers.join/1,
-      help: """
-      Show information about the given role.
-      The role can be given as either a direct role ID, a role mention, or a role name (case-insensitive).
-      """,
-      usage: ["roleinfo <role:role>"],
-      predicates: [&Checks.guild_only/1]
-    },
+    "roleinfo" => Cogs.RoleInfo,
     "roles" => %{
       callback: &Cogs.Roles.command/2,
       parser: &Parsers.join/1,
