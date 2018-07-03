@@ -1,23 +1,17 @@
 defmodule Bolt.Cogs.Infraction.Reason do
   @moduledoc false
 
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
-  alias Nostrum.Struct.User
+  alias Nostrum.Api
+  alias Nostrum.Struct.{Message, User}
 
-  @spec get_response(
-          Nostrum.Struct.Message.t(),
-          integer,
-          String.t()
-        ) :: String.t()
-  def get_response(msg, infraction_id, new_reason) do
-    case Repo.get_by(Infraction, id: infraction_id, guild_id: msg.guild_id) do
-      nil ->
-        "❌ no infraction with the given ID found"
-
-      infraction ->
+  @spec command(Message.t(), [String.t()]) :: String.t()
+  def command(msg, [maybe_id, new_reason]) do
+    response =
+      with {id, _rest} <- Integer.parse(maybe_id),
+           infraction when infraction != nil <-
+             Repo.get_by(Infraction, id: id, guild_id: msg.guild_id) do
         if msg.author.id != infraction.actor_id do
           "🚫 you need to be the infraction creator to do that"
         else
@@ -41,6 +35,19 @@ defmodule Bolt.Cogs.Infraction.Reason do
 
           "👌 updated infraction ##{updated_infraction.id}"
         end
-    end
+      else
+        nil ->
+          "🚫 no infraction with the given ID found on this guild"
+
+        :error ->
+          "🚫 expected an integer (infraction ID to edit), but that is not a valid integer"
+      end
+
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `infr reason <id:int> <new_reason:str...>`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

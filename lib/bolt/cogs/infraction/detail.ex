@@ -5,8 +5,9 @@ defmodule Bolt.Cogs.Infraction.Detail do
   alias Bolt.{Constants, Helpers, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Embed, Message}
+  alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.{Field, Footer}
+  alias Nostrum.Struct.Message
 
   @spec add_specific_fields(Embed.t(), Infraction) :: Embed.t()
   defp add_specific_fields(embed, %Infraction{type: "temprole", data: data}) do
@@ -118,7 +119,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
       {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     else
       nil ->
-        response = "❌ no infraction with the given ID found"
+        response = "🚫 no infraction with the given ID found"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
       :error ->

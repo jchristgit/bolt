@@ -2,46 +2,26 @@ defmodule Bolt.Cogs.Infraction.List do
   @moduledoc false
 
   alias Bolt.Cogs.Infraction.General
-  alias Bolt.Constants
-  alias Bolt.Helpers
-  alias Bolt.Repo
+  alias Bolt.{Constants, Helpers, Paginator, Repo}
   alias Bolt.Schema.Infraction
-  alias Nostrum.Struct.Embed
+  alias Nostrum.Api
+  alias Nostrum.Struct.{Embed, Message}
+  import Ecto.Query, only: [from: 2]
 
-  @spec prepare_for_paginator(
-          Nostrum.Struct.Message.t(),
-          String.t()
-        ) :: {Embed.t(), [Embed.t()]}
-  def prepare_for_paginator(msg, maybe_type) do
-    import Ecto.Query, only: [from: 2]
+  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
+  def command(msg, []) do
+    query =
+      from(
+        infr in Infraction,
+        where: infr.guild_id == ^msg.guild_id,
+        order_by: [desc: infr.inserted_at],
+        select: infr
+      )
 
-    {title, queryset} =
-      case General.emoji_for_type(maybe_type) do
-        "?" ->
-          query =
-            from(
-              infr in Infraction,
-              where: infr.guild_id == ^msg.guild_id,
-              order_by: [desc: infr.inserted_at],
-              select: infr
-            )
-
-          {"All infractions on this guild", Repo.all(query)}
-
-        valid_type ->
-          query =
-            from(
-              infr in Infraction,
-              where: [guild_id: ^msg.guild_id, type: ^valid_type],
-              order_by: [desc: infr.inserted_at],
-              select: infr
-            )
-
-          {"Infractions with type `#{valid_type}` on this guild", Repo.all(query)}
-      end
+    queryset = Repo.all(query)
 
     base_embed = %Embed{
-      title: title,
+      title: "All infractions on this guild",
       color: Constants.color_blue()
     }
 
@@ -60,6 +40,11 @@ defmodule Bolt.Cogs.Infraction.List do
         }
       end)
 
-    {base_embed, formatted_entries}
+    Paginator.paginate_over(msg, base_embed, formatted_entries)
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `infr list`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
