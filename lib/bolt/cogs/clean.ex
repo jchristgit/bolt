@@ -1,14 +1,56 @@
 defmodule Bolt.Cogs.Clean do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Nostrum.Api
+  @behaviour Bolt.Command
 
-  @spec parse([String.t()]) :: {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
-  def parse(arguments) do
+  alias Bolt.{Converters, Helpers}
+  alias Nostrum.Api
+  alias Nostrum.Struct.{Message, Snowflake}
+
+  @impl true
+  def usage, do: ["clean [amount:int=30]", "clean <options...>"]
+
+  @impl true
+  def description,
+    do: """
+    Cleanup messages. The execution of this command can be customized with the following options:
+    `--bots`: Only clean messages authored by bots
+    `--no-bots`: Do not clean any messages authored by bots
+    `--limit <amount:int>`: Specify the limit of messages to delete
+    `--channel <channel:textchannel>`: The channel to delete messages in
+    `--user <user:snowflake|user>`: Only delete messages by this user, can be specified multiple times
+    `--content <content:str>`: Only delete messages containing `content`
+
+    **Examples**:
+    ```rs
+    // delete 30 messages in the current channel (default)
+    clean
+
+    // delete 60 messages in the current channel
+    clean 60
+
+    // delete up to 10 messages by
+    // bots in the current channel
+    clean --bots --limit 10
+
+    // delete up to 30 messages sent
+    // by 197177484792299522 in the #fsharp channel
+    clean --user 197177484792299522 --channel #fsharp
+
+    // delete up to 50 messages containing
+    // "lol no generics" in the #golang channel
+    clean --content "lol no generics" --channel #golang --limit 50
+    ```
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+
+  @impl true
+  def parse_args(args) do
     OptionParser.parse(
-      arguments,
+      args,
       strict: [
         # --bots | --no-bots
         #   clean only bot messages, or exclude bot messages from cleaning
@@ -29,7 +71,7 @@ defmodule Bolt.Cogs.Clean do
     )
   end
 
-  @spec do_prune(Nostrum.Struct.Message.t(), [Nostrum.Struct.Snowflake.t()]) :: no_return()
+  @spec do_prune(Message.t(), [Snowflake.t()]) :: no_return()
   defp do_prune(msg, message_ids) do
     with {:ok} <- Api.bulk_delete_messages(msg.channel_id, message_ids) do
       {:ok} = Api.create_reaction(msg.channel_id, msg.id, "👌")
@@ -43,10 +85,11 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
+  @impl true
   @spec command(
-          Nostrum.Struct.Message.t(),
+          Message.t(),
           {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
-        ) :: {:ok, Nostrum.Struct.Message.t()}
+        ) :: {:ok, Message.t()}
   @doc "Default invocation: `clean`"
   def command(msg, {[], [], []}) do
     case Api.get_channel_messages(msg.channel_id, 30) do
@@ -173,8 +216,7 @@ defmodule Bolt.Cogs.Clean do
       )
   end
 
-  @spec parse_channel(Nostrum.Struct.Message.t(), keyword()) ::
-          {:ok, Nostrum.Struct.Snowflake.t()} | {:error, String.t()}
+  @spec parse_channel(Message.t(), keyword()) :: {:ok, Snowflake.t()} | {:error, String.t()}
   defp parse_channel(msg, options) do
     case options[:channel] do
       nil ->
@@ -189,9 +231,9 @@ defmodule Bolt.Cogs.Clean do
   end
 
   @spec snowflake_or_name_to_snowflake(
-          Nostrum.Struct.Message.t(),
+          Message.t(),
           String.t()
-        ) :: Nostrum.Struct.Snowflake.t() | :error
+        ) :: Snowflake.t() | :error
   defp snowflake_or_name_to_snowflake(msg, maybe_user) do
     case Integer.parse(maybe_user) do
       {value, _remainder} ->
@@ -206,9 +248,9 @@ defmodule Bolt.Cogs.Clean do
   end
 
   @spec parse_users(
-          Nostrum.Struct.Message.t(),
+          Message.t(),
           String.t() | [String.t()]
-        ) :: {:ok, [Nostrum.Struct.Snowflake.t()]} | {:error, String.t()}
+        ) :: {:ok, [Snowflake.t()]} | {:error, String.t()}
   def parse_users(_msg, nil) do
     {:ok, []}
   end
@@ -237,7 +279,7 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  @spec bot_filter(Nostrum.Struct.Message.t(), keyword()) :: boolean()
+  @spec bot_filter(Message.t(), keyword()) :: boolean()
   def bot_filter(msg, options) do
     # if `User.bot` is `nil`, then the user isn't a bot
     is_bot =
@@ -262,13 +304,13 @@ defmodule Bolt.Cogs.Clean do
   end
 
   @spec get_filtered_message_ids(
-          Nostrum.Struct.Message.t(),
+          Message.t(),
           keyword(),
-          Nostrum.Struct.Snowflake.t()
+          Snowflake.t()
         ) ::
           {:ok,
            [
-             Nostrum.Struct.Snowflake.t()
+             Snowflake.t()
            ]}
           | {:error, String.t()}
   defp get_filtered_message_ids(msg, options, channel_id) do

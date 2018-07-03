@@ -33,7 +33,7 @@ defmodule Bolt.Commander do
 
   @spec parse_args(Module.t(), [String.t()]) :: [String.t()] | any()
   defp parse_args(command_module, args) do
-    if Kernel.function_exported?(command_module, :parse_args, 1) do
+    if function_exported?(command_module, :parse_args, 1) do
       command_module.parse_args(args)
     else
       args

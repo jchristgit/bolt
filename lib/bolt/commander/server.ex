@@ -7,7 +7,6 @@ defmodule Bolt.Commander.Server do
 
   alias Bolt.Cogs
   alias Bolt.Commander.Checks
-  alias Bolt.Commander.Parsers
   use GenServer
 
   @commands %{
@@ -28,48 +27,7 @@ defmodule Bolt.Commander.Server do
     "remove" => Cogs.Remove,
 
     ## Moderation Commands
-    "clean" => %{
-      callback: &Cogs.Clean.command/2,
-      parser: &Cogs.Clean.parse/1,
-      help: """
-      Cleanup messages. The execution of this command can be customized with the following options:
-      `--bots`: Only clean messages authored by bots
-      `--no-bots`: Do not clean any messages authored by bots
-      `--limit <amount:int>`: Specify the limit of messages to delete
-      `--channel <channel:textchannel>`: The channel to delete messages in
-      `--user <user:snowflake|user>`: Only delete messages by this user, can be specified multiple times
-      `--content <content:str>`: Only delete messages containing `content`
-
-      **Examples**:
-      ```rs
-      // delete 30 messages in the current channel (default)
-      clean
-
-      // delete 60 messages in the current channel
-      clean 60
-
-      // delete up to 10 messages by
-      // bots in the current channel
-      clean --bots --limit 10
-
-      // delete up to 30 messages sent
-      // by 197177484792299522 in the #fsharp channel
-      clean --user 197177484792299522 --channel #fsharp
-
-      // delete up to 50 messages containing
-      // "lol no generics" in the #golang channel
-      clean --content "lol no generics" --channel #golang --limit 50
-      ```
-      """,
-      usage: [
-        "clean [amount:int=30]",
-        "clean <options...>"
-      ],
-      predicates: [
-        &Checks.guild_only/1,
-        &Checks.can_manage_messages?/1
-      ]
-    },
+    "clean" => Cogs.Clean,
     "note" => %{
       callback: &Cogs.Note.command/2,
       help: """
