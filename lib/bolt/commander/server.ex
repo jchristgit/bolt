@@ -31,25 +31,7 @@ defmodule Bolt.Commander.Server do
     "note" => Cogs.Note,
     "warn" => Cogs.Warn,
     "temprole" => Cogs.Temprole,
-    "kick" => %{
-      callback: &Cogs.Kick.command/2,
-      help: """
-      Kick the given member with an optional reason.
-      An infraction is stored in the infraction database, and can be retrieved later.
-      Requires the `KICK_MEMBERS` permission.
-
-      **Examples**:
-      ```rs
-      // kick Dude without an explicit reason
-      kick @Dude#0001
-
-      // kick Dude with an explicit reason
-      kick @Dude#0001 spamming cats when asked to post ducks
-      ```
-      """,
-      usage: ["kick <user:member> [reason:str...]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_kick_members?/1]
-    },
+    "kick" => Cogs.Kick,
     "tempban" => %{
       callback: &Cogs.Tempban.command/2,
       help: """

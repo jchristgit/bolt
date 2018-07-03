@@ -1,18 +1,38 @@
 defmodule Bolt.Cogs.Kick do
   @moduledoc false
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
-  @spec command(
-          Nostrum.Struct.Message.t(),
-          [String.t() | [String.t()]]
-        ) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["kick <user:member> [reason:str...]"]
+
+  @impl true
+  def description,
+    do: """
+    Kick the given member with an optional reason.
+    An infraction is stored in the infraction database, and can be retrieved later.
+    Requires the `KICK_MEMBERS` permission.
+
+    **Examples**:
+    ```rs
+    // kick Dude without an explicit reason
+    kick @Dude#0001
+
+    // kick Dude with an explicit reason
+    kick @Dude#0001 spamming cats when asked to post ducks
+    ```
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_kick_members?/1]
+
+  @impl true
   def command(msg, [user | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
@@ -50,6 +70,11 @@ defmodule Bolt.Cogs.Kick do
           "❌ error: #{Helpers.clean_content(reason)}"
       end
 
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `kick <user:member> [reason:str...]`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
