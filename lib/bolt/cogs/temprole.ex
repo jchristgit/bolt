@@ -1,18 +1,40 @@
 defmodule Bolt.Cogs.Temprole do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Converters
   alias Bolt.Events.Handler
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Parsers
-  alias Bolt.Repo
+  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["temprole <user:member> <role:role> <duration:duration> [reason:str...]"]
+
+  @impl true
+  def description,
+    do: """
+    Temporarily apply the given role to the given user.
+    An infraction is stored in the infraction database, and can be retrieved later.
+    Requires the `MANAGE_ROLES` permission.
+
+    **Examples**:
+    ```rs
+    // apply the role "Shitposter" to Dude for 24 hours
+    temprole @Dude#0001 Shitposter 24h
+
+    // the same thing, but with a specified reason
+    temprole @Dude#0001 Shitposter 24h spamming pictures
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_roles?/1]
+
+  @impl true
   def command(msg, [user, role, duration | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
@@ -85,7 +107,7 @@ defmodule Bolt.Cogs.Temprole do
   end
 
   def command(msg, _incorrect_args) do
-    response = "🚫 failed to parse arguments, check `help temprole` for details"
+    response = "ℹ️ usage: `temprole <user:member> <role:role> <duration:duration> [reason:str...]`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

@@ -30,25 +30,7 @@ defmodule Bolt.Commander.Server do
     "clean" => Cogs.Clean,
     "note" => Cogs.Note,
     "warn" => Cogs.Warn,
-    "temprole" => %{
-      callback: &Cogs.Temprole.command/2,
-      help: """
-      Temporarily apply the given role to the given user.
-      An infraction is stored in the infraction database, and can be retrieved later.
-      Requires the `MANAGE_ROLES` permission.
-
-      **Examples**:
-      ```rs
-      // apply the role "Shitposter" to Dude for 24 hours
-      temprole @Dude#0001 Shitposter 24h
-
-      // the same thing, but with a specified reason
-      temprole @Dude#0001 Shitposter 24h spamming lol no generics near gophers
-      ```
-      """,
-      usage: ["temprole <user:member> <role:role> <duration:duration> [reason:str...]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
-    },
+    "temprole" => Cogs.Temprole,
     "kick" => %{
       callback: &Cogs.Kick.command/2,
       help: """
