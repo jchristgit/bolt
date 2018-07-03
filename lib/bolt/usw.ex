@@ -26,7 +26,7 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec apply(Nostrum.Struct.Message.t()) :: :ok
+  @spec apply(Nostrum.Struct.Message.t()) :: :noop | :ok
   def apply(msg) do
     query =
       from(
@@ -36,13 +36,15 @@ defmodule Bolt.USW do
       )
 
     case Repo.all(query) do
-      nil ->
-        :ok
+      [] ->
+        :noop
 
       configurations ->
         configurations
         |> Stream.map(&config_to_fn(msg, &1))
         |> Enum.find(:ok, &(&1.() == :action))
+
+        :ok
     end
   end
 
