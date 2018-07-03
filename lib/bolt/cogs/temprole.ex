@@ -28,6 +28,7 @@ defmodule Bolt.Cogs.Temprole do
 
     // the same thing, but with a specified reason
     temprole @Dude#0001 Shitposter 24h spamming pictures
+    ```
     """
 
   @impl true
