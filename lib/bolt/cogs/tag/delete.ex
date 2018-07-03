@@ -1,13 +1,30 @@
 defmodule Bolt.Cogs.Tag.Delete do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
-  alias Nostrum.Struct.Message
 
-  @spec command(Message.t(), String.t()) :: {:ok, Message.t()}
-  def command(msg, [tag_name]) do
+  @impl true
+  def usage, do: ["tag delete <tag_name:str...>"]
+
+  @impl true
+  def description,
+    do: """
+    Deletes the tag with the given `tag_name`.
+    Only the tag author may delete their tag.
+    """
+
+  @impl true
+  def parse_args(args), do: Enum.join(args, " ")
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  def command(msg, tag_name) do
     case Repo.get_by(Tag, name: tag_name, guild_id: msg.guild_id) do
       nil ->
         response = "🚫 no tag named `#{Helpers.clean_content(tag_name)}` found on this guild"
@@ -26,10 +43,5 @@ defmodule Bolt.Cogs.Tag.Delete do
 
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
-  end
-
-  def command(msg, _args) do
-    response = "ℹ️ usage: `tag delete <name:str...>`"
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

@@ -1,12 +1,34 @@
 defmodule Bolt.Cogs.Tag.Create do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
-  alias Nostrum.Struct.Message
 
-  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
+  @impl true
+  def usage, do: ["tag create <name:str> <content:str...>"]
+
+  @impl true
+  def description,
+    do: """
+    Create a new tag with the given name and content. The name must be unique on this guild.
+
+    **Examples**:
+    ```rs
+    // Create a tag named 'Music' with a link as content.
+    .tag create Music www.youtube.com/watch?v=DLzxrzFCyOs
+
+    // Create a tag spanning multiple words with a link as content.
+    .tag create "Radio Ga Ga" www.youtube.com/watch?v=azdwsXLmrHE
+    ```
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
   def command(msg, ["", _content]) do
     {:ok, _msg} = Api.create_message(msg.channel_id, "🚫 tag name must not be empty")
   end

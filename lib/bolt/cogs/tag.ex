@@ -1,33 +1,30 @@
 defmodule Bolt.Cogs.Tag do
   @moduledoc false
 
-  alias Nostrum.Api
-  alias Nostrum.Struct.Message
+  @behaviour Bolt.Command
 
-  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()} | reference()
-  def command(msg, ["create" | args]) do
-    alias Bolt.Cogs.Tag.Create
+  @impl true
+  def usage,
+    do: [
+      "tag <name:str>",
+      "tag create <name:str> <content:str...>",
+      "tag delete <name:str...>",
+      "tag list"
+    ]
 
-    Create.command(msg, args)
-  end
+  @impl true
+  def description,
+    do: """
+    There are two ways to use the `tag` command.
+    For reading tags, simply use `tag <name:str>`, for example `tag music`.
+    For managing tags, check out `help tag <subcommand>`, for example `help tag create`.
+    Valid subcommands are listed above.
+    """
 
-  def command(msg, ["delete" | args]) do
-    alias Bolt.Cogs.Tag.Delete
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
 
-    Delete.command(msg, args)
-  end
-
-  def command(msg, ["list" | args]) do
-    alias Bolt.Cogs.Tag.List
-
-    List.command(msg, args)
-  end
-
-  def command(msg, []) do
-    response = "🚫 at least one argument (subcommand or tag to look up) is required"
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
-  end
-
+  @impl true
   def command(msg, args) do
     alias Bolt.Cogs.Tag.Read
 

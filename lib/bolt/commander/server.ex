@@ -67,37 +67,13 @@ defmodule Bolt.Commander.Server do
       "punish" => Cogs.USW.Punish,
       "escalate" => Cogs.USW.Escalate
     },
+
+    ## Tag database CR[U]D
     "tag" => %{
-      callback: &Cogs.Tag.command/2,
-      help: """
-      Tag manager. Create, read, or delete tags.
-      Tags can be used for displaying commonly used information to your members on-demand.
-
-      **Subcommands**:
-      • `tag <name:str...>`: View the tag with the given name. Case-insensitive.
-      • `tag create <name:str> <content:str...>`: Create a new tag with the given name and content.
-      • `tag delete <name:str...>`: Delete the tag with the given name. Case-sensitive.
-      • `tag list`: List all tags on this guild.
-
-      **Examples**:
-      ```rs
-      // create the tag "music" with some fancy music
-      tag create music www.youtube.com/watch?v=DLzxrzFCyOs
-
-      // view the tag "music"
-      tag music
-
-      // delete the tag "music"
-      tag delete music
-      ```
-      """,
-      usage: [
-        "tag <name:str...>",
-        "tag create <name:str> <content:str...>",
-        "tag delete <name:str...>",
-        "tag list"
-      ],
-      predicates: [&Checks.guild_only/1]
+      "create" => Cogs.Tag.Create,
+      "delete" => Cogs.Tag.Delete,
+      "list" => Cogs.Tag.List,
+      default: Cogs.Tag
     },
 
     ## Bot Management commands

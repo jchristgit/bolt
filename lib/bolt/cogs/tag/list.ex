@@ -1,13 +1,24 @@
 defmodule Bolt.Cogs.Tag.List do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
-  alias Nostrum.Struct.{Embed, Message}
+  alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
 
-  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()} | reference()
+  @impl true
+  def usage, do: ["tag list"]
+
+  @impl true
+  def description, do: "Shows all tags on the current guild."
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
   def command(msg, []) do
     query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag.name)
 
