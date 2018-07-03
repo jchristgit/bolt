@@ -32,25 +32,7 @@ defmodule Bolt.Commander.Server do
     "warn" => Cogs.Warn,
     "temprole" => Cogs.Temprole,
     "kick" => Cogs.Kick,
-    "tempban" => %{
-      callback: &Cogs.Tempban.command/2,
-      help: """
-      Temporarily ban the given user for the given duration with an optional reason.
-      An infraction is stored in the infraction database, and can be retrieved later.
-      Requires the `BAN_MEMBERS` permission.
-
-      **Examples**:
-      ```rs
-      // tempban Dude for 2 days without a reason
-      tempban @Dude#0001 2d
-
-      // the same thing, but with a specified reason
-      tempban @Dude#0001 2d posting cats instead of ducks
-      ```
-      """,
-      usage: ["tempban <user:snowflake|member> <duration:duration> [reason:str...]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
-    },
+    "tempban" => Cogs.Tempban,
     "ban" => %{
       callback: &Cogs.Ban.command/2,
       help: """
