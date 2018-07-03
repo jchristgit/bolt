@@ -2,6 +2,8 @@ defmodule Bolt.Consumer do
   @moduledoc "Consumes events sent by the API gateway."
 
   alias Bolt.Consumer.{
+    ChannelCreate,
+    ChannelDelete,
     GuildBanRemove,
     GuildCreate,
     GuildDelete,
@@ -26,6 +28,14 @@ defmodule Bolt.Consumer do
 
   @impl true
   @spec handle_event(Nostrum.Consumer.event()) :: any()
+  def handle_event({:CHANNEL_CREATE, {new_channel}, _ws_state}) do
+    ChannelCreate.handle(new_channel)
+  end
+
+  def handle_event({:CHANNEL_DELETE, {deleted_channel}, _ws_state}) do
+    ChannelDelete.handle(deleted_channel)
+  end
+
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
     MessageCreate.handle(msg)
   end
