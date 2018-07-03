@@ -6,7 +6,7 @@ defmodule Bolt.Cogs.Warn do
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["warn <user:member> <reason:str...>"]
