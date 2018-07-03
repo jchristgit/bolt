@@ -1,17 +1,17 @@
 defmodule Bolt.Cogs.Lsar do
   @moduledoc false
 
-  alias Bolt.Constants
-  alias Bolt.Converters
-  alias Bolt.Paginator
-  alias Bolt.Repo
+  @behaviour Bolt.Command
+
+  alias Bolt.{Constants, Converters, Paginator, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Footer
   alias Nostrum.Struct.Guild.Role
+  alias Nostrum.Struct.Message
 
-  @spec format_roles(Nostrum.Struct.Message.t(), [Role.t()]) :: [Embed.t()]
+  @spec format_roles(Message.t(), [Role.t()]) :: [Embed.t()]
   defp format_roles(msg, roles) do
     roles
     |> Stream.map(&Integer.to_string/1)
@@ -26,10 +26,17 @@ defmodule Bolt.Cogs.Lsar do
     |> Enum.map(&%Embed{description: Enum.join(&1, "\n")})
   end
 
-  @spec command(
-          Nostrum.Struct.Message.t(),
-          [String.t()]
-        ) :: {:ok, Nostrum.Struct.Message.t()} | reference()
+  @impl true
+  def usage, do: ["lsar"]
+
+  @impl true
+  def description, do: "Shows all self-assignable roles on this guild."
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+
+  @impl true
+  @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()} | reference()
   def command(msg, []) do
     case Repo.get(SelfAssignableRoles, msg.guild_id) do
       nil ->
@@ -52,7 +59,7 @@ defmodule Bolt.Cogs.Lsar do
   end
 
   def command(msg, _args) do
-    response = "🚫 this command accepts no arguments"
+    response = "ℹ️ usage: `lsar`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

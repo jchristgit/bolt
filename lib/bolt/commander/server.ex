@@ -21,26 +21,7 @@ defmodule Bolt.Commander.Server do
     "roleinfo" => Cogs.RoleInfo,
     "roles" => Cogs.Roles,
     "stats" => Cogs.Stats,
-    "lsar" => %{
-      callback: &Cogs.Lsar.command/2,
-      help: """
-      Show all self-assignable roles on this guild.
-      Self-assignable roles are roles that were configured to be assignable by any member on the guild.
-
-      Related commands: `assign`, `remove`, `role allow`, `role deny`.
-
-      **Examples**:
-      ```rs
-      // make the role 'Movie Nighter' self-assignable
-      role allow movie nighter
-
-      // list self-asignable roles, shows 'Movie Nighter'
-      lsar
-      ```
-      """,
-      usage: ["lsar"],
-      predicates: [&Checks.guild_only/1]
-    },
+    "lsar" => Cogs.Lsar,
     "assign" => %{
       callback: &Cogs.Assign.command/2,
       parser: &Parsers.join/1,
