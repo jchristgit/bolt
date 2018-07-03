@@ -33,25 +33,7 @@ defmodule Bolt.Commander.Server do
     "temprole" => Cogs.Temprole,
     "kick" => Cogs.Kick,
     "tempban" => Cogs.Tempban,
-    "ban" => %{
-      callback: &Cogs.Ban.command/2,
-      help: """
-      Ban the given user with an optional reason.
-      An infraction is stored in the infraction database, and can be retrieved later.
-      Requires the `BAN_MEMBERS` permission.
-
-      **Examples**:
-      ```rs
-      // ban Dude without a reason
-      ban @Dude#0001
-
-      // the same thing, but with a reason
-      ban @Dude#0001 too many cat pictures
-      ```
-      """,
-      usage: ["ban <user:snowflake|member> [reason:str]"],
-      predicates: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
-    },
+    "ban" => Cogs.Ban,
     "infraction" => %{
       callback: &Cogs.Infraction.command/2,
       help: """

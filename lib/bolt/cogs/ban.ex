@@ -1,17 +1,41 @@
 defmodule Bolt.Cogs.Ban do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Events.Handler
-  alias Bolt.Helpers
-  alias Bolt.ModLog
-  alias Bolt.Repo
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
+  @impl true
+  def usage, do: ["ban <user:snowflake|member> [reason:str]"]
+
+  @impl true
+  def description,
+    do: """
+    Ban the given user with an optional reason.
+    An infraction is stored in the infraction database, and can be retrieved later.
+    Requires the `BAN_MEMBERS` permission.
+
+    **Examples**:
+    ```rs
+    // ban Dude without a reason
+    ban @Dude#0001
+
+    // the same thing, but with a reason
+    ban @Dude#0001 too many cat pictures
+    ```
+    """
+
+  @impl true
+  def predicates,
+    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_ban_members?/1]
+
   @spec check_tempban(String.t(), User.id(), Nostrum.Struct.Message.t()) :: :ok
-  def check_tempban(base_string, user_id, msg) do
+  defp check_tempban(base_string, user_id, msg) do
     tempban_query =
       from(
         infr in Infraction,
@@ -42,10 +66,7 @@ defmodule Bolt.Cogs.Ban do
     end
   end
 
-  @spec command(
-          Nostrum.Struct.Message.t(),
-          [String.t() | String.t()]
-        ) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
   def command(msg, [user | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
@@ -94,7 +115,7 @@ defmodule Bolt.Cogs.Ban do
   end
 
   def command(msg, _args) do
-    response = "🚫 invalid invocation, view `help ban` for details"
+    response = "ℹ️ usage: `ban <user:snowflake|member> [reason:str...]`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
