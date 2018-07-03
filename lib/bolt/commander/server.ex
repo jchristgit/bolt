@@ -20,11 +20,7 @@ defmodule Bolt.Commander.Server do
     "memberinfo" => Cogs.MemberInfo,
     "roleinfo" => Cogs.RoleInfo,
     "roles" => Cogs.Roles,
-    "stats" => %{
-      callback: &Cogs.Stats.command/2,
-      help: "Show statistics about the bot.",
-      usage: ["stats"]
-    },
+    "stats" => Cogs.Stats,
     "lsar" => %{
       callback: &Cogs.Lsar.command/2,
       help: """

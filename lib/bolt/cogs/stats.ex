@@ -1,16 +1,22 @@
 defmodule Bolt.Cogs.Stats do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Bolt.Constants
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
-  alias Nostrum.Cache.Me
+  alias Nostrum.Cache.{GuildCache, Me}
   alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Embed.Field
-  alias Nostrum.Struct.Embed.Thumbnail
+  alias Nostrum.Struct.Embed.{Field, Thumbnail}
   alias Nostrum.Struct.User
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["stats"]
+
+  @impl true
+  def description, do: "Show general statistics about the bot."
+
+  @impl true
   def command(msg, []) do
     total_guilds = GuildCache.all() |> Enum.count()
     guild_member_counts = GuildCache.select_all(fn guild -> guild.member_count end)
@@ -37,7 +43,7 @@ defmodule Bolt.Cogs.Stats do
   end
 
   def command(msg, _unknown_args) do
-    response = "🚫 this command takes no arguments"
+    response = "ℹ️ usage: `stats`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
