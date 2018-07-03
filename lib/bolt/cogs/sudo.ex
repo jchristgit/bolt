@@ -1,9 +1,26 @@
 defmodule Bolt.Cogs.Sudo do
   @moduledoc false
 
+  @behaviour Bolt.Command
+
   alias Nostrum.Api
 
-  @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
+  @impl true
+  def usage, do: ["sudo ?"]
+
+  @impl true
+  def description,
+    do: """
+    We trust you have received the usual lecture from the local System Administrator. It usually boils down to these three things:
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+    """
+
+  @impl true
+  def predicates, do: [&Bolt.Commander.Checks.is_superuser?/1]
+
+  @impl true
   def command(msg, ["guilds" | args]) do
     alias Bolt.Cogs.Sudo.Guilds
 

@@ -6,7 +6,6 @@ defmodule Bolt.Commander.Server do
   """
 
   alias Bolt.Cogs
-  alias Bolt.Commander.Checks
   use GenServer
 
   @commands %{
@@ -77,17 +76,7 @@ defmodule Bolt.Commander.Server do
     },
 
     ## Bot Management commands
-    "sudo" => %{
-      callback: &Cogs.Sudo.command/2,
-      help: """
-      We trust you have received the usual lecture from the local System Administrator. It usually boils down to these three things:
-      #1) Respect the privacy of others.
-      #2) Think before you type.
-      #3) With great power comes great responsibility.
-      """,
-      usage: ["sudo ?"],
-      predicates: [&Checks.is_superuser?/1]
-    }
+    "sudo" => Cogs.Sudo
   }
 
   @aliases %{
