@@ -40,15 +40,20 @@ Requires the `MANAGE_MESSAGES` permission.
 .infr detail 3
 ```
 
-### `.infr list [type:str]`
-Lists all infractions on this guild. When given a type out of the types listed above, shows only infractions with the given types.
+### `.infr list [--automod|--no-automod]`
+Lists all infractions on this guild.
+When `--no-automod` is given, does not show any infractions created by the automod.
+In contrary, when `--automod` is given, shows only infractions created by the automod.
 Requires the `MANAGE_MESSAGES` permission.
 ```js
 // Show all infractions on this guild.
 .infr list
 
-// Show only temporary bans.
-.infr list tempban
+// Show only infractions created by the automod.
+.infr list --automod
+
+// Do not show any infractions created by the automod.
+.infr list --no-automod
 ```
 
 ### `.infr user <user:snowflake|member...>`

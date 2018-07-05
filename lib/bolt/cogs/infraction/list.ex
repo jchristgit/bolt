@@ -7,6 +7,7 @@ defmodule Bolt.Cogs.Infraction.List do
   alias Bolt.{Constants, Helpers, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
+  alias Nostrum.Cache.Me
   alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
 
@@ -18,6 +19,9 @@ defmodule Bolt.Cogs.Infraction.List do
     do: """
     List all infractions on this guild.
     Requires the `MANAGE_MESSAGES` permission.
+
+    When `--no-automod` is given (e.g. `infr list --no-automod`), does not show any infractions created by the automod.
+    When `--automod` is given, only shows infractions created by the automod.
     """
 
   @impl true
@@ -25,19 +29,60 @@ defmodule Bolt.Cogs.Infraction.List do
     do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
 
   @impl true
-  def command(msg, []) do
-    query =
+  @spec parse_args([String.t()]) :: {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
+  def parse_args(args) do
+    OptionParser.parse(
+      args,
+      strict: [
+        automod: :boolean
+      ]
+    )
+  end
+
+  @impl true
+  def command(msg, {[], [], []}) do
       from(
         infr in Infraction,
         where: infr.guild_id == ^msg.guild_id,
         order_by: [desc: infr.inserted_at],
         select: infr
       )
+      |> respond(msg)
+  end
 
+  @impl true
+  def command(msg, {[automod: true], [], []}) do
+      from(
+        infr in Infraction,
+        where: infr.guild_id == ^msg.guild_id and infr.actor_id == ^Me.get().id,
+        order_by: [desc: infr.inserted_at],
+        select: infr
+      )
+      |> respond(msg, "Infractions on this guild created by automod")
+  end
+
+  @impl true
+  def command(msg, {[automod: false], [], []}) do
+      from(
+        infr in Infraction,
+        where: infr.guild_id == ^msg.guild_id and infr.actor_id != ^Me.get().id,
+        order_by: [desc: infr.inserted_at],
+        select: infr
+      )
+      |> respond(msg, "Infractions on this guild excluding automod")
+  end
+
+  def command(msg, _args) do
+    response = "ℹ️ usage: `infr list [--automod|--no-automod]`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  @spec respond(Ecto.Query.t(), Message.t(), String.t()) :: {:ok, Message.t()}
+  defp respond(query, msg, title \\ "All infractions on this guild") do
     queryset = Repo.all(query)
 
     base_embed = %Embed{
-      title: "All infractions on this guild",
+      title: title,
       color: Constants.color_blue()
     }
 
@@ -57,10 +102,5 @@ defmodule Bolt.Cogs.Infraction.List do
       end)
 
     Paginator.paginate_over(msg, base_embed, formatted_entries)
-  end
-
-  def command(msg, _args) do
-    response = "ℹ️ usage: `infr list`"
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
