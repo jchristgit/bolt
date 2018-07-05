@@ -7,7 +7,7 @@ When a message comes in, Bolt checks for configured filters and applies all of t
 If the message hits one of the limits that were configured on your guild, Bolt will apply the configured punishment.
 Punishment escalation can be enabled to increase the punishment duration on repeated offenders.
 
-**Warning**: Be very careful when configuring filters.
+!> Be very careful when configuring filters.
 An overly strict configuration *will* punish innocent members.
 The filters here contain recommended configuration that generally works well.
 

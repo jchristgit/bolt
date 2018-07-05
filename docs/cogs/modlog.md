@@ -109,6 +109,10 @@ Bolt knows the following events:
 Bolt also includes built-in event explanations, available
 with the `.modlog events` and `.modlog explain <event:str>` commands.
 
+?> It is recommended to at least enable logging for `AUTOMOD`, `BOT_UPDATE`,
+`CONFIG_UPDATE`, `INFRACTION_CREATE`, `INFRACTION_EVENTS` and `INFRACTION_UPDATE`
+to ensure the most important events are logged.
+
 
 ## Commands
 ### `.modlog status`
