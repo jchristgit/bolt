@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.USW.Punish do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, Parsers, Repo}
   alias Bolt.Schema.USWPunishmentConfig
   alias Nostrum.Api
@@ -23,7 +24,7 @@ defmodule Bolt.Cogs.USW.Punish do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
 
   @impl true
   def command(msg, ["temprole", role, duration]) do

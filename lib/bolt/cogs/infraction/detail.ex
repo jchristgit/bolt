@@ -4,6 +4,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
   @behaviour Bolt.Command
 
   alias Bolt.Cogs.Infraction.General
+  alias Bolt.Commander.Checks
   alias Bolt.{Constants, Helpers, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -124,7 +125,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
 
   @impl true
   def command(msg, [maybe_id]) do

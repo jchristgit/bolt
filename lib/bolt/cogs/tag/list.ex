@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Tag.List do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
@@ -16,7 +17,7 @@ defmodule Bolt.Cogs.Tag.List do
   def description, do: "Shows all tags on the current guild."
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @impl true
   def command(msg, []) do

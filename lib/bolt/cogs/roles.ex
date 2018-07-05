@@ -3,8 +3,8 @@ defmodule Bolt.Cogs.Roles do
 
   @behaviour Bolt.Command
 
-  alias Bolt.Constants
-  alias Bolt.Helpers
+  alias Bolt.Commander.Checks
+  alias Bolt.{Constants, Helpers}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
@@ -38,7 +38,7 @@ defmodule Bolt.Cogs.Roles do
     """
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

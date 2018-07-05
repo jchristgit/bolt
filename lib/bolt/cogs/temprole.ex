@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Temprole do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.Converters
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
@@ -33,7 +34,7 @@ defmodule Bolt.Cogs.Temprole do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_roles?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
 
   @impl true
   def command(msg, [user, role, duration | reason_list]) do

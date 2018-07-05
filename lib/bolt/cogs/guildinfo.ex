@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.GuildInfo do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Constants, Helpers}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
@@ -110,7 +111,7 @@ defmodule Bolt.Cogs.GuildInfo do
     """
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @doc """
   Display information about the guild that

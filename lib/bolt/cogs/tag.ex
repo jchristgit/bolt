@@ -3,6 +3,8 @@ defmodule Bolt.Cogs.Tag do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
+
   @impl true
   def usage,
     do: [
@@ -22,7 +24,7 @@ defmodule Bolt.Cogs.Tag do
     """
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @impl true
   def command(msg, args) do

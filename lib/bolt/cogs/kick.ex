@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Kick do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -30,7 +31,7 @@ defmodule Bolt.Cogs.Kick do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_kick_members?/1]
+    do: [&Checks.guild_only/1, &Checks.can_kick_members?/1]
 
   @impl true
   def command(msg, [user | reason_list]) do

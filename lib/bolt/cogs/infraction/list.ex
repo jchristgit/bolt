@@ -4,6 +4,7 @@ defmodule Bolt.Cogs.Infraction.List do
   @behaviour Bolt.Command
 
   alias Bolt.Cogs.Infraction.General
+  alias Bolt.Commander.Checks
   alias Bolt.{Constants, Helpers, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -26,10 +27,11 @@ defmodule Bolt.Cogs.Infraction.List do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
 
   @impl true
-  @spec parse_args([String.t()]) :: {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
+  @spec parse_args([String.t()]) ::
+          {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
   def parse_args(args) do
     OptionParser.parse(
       args,
@@ -41,35 +43,41 @@ defmodule Bolt.Cogs.Infraction.List do
 
   @impl true
   def command(msg, {[], [], []}) do
+    query =
       from(
         infr in Infraction,
         where: infr.guild_id == ^msg.guild_id,
         order_by: [desc: infr.inserted_at],
         select: infr
       )
-      |> respond(msg)
+
+    respond(query, msg)
   end
 
   @impl true
   def command(msg, {[automod: true], [], []}) do
+    query =
       from(
         infr in Infraction,
         where: infr.guild_id == ^msg.guild_id and infr.actor_id == ^Me.get().id,
         order_by: [desc: infr.inserted_at],
         select: infr
       )
-      |> respond(msg, "Infractions on this guild created by automod")
+
+    respond(query, msg, "Infractions on this guild created by automod")
   end
 
   @impl true
   def command(msg, {[automod: false], [], []}) do
+    query =
       from(
         infr in Infraction,
         where: infr.guild_id == ^msg.guild_id and infr.actor_id != ^Me.get().id,
         order_by: [desc: infr.inserted_at],
         select: infr
       )
-      |> respond(msg, "Infractions on this guild excluding automod")
+
+    respond(query, msg, "Infractions on this guild excluding automod")
   end
 
   def command(msg, _args) do

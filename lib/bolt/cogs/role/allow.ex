@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Role.Allow do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
@@ -27,7 +28,7 @@ defmodule Bolt.Cogs.Role.Allow do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_roles?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

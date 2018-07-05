@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Clean do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, ModLog}
   alias Nostrum.Api
   alias Nostrum.Struct.{Message, Snowflake, User}
@@ -45,7 +46,7 @@ defmodule Bolt.Cogs.Clean do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_messages?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
 
   @impl true
   def parse_args(args) do

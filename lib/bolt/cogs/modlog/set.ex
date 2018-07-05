@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.ModLog.Set do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
@@ -22,7 +23,7 @@ defmodule Bolt.Cogs.ModLog.Set do
 
   @impl true
   def predicates,
-    do: [&Bolt.Commander.Checks.guild_only/1, &Bolt.Commander.Checks.can_manage_guild?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
 
   @impl true
   def command(msg, ["all", channel]) do

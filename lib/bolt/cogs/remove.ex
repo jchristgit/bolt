@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Remove do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
@@ -26,7 +27,7 @@ defmodule Bolt.Cogs.Remove do
     """
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

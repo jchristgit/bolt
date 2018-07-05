@@ -3,13 +3,11 @@ defmodule Bolt.Cogs.MemberInfo do
 
   @behaviour Bolt.Command
 
-  alias Bolt.Converters
-  alias Bolt.Helpers
+  alias Bolt.Commander.Checks
+  alias Bolt.{Converters, Helpers}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Snowflake
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Embed, Snowflake, User}
   use Timex
 
   @spec format_member_info(Nostrum.Struct.Snowflake.t(), Guild.Member.t()) :: Nostrum.Embed.t()
@@ -67,7 +65,7 @@ defmodule Bolt.Cogs.MemberInfo do
     """
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

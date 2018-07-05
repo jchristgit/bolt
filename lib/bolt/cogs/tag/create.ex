@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.Tag.Create do
 
   @behaviour Bolt.Command
 
+  alias Bolt.Commander.Checks
   alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
@@ -26,7 +27,7 @@ defmodule Bolt.Cogs.Tag.Create do
     """
 
   @impl true
-  def predicates, do: [&Bolt.Commander.Checks.guild_only/1]
+  def predicates, do: [&Checks.guild_only/1]
 
   @impl true
   def command(msg, ["", _content]) do

@@ -9,12 +9,30 @@ defmodule Bolt.USW.Escalator do
     Agent.start_link(fn -> %{} end, options)
   end
 
+  @spec maybe_cancel_timer(reference(), Map.t()) :: {Map.t(), {non_neg_integer(), reference()}}
+  defp maybe_cancel_timer(timer_reference, settings) do
+    case settings do
+      {level, timer} ->
+        {:ok, :cancel} = :timer.cancel(timer)
+
+        if level == nil do
+          {settings, {1, timer_reference}}
+        else
+          {settings, {level + 1, timer_reference}}
+        end
+
+      nil ->
+        {nil, {1, timer_reference}}
+    end
+  end
+
   @spec bump(User.id(), Calendar.millisecond()) :: {:ok, reference()}
   def bump(user_id, expire_after) do
     Agent.update(
       __MODULE__,
-      &(Map.get_and_update(
-          &1,
+      fn state ->
+        state
+        |> Map.get_and_update(
           user_id,
           fn settings ->
             {:ok, timer_reference} =
@@ -25,22 +43,11 @@ defmodule Bolt.USW.Escalator do
                 [user_id]
               )
 
-            case settings do
-              {level, timer} ->
-                {:ok, :cancel} = :timer.cancel(timer)
-
-                if level == nil do
-                  {settings, {1, timer_reference}}
-                else
-                  {settings, {level + 1, timer_reference}}
-                end
-
-              nil ->
-                {nil, {1, timer_reference}}
-            end
+            maybe_cancel_timer(timer_reference, settings)
           end
         )
-        |> elem(1))
+        |> elem(1)
+      end
     )
   end
 
