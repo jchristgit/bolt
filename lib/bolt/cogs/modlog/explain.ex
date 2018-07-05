@@ -27,6 +27,9 @@ defmodule Bolt.Cogs.ModLog.Explain do
     For example, the `temprole` will log to this event when a temporary role is applied, and when the role is removed again.
     """,
 
+    ## COMMAND EVENTS
+    "MESSAGE_CLEAN" => "Emitted when a moderator invokes `clean`. Attaches the deleted messages.",
+
     ## GATEWAY EVENTS
     "MESSAGE_EDIT" => """
     Emitted when a message is edited. Includes a link to the message in question.

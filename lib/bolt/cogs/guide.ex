@@ -70,6 +70,7 @@ defmodule Bolt.Cogs.Guide do
       • `INFRACTION_CREATE`: an infraction was created
       • `INFRACTION_UPDATE`: an infraction was updated
       • `INFRACTION_EVENTS`: the bot did something based on an infraction
+      • `MESSAGE_CLEAN`: a moderator ran the `clean` command, includes the deleted messages
       Infractions will be explained in detail on the next page.
       """
     },

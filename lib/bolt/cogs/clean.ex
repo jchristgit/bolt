@@ -3,9 +3,9 @@ defmodule Bolt.Cogs.Clean do
 
   @behaviour Bolt.Command
 
-  alias Bolt.{Converters, Helpers}
+  alias Bolt.{Converters, Helpers, ModLog}
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, Snowflake}
+  alias Nostrum.Struct.{Message, Snowflake, User}
 
   @impl true
   def usage, do: ["clean [amount:int=30]", "clean <options...>"]
@@ -73,6 +73,8 @@ defmodule Bolt.Cogs.Clean do
 
   @spec do_prune(Message.t(), [Snowflake.t()]) :: no_return()
   defp do_prune(msg, message_ids) do
+    message_ids = Enum.reject(message_ids, &(&1 == msg.id))
+
     with {:ok} <- Api.bulk_delete_messages(msg.channel_id, message_ids) do
       {:ok} = Api.create_reaction(msg.channel_id, msg.id, "👌")
     else
@@ -83,6 +85,27 @@ defmodule Bolt.Cogs.Clean do
             "❌ can't fetch channel messages or delete messages: #{message} (status #{status})"
           )
     end
+  end
+
+  @spec log_deleted(Message.t(), [Message.t()]) :: ModLog.on_emit()
+  defp log_deleted(invocation_message, messages) do
+    log_content =
+      messages
+      |> Enum.map(
+        &"#{String.pad_leading(&1.author.username, 20)}##{&1.author.discriminator}: #{&1.content}"
+      )
+      |> Enum.join("\n")
+
+    ModLog.emit(
+      invocation_message.guild_id,
+      "MESSAGE_CLEAN",
+      "#{User.full_name(invocation_message.author)} (`#{invocation_message.author.id}`) deleted" <>
+        " #{length(messages)} messages in <##{invocation_message.channel_id}>",
+      file: %{
+        name: "deleted_messages.log",
+        body: log_content
+      }
+    )
   end
 
   @impl true
@@ -102,6 +125,7 @@ defmodule Bolt.Cogs.Clean do
 
       {:ok, messages} ->
         do_prune(msg, Enum.map(messages, & &1.id))
+        log_deleted(msg, messages)
 
       {:error, %{status_code: status, message: %{"message" => message}}} ->
         {:ok, _msg} =
@@ -121,6 +145,7 @@ defmodule Bolt.Cogs.Clean do
              amount
            ) do
       do_prune(msg, Enum.map(messages, & &1.id))
+      log_deleted(msg, messages)
     else
       :error ->
         {:ok, _msg} =
@@ -172,13 +197,14 @@ defmodule Bolt.Cogs.Clean do
   @doc "Invocation with only options, e.g. `clean --bots --limit 40`"
   def command(msg, {options, [], []}) when options != [] do
     with {:ok, channel_id} <- parse_channel(msg, options),
-         {:ok, message_ids} <-
-           get_filtered_message_ids(
+         {:ok, messages} <-
+           get_filtered_messages(
              msg,
              options,
              channel_id
            ) do
-      do_prune(msg, message_ids)
+      do_prune(msg, Enum.map(messages, & &1.id))
+      log_deleted(msg, messages)
     else
       {:error, %{message: %{"limit" => errors}, status_code: status}} ->
         {:ok, _msg} =
@@ -303,17 +329,17 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  @spec get_filtered_message_ids(
+  @spec get_filtered_messages(
           Message.t(),
           keyword(),
-          Snowflake.t()
+          Channel.id()
         ) ::
           {:ok,
            [
-             Snowflake.t()
+             Message.t()
            ]}
           | {:error, String.t()}
-  defp get_filtered_message_ids(msg, options, channel_id) do
+  defp get_filtered_messages(msg, options, channel_id) do
     limit = Keyword.get(options, :limit, 30)
 
     # Since the command invocation is excluded from the prune,
@@ -344,13 +370,12 @@ defmodule Bolt.Cogs.Clean do
       # scanning through all messages? If yes, only return messages
       # authored by the filtered users. otherwise, return all
       if Enum.empty?(users) do
-        {:ok, Enum.map(to_delete, & &1.id)}
+        {:ok, to_delete}
       else
         {
           :ok,
           to_delete
           |> Enum.filter(&(&1.author.id in users))
-          |> Enum.map(& &1.id)
         }
       end
     else

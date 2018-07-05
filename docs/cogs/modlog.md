@@ -43,6 +43,12 @@ Bolt knows the following events:
   For example, the `temprole` command will cause Bolt to log when it
   removes the temporary role from a user (or if that fails for some reason).
 
+- `MESSAGE_CLEAN`
+
+  Emitted when a moderator (specifically, someone with the `MANAGE_MESSAGES` permission)
+  invokes the [`clean`](cogs/moderation#clean) command. Includes a file with a log of the
+  messages that were deleted.
+
 - `CHANNEL_CREATE`
 
   Emitted when a new channel is created.
