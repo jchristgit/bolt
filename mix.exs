@@ -26,11 +26,11 @@ defmodule Bolt.MixProject do
   defp deps do
     [
       {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
-      {:ecto, "~> 2.2.10"},
-      {:postgrex, "~> 0.13.5"},
+      {:ecto, "~> 2.2"},
+      {:postgrex, "~> 0.13"},
       {:timex, "~> 3.1"},
-      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.2", only: :dev, runtime: false},
+      {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test, runtime: false}
     ]
   end
