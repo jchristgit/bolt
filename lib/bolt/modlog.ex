@@ -41,7 +41,15 @@ defmodule Bolt.ModLog do
     with %ModLogConfig{channel_id: channel_id} <-
            Repo.get_by(ModLogConfig, guild_id: guild_id, event: event),
          false <- Silencer.is_silenced?(guild_id) do
-      opts = Keyword.put(opts, :content, content)
+      event_emoji = Map.get(@event_emoji, event, "?")
+
+      opts =
+        if content != "" do
+          Keyword.put(opts, :content, "#{event_emoji} #{content}")
+        else
+          opts
+        end
+
       Api.create_message(channel_id, opts)
     else
       _err -> :noop
