@@ -36,6 +36,9 @@ defmodule Bolt.Schema.ModLogConfig do
       # infraction events emitted through e.g. `tempban`
       "INFRACTION_EVENTS",
 
+      ## COMMAND EVENTS
+      "MESSAGE_CLEAN",
+
       ## GATEWAY EVENTS
       # channel created
       "CHANNEL_CREATE",
