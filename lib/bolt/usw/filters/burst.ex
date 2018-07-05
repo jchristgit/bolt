@@ -16,8 +16,8 @@ defmodule Bolt.USW.Filters.Burst do
       |> Snowflake.from_datetime!()
 
     relevant_messages =
-      msg.channel_id
-      |> MessageCache.recent_in_channel()
+      msg.guild_id
+      |> MessageCache.recent_in_guild()
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
       |> Stream.filter(&(&1.author_id == msg.author.id))
       |> Enum.take(count)
