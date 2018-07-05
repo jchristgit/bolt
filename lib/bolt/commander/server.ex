@@ -76,7 +76,10 @@ defmodule Bolt.Commander.Server do
     },
 
     ## Bot Management commands
-    "sudo" => Cogs.Sudo
+    "sudo" => Cogs.Sudo,
+
+    ## Easter eggs
+    "ed" => Cogs.Ed
   }
 
   @aliases %{
