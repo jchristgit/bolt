@@ -22,7 +22,7 @@ defmodule Bolt.Cogs.Tag.Read do
       nil ->
         close_matches =
           guild_tags
-          |> Enum.filter(&(String.jaro_distance(&1.name, name) > 0.3))
+          |> Enum.filter(&(String.jaro_distance(&1.name, name) > 0.6))
 
         response =
           if close_matches == [] do
