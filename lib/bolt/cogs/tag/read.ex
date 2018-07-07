@@ -63,4 +63,12 @@ defmodule Bolt.Cogs.Tag.Read do
         {:ok, _msg} = Api.create_message(msg.channel_id, embed: response)
     end
   end
+
+  def command(msg, _args) do
+    response =
+      "ℹ usage: `tag <name:str>` or `tag <subcommand>" <>
+        " [args...]`, see `help tag` for details"
+
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
 end
