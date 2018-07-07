@@ -54,15 +54,24 @@ defmodule Bolt.Commander do
 
   @spec handle_command(Map.t() | Module.t(), Message.t(), [String.t()]) ::
           :ignored | {:ok, Message.t()} | any()
-  defp handle_command(command_map, msg, [subcommand | args]) when is_map(command_map) do
-    case Map.fetch(command_map, subcommand) do
+  defp handle_command(command_map, msg, original_args) when is_map(command_map) do
+    maybe_subcommand = List.first(original_args)
+
+    case Map.fetch(command_map, maybe_subcommand) do
       {:ok, subcommand_module} ->
+        # If we have at least one subcommand, that means `original_args`
+        # needs to at least contain one element, so `args` is either empty
+        # or the rest of the arguments excluding the subcommand name.
+        [_subcommand | args] = original_args
         invoke(subcommand_module, msg, args)
 
       :error ->
+        # Does the command group have a default command to invoke?
         if Map.has_key?(command_map, :default) do
-          invoke(command_map.default, msg, args)
+          # If yes, invoke it with all arguments.
+          invoke(command_map.default, msg, original_args)
         else
+          # Otherwise, respond with all known subcommands in the command group.
           subcommand_string =
             command_map |> Map.keys() |> Stream.map(&"`#{&1}`") |> Enum.join(", ")
 
