@@ -31,6 +31,15 @@ Deletes the tag with the given name (case-sensitive). Only the tag author can de
 .tag delete Music
 ```
 
+### `.tag info <name:str...>`
+Shows detailed information for the tag with the given name (case-insensitive), such as the creator and creation / modification timestamps.
+```js
+// Show information about the 'Music' tag.
+.tag info music
+```
+
+?> Added in version 0.3.0.
+
 ### `.tag list`
 Lists all tags on the current guild.
 ```js
@@ -45,3 +54,5 @@ The extension `.md` is used to indicate that it's written in Markdown.
 // Get a file with the contents of the 'Music' tag.
 .tag raw music
 ```
+
+?> Added in version 0.3.0.

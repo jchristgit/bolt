@@ -71,6 +71,7 @@ defmodule Bolt.Commander.Server do
     "tag" => %{
       "create" => Cogs.Tag.Create,
       "delete" => Cogs.Tag.Delete,
+      "info" => Cogs.Tag.Info,
       "list" => Cogs.Tag.List,
       "raw" => Cogs.Tag.Raw,
       default: Cogs.Tag

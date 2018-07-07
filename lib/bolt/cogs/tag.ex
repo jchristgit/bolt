@@ -11,6 +11,7 @@ defmodule Bolt.Cogs.Tag do
       "tag <name:str>",
       "tag create <name:str> <content:str...>",
       "tag delete <name:str...>",
+      "tag info <name:str...>",
       "tag list",
       "tag raw <name:str...>"
     ]
