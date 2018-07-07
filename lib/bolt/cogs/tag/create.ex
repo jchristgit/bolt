@@ -54,8 +54,13 @@ defmodule Bolt.Cogs.Tag.Create do
           "👌 created the tag `#{Helpers.clean_content(name)}`"
 
         {:error, changeset} ->
-          errors = Helpers.format_changeset_errors(changeset)
-          "🚫 invalid arguments: \n#{Helpers.clean_content(errors)}"
+          errors =
+            changeset
+            |> Helpers.format_changeset_errors()
+            |> Enum.join("\n")
+            |> Helpers.clean_content()
+
+          "🚫 invalid arguments: \n#{errors}"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
