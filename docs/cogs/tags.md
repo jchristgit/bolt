@@ -37,3 +37,11 @@ Lists all tags on the current guild.
 // Show all tags on the current guild.
 .tag list
 ```
+
+### `.tag raw <name:str...>`
+Returns the contents of the tag named `name` (case-insensitive) as a file.
+The extension `.md` is used to indicate that it's written in Markdown.
+```js
+// Get a file with the contents of the 'Music' tag.
+.tag raw music
+```

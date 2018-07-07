@@ -69,3 +69,4 @@ If you're new here or simply need a refresher, check out [Documentation syntax](
       * [`.tag create`](cogs/tags#tag-create-ltnamestrgt-ltcontentstrgt)
       * [`.tag delete`](cogs/tags#tag-delete-ltnamestrgt)
       * [`.tag list`](cogs/tags#tag-list)
+      * [`.tag raw`](cogs/tags#tag-raw-ltnamestrgt)
