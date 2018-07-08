@@ -8,7 +8,7 @@ defmodule Bolt.Consumer.MessageUpdate do
   @spec handle(Nostrum.Struct.Message.t()) :: :ok
   def handle(msg) do
     unless Map.get(msg, :content, "") == "" do
-      from_cache = MessageCache.get(msg.channel_id, msg.id)
+      from_cache = MessageCache.get(msg.guild_id, msg.id)
 
       embed = %Embed{
         author: %Author{
@@ -48,11 +48,7 @@ defmodule Bolt.Consumer.MessageUpdate do
         ]
       }
 
-      ModLog.emit(
-        msg.guild_id,
-        "MESSAGE_EDIT",
-        embed
-      )
+      ModLog.emit_embed(msg.guild_id, "MESSAGE_EDIT", embed)
 
       MessageCache.update(msg)
     end

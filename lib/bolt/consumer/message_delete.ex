@@ -7,7 +7,7 @@ defmodule Bolt.Consumer.MessageDelete do
   @spec handle(Channel.id(), Guild.id(), Message.id()) :: {:ok, Message.t()}
   def handle(channel_id, guild_id, msg_id) do
     content =
-      case MessageCache.get(channel_id, msg_id) do
+      case MessageCache.get(guild_id, msg_id) do
         nil -> "*unknown, message not in cache*"
         cached_msg -> String.slice(cached_msg.content, 0..1020)
       end
@@ -32,10 +32,6 @@ defmodule Bolt.Consumer.MessageDelete do
       ]
     }
 
-    ModLog.emit(
-      guild_id,
-      "MESSAGE_DELETE",
-      embed
-    )
+    ModLog.emit_embed(guild_id, "MESSAGE_DELETE", embed)
   end
 end
