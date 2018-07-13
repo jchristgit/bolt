@@ -3,6 +3,7 @@
 use Mix.Config
 
 config :bolt,
+  base_doc_url: System.get_env("BASE_DOC_URL"),
   botlog_channel: System.get_env("BOTLOG_CHANNEL"),
   ecto_repos: [Bolt.Repo],
   prefix: System.get_env("BOT_PREFIX") || ".",

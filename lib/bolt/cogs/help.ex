@@ -50,8 +50,18 @@ defmodule Bolt.Cogs.Help do
         |> Map.keys()
         |> Stream.map(&"`#{@prefix}#{&1}`")
         |> (fn commands ->
-              "#{Enum.join(commands, ", ")}\n\nConfused by this? Check out `#{@prefix}guide`."
+              """
+              #{Enum.join(commands, ", ")}
+
+              Want a full introduction? Check out `#{@prefix}guide`.
+              You can also join [bolt's server here](https://discord.gg/5REguKf).
+              """
             end).(),
+      footer: %Embed.Footer{
+        text:
+          "Online documentation: " <> Application.get_env(:bolt, :base_doc_url) ||
+            "(not set on this instance)"
+      },
       color: Constants.color_blue()
     }
 
