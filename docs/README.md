@@ -2,9 +2,11 @@
 
 # Bolt
 Bolt is a Discord guild moderation bot which focuses on helping manage medium to large communities at ease.
-This website contains the usage documentation for Bolt. 
+This website contains the usage documentation for Bolt.
 Whether you want to set it up on your guild or just want to look up certain things, you've come to the right place.
 If you're new here or simply need a refresher, check out [Documentation syntax](documentation_syntax).
+
+For support, suggestions, criticism or just casual chatter, feel free to join the [official Discord server](https://discord.gg/5REguKf).
 
 ## Table of Contents
 * [Documentation syntax](documentation_syntax)
