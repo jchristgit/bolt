@@ -18,7 +18,8 @@ defmodule Bolt.ModLog do
     "GUILD_MEMBER_ADD" => "📥",
     "GUILD_MEMBER_REMOVE" => "📤",
     "MESSAGE_EDIT" => "🖊",
-    "MESSAGE_DELETE" => "🗑"
+    "MESSAGE_DELETE" => "🗑",
+    "MESSAGE_CLEAN" => "🗑"
   }
 
   @typedoc "The return type used by `emit`. Set as a type for convenience."
