@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.0
+- added the `DUPLICATES` USW filter
+
 ## v0.3.2
 - `kick` now respects role hierarchy restrictions
 - `tempban` now respects role hierarchy restrictions

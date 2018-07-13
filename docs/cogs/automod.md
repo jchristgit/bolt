@@ -20,6 +20,15 @@ The filters here contain recommended configuration that generally works well.
   *5* messages sent by the same user within *10* seconds before applying
   the configured punishment. **Recommended configuration**: *5* messages per *5* seconds.
 
+- `DUPLICATES`
+
+  The `DUPLICATES` filter checks for messages with equal content
+  sent by multiple users. For example, configuration set with
+  `.usw set DUPLICATES 5 20` will allow *5* duplicated messages sent
+  within *20* seconds. Punishment will apply on any user who
+  sent at least a single duplicated message.
+  **Recommended configuration**: *4* messages per *20* seconds.
+
 
 ## Punishments
 - `temprole <role:role> <duration:duration>`
@@ -57,6 +66,9 @@ Requires the `MANAGE_GUILD` permission.
 ```js
 // Activate the `BURST` filter to allow 5 messages during 10 seconds.
 .usw set BURST 5 10
+
+// Activate the `DUPLICATES` filter to allow 4 duplicated messages during 20 seconds.
+.us set DUPLICATES 4 20
 ```
 
 

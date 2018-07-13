@@ -5,7 +5,7 @@ defmodule Bolt.USW do
   alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
   alias Bolt.USW.{Deduplicator, Escalator}
-  alias Bolt.USW.Filters.{Burst}
+  alias Bolt.USW.Filters.{Burst, Duplicates}
   alias Nostrum.Api
   alias Nostrum.Cache.Me
   alias Nostrum.Struct.User
@@ -16,6 +16,8 @@ defmodule Bolt.USW do
           (Nostrum.Struct.Message.t(), non_neg_integer(), non_neg_integer() ->
              :action | :passthrough)
   defp filter_to_fn(%USWFilterConfig{filter: "BURST"}), do: &Burst.apply/3
+
+  defp filter_to_fn(%USWFilterConfig{filter: "DUPLICATES"}), do: &Duplicates.apply/3
 
   @spec config_to_fn(Nostrum.Struct.Message.t(), USWFilterConfig) ::
           (() -> :action | :passthrough)
