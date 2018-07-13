@@ -59,8 +59,8 @@ defmodule Bolt.Cogs.Help do
             end).(),
       footer: %Embed.Footer{
         text:
-          "Online documentation: " <> Application.get_env(:bolt, :base_doc_url) ||
-            "(not set on this instance)"
+          "Online documentation: " <>
+            "#{Application.get_env(:bolt, :base_doc_url, "(not set on this instance)")}"
       },
       color: Constants.color_blue()
     }
