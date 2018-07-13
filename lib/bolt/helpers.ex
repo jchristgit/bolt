@@ -189,7 +189,7 @@ defmodule Bolt.Helpers do
     else
       _err ->
         {:error,
-         "🚫 you need to be above the target" <>
+         "you need to be above the target" <>
            " user in the role hierarchy to run that," <> " that, but you don't have any roles"}
     end
   end
