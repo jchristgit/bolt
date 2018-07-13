@@ -8,6 +8,7 @@ defmodule Bolt.Cogs.Kick do
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
+  require Logger
 
   @impl true
   def usage, do: ["kick <user:member> [reason:str...]"]
@@ -38,6 +39,7 @@ defmodule Bolt.Cogs.Kick do
     response =
       with reason <- Enum.join(reason_list, " "),
            {:ok, member} <- Converters.to_member(msg.guild_id, user),
+           {:ok, true} <- Helpers.is_above(msg.guild_id, msg.author.id, member.user.id),
            {:ok} <- Api.remove_guild_member(msg.guild_id, member.user.id),
            infraction <- %{
              type: "kick",
@@ -64,11 +66,22 @@ defmodule Bolt.Cogs.Kick do
           response
         end
       else
+        {:ok, false} ->
+          "🚫 you need to be above the target user in the role hierarchy"
+
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           "❌ API error: #{reason} (status code `#{status}`)"
 
-        {:error, reason} ->
+        {:error, reason} when is_bitstring(reason) ->
           "❌ error: #{Helpers.clean_content(reason)}"
+
+        error ->
+          Logger.error(fn ->
+            "unknown error in `kick` command, original" <>
+              " message: #{inspect(msg)}, error: #{inspect(error)}"
+          end)
+
+          "❌ some unknown error occurred, try again later"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

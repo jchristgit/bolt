@@ -10,6 +10,7 @@ defmodule Bolt.Cogs.Ban do
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
+  require Logger
 
   @impl true
   def usage, do: ["ban <user:snowflake|member> [reason:str]"]
@@ -72,6 +73,7 @@ defmodule Bolt.Cogs.Ban do
     response =
       with reason <- Enum.join(reason_list, " "),
            {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
+           {:ok, true} <- Helpers.is_above(msg.guild_id, msg.author.id, user_id),
            {:ok} <- Api.create_guild_ban(msg.guild_id, user_id, 7),
            infraction <- %{
              type: "ban",
@@ -105,11 +107,22 @@ defmodule Bolt.Cogs.Ban do
 
         check_tempban(base_string, user_id, msg)
       else
+        {:ok, false} ->
+          "🚫 you need to be above the target user in the role hierarchy"
+
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           "❌ API error: #{reason} (status code `#{status}`)"
 
-        {:error, reason} ->
+        {:error, reason} when is_bitstring(reason) ->
           "❌ error: #{Helpers.clean_content(reason)}"
+
+        error ->
+          Logger.error(fn ->
+            "unknown error in `ban` command, original" <>
+              " message: #{inspect(msg)}, error: #{inspect(error)}"
+          end)
+
+          "❌ some unknown error occurred, try again later"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

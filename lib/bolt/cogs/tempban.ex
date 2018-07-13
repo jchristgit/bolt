@@ -10,6 +10,7 @@ defmodule Bolt.Cogs.Tempban do
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
+  require Logger
 
   @impl true
   def usage, do: ["tempban <user:snowflake|member> <duration:duration> [reason:str...]"]
@@ -40,6 +41,7 @@ defmodule Bolt.Cogs.Tempban do
     response =
       with reason <- Enum.join(reason_list, " "),
            {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
+           {:ok, true} <- Helpers.is_above(msg.guild_id, msg.author.id, user_id),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            query <-
              from(
@@ -85,15 +87,25 @@ defmodule Bolt.Cogs.Tempban do
           response
         end
       else
+        {:ok, false} ->
+          "🚫 you need to be above the target user in the role hierarchy"
+
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
           "❌ API error: #{reason} (status code `#{status}`)"
 
-        {:error, reason} ->
-          "❌ error: #{reason}"
+        {:error, reason} when is_bitstring(reason) ->
+          "❌ error: #{Helpers.clean_content(reason)}"
 
         [{existing_id, existing_expiry}] ->
           "❌ there already is a tempban for that member under ID" <>
             " ##{existing_id} which will expire on " <> Helpers.datetime_to_human(existing_expiry)
+
+        error ->
+          Logger.error(fn ->
+            "some unknown error occurred in #{inspect(msg)}, error: #{inspect(error)}"
+          end)
+
+          "❌ unknown error occurred, try again later"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

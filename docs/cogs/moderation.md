@@ -42,6 +42,8 @@ Requires the `KICK_MEMBERS` permission.
 .kick @Guy complaining about repeated punishments to write documentation
 ```
 
+?> Changed in version [`0.3.2`](changelog#v031): Now respects role hierarchy restrictions.
+
 ### `.tempban <user:snowflake|member> <duration:duration> [reason:str...]`
 Temporarily bans the given user with an optional reason. Bolt will remove the ban after the given duration.
 An infraction will be created and stored in the infraction database.
@@ -58,6 +60,8 @@ Requires the `BAN_MEMBERS` permission.
 .tempban @Guy 2d escalation from previous kick
 ```
 
+?> Changed in version [`0.3.2`](changelog#v031): Now respects role hierarchy restrictions.
+
 ### `.ban <user:snowflake|member> [reason:str...]`
 Bans the given user with an optional reason.
 An infraction will be created and stored in the infraction database.
@@ -73,6 +77,8 @@ Requires the `BAN_MEMBERS` permission.
 // Same as above, but provide a reason.
 .ban @Guy repeated spamming after multiple warnings
 ```
+
+?> Changed in version [`0.3.2`](changelog#v031): Now respects role hierarchy restrictions.
 
 ### `.clean`
 Deletes a bunch of messages at once.

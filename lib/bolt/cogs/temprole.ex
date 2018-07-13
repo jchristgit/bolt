@@ -91,6 +91,9 @@ defmodule Bolt.Cogs.Temprole do
           response
         end
       else
+        {:ok, false} ->
+          "🚫 you need to be above the target user in the role hierarchy"
+
         {:error, %{message: %{"message" => reason}, status_code: status}} ->
           "❌ API error: #{reason} (status code `#{status}`)"
 

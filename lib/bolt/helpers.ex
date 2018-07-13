@@ -4,6 +4,10 @@ defmodule Bolt.Helpers do
   alias Bolt.Converters
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
+  alias Nostrum.Struct.Guild
+  alias Nostrum.Struct.Guild.{Member, Role}
+  alias Nostrum.Struct.User
+  require Logger
   use Timex
 
   @doc """
@@ -37,9 +41,9 @@ defmodule Bolt.Helpers do
 
   @doc "Try to return a member of the given guild ID with the given author ID."
   @spec get_member(
-          Nostrum.Struct.Snowflake.t(),
-          Nostrum.Struct.Snowflake.t()
-        ) :: {:ok, Nostrum.Struct.Guild.Member.t()} | {:error, String.t()}
+          Guild.id(),
+          User.id()
+        ) :: {:ok, Member.t()} | {:error, String.t()}
   def get_member(guild_id, author_id) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
@@ -71,9 +75,9 @@ defmodule Bolt.Helpers do
   end
 
   @spec find_role(
-          [Nostrum.Struct.Guild.Role.t()],
-          [Nostrum.Struct.Guild.Role.t()]
-        ) :: {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+          [Role.t()],
+          [Snowflake.id()]
+        ) :: {:ok, Role.t()} | {:error, String.t()}
   defp find_role(guild_roles, member_roles) do
     role_match =
       guild_roles
@@ -88,9 +92,9 @@ defmodule Bolt.Helpers do
 
   @doc "Returns the top role for the given member ID on the given guild, representative for permissions on the given guild ID."
   @spec top_role_for(
-          Nostrum.Struct.Snowflake.t(),
-          Nostrum.Struct.Snowflake.t()
-        ) :: {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+          Guild.id(),
+          User.id()
+        ) :: {:ok, Role.t()} | {:error, String.t()}
   def top_role_for(guild_id, member_id) do
     with {:ok, member} <- get_member(guild_id, member_id) do
       case GuildCache.get(guild_id) do
@@ -107,7 +111,7 @@ defmodule Bolt.Helpers do
           end
       end
     else
-      {:error, reason} -> {:error, reason}
+      {:error, _reason} = error -> error
     end
   end
 
@@ -122,12 +126,12 @@ defmodule Bolt.Helpers do
   end
 
   @doc "Convert text into either a raw snowflake or a snowflake + member."
-  @spec into_id(Nostrum.Struct.Snowflake.t(), String.t()) ::
-          {:ok, Nostrum.Struct.Snowflake.t(), Nostrum.Struct.User.t() | nil}
+  @spec into_id(Guild.id(), String.t()) ::
+          {:ok, User.id(), User.t() | nil}
           | {:error, String.t()}
   def into_id(guild_id, text) do
     case Integer.parse(text) do
-      {value, _} ->
+      {value, ""} ->
         {:ok, value, nil}
 
       :error ->
@@ -157,5 +161,36 @@ defmodule Bolt.Helpers do
     error_map
     |> Map.keys()
     |> Enum.map(&"#{&1} #{error_map[&1]}")
+  end
+
+  @doc "Checks that `actor_id`'s top role is above `target_id`s top role on `guild_id`."
+  @spec is_above(Guild.id(), User.id(), User.id()) :: {:ok, true | false} | {:error, String.t()}
+  def is_above(guild_id, actor_id, target_id) do
+    with {:ok, actor_top_role} <- top_role_for(guild_id, actor_id) do
+      case top_role_for(guild_id, target_id) do
+        {:ok, target_top_role} ->
+          {:ok, actor_top_role.position > target_top_role.position}
+
+        # If the author passed all checks and got around to invoke the command,
+        # happens to have a single role, and the target member does not have any
+        # roles, then the author is always above the member in the hierarchy.
+        # This does not take guild ownership into account.
+        {:error, "no roles on member"} ->
+          {:ok, true}
+
+        # If the target user is no longer on the guild, then the actor is surely above them
+        # in the role hierarchy. This is usually the case with bans.
+        {:error, "there is no member with ID " <> _remainder} ->
+          {:ok, true}
+
+        {:error, _reason} = error ->
+          error
+      end
+    else
+      _err ->
+        {:error,
+         "🚫 you need to be above the target" <>
+           " user in the role hierarchy to run that," <> " that, but you don't have any roles"}
+    end
   end
 end

@@ -8,6 +8,7 @@ defmodule Bolt.Cogs.Assign do
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
   alias Nostrum.Struct.User
+  require Logger
 
   @impl true
   def usage, do: ["assign <role:role...>"]
@@ -60,10 +61,17 @@ defmodule Bolt.Cogs.Assign do
           "🚫 that role is not self-assignable"
 
         {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          "🚫 API error: #{reason} (status code #{status})"
+          "❌ API error: #{reason} (status code #{status})"
 
-        {:error, reason} ->
-          "🚫 #{Helpers.clean_content(reason)}"
+        {:error, reason} when is_bitstring(reason) ->
+          "❌ error: #{Helpers.clean_content(reason)}"
+
+        error ->
+          Logger.error(fn ->
+            "Unhandled error in `assign`, original message: #{inspect(msg)}, error: #{
+              inspect(error)
+            }"
+          end)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
