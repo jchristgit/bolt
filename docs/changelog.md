@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.1
+- fix converters incorrectly picking up names such as `250k` as an ID
+
 ## v0.4.0
 - added the `DUPLICATES` USW filter
 

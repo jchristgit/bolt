@@ -28,8 +28,8 @@ defmodule Bolt.Converters.Channel do
       |> String.trim_trailing(">")
 
     case Integer.parse(maybe_id) do
-      {value, _remainder} -> {:ok, value}
-      :error -> {:error, "not a valid channel ID"}
+      {value, ""} -> {:ok, value}
+      _ -> {:error, "not a valid channel ID"}
     end
   end
 
