@@ -1,7 +1,7 @@
 defmodule Bolt.Consumer.GuildRoleDelete do
   @moduledoc "Handles the `GUILD_ROLE_DELETE` event."
 
-  alias Bolt.{ModLog, Repo}
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Guild.Role
@@ -18,8 +18,8 @@ defmodule Bolt.Consumer.GuildRoleDelete do
           ModLog.emit(
             guild_id,
             "CONFIG_UPDATE",
-            "self-assignable role `#{deleted_role.name}` was deleted and" <>
-              " automatically removed from the self-assignable roles"
+            "self-assignable role *#{Helpers.clean_content(deleted_role.name)}*"
+            <> " was deleted and automatically removed from the self-assignable roles"
           )
         else
           :noop
@@ -32,7 +32,7 @@ defmodule Bolt.Consumer.GuildRoleDelete do
     ModLog.emit(
       guild_id,
       "GUILD_ROLE_DELETE",
-      "role #{deleted_role.name} (`#{deleted_role.id}`) was deleted"
+      "role #{Helpers.clean_content(deleted_role.name)} (`#{deleted_role.id}`) was deleted"
     )
   end
 end
