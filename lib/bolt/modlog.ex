@@ -15,6 +15,7 @@ defmodule Bolt.ModLog do
     "INFRACTION_CREATE" => "📟",
     "INFRACTION_UPDATE" => "🖋",
     "INFRACTION_EVENTS" => "⏲",
+    "CHANNEL_CREATE" => "#⃣",
     "GUILD_MEMBER_ADD" => "📥",
     "GUILD_MEMBER_REMOVE" => "📤",
     "GUILD_MEMBER_UPDATE" => "♻",
