@@ -18,8 +18,8 @@ defmodule Bolt.Consumer.GuildRoleDelete do
           ModLog.emit(
             guild_id,
             "CONFIG_UPDATE",
-            "self-assignable role *#{Helpers.clean_content(deleted_role.name)}*"
-            <> " was deleted and automatically removed from the self-assignable roles"
+            "self-assignable role *#{Helpers.clean_content(deleted_role.name)}*" <>
+              " was deleted and automatically removed from the self-assignable roles"
           )
         else
           :noop

@@ -4,6 +4,7 @@ defmodule Bolt.Consumer do
   alias Bolt.Consumer.{
     ChannelCreate,
     ChannelDelete,
+    ChannelUpdate,
     GuildBanRemove,
     GuildCreate,
     GuildDelete,
@@ -35,6 +36,10 @@ defmodule Bolt.Consumer do
 
   def handle_event({:CHANNEL_DELETE, {deleted_channel}, _ws_state}) do
     ChannelDelete.handle(deleted_channel)
+  end
+
+  def handle_event({:CHANNEL_UPDATE, {old_channel, new_channel}, _ws_state}) do
+    ChannelUpdate.handle(old_channel, new_channel)
   end
 
   def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
