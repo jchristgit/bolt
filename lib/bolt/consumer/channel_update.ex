@@ -10,14 +10,14 @@ defmodule Bolt.Consumer.ChannelUpdate do
     unless new_channel.guild_id == nil do
       diff_string =
         []
-        |> describe_changes_if_present(old_channel, new_channel, :name)
-        |> describe_changes_if_present(old_channel, new_channel, :topic)
-        |> describe_changes_if_present(old_channel, new_channel, :parent_id)
-        |> describe_changes_if_present(old_channel, new_channel, :nsfw)
-        |> describe_changes_if_present(old_channel, new_channel, :permission_overwrites)
-        |> describe_changes_if_present(old_channel, new_channel, :position)
-        |> describe_changes_if_present(old_channel, new_channel, :bitrate)
-        |> describe_changes_if_present(old_channel, new_channel, :user_limit)
+        |> describe_changes(old_channel, new_channel, :name)
+        |> describe_changes(old_channel, new_channel, :topic)
+        |> describe_changes(old_channel, new_channel, :parent_id)
+        |> describe_changes(old_channel, new_channel, :nsfw)
+        |> describe_changes(old_channel, new_channel, :permission_overwrites)
+        |> describe_changes(old_channel, new_channel, :position)
+        |> describe_changes(old_channel, new_channel, :bitrate)
+        |> describe_changes(old_channel, new_channel, :user_limit)
         |> Enum.join(", ")
 
       type_string =
@@ -36,44 +36,34 @@ defmodule Bolt.Consumer.ChannelUpdate do
     end
   end
 
-  @spec describe_changes_if_present([String.t()], Channel.t(), Channel.t(), atom()) :: [
-          String.t()
-        ]
-  def describe_changes_if_present(diff_list, old_channel, new_channel, key) do
-    if Map.has_key?(new_channel, key) do
-      describe_changes(diff_list, old_channel, new_channel, key)
+  @spec describe_changes([String.t()], Channel.t(), Channel.t(), atom()) :: [String.t()]
+  defp describe_changes(diff_list, old_channel, new_channel, :permission_overwrites) do
+    # The overwrite difference calculation algorithm is fairly expensive, so let's only
+    # actually run it if the permission overwrites of the given channel actually changed.
+    if old_channel.permission_overwrites != new_channel.permission_overwrites do
+      myers_difference =
+        List.myers_difference(
+          old_channel.permission_overwrites,
+          new_channel.permission_overwrites
+        )
+
+      added_overwrites = myers_difference |> Keyword.get_values(:ins) |> List.flatten()
+      removed_overwrites = myers_difference |> Keyword.get_values(:del) |> List.flatten()
+
+      diff_list ++ describe_overwrites(new_channel.guild_id, added_overwrites, removed_overwrites)
     else
       diff_list
     end
   end
 
-  @spec describe_changes([String.t()], Channel.t(), Channel.t(), atom()) :: [String.t()]
-  def describe_changes(diff_list, old_channel, new_channel, :permission_overwrites) do
-    myers_difference =
-      List.myers_difference(
-        old_channel.permission_overwrites,
-        new_channel.permission_overwrites
-      )
+  # Describe what changed for this channel, if different.
+  defp describe_changes(diff_list, old_channel, new_channel, key) do
+    old_value = Map.get(old_channel, key)
+    new_value = Map.get(new_channel, key)
 
-    added_overwrites = Keyword.get_values(myers_difference, :ins) |> List.flatten()
-    removed_overwrites = Keyword.get_values(myers_difference, :del) |> List.flatten()
-
-    diff_list ++
-      Enum.map(
-        removed_overwrites,
-        &"overwrite removed for #{format_overwrite(new_channel.guild_id, &1)}"
-      ) ++
-      Enum.map(
-        added_overwrites,
-        &"overwrite added for #{format_overwrite(new_channel.guild_id, &1)}"
-      )
-  end
-
-  def describe_changes(diff_list, old_channel, new_channel, key) do
-    old_value = Map.get(old_channel, key) |> IO.inspect(label: "old value")
-    new_value = Map.get(new_channel, key) |> IO.inspect(label: "new value")
-
+    # Did this value update?
     if old_value != new_value do
+      # If yes, describe the change in a human-friendly way.
       cond do
         new_value === true ->
           diff_list ++ ["now #{key}"]
@@ -98,38 +88,153 @@ defmodule Bolt.Consumer.ChannelUpdate do
           diff_list ++ ["#{key} updated from ``#{old_value}`` to ``#{new_value}``"]
       end
     else
+      # If no, return the list of changes unomdified.
       diff_list
     end
   end
 
-  @spec format_overwrite(Guild.id(), Overwrite.t()) :: String.t()
-  def format_overwrite(guild_id, overwrite) do
-    base_string =
-      if overwrite.name == "role" do
-        with {:ok, guild} <- GuildCache.get(guild_id),
-             role when role != nil <- Enum.find(guild.roles, &(&1.id == overwrite.id)) do
-          "role #{Helpers.clean_content(role.name)} (`#{role.id}`)"
-        else
-          _err -> "role `#{overwrite.id}`"
-        end
-      else
-        with {:ok, guild} <- GuildCache.get(guild_id),
-             member when member != nil <- Enum.find(guild.members, &(&1.user.id == overwrite.id)) do
-          "user #{Helpers.clean_content(User.full_name(member.user))} (`#{member.user.id}`)"
-        else
-          _err -> "user `#{overwrite.id}`"
-        end
-      end
+  # Describe the difference between `added_overwrites`
+  # and `removed_overwrites` in a human-friendly way.
+  @spec describe_overwrites(
+          Guild.id(),
+          [Overwrite.t()],
+          [Overwrite.t()]
+        ) :: [String.t()]
+  defp describe_overwrites(guild_id, added_overwrites, removed_overwrites) do
+    # First, we build a map of the IDs of all overwrites.
+    possible_keys = Enum.map(added_overwrites, & &1.id) ++ Enum.map(removed_overwrites, & &1.id)
 
-    "#{base_string} for " <>
-      "#{
-        overwrite.allow |> Permission.from_bitset!() |> Enum.map(&"can #{&1}") |> Enum.join(", ")
-      }" <>
-      "#{
-        overwrite.deny
-        |> Permission.from_bitset!()
-        |> Enum.map(&"can not #{&1}")
-        |> Enum.join(", ")
-      }"
+    id_mapping =
+      Enum.reduce(
+        possible_keys,
+        %{},
+        fn key, mapping -> Map.put(mapping, key, {nil, nil}) end
+      )
+
+    # Now, we add any removed overwrite as the first value in the `{before, after}` tuple.
+    id_mapping =
+      Enum.reduce(
+        removed_overwrites,
+        id_mapping,
+        fn overwrite, mapping -> Map.put(mapping, overwrite.id, {overwrite, nil}) end
+      )
+
+    # Finally, we add the added overwrite as the second value in the `{before, after}` tuple.
+    added_overwrites
+    |> Enum.reduce(
+      id_mapping,
+      fn overwrite, mapping ->
+        {_, new_map} =
+          Map.get_and_update(
+            mapping,
+            overwrite.id,
+            fn current_value -> {current_value, {elem(current_value, 0), overwrite}} end
+          )
+
+        new_map
+      end
+    )
+    |> Map.values()
+    |> Enum.map(&format_overwrite_diff(guild_id, &1))
+  end
+
+  # Describes the difference between two overwrites.
+  @spec format_overwrite_diff(
+          Guild.id(),
+          {old_overwrite :: Overwrite.t() | nil, new_overwrite :: Overwrite.t() | nil}
+        ) :: String.t()
+  def format_overwrite_diff(guild_id, {nil, new_overwrite}) do
+    # A new overwrite was created.
+    # Describe which overwrites were added and which were removed.
+    added_permissions = Permission.from_bitset!(new_overwrite.allow)
+    removed_permissions = Permission.from_bitset!(new_overwrite.deny)
+
+    "added overwrite for #{format_overwrite_target(guild_id, new_overwrite)}, " <>
+      Enum.join(
+        Enum.map(
+          added_permissions,
+          &"now allowed to `#{&1}`"
+        ) ++
+          Enum.map(
+            removed_permissions,
+            &"no longer allowed to `#{&1}`"
+          ),
+        ", "
+      )
+  end
+
+  def format_overwrite_diff(guild_id, {old_overwrite, nil}) do
+    "removed overwrite for #{format_overwrite_target(guild_id, old_overwrite)}"
+  end
+
+  def format_overwrite_diff(guild_id, {old_overwrite, new_overwrite}) do
+    # An overwrite was updated, meaning that the matcher found two
+    # overwrites referencing the same user or role ID.
+
+    # Find which explicit allow overwrites were added and removed.
+    old_allowed = Permission.from_bitset!(old_overwrite.allow)
+    new_allowed = Permission.from_bitset!(new_overwrite.allow)
+
+    allowed_diff = List.myers_difference(old_allowed, new_allowed)
+    added_allowed = allowed_diff |> Keyword.get_values(:ins) |> List.flatten()
+    removed_allowed = allowed_diff |> Keyword.get_values(:del) |> List.flatten()
+
+    # Find which explicit deny overwrites were added and removed.
+    old_denied = Permission.from_bitset!(old_overwrite.deny)
+    new_denied = Permission.from_bitset!(new_overwrite.deny)
+
+    denied_diff = List.myers_difference(old_denied, new_denied)
+    added_denied = denied_diff |> Keyword.get_values(:ins) |> List.flatten()
+    removed_denied = denied_diff |> Keyword.get_values(:del) |> List.flatten()
+
+    # Finally, find which overwrites between `removed_denied` <-> `added_allowed`
+    # and `removed_allowed` <-> `added_denied` overlap and remove the respective
+    # permissions from `removed_allowed` and `removed_denied`.
+    # This prevents the following from displaying:
+    # - "no longer denied to {x}, now allowed to {x}"
+    # - "no longer allowed to {x}, now denied to {x}"
+    removed_denied = Enum.reject(removed_denied, &(&1 in added_allowed))
+    removed_allowed = Enum.reject(removed_allowed, &(&1 in added_denied))
+
+    "updated overwrite for #{format_overwrite_target(guild_id, new_overwrite)}: " <>
+      Enum.join(
+        Enum.map(added_allowed, &"now allowed to `#{&1}`") ++
+          Enum.map(removed_allowed, &"no longer explicitly allowed to `#{&1}`") ++
+          Enum.map(added_denied, &"now denied to `#{&1}`") ++
+          Enum.map(removed_denied, &"no longer explicitly denied to `#{&1}`"),
+        ", "
+      )
+  end
+
+  @spec format_overwrite_target(Guild.id(), Overwrite.t()) :: String.t()
+  def format_overwrite_target(guild_id, overwrite) do
+    if overwrite.type == "role" do
+      with {:ok, guild} <- GuildCache.get(guild_id),
+           role when role != nil <- Enum.find(guild.roles, &(&1.id == overwrite.id)) do
+        "role #{Helpers.clean_content(role.name)} (`#{role.id}`)"
+      else
+        _err -> "role `#{overwrite.id}`"
+      end
+    else
+      with {:ok, guild} <- GuildCache.get(guild_id),
+           member when member != nil <- Enum.find(guild.members, &(&1.user.id == overwrite.id)) do
+        "user #{Helpers.clean_content(User.full_name(member.user))} (`#{member.user.id}`)"
+      else
+        _err -> "user `#{overwrite.id}`"
+      end
+    end
+  end
+
+  @spec format_overwrite(Guild.id(), Overwrite.t(), String.t()) :: String.t()
+  def format_overwrite(guild_id, overwrite, what) do
+    "#{what} for #{format_overwrite_target(guild_id, overwrite)}:" <>
+      (overwrite.allow
+       |> Permission.from_bitset!()
+       |> Enum.map(&"can #{&1}")
+       |> Enum.join(", ")) <>
+      (overwrite.deny
+       |> Permission.from_bitset!()
+       |> Enum.map(&"can not #{&1}")
+       |> Enum.join(", "))
   end
 end
