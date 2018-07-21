@@ -14,6 +14,8 @@ RUN mix do local.hex --force, local.rebar --force
 RUN mix do deps.get, deps.compile
 RUN mix compile
 
+RUN chown -R bolt:bolt /app/_build/prod/lib/tzdata/priv/
+
 USER bolt
 
 ENTRYPOINT ["mix", "run", "--no-halt"]
