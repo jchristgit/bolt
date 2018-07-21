@@ -26,7 +26,7 @@ defmodule Bolt.Cogs.GuildInfo do
           }
           Emojis: #{length(guild.emojis)}
           Roles: #{length(guild.roles)}
-          Members: #{length(guild.members)}
+          Members: #{Map.get(guild, :member_count, "*guild not in cache*")}
           """,
           inline: true
         },
