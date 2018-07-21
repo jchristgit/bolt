@@ -1,0 +1,58 @@
+defmodule Bolt.ErrorFormatters do
+  @moduledoc "Pretty-prints various errors that commands produce."
+
+  alias Bolt.{BotLog, Helpers}
+  alias Ecto.Changeset
+  require Logger
+
+  @spec fmt(Message.t(), term()) :: String.t()
+  def fmt(msg, error)
+
+  def fmt(_msg, reason) when is_bitstring(reason) do
+    "❌ error: #{Helpers.clean_content(reason)}"
+  end
+
+  def fmt(_msg, {:error, reason}) when is_bitstring(reason) do
+    "❌ error: #{Helpers.clean_content(reason)}"
+  end
+
+  def fmt(_msg, %Changeset{} = changeset) do
+    error_map =
+      changeset
+      |> Changeset.traverse_errors(fn {msg, opts} ->
+        Enum.reduce(opts, msg, fn {key, value}, acc ->
+          String.replace(acc, "%{#{key}}", to_string(value))
+        end)
+      end)
+
+    description =
+      error_map
+      |> Map.keys()
+      |> Stream.map(&"#{&1} #{error_map[&1]}")
+      |> Enum.join(", ")
+
+    "❌ database error: #{description}"
+  end
+
+  def fmt(_msg, {:error, %{status_code: status, message: %{"message" => reason}}}) do
+    "❌ API error: #{reason} (status code `#{status}`)"
+  end
+
+  def fmt(msg, error) do
+    BotLog.emit("""
+    ❌ unexpected error caused by invocation: ```
+    #{msg.content}
+    ```
+    error received:
+    ```elixir
+    #{inspect(error)}
+    ```
+    """)
+
+    Logger.error(fn ->
+      "unknown error, original message: #{inspect(msg)}, error: #{inspect(error)}"
+    end)
+
+    "❌ sorry, some unexpected error occurred :("
+  end
+end
