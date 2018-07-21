@@ -49,7 +49,12 @@ defmodule Bolt.Cogs.Roles do
       {:ok, roles} ->
         embed = %Embed{
           title: "All roles on this guild",
-          description: roles |> Stream.map(&Role.mention/1) |> Enum.join(", "),
+          description:
+            roles
+            |> Enum.sort_by(& &1.name)
+            |> Stream.reject(&(&1.name == "@everyone"))
+            |> Stream.map(&Role.mention/1)
+            |> Enum.join(", "),
           color: Constants.color_blue()
         }
 
