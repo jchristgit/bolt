@@ -16,7 +16,7 @@ defmodule Bolt.ErrorFormatters do
     "❌ error: #{Helpers.clean_content(reason)}"
   end
 
-  def fmt(_msg, %Changeset{} = changeset) do
+  def fmt(_msg, {:error, %Changeset{} = changeset}) do
     error_map =
       changeset
       |> Changeset.traverse_errors(fn {msg, opts} ->
@@ -36,6 +36,21 @@ defmodule Bolt.ErrorFormatters do
 
   def fmt(_msg, {:error, %{status_code: status, message: %{"message" => reason}}}) do
     "❌ API error: #{reason} (status code `#{status}`)"
+  end
+
+  def fmt(nil, error) do
+    BotLog.emit("""
+    ❌ unexpected error (no invocation given), error received:
+    ```elixir
+    #{inspect(error)}
+    ```
+    """)
+
+    Logger.error(fn ->
+      "unknown error: #{inspect(error)}"
+    end)
+
+    "❌ sorry, some unexpected error occurred :("
   end
 
   def fmt(msg, error) do

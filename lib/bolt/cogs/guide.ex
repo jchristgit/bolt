@@ -14,7 +14,7 @@ defmodule Bolt.Cogs.Guide do
       This command will guide you through using its abilities to help you moderate your guild.
 
       First off, keep in mind you can always invoke this command using `guide`, and if you want help for commands themselves, use `help <command>`.
-      For subcommands (e.g. `infr list`), use `help` on the "first" command, e.g. `help infr`.
+      For subcommands (e.g. `infr list`), you can also view detailed help, e.g. `help infr list`.
       If you're unsure what the symbols used to document commands mean, use `help syntax`.
       Commands documented here have their prefix ommitted.
 

@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.ModLog.Set do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Converters, Helpers, ModLog, Repo}
+  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -91,12 +91,8 @@ defmodule Bolt.Cogs.ModLog.Set do
         %ModLogConfig{channel_id: channel_id} ->
           "🚫 this event is already being logged in <##{channel_id}>"
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          errors = Helpers.format_changeset_errors(changeset)
-          "🚫 invalid options:\n#{errors}"
-
-        {:error, reason} ->
-          "🚫 error: #{reason}"
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

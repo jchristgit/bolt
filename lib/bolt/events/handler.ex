@@ -4,11 +4,10 @@ defmodule Bolt.Events.Handler do
   Infraction IDs are mapped to timers internally.
   """
 
+  alias Bolt.ErrorFormatters
   alias Bolt.Events.Deserializer
-  alias Bolt.Helpers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Ecto.Changeset
   import Ecto.Query, only: [from: 2]
   use GenServer
 
@@ -37,8 +36,9 @@ defmodule Bolt.Events.Handler do
       false ->
         {:error, "`#{infraction_map.type}` is not a valid event type"}
 
-      {:error, %Changeset{} = changeset} ->
-        {:error, changeset |> Helpers.format_changeset_errors() |> Enum.join("\n")}
+      {:error, _reason} = error ->
+        response = ErrorFormatters.fmt(nil, error)
+        {:error, response}
     end
   end
 

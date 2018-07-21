@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Assign do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Converters, Helpers, ModLog, Repo}
+  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -60,18 +60,8 @@ defmodule Bolt.Cogs.Assign do
         false ->
           "🚫 that role is not self-assignable"
 
-        {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          "❌ API error: #{reason} (status code #{status})"
-
-        {:error, reason} when is_bitstring(reason) ->
-          "❌ error: #{Helpers.clean_content(reason)}"
-
         error ->
-          Logger.error(fn ->
-            "Unhandled error in `assign`, original message: #{inspect(msg)}, error: #{
-              inspect(error)
-            }"
-          end)
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

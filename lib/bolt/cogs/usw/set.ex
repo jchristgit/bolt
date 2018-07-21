@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.USW.Set do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Helpers, Repo}
+  alias Bolt.{ErrorFormatters, Helpers, Repo}
   alias Bolt.Schema.USWFilterConfig
   alias Nostrum.Api
 
@@ -58,14 +58,8 @@ defmodule Bolt.Cogs.USW.Set do
         :error ->
           "🚫 either `count` or `interval` are not integers"
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          readable_errors =
-            changeset
-            |> Helpers.format_changeset_errors()
-            |> Stream.map(&Helpers.clean_content(&1))
-            |> Enum.join("\n")
-
-          "🚫 encountered errors inserting settings:\n#{readable_errors}"
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

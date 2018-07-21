@@ -4,6 +4,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
+  alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
@@ -17,7 +18,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   @impl true
   def description,
     do: """
-    Update the expiration date of the given infraction ID.
+    Update the expiration date of the given infraction ID, relative to its creation date.
     This is only applicable to timed (temporary) infractions that have not expired yet.
     Requires the `MANAGE_GUILD` permission.
     """
@@ -57,16 +58,8 @@ defmodule Bolt.Cogs.Infraction.Expiry do
         :error ->
           "🚫 expected an integer for the infraction ID, got something else"
 
-        {:error, reason} when is_bitstring(reason) ->
-          "❌ error: #{reason}"
-
-        {:error, reason} ->
-          Logger.error(fn ->
-            "unexpected error in `infr expiry`: #{inspect(reason)}," <>
-              " original message was '#{msg.content}'"
-          end)
-
-          "❌ unexpected error"
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

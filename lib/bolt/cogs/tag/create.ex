@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Tag.Create do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Helpers, Repo}
+  alias Bolt.{ErrorFormatters, Helpers, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
 
@@ -53,14 +53,8 @@ defmodule Bolt.Cogs.Tag.Create do
         {:ok, _created_tag} ->
           "👌 created the tag `#{Helpers.clean_content(name)}`"
 
-        {:error, changeset} ->
-          errors =
-            changeset
-            |> Helpers.format_changeset_errors()
-            |> Enum.join("\n")
-            |> Helpers.clean_content()
-
-          "🚫 invalid arguments: \n#{errors}"
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

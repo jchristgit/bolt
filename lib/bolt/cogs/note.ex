@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Note do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Converters, Helpers, ModLog, Repo}
+  alias Bolt.{Converters, ErrorFormatters, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -55,8 +55,8 @@ defmodule Bolt.Cogs.Note do
         "" ->
           "🚫 note may not be empty"
 
-        {:error, reason} ->
-          "🚫 error: #{Helpers.clean_content(reason)}"
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Clean do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Converters, Helpers, ModLog}
+  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog}
   alias Nostrum.Api
   alias Nostrum.Struct.{Message, Snowflake, User}
 
@@ -164,12 +164,9 @@ defmodule Bolt.Cogs.Clean do
             "❌ couldn't find any messages to delete, does the bot have `READ_MESSAGE_HISTORY` permission?"
           )
 
-      {:error, %{status_code: status, message: %{"message" => message}}} ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "❌ can't fetch messages: #{message} (status #{status})"
-          )
+      error ->
+        response = ErrorFormatters.fmt(msg, error)
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
 
@@ -214,12 +211,8 @@ defmodule Bolt.Cogs.Clean do
             "❌ API error: #{Enum.join(errors, ", ")} (status `#{status}`)"
           )
 
-      {:error, reason} ->
-        response = "❌ error: #{Helpers.clean_content(reason)}"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
-
-      _ ->
-        response = "❌ unexpected error, perhaps try again later"
+      error ->
+        response = ErrorFormatters.fmt(msg, error)
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
@@ -384,11 +377,8 @@ defmodule Bolt.Cogs.Clean do
         {:error,
          "❌ couldn't find any messages in the channel - does the bot have the `READ_MESSAGE_HISTORY` permission?"}
 
-      {:error, %{status_code: status, message: %{"message" => message}}} ->
-        {:error, "❌ API error: #{message} (status code #{status})"}
-
-      {:error, reason} ->
-        {:error, reason}
+      error ->
+        {:error, ErrorFormatters.fmt(msg, error)}
     end
   end
 end

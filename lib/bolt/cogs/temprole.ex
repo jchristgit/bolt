@@ -5,6 +5,7 @@ defmodule Bolt.Cogs.Temprole do
 
   alias Bolt.Commander.Checks
   alias Bolt.Converters
+  alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
@@ -94,18 +95,12 @@ defmodule Bolt.Cogs.Temprole do
         {:ok, false} ->
           "🚫 you need to be above the target user in the role hierarchy"
 
-        {:error, %{message: %{"message" => reason}, status_code: status}} ->
-          "❌ API error: #{reason} (status code `#{status}`)"
-
-        {:error, %{message: :timeout}} ->
-          "❌ API request timed out, please retry"
-
-        {:error, reason} ->
-          "❌ error: #{Helpers.clean_content(reason)}"
-
         [{existing_id, existing_expiry}] ->
           "❌ there already is an infraction applying that role under ID ##{existing_id}" <>
             " which will expire on #{Helpers.datetime_to_human(existing_expiry)}"
+
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

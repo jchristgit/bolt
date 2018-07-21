@@ -4,6 +4,7 @@ defmodule Bolt.Cogs.Tempban do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
+  alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
@@ -90,22 +91,12 @@ defmodule Bolt.Cogs.Tempban do
         {:ok, false} ->
           "🚫 you need to be above the target user in the role hierarchy"
 
-        {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          "❌ API error: #{reason} (status code `#{status}`)"
-
-        {:error, reason} when is_bitstring(reason) ->
-          "❌ error: #{Helpers.clean_content(reason)}"
-
         [{existing_id, existing_expiry}] ->
           "❌ there already is a tempban for that member under ID" <>
             " ##{existing_id} which will expire on " <> Helpers.datetime_to_human(existing_expiry)
 
         error ->
-          Logger.error(fn ->
-            "some unknown error occurred in #{inspect(msg)}, error: #{inspect(error)}"
-          end)
-
-          "❌ unknown error occurred, try again later"
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

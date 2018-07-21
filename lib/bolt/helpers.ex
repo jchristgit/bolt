@@ -142,27 +142,6 @@ defmodule Bolt.Helpers do
     end
   end
 
-  @doc """
-  Given a changeset with errors, format them nicely for humans to understand.
-  Returns a list of strings with the errors, in the form '{key} {error}'.
-  """
-  @spec format_changeset_errors(Ecto.Changeset.t()) :: [String.t()]
-  def format_changeset_errors(changeset) do
-    alias Ecto.Changeset
-
-    error_map =
-      changeset
-      |> Changeset.traverse_errors(fn {msg, opts} ->
-        Enum.reduce(opts, msg, fn {key, value}, acc ->
-          String.replace(acc, "%{#{key}}", to_string(value))
-        end)
-      end)
-
-    error_map
-    |> Map.keys()
-    |> Enum.map(&"#{&1} #{error_map[&1]}")
-  end
-
   @doc "Checks that `actor_id`'s top role is above `target_id`s top role on `guild_id`."
   @spec is_above(Guild.id(), User.id(), User.id()) :: {:ok, true | false} | {:error, String.t()}
   def is_above(guild_id, actor_id, target_id) do
@@ -189,8 +168,8 @@ defmodule Bolt.Helpers do
     else
       _err ->
         {:error,
-         "you need to be above the target" <>
-           " user in the role hierarchy to run that," <> " that, but you don't have any roles"}
+         "you need to be above the target user in the role " <>
+           "hierarchy to run that, but you don't have any roles"}
     end
   end
 end

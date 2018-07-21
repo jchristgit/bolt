@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Kick do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Converters, Helpers, ModLog, Repo}
+  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -69,19 +69,8 @@ defmodule Bolt.Cogs.Kick do
         {:ok, false} ->
           "🚫 you need to be above the target user in the role hierarchy"
 
-        {:error, %{status_code: status, message: %{"message" => reason}}} ->
-          "❌ API error: #{reason} (status code `#{status}`)"
-
-        {:error, reason} when is_bitstring(reason) ->
-          "❌ error: #{Helpers.clean_content(reason)}"
-
         error ->
-          Logger.error(fn ->
-            "unknown error in `kick` command, original" <>
-              " message: #{inspect(msg)}, error: #{inspect(error)}"
-          end)
-
-          "❌ some unknown error occurred, try again later"
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

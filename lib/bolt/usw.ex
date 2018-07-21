@@ -1,11 +1,13 @@
 defmodule Bolt.USW do
   @moduledoc "USW - Uncomplicated Spam Wall"
 
+  alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
   alias Bolt.USW.{Deduplicator, Escalator}
   alias Bolt.USW.Filters.{Burst, Duplicates}
+  alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.Me
   alias Nostrum.Struct.User
@@ -121,13 +123,21 @@ defmodule Bolt.USW do
             " but got API error: #{reason} (status code #{status})"
         )
 
-      {:error, changeset} ->
+      {:error, %Changeset{} = _changeset} = error ->
         ModLog.emit(
           guild_id,
           "AUTOMOD",
           "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
             " but could not create an event to remove it after #{expiry_seconds}s:" <>
-            " #{changeset |> Helpers.format_changeset_errors() |> Enum.join(", ")}"
+            ErrorFormatters.fmt(nil, error)
+        )
+
+      error ->
+        ModLog.emit(
+          guild_id,
+          "AUTOMOD",
+          "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`) " <>
+            "but got an unexpected error: #{ErrorFormatters.fmt(nil, error)}"
         )
     end
   end
