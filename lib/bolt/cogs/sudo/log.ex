@@ -23,7 +23,7 @@ defmodule Bolt.Cogs.Sudo.Log do
 
     query
     |> Repo.all()
-    |> Enum.map(fn guild_id ->
+    |> Enum.each(fn guild_id ->
       ModLog.emit(
         guild_id,
         "BOT_UPDATE",

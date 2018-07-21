@@ -1,12 +1,13 @@
 defmodule Bolt.Consumer.GuildMemberUpdate do
   @moduledoc "Handles the `GUILD_MEMBER_UPDATE` event."
 
-  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Events.Handler
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.{Guild, User}
+  alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Guild.Member
+  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
   @spec handle(Guild.id(), Member.t(), Member.t()) :: ModLog.on_emit()
