@@ -16,6 +16,7 @@ defmodule Bolt.Commander.Server do
 
     ## Meta Commands
     "guildinfo" => Cogs.GuildInfo,
+    "inrole" => Cogs.InRole,
     "memberinfo" => Cogs.MemberInfo,
     "roleinfo" => Cogs.RoleInfo,
     "roles" => Cogs.Roles,

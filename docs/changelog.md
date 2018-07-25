@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.6.0
+- add the `inrole` command
+
 ## v0.5.0
 - a lot more readable and concise formatting in `infr user` and `infr list`
 

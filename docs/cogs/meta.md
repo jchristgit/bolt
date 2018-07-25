@@ -53,6 +53,13 @@ Aliased to `.minfo` and `.member`.
 .memberinfo bolt
 ```
 
+## `.inrole <role:role...>`
+Shows all members with the given role.
+```js
+// Show members in the 'Muted' role.
+.inrole muted
+```
+
 ### `.help [command:str]`
 Shows help for the given command or command group. When no command or command group is given, shows all available commands.
 `syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.
