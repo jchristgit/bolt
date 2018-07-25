@@ -4,9 +4,10 @@ defmodule Bolt.Cogs.USW.Unset do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Helpers, Repo}
+  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.USWFilterConfig
   alias Nostrum.Api
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["usw unset <filter:str>"]
@@ -37,6 +38,14 @@ defmodule Bolt.Cogs.USW.Unset do
 
           object ->
             {:ok, _struct} = Repo.delete(object)
+
+            ModLog.emit(
+              msg.guild_id,
+              "CONFIG_UPDATE",
+              "#{User.full_name(msg.author)} (`#{msg.author.id}`) deleted USW " <>
+                "configuration for filter `#{filter}`"
+            )
+
             "👌 deleted configuration for filter `#{filter}`"
         end
       end

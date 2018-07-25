@@ -84,7 +84,9 @@ Requires the `MANAGE_GUILD` permission.
 .usw set DUPLICATES 4 per 20
 ```
 
-?> Changed in version [`0.7.0`](docs/changelog#v070): Now allows `per` between `count` and `interval`.
+?> Changed in version [`0.7.0`](docs/changelog#v060): Now allows `per` between `count` and `interval`.
+
+?> Changed in version [`0.7.0`](docs/changelog#v070): Now logs to the modlog with `CONFIG_UPDATE`.
 
 
 ### `.usw unset <filter:str>`
@@ -94,6 +96,8 @@ Requires the `MANAGE_GUILD` permission.
 // Disable the `BURST` filter.
 .usw unset BURST
 ```
+
+?> Changed in version [`0.7.0`](docs/changelog#v070): Now logs to the modlog with `CONFIG_UPDATE`.
 
 
 ### `.usw punish <punishment...>`

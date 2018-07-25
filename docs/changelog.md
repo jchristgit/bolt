@@ -2,14 +2,13 @@
 
 ## Unreleased
 - `per` can now be optionally be written in `usw set`, for example `usw set 5 per 7`
-
-## v0.7.0
-- add the `LINKS` filter
-- add the `NEWLINES` filter
-- sort `usw status` fields by filter name
+- `usw set` and `usw unset` now emit modlog events with `CONFIG_UPDATE`
 
 ## v0.6.0
+- add the `LINKS` filter
+- add the `NEWLINES` filter
 - add the `inrole` command
+- sort `usw status` fields by filter name
 
 ## v0.5.0
 - a lot more readable and concise formatting in `infr user` and `infr list`

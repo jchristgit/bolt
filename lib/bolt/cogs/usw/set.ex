@@ -4,9 +4,10 @@ defmodule Bolt.Cogs.USW.Set do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{ErrorFormatters, Helpers, Repo}
+  alias Bolt.{ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.USWFilterConfig
   alias Nostrum.Api
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["usw set <filter:str> <count:int> [per] <interval:int>"]
@@ -51,6 +52,13 @@ defmodule Bolt.Cogs.USW.Set do
                conflict_target: [:guild_id, :filter],
                on_conflict: [set: [count: count, interval: interval]]
              ) do
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{User.full_name(msg.author)} (`#{msg.author.id}`) updated USW configuration: " <>
+            "now allowing max **#{count}** messages per **#{interval}**s in filter `#{filter}`"
+        )
+
         "👌 updated configuration, will now allow max **#{count}**" <>
           " messages per **#{interval}**s in filter `#{filter}`"
       else
