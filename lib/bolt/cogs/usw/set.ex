@@ -9,7 +9,7 @@ defmodule Bolt.Cogs.USW.Set do
   alias Nostrum.Api
 
   @impl true
-  def usage, do: ["usw set <filter:str> <count:int> <interval:int>"]
+  def usage, do: ["usw set <filter:str> <count:int> [per] <interval:int>"]
 
   @impl true
   def description,
@@ -20,6 +20,8 @@ defmodule Bolt.Cogs.USW.Set do
     • `BURST`: Allows `count` messages by the same author within `interval` seconds.
 
     For example, to allow 5 messages by the same user within 7 seconds (using the `BURST` filter), one would use `usw set BURST 5 7`.
+
+    For readability, `per` can be given between `count` and `interval`, for example `usw set BURST 5 per 7`.
 
     Requires the `MANAGE_GUILD` permission.
     """
@@ -63,6 +65,10 @@ defmodule Bolt.Cogs.USW.Set do
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, [filter, count_str, "per", interval_str]) do
+    command(msg, [filter, count_str, interval_str])
   end
 
   def command(msg, _args) do

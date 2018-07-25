@@ -69,7 +69,7 @@ Requires the `MANAGE_GUILD` permission.
 ```
 
 
-### `.usw set <filter:str> <count:int> <interval:int>`
+### `.usw set <filter:str> <count:int> [per] <interval:int>`
 Activate the given `filter` to allow `count` objects to pass through during `interval` seconds.
 For more information on filters, see [Filters](#filters).
 Requires the `MANAGE_GUILD` permission.
@@ -78,8 +78,13 @@ Requires the `MANAGE_GUILD` permission.
 .usw set BURST 5 10
 
 // Activate the `DUPLICATES` filter to allow 4 duplicated messages during 20 seconds.
-.us set DUPLICATES 4 20
+.usw set DUPLICATES 4 20
+
+// Same as above, but use `per` for readability.
+.usw set DUPLICATES 4 per 20
 ```
+
+?> Changed in version [`0.7.0`](docs/changelog#v070): Now allows `per` between `count` and `interval`.
 
 
 ### `.usw unset <filter:str>`

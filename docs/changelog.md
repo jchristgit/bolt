@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- `per` can now be optionally be written in `usw set`, for example `usw set 5 per 7`
+
 ## v0.7.0
 - add the `LINKS` filter
 - add the `NEWLINES` filter
