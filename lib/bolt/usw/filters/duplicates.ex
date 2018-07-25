@@ -9,23 +9,19 @@ defmodule Bolt.USW.Filters.Duplicates do
   require Logger
 
   @impl true
-  @spec apply(Message.t(), non_neg_integer(), non_neg_integer()) :: :action | :passthrough
-  def apply(msg, count, interval) do
-    interval_seconds_ago_snowflake =
-      DateTime.utc_now()
-      |> DateTime.to_unix()
-      |> Kernel.-(interval)
-      |> DateTime.from_unix!()
-      |> Snowflake.from_datetime!()
-
+  @spec apply(Message.t(), non_neg_integer(), non_neg_integer(), Snowflake.t()) ::
+          :action | :passthrough
+  def apply(msg, limit, interval, interval_seconds_ago_snowflake) do
     relevant_messages =
       msg.guild_id
       |> MessageCache.recent_in_guild()
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
       |> Stream.filter(&(&1.content == msg.content))
-      |> Enum.take(count)
+      |> Enum.take(limit)
 
-    if length(relevant_messages) >= count do
+    recent_duplicates = length(relevant_messages)
+
+    if recent_duplicates >= limit do
       relevant_messages
       |> Stream.dedup_by(& &1.author_id)
       |> Enum.each(fn duplicated_message ->
@@ -34,7 +30,7 @@ defmodule Bolt.USW.Filters.Duplicates do
             USW.punish(
               msg.guild_id,
               user,
-              "exceeding the duplicated message limit (`DUPLICATES` filter)"
+              "sending #{recent_duplicates} duplicated messages in #{interval}s"
             )
 
           {:error, reason} ->

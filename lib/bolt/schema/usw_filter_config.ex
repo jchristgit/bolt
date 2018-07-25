@@ -26,7 +26,8 @@ defmodule Bolt.Schema.USWFilterConfig do
   def existing_filters do
     [
       "BURST",
-      "DUPLICATES"
+      "DUPLICATES",
+      "NEWLINES"
     ]
   end
 end

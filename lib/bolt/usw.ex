@@ -6,31 +6,40 @@ defmodule Bolt.USW do
   alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
   alias Bolt.USW.{Deduplicator, Escalator}
-  alias Bolt.USW.Filters.{Burst, Duplicates}
+  alias Bolt.USW.Filters.{Burst, Duplicates, Newlines}
   alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.Me
-  alias Nostrum.Struct.User
+  alias Nostrum.Struct.{Message, Snowflake, User}
   import Ecto.Query, only: [from: 2]
   require Logger
 
   @spec filter_to_fn(USWFilterConfig) ::
-          (Nostrum.Struct.Message.t(), non_neg_integer(), non_neg_integer() ->
+          (Message.t(), non_neg_integer(), non_neg_integer() ->
              :action | :passthrough)
-  defp filter_to_fn(%USWFilterConfig{filter: "BURST"}), do: &Burst.apply/3
+  defp filter_to_fn(%USWFilterConfig{filter: "BURST"}), do: &Burst.apply/4
 
-  defp filter_to_fn(%USWFilterConfig{filter: "DUPLICATES"}), do: &Duplicates.apply/3
+  defp filter_to_fn(%USWFilterConfig{filter: "DUPLICATES"}), do: &Duplicates.apply/4
 
-  @spec config_to_fn(Nostrum.Struct.Message.t(), USWFilterConfig) ::
-          (() -> :action | :passthrough)
+  defp filter_to_fn(%USWFilterConfig{filter: "NEWLINES"}), do: &Newlines.apply/4
+
+  @spec config_to_fn(Message.t(), USWFilterConfig) :: (() -> :action | :passthrough)
   defp config_to_fn(msg, config) do
     fn ->
       func = filter_to_fn(config)
-      func.(msg, config.count, config.interval)
+
+      snowflake_interval_seconds_ago =
+        DateTime.utc_now()
+        |> DateTime.to_unix()
+        |> Kernel.-(config.interval)
+        |> DateTime.from_unix!()
+        |> Snowflake.from_datetime!()
+
+      func.(msg, config.count, config.interval, snowflake_interval_seconds_ago)
     end
   end
 
-  @spec apply(Nostrum.Struct.Message.t()) :: :noop | :ok
+  @spec apply(Message.t()) :: :noop | :ok
   def apply(msg) do
     query =
       from(
@@ -51,7 +60,7 @@ defmodule Bolt.USW do
   end
 
   @spec execute_config(USWPunishmentConfig, Nostrum.Struct.User.t(), String.t()) ::
-          (() -> {:ok, Nostrum.Struct.Message.t()} | Nostrum.Api.error() | :noop)
+          (() -> {:ok, Message.t()} | Nostrum.Api.error() | :noop)
   defp execute_config(
          %USWPunishmentConfig{
            guild_id: guild_id,
@@ -97,8 +106,7 @@ defmodule Bolt.USW do
           DateTime.utc_now()
           |> DateTime.to_unix()
           |> Kernel.+(expiry_seconds)
-          |> DateTime.from_unix()
-          |> elem(1),
+          |> DateTime.from_unix!(),
         data: %{"role_id" => role_id}
       }
 

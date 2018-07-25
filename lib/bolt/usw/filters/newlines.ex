@@ -1,27 +1,30 @@
-defmodule Bolt.USW.Filters.Burst do
-  @moduledoc "Filters messages sent in quick succession."
+defmodule Bolt.USW.Filters.Newlines do
+  @moduledoc "Filters out spam of newlines."
+
   @behaviour Bolt.USW.Filter
 
   alias Bolt.{MessageCache, USW}
-  alias Nostrum.Struct.{Message, Snowflake}
+  alias Nostrum.Struct.Message
 
   @impl true
   @spec apply(Message.t(), non_neg_integer(), non_neg_integer(), Snowflake.t()) ::
           :action | :passthrough
   def apply(msg, limit, interval, interval_seconds_ago_snowflake) do
-    total_recents =
+    recent_newlines =
       msg.guild_id
       |> MessageCache.recent_in_guild()
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
       |> Stream.filter(&(&1.author_id == msg.author.id))
-      |> Enum.take(limit)
-      |> length()
+      |> Stream.map(& &1.content)
+      |> Stream.map(&Regex.scan(~r/\n/, &1))
+      |> Stream.map(&Enum.count(&1))
+      |> Enum.sum()
 
-    if total_recents >= limit do
+    if recent_newlines >= limit do
       USW.punish(
         msg.guild_id,
         msg.author,
-        "sending #{total_recents} messages in #{interval}s"
+        "sending #{recent_newlines} newlines in #{interval}s"
       )
 
       :action

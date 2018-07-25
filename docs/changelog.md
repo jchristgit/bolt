@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.7.0
+- add the `NEWLINES` filter
+
 ## v0.6.0
 - add the `inrole` command
 
