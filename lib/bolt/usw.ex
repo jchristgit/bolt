@@ -9,7 +9,7 @@ defmodule Bolt.USW do
   alias Bolt.USW.Filters.{Burst, Duplicates, Links, Newlines}
   alias Ecto.Changeset
   alias Nostrum.Api
-  alias Nostrum.Cache.Me
+  alias Nostrum.Cache.{GuildCache, Me}
   alias Nostrum.Struct.{Message, Snowflake, User}
   import Ecto.Query, only: [from: 2]
   require Logger
@@ -61,8 +61,8 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec execute_config(USWPunishmentConfig, Nostrum.Struct.User.t(), String.t()) ::
-          (() -> {:ok, Message.t()} | Nostrum.Api.error() | :noop)
+  @spec execute_config(USWPunishmentConfig, User.t(), String.t()) ::
+          (() -> {:ok, Message.t()} | Api.error() | :noop)
   defp execute_config(
          %USWPunishmentConfig{
            guild_id: guild_id,
@@ -120,6 +120,8 @@ defmodule Bolt.USW do
         "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
           " for #{expiry_seconds}s: #{description}" <> level_string
       )
+
+      dm_user(guild_id, user)
     else
       # Deduplicator is active
       true ->
@@ -152,7 +154,7 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec punish(Nostrum.Struct.Guild.id(), Nostrum.Struct.User.t(), String.t()) :: no_return()
+  @spec punish(Guild.id(), User.t(), String.t()) :: no_return()
   def punish(guild_id, user, description) do
     case Repo.get(USWPunishmentConfig, guild_id) do
       nil ->
@@ -160,6 +162,30 @@ defmodule Bolt.USW do
 
       config ->
         execute_config(config, user, description)
+    end
+  end
+
+  @spec dm_user(Guild.id(), User.t()) :: :noop | {:ok, Message.t()} | Api.Error
+  defp dm_user(guild_id, user) do
+    case Api.create_dm(user.id) do
+      {:ok, dm} ->
+        guild_desc =
+          case GuildCache.get(guild_id) do
+            {:ok, guild} ->
+              guild.name
+
+            _error ->
+              guild_id
+          end
+
+        Api.create_message(
+          dm.id,
+          "you have been muted on `#{guild_desc}` for triggering " <>
+            "a spam filter. contact a staff member for further information"
+        )
+
+      _error ->
+        :noop
     end
   end
 end

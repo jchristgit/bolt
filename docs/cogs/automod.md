@@ -6,6 +6,7 @@ USW functions by applying *filters* on messages sent by users.
 When a message comes in, Bolt checks for configured filters and applies all of them on the message.
 If the message hits one of the limits that were configured on your guild, Bolt will apply the configured punishment.
 Punishment escalation can be enabled to increase the punishment duration on repeated offenders.
+Bolt will also attempt to DM the user and inform them about why they were given the role.
 
 !> Be very careful when configuring filters.
 An overly strict configuration *will* punish innocent members.

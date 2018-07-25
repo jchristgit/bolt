@@ -3,6 +3,7 @@
 ## Unreleased
 - `per` can now be optionally be written in `usw set`, for example `usw set 5 per 7`
 - `usw set` and `usw unset` now emit modlog events with `CONFIG_UPDATE`
+- `usw` will now attempt to dm users on punishment
 
 ## v0.6.0
 - add the `LINKS` filter
