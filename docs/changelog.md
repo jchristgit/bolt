@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.2
+- fix `MESSAGE_DELETE` logs not displaying the message content
+- improve message update formatting
+
 ## v0.4.1
 - fix converters incorrectly picking up names such as `250k` as an ID
 

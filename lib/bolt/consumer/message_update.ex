@@ -1,9 +1,10 @@
 defmodule Bolt.Consumer.MessageUpdate do
   @moduledoc "Handles the `MESSAGE_UPDATE` event."
 
-  alias Bolt.{Constants, MessageCache, ModLog}
+  alias Bolt.{Constants, Helpers, MessageCache, ModLog}
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.{Author, Field}
+  alias Nostrum.Struct.Snowflake
 
   @spec handle(Nostrum.Struct.Message.t()) :: :ok
   def handle(msg) do
@@ -25,9 +26,9 @@ defmodule Bolt.Consumer.MessageUpdate do
             name: "Metadata",
             value: """
             Channel: <##{msg.channel_id}>
+            Creation: #{msg.id |> Snowflake.creation_time() |> Helpers.datetime_to_human()}
             Message ID: #{msg.id}
-            """,
-            inline: true
+            """
           },
           %Field{
             name: "Old content",
