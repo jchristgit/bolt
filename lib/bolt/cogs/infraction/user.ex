@@ -9,7 +9,9 @@ defmodule Bolt.Cogs.Infraction.User do
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
+  alias Timex.Duration
   import Ecto.Query, only: [from: 2]
+  use Timex
 
   @impl true
   def usage, do: ["infraction user <user:snowflake|member...>"]
@@ -32,23 +34,25 @@ defmodule Bolt.Cogs.Infraction.User do
 
     case Helpers.into_id(msg.guild_id, user_text) do
       {:ok, user_id, _maybe_user} ->
-        query = from(i in Infraction, where: [guild_id: ^msg.guild_id, user_id: ^user_id])
+        query =
+          from(
+            infr in Infraction,
+            where: [guild_id: ^msg.guild_id, user_id: ^user_id],
+            order_by: [desc: infr.inserted_at]
+          )
+
         queryset = Repo.all(query)
 
         user_string = General.format_user(msg.guild_id, user_id)
 
         base_embed = %Embed{
-          title: "infractions for #{user_string}",
+          title: "Infractions for #{user_string}",
           color: Constants.color_blue()
         }
 
         formatted_entries =
           queryset
-          |> Stream.map(fn infr ->
-            "[`#{infr.id}`] #{General.emoji_for_type(infr.type)} created #{
-              Helpers.datetime_to_human(infr.inserted_at)
-            }"
-          end)
+          |> Stream.map(&format_entry/1)
           |> Stream.chunk_every(6)
           |> Enum.map(fn entry_chunk ->
             %Embed{
@@ -67,5 +71,26 @@ defmodule Bolt.Cogs.Infraction.User do
   def command(msg, _args) do
     response = "ℹ️ usage: `infraction user <user:snowflake|member...>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  @spec format_entry(Infraction) :: String.t()
+  def format_entry(infr) do
+    "[`#{infr.id}`] " <>
+      "#{General.emoji_for_type(infr.type)} " <>
+      if(infr.expires_at != nil and infr.active, do: "**", else: "") <>
+      "#{Timex.from_now(infr.inserted_at)} " <>
+      if(
+        infr.expires_at != nil,
+        do:
+          "(for #{
+            infr.inserted_at
+            |> DateTime.diff(infr.expires_at)
+            |> Duration.from_seconds()
+            |> Timex.format_duration(:humanized)
+          }) ",
+        else: ""
+      ) <>
+      if(infr.expires_at != nil and infr.active, do: "**", else: "") <>
+      if(infr.reason != nil, do: ": #{infr.reason}", else: "")
   end
 end

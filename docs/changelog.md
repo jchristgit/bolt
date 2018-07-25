@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.5.0
+- a lot more readable and concise formatting in `infr user` and `infr list`
+
 ## v0.4.2
 - fix `MESSAGE_DELETE` logs not displaying the message content
 - improve message update formatting

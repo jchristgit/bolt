@@ -5,12 +5,13 @@ defmodule Bolt.Cogs.Infraction.List do
 
   alias Bolt.Cogs.Infraction.General
   alias Bolt.Commander.Checks
-  alias Bolt.{Constants, Helpers, Paginator, Repo}
+  alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Cache.Me
+  alias Nostrum.Cache.{GuildCache, Me}
   alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
+  use Timex
 
   @impl true
   def usage, do: ["infraction list"]
@@ -94,21 +95,43 @@ defmodule Bolt.Cogs.Infraction.List do
       color: Constants.color_blue()
     }
 
-    formatted_entries =
+    pages =
       queryset
       |> Stream.map(fn infr ->
-        "[`#{infr.id}`] #{General.emoji_for_type(infr.type)} on " <>
-          "#{General.format_user(msg.guild_id, infr.user_id)} created #{
-            Helpers.datetime_to_human(infr.inserted_at)
-          }"
+        %Embed.Field{
+          name:
+            "##{infr.id} #{General.emoji_for_type(infr.type)} #{
+              if infr.expires_at != nil and infr.active, do: "(active)", else: ""
+            }",
+          value:
+            """
+            **User**: <@#{infr.user_id}>
+            **Actor**: <@#{infr.actor_id}>
+            **Creation**: #{Timex.from_now(infr.inserted_at)}
+            """ <>
+              if(
+                infr.expires_at != nil,
+                do: "**Duration**: #{format_duration(infr.inserted_at, infr.expires_at)}",
+                else: ""
+              ),
+          inline: true
+        }
       end)
       |> Stream.chunk_every(6)
-      |> Enum.map(fn entry_chunk ->
+      |> Enum.map(fn field_chunk ->
         %Embed{
-          description: Enum.join(entry_chunk, "\n")
+          fields: field_chunk
         }
       end)
 
-    Paginator.paginate_over(msg, base_embed, formatted_entries)
+    Paginator.paginate_over(msg, base_embed, pages)
+  end
+
+  @spec format_duration(DateTime.t(), DateTime.t()) :: String.t()
+  defp format_duration(creation, expiry) do
+    creation
+    |> DateTime.diff(expiry)
+    |> Duration.from_seconds()
+    |> Timex.format_duration(:humanized)
   end
 end
