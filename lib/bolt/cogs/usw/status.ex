@@ -13,27 +13,6 @@ defmodule Bolt.Cogs.USW.Status do
   import Ecto.Query, only: [from: 2]
   use Timex
 
-  defp format_punishment_config(guild_id) do
-    case Repo.get(USWPunishmentConfig, guild_id) do
-      nil ->
-        "no punishment is configured"
-
-      %USWPunishmentConfig{
-        duration: duration,
-        escalate: escalate,
-        punishment: "TEMPROLE",
-        data: %{"role_id" => role_id}
-      } ->
-        duration_string =
-          duration
-          |> Duration.from_seconds()
-          |> Timex.format_duration(:humanized)
-
-        "configured punishment: `TEMPROLE` of role `#{role_id}` for #{duration_string}" <>
-          ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
-    end
-  end
-
   @impl true
   def usage, do: ["usw status"]
 
@@ -56,6 +35,7 @@ defmodule Bolt.Cogs.USW.Status do
     pages =
       query
       |> Repo.all()
+      |> Enum.sort_by(& &1.filter)
       |> Stream.map(
         &%Field{
           name: "`#{&1.filter}`",
@@ -88,5 +68,26 @@ defmodule Bolt.Cogs.USW.Status do
   def command(msg, _args) do
     response = "ℹ️ usage: `usw status`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  defp format_punishment_config(guild_id) do
+    case Repo.get(USWPunishmentConfig, guild_id) do
+      nil ->
+        "no punishment is configured"
+
+      %USWPunishmentConfig{
+        duration: duration,
+        escalate: escalate,
+        punishment: "TEMPROLE",
+        data: %{"role_id" => role_id}
+      } ->
+        duration_string =
+          duration
+          |> Duration.from_seconds()
+          |> Timex.format_duration(:humanized)
+
+        "configured punishment: `TEMPROLE` of role `#{role_id}` for #{duration_string}" <>
+          ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
+    end
   end
 end

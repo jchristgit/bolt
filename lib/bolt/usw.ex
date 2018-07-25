@@ -6,7 +6,7 @@ defmodule Bolt.USW do
   alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
   alias Bolt.USW.{Deduplicator, Escalator}
-  alias Bolt.USW.Filters.{Burst, Duplicates, Newlines}
+  alias Bolt.USW.Filters.{Burst, Duplicates, Links, Newlines}
   alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.Me
@@ -20,6 +20,8 @@ defmodule Bolt.USW do
   defp filter_to_fn(%USWFilterConfig{filter: "BURST"}), do: &Burst.apply/4
 
   defp filter_to_fn(%USWFilterConfig{filter: "DUPLICATES"}), do: &Duplicates.apply/4
+
+  defp filter_to_fn(%USWFilterConfig{filter: "LINKS"}), do: &Links.apply/4
 
   defp filter_to_fn(%USWFilterConfig{filter: "NEWLINES"}), do: &Newlines.apply/4
 

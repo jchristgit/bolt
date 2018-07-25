@@ -9,7 +9,6 @@ Punishment escalation can be enabled to increase the punishment duration on repe
 
 !> Be very careful when configuring filters.
 An overly strict configuration *will* punish innocent members.
-The filters here contain recommended configuration that generally works well.
 
 
 ## Filters
@@ -18,7 +17,7 @@ The filters here contain recommended configuration that generally works well.
   The `BURST` filter checks repeated messages by the same user.
   For example, configuration set with `.usw set BURST 5 10` will allow
   *5* messages sent by the same user within *10* seconds before applying
-  the configured punishment. **Recommended configuration**: *5* messages per *5* seconds.
+  the configured punishment.
 
 - `DUPLICATES`
 
@@ -27,7 +26,18 @@ The filters here contain recommended configuration that generally works well.
   `.usw set DUPLICATES 5 20` will allow *5* duplicated messages sent
   within *20* seconds. Punishment will apply on any user who
   sent at least a single duplicated message.
-  **Recommended configuration**: *4* messages per *20* seconds.
+
+- `LINKS`
+
+  The `LINKS` filter checks for the total amount of links in messages
+  sent by a single user. For example, configuration set with
+  `.usw set LINKS 4 10` will allow *4* links sent within *10* seconds.
+
+- `NEWLINES`
+
+  The `NEWLINES` filter checks for total amount of newlines in messages
+  sent by a single user. For example, configuration set with
+  `.usw set NEWLINES 20 10` will allow *20* newlines sent within *10* seconds.
 
 
 ## Punishments

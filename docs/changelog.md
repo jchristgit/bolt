@@ -1,7 +1,9 @@
 # Changelog
 
 ## v0.7.0
+- add the `LINKS` filter
 - add the `NEWLINES` filter
+- sort `usw status` fields by filter name
 
 ## v0.6.0
 - add the `inrole` command

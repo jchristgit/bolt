@@ -1,6 +1,5 @@
 defmodule Bolt.USW.Filters.Duplicates do
   @moduledoc "Filters duplicated messages by multiple authors."
-
   @behaviour Bolt.USW.Filter
 
   alias Bolt.{MessageCache, USW}
