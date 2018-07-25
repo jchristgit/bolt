@@ -8,7 +8,7 @@ defmodule Bolt.Cogs.Infraction.List do
   alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Cache.{GuildCache, Me}
+  alias Nostrum.Cache.Me
   alias Nostrum.Struct.Embed
   import Ecto.Query, only: [from: 2]
   use Timex
