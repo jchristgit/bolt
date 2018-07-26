@@ -17,7 +17,7 @@ defmodule Bolt.Schema.USWFilterConfig do
     config
     |> cast(params, [:guild_id, :filter, :count, :interval])
     |> validate_required([:guild_id, :filter, :count, :interval])
-    |> validate_inclusion(:count, 3..15, message: "needs to be within 3 and 15")
+    |> validate_inclusion(:count, 3..50, message: "needs to be within 3 and 50")
     |> validate_inclusion(:interval, 5..60, message: "needs to be within 5 and 60")
     |> validate_inclusion(:filter, existing_filters())
   end
