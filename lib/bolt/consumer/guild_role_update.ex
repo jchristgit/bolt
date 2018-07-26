@@ -61,7 +61,7 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
         true ->
           diff_list ++
             [
-              "#{key |> Atom.to_string() |> String.capitalize()} updated from `#{old_value}` to `#{
+              "#{Atom.to_string(key)} updated from `#{old_value}` to `#{
                 new_value
               }`"
             ]
