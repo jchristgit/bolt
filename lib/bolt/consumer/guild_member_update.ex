@@ -64,7 +64,12 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
           String.t()
         ]
   def describe_if_changed(diff_list, guild_id, old_member, new_member, :roles) do
-    role_diff = List.myers_difference(old_member.roles, new_member.roles)
+    # Sort the roles to ensure that newly ordered roles don't
+    # don't mess up the Myers difference calculation below.
+    old_roles = Enum.sort(old_member.roles)
+    new_roles = Enum.sort(new_member.roles)
+
+    role_diff = List.myers_difference(old_roles, new_roles)
 
     added_roles = role_diff |> Keyword.get_values(:ins) |> List.flatten()
     removed_roles = role_diff |> Keyword.get_values(:del) |> List.flatten()
