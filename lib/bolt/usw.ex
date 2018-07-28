@@ -5,8 +5,7 @@ defmodule Bolt.USW do
   alias Bolt.Events.Handler
   alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
-  alias Bolt.USW.{Deduplicator, Escalator}
-  alias Bolt.USW.Filters.{Burst, Duplicates, Links, Mentions, Newlines}
+  alias Bolt.USW.{Deduplicator, Escalator, Filters}
   alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.{GuildCache, Me}
@@ -14,23 +13,18 @@ defmodule Bolt.USW do
   import Ecto.Query, only: [from: 2]
   require Logger
 
-  @spec filter_to_fn(USWFilterConfig) ::
-          (Message.t(), non_neg_integer(), non_neg_integer() ->
-             :action | :passthrough)
-  defp filter_to_fn(%USWFilterConfig{filter: "BURST"}), do: &Burst.apply/4
-
-  defp filter_to_fn(%USWFilterConfig{filter: "DUPLICATES"}), do: &Duplicates.apply/4
-
-  defp filter_to_fn(%USWFilterConfig{filter: "LINKS"}), do: &Links.apply/4
-
-  defp filter_to_fn(%USWFilterConfig{filter: "MENTIONS"}), do: &Mentions.apply/4
-
-  defp filter_to_fn(%USWFilterConfig{filter: "NEWLINES"}), do: &Newlines.apply/4
+  @filter_name_to_function %{
+    "BURST" => &Filters.Burst.apply/4,
+    "DUPLICATES" => &Filters.Duplicates.apply/4,
+    "LINKS" => &Filters.Links.apply/4,
+    "MENTIONS" => &Filters.Mentions.apply/4,
+    "NEWLINES" => &Filters.Newlines.apply/4
+  }
 
   @spec config_to_fn(Message.t(), USWFilterConfig) :: (() -> :action | :passthrough)
   defp config_to_fn(msg, config) do
     fn ->
-      func = filter_to_fn(config)
+      func = Map.fetch!(@filter_name_to_function, config.filter)
 
       snowflake_interval_seconds_ago =
         DateTime.utc_now()
@@ -43,7 +37,7 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec apply(Message.t()) :: :noop | :ok
+  @spec apply(Message.t()) :: :noop | :ok | nil
   def apply(msg) do
     query =
       from(
