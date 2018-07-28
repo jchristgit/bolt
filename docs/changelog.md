@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- update to newest Elixir version.
 
 ## v0.7.0
 - add the `MENTIONS` filter

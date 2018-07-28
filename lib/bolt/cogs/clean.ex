@@ -115,7 +115,6 @@ defmodule Bolt.Cogs.Clean do
           Message.t(),
           {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
         ) :: {:ok, Message.t()}
-  @doc "Default invocation: `clean`"
   def command(msg, {[], [], []}) do
     case Api.get_channel_messages(msg.channel_id, 30) do
       {:ok, []} ->
@@ -138,7 +137,6 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  @doc "Invocation without options, but args provided: `clean <amount:int>`"
   def command(msg, {[], [maybe_amount | []], []}) do
     with {amount, _rest} <- Integer.parse(maybe_amount),
          {:ok, messages} when messages != [] <-
@@ -171,7 +169,6 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  @doc "Invocation without options, but more than one arg provided: `clean 30 monoculus`"
   def command(msg, {[], [_maybe_amount | unrecognized_args], []}) do
     {:ok, _msg} =
       Api.create_message(
@@ -184,7 +181,6 @@ defmodule Bolt.Cogs.Clean do
       )
   end
 
-  @doc "Invocation with valid options, but argv given, e.g. `clean --bots monoculus`"
   def command(msg, {options, args, []}) when options != [] and args != [] do
     {:ok, _msg} =
       Api.create_message(
@@ -193,7 +189,6 @@ defmodule Bolt.Cogs.Clean do
       )
   end
 
-  @doc "Invocation with only options, e.g. `clean --bots --limit 40`"
   def command(msg, {options, [], []}) when options != [] do
     with {:ok, channel_id} <- parse_channel(msg, options),
          {:ok, messages} <-
@@ -218,7 +213,6 @@ defmodule Bolt.Cogs.Clean do
     end
   end
 
-  @doc "Invocation with invalid args, e.g. `clean --whatever`"
   def command(msg, {_parsed, _args, invalid}) when invalid != [] do
     invalid_args =
       invalid

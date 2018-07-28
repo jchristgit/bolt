@@ -113,17 +113,12 @@ defmodule Bolt.Cogs.GuildInfo do
   @impl true
   def predicates, do: [&Checks.guild_only/1]
 
-  @doc """
-  Display information about the guild that
-  this command is invoked on.
-  """
   @impl true
   def command(msg, []) do
     embed = fetch_and_build(msg.guild_id, "This guild")
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
 
-  @doc "Display information about the given guild ID"
   def command(msg, [guild_id]) do
     case Snowflake.cast(guild_id) do
       {:ok, snowflake} when snowflake != nil ->
