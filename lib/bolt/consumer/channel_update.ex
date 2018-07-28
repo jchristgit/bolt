@@ -135,7 +135,8 @@ defmodule Bolt.Consumer.ChannelUpdate do
       end
     )
     |> Map.values()
-    |> Enum.map(&format_overwrite_diff(guild_id, &1))
+    |> Stream.map(&format_overwrite_diff(guild_id, &1))
+    |> Stream.reject(&(&1 == ""))
   end
 
   # Describes the difference between two overwrites.
@@ -167,10 +168,11 @@ defmodule Bolt.Consumer.ChannelUpdate do
     "removed overwrite for #{format_overwrite_target(guild_id, old_overwrite)}"
   end
 
-  def format_overwrite_diff(guild_id, {old_overwrite, new_overwrite}) do
-    # An overwrite was updated, meaning that the matcher found two
-    # overwrites referencing the same user or role ID.
-
+  # We may get an overwrite sent when nothing actually updated here.
+  # To ensure that there's anything worthy of logging, check that
+  # the old overwrite and new overwrite are actually not identical.
+  def format_overwrite_diff(guild_id, {old_overwrite, new_overwrite})
+      when old_overwrite != new_overwrite do
     # Find which explicit allow overwrites were added and removed.
     old_allowed = Permission.from_bitset!(old_overwrite.allow)
     new_allowed = Permission.from_bitset!(new_overwrite.allow)
@@ -204,6 +206,10 @@ defmodule Bolt.Consumer.ChannelUpdate do
           Enum.map(removed_denied, &"no longer explicitly denied to `#{&1}`"),
         ", "
       )
+  end
+
+  def format_overwrite_diff(_guild_id, {_old_overwrite, _new_overwrite}) do
+    ""
   end
 
   @spec format_overwrite_target(Guild.id(), Overwrite.t()) :: String.t()
