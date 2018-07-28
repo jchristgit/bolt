@@ -4,7 +4,7 @@ defmodule Bolt.USW do
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.{ModLog, Repo}
-  alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
+  alias Bolt.Schema.{USWRuleConfig, USWPunishmentConfig}
   alias Bolt.USW.{Deduplicator, Escalator, Filters}
   alias Ecto.Changeset
   alias Nostrum.Api
@@ -21,10 +21,10 @@ defmodule Bolt.USW do
     "NEWLINES" => &Filters.Newlines.apply/4
   }
 
-  @spec config_to_fn(Message.t(), USWFilterConfig) :: (() -> :action | :passthrough)
+  @spec config_to_fn(Message.t(), USWRuleConfig) :: (() -> :action | :passthrough)
   defp config_to_fn(msg, config) do
     fn ->
-      func = Map.fetch!(@filter_name_to_function, config.filter)
+      func = Map.fetch!(@filter_name_to_function, config.rule)
 
       snowflake_interval_seconds_ago =
         DateTime.utc_now()
@@ -41,7 +41,7 @@ defmodule Bolt.USW do
   def apply(msg) do
     query =
       from(
-        config in USWFilterConfig,
+        config in USWRuleConfig,
         where: [guild_id: ^msg.guild_id],
         select: config
       )

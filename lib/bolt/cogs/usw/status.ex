@@ -5,7 +5,7 @@ defmodule Bolt.Cogs.USW.Status do
 
   alias Bolt.Commander.Checks
   alias Bolt.{Constants, Paginator, Repo}
-  alias Bolt.Schema.{USWFilterConfig, USWPunishmentConfig}
+  alias Bolt.Schema.{USWRuleConfig, USWPunishmentConfig}
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field
@@ -29,16 +29,15 @@ defmodule Bolt.Cogs.USW.Status do
 
   @impl true
   def command(msg, []) do
-    query =
-      from(config in USWFilterConfig, where: config.guild_id == ^msg.guild_id, select: config)
+    query = from(config in USWRuleConfig, where: config.guild_id == ^msg.guild_id, select: config)
 
     pages =
       query
       |> Repo.all()
-      |> Enum.sort_by(& &1.filter)
+      |> Enum.sort_by(& &1.rule)
       |> Stream.map(
         &%Field{
-          name: "`#{&1.filter}`",
+          name: "`#{&1.rule}`",
           value: """
           max: #{&1.count}
           per: #{&1.interval}s

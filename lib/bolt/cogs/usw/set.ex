@@ -5,22 +5,26 @@ defmodule Bolt.Cogs.USW.Set do
 
   alias Bolt.Commander.Checks
   alias Bolt.{ErrorFormatters, Helpers, ModLog, Repo}
-  alias Bolt.Schema.USWFilterConfig
+  alias Bolt.Schema.USWRuleConfig
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
   @impl true
-  def usage, do: ["usw set <filter:str> <count:int> [per] <interval:int>"]
+  def usage, do: ["usw set <rule:str> <count:int> [per] <interval:int>"]
 
   @impl true
   def description,
     do: """
-    Sets the given `filter` to allow `count` objects to pass through within `interval` seconds.
+    Sets the given `rule` to allow `count` objects to pass through within `interval` seconds.
 
-    Existing filters:
+    Existing rules:
     • `BURST`: Allows `count` messages by the same author within `interval` seconds.
+    • `DUPLICATES`: Allows `count` same messages within `interval` seconds.
+    • `LINKS`: Allows `count` links by the same author within `interval` seconds
+    • `MENTIONS`: Allows `count` user mentions by the same author within `interval` seconds.
+    • `NEWLINES`: Allows `count` newlines by the same author within `interval` seconds.
 
-    For example, to allow 5 messages by the same user within 7 seconds (using the `BURST` filter), one would use `usw set BURST 5 7`.
+    For example, to allow 5 messages by the same user within 7 seconds (using the `BURST` rule), one would use `usw set BURST 5 7`.
 
     For readability, `per` can be given between `count` and `interval`, for example `usw set BURST 5 per 7`.
 
@@ -32,38 +36,38 @@ defmodule Bolt.Cogs.USW.Set do
     do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
 
   @impl true
-  def command(msg, [filter, count_str, interval_str]) do
-    filter = String.upcase(filter)
+  def command(msg, [rule_name, count_str, interval_str]) do
+    rule_name = String.upcase(rule_name)
 
     response =
-      with true <- filter in USWFilterConfig.existing_filters(),
+      with true <- rule_name in USWRuleConfig.existing_rules(),
            {count, _} <- Integer.parse(count_str),
            {interval, _} <- Integer.parse(interval_str),
            params <- %{
              guild_id: msg.guild_id,
-             filter: filter,
+             rule: rule_name,
              count: count,
              interval: interval
            },
-           changeset <- USWFilterConfig.changeset(%USWFilterConfig{}, params),
+           changeset <- USWRuleConfig.changeset(%USWRuleConfig{}, params),
            {:ok, _struct} <-
              Repo.insert(
                changeset,
-               conflict_target: [:guild_id, :filter],
+               conflict_target: [:guild_id, :rule],
                on_conflict: [set: [count: count, interval: interval]]
              ) do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
           "#{User.full_name(msg.author)} (`#{msg.author.id}`) updated USW configuration: " <>
-            "now allowing max **#{count}** objects per **#{interval}**s in filter `#{filter}`"
+            "now allowing max **#{count}** objects per **#{interval}**s in rule `#{rule_name}`"
         )
 
         "👌 updated configuration, will now allow max **#{count}**" <>
-          " objects per **#{interval}**s in filter `#{filter}`"
+          " objects per **#{interval}**s in rule `#{rule_name}`"
       else
         false ->
-          "🚫 `#{Helpers.clean_content(filter)}` is not a known filter"
+          "🚫 `#{Helpers.clean_content(rule_name)}` is not a known rule"
 
         :error ->
           "🚫 either `count` or `interval` are not integers"
@@ -80,7 +84,7 @@ defmodule Bolt.Cogs.USW.Set do
   end
 
   def command(msg, _args) do
-    response = "🚫 expected 3 arguments (filter, count, interval), got some other amount"
+    response = "🚫 expected 3 arguments (rule, count, interval), got something else"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end

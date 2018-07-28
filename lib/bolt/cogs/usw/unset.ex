@@ -5,17 +5,17 @@ defmodule Bolt.Cogs.USW.Unset do
 
   alias Bolt.Commander.Checks
   alias Bolt.{Helpers, ModLog, Repo}
-  alias Bolt.Schema.USWFilterConfig
+  alias Bolt.Schema.USWRuleConfig
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
   @impl true
-  def usage, do: ["usw unset <filter:str>"]
+  def usage, do: ["usw unset <rule:str>"]
 
   @impl true
   def description,
     do: """
-    Unsets configuration for the given filter, effectively disabling it.
+    Unsets configuration for the given rule, effectively disabling it.
 
     Requires the `MANAGE_GUILD` permission.
     """
@@ -25,16 +25,16 @@ defmodule Bolt.Cogs.USW.Unset do
     do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
 
   @impl true
-  def command(msg, [filter]) do
-    filter = String.upcase(filter)
+  def command(msg, [rule]) do
+    rule = String.upcase(rule)
 
     response =
-      if filter not in USWFilterConfig.existing_filters() do
-        "🚫 unknown filter: `#{Helpers.clean_content(filter)}`"
+      if rule not in USWRuleConfig.existing_rules() do
+        "🚫 unknown rule: `#{Helpers.clean_content(rule)}`"
       else
-        case Repo.get_by(USWFilterConfig, guild_id: msg.guild_id, filter: filter) do
+        case Repo.get_by(USWRuleConfig, guild_id: msg.guild_id, rule: rule) do
           nil ->
-            "🚫 there is no configuration set up for filter `#{filter}`"
+            "🚫 there is no configuration set up for rule `#{rule}`"
 
           object ->
             {:ok, _struct} = Repo.delete(object)
@@ -43,10 +43,10 @@ defmodule Bolt.Cogs.USW.Unset do
               msg.guild_id,
               "CONFIG_UPDATE",
               "#{User.full_name(msg.author)} (`#{msg.author.id}`) deleted USW " <>
-                "configuration for filter `#{filter}`"
+                "configuration for rule `#{rule}`"
             )
 
-            "👌 deleted configuration for filter `#{filter}`"
+            "👌 deleted configuration for rule `#{rule}`"
         end
       end
 
