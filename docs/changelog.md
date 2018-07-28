@@ -5,6 +5,7 @@
 - `usw set` and `usw unset` now emit modlog events with `CONFIG_UPDATE`
 - `usw` will now attempt to dm users on punishment
 - role ordering will no longer mess up role update logging
+- fix reversed clean log in `clean` command
 
 ## v0.6.0
 - add the `LINKS` filter

@@ -92,9 +92,10 @@ defmodule Bolt.Cogs.Clean do
   defp log_deleted(invocation_message, messages) do
     log_content =
       messages
-      |> Enum.map(
+      |> Stream.map(
         &"#{String.pad_leading(&1.author.username, 20)}##{&1.author.discriminator}: #{&1.content}"
       )
+      |> Enum.reverse()
       |> Enum.join("\n")
 
     ModLog.emit(
@@ -245,7 +246,7 @@ defmodule Bolt.Cogs.Clean do
       value ->
         case Converters.to_channel(msg.guild_id, value) do
           {:ok, channel} -> {:ok, channel.id}
-          {:error, _reason} = error -> error
+          error -> error
         end
     end
   end
