@@ -28,6 +28,7 @@ defmodule Bolt.Schema.USWFilterConfig do
       "BURST",
       "DUPLICATES",
       "LINKS",
+      "MENTIONS",
       "NEWLINES"
     ]
   end
