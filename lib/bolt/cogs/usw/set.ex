@@ -56,11 +56,11 @@ defmodule Bolt.Cogs.USW.Set do
           msg.guild_id,
           "CONFIG_UPDATE",
           "#{User.full_name(msg.author)} (`#{msg.author.id}`) updated USW configuration: " <>
-            "now allowing max **#{count}** messages per **#{interval}**s in filter `#{filter}`"
+            "now allowing max **#{count}** objects per **#{interval}**s in filter `#{filter}`"
         )
 
         "👌 updated configuration, will now allow max **#{count}**" <>
-          " messages per **#{interval}**s in filter `#{filter}`"
+          " objects per **#{interval}**s in filter `#{filter}`"
       else
         false ->
           "🚫 `#{Helpers.clean_content(filter)}` is not a known filter"
