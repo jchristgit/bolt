@@ -60,6 +60,8 @@ Shows all members with the given role.
 .inrole muted
 ```
 
+?> Changed in version [`0.8.0`](changelog#v080): Now shows username and discriminator in addition to the mention.
+
 ### `.help [command:str]`
 Shows help for the given command or command group. When no command or command group is given, shows all available commands.
 `syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.

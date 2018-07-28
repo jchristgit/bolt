@@ -1,7 +1,8 @@
 # Changelog
 
 ## Unreleased
-- update to newest Elixir version.
+- show username and discrim in addition to mention in `inrole` command
+- update to newest Elixir version
 
 ## v0.7.0
 - add the `MENTIONS` filter

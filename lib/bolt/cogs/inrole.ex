@@ -51,7 +51,7 @@ defmodule Bolt.Cogs.InRole do
       pages =
         members
         |> Enum.sort_by(&String.downcase(&1.user.username))
-        |> Stream.map(&User.mention(&1.user))
+        |> Stream.map(&"#{User.full_name(&1.user)} (#{User.mention(&1.user)})")
         |> Stream.chunk_every(25)
         |> Enum.map(fn mention_chunk ->
           %Embed{
