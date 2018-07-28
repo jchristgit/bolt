@@ -18,4 +18,4 @@ RUN chown -R bolt:bolt /app/_build/prod/lib/tzdata/priv/
 
 USER bolt
 
-ENTRYPOINT ["mix", "run", "--no-halt"]
+CMD ["mix", "run", "--no-halt"]
