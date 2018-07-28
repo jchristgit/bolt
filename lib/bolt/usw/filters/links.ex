@@ -6,6 +6,7 @@ defmodule Bolt.USW.Filters.Links do
   alias Nostrum.Struct.{Message, Snowflake}
 
   # Taken from Matthew O'Riordan on StackOverflow: https://stackoverflow.com/a/8234912/1955716
+  # credo:disable-for-next-line Credo.Check.Readability.MaxLineLength
   @link_re ~r</((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/>
 
   @impl true
