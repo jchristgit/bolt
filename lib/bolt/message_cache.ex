@@ -9,6 +9,7 @@ defmodule Bolt.MessageCache do
            author_id: User.id(),
            channel_id: Channel.id(),
            content: String.t(),
+           total_mentions: non_neg_integer(),
            id: Message.id()
          }
 
@@ -78,7 +79,9 @@ defmodule Bolt.MessageCache do
       fn msg_map ->
         new_message_map = %{
           author_id: msg.author.id,
+          channel_id: msg.channel_id,
           content: msg.content,
+          total_mentions: length(msg.mentions),
           id: msg.id
         }
 
