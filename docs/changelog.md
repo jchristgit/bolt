@@ -1,8 +1,12 @@
 # Changelog
 
 ## Unreleased
+
+## v0.7.0
+- add the `MENTIONS` filter
 - `per` can now be optionally be written in `usw set`, for example `usw set 5 per 7`
 - `usw set` and `usw unset` now emit modlog events with `CONFIG_UPDATE`
+- update `usw set` response to better reflect what it's actually doing
 - `usw` will now attempt to dm users on punishment
 - role ordering will no longer mess up role update logging
 - fix reversed clean log in `clean` command

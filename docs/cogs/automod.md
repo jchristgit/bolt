@@ -34,6 +34,12 @@ An overly strict configuration *will* punish innocent members.
   sent by a single user. For example, configuration set with
   `.usw set LINKS 4 10` will allow *4* links sent within *10* seconds.
 
+- `MENTIONS`
+
+  The `MENTIONS` filter checks for the total amount of (user) mentions in
+  messages sent by a single user. For example, configuration set with
+  `.usw set MENTIONS 3 5` will allow *3* mentions in *5* seconds.
+
 - `NEWLINES`
 
   The `NEWLINES` filter checks for total amount of newlines in messages
