@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.8.0
 - add the `GUILD_BAN_ADD` and `GUILD_BAN_REMOVE` modlog events
 - show username and discrim in addition to mention in `inrole` command
 - update to newest Elixir version
