@@ -17,6 +17,8 @@ defmodule Bolt.Consumer.GuildBanRemove do
           }
         }) :: :noop | ModLog.on_emit()
   def handle(guild_id, %{user: user}) do
+    do_regular_modlog(guild_id, user)
+
     active_ban_query =
       from(
         infr in Infraction,
@@ -38,9 +40,23 @@ defmodule Bolt.Consumer.GuildBanRemove do
           guild_id,
           "INFRACTION_UPDATE",
           "#{user.username}##{user.discriminator} (`#{user.id}`) was manually unbanned while a" <>
-            " #{updated_infraction.type} was active. The infraction (##{updated_infraction.id})" <>
+            " #{updated_infraction.type} was active, the infraction (##{updated_infraction.id})" <>
             " has been set to inactive."
         )
     end
+  end
+
+  @spec do_regular_modlog(Guild.id(), %{
+          avatar: User.avatar(),
+          discriminator: User.discriminator(),
+          id: User.id(),
+          username: User.username()
+        }) :: ModLog.on_emit()
+  defp do_regular_modlog(guild_id, user) do
+    ModLog.emit(
+      guild_id,
+      "GUILD_BAN_REMOVE",
+      "#{user.username}##{user.discriminator} (`#{user.id}`) was unbanned"
+    )
   end
 end
