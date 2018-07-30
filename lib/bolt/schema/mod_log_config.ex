@@ -50,6 +50,10 @@ defmodule Bolt.Schema.ModLogConfig do
       "MESSAGE_EDIT",
       # message deleted
       "MESSAGE_DELETE",
+      # member banned
+      "GUILD_BAN_ADD",
+      # member unbanned
+      "GUILD_BAN_REMOVE",
       # member joined
       "GUILD_MEMBER_ADD",
       # member updated themselves

@@ -73,6 +73,16 @@ Bolt knows the following events:
   Bolt maintains an internal message cache and will attempt to
   fetch the original content of the message, but this is not always possible.
 
+- `GUILD_BAN_ADD`
+
+  Emitted when a member is banned, either manually or through bolt.
+
+- `GUILD_BAN_REMOVE`
+
+  Emitted when a member is unbanned. In addition to the configurable logging,
+  Bolt will check the infraction database for temporary or permanent bans
+  and set these to inactive if applicable.
+
 - `GUILD_MEMBER_ADD`
 
   Emitted when a user joins your guild.
