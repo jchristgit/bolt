@@ -8,6 +8,7 @@ defmodule Bolt.Cogs.Infraction.General do
   @type_emojis %{
     "note" => "📔",
     "tempmute" => "🔇⏲",
+    "forced_nick" => "📛",
     "mute" => "🔇",
     "unmute" => "📢",
     "temprole" => "🎽⏲",

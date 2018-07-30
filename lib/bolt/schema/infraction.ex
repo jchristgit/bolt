@@ -55,6 +55,7 @@ defmodule Bolt.Schema.Infraction do
       "tempmute",
       "mute",
       "unmute",
+      "forced_nick",
       "temprole",
       "warning",
       "kick",
