@@ -5,6 +5,7 @@ defmodule Bolt.Consumer do
     ChannelCreate,
     ChannelDelete,
     ChannelUpdate,
+    GuildBanAdd,
     GuildBanRemove,
     GuildCreate,
     GuildDelete,
@@ -54,6 +55,10 @@ defmodule Bolt.Consumer do
         {:MESSAGE_DELETE, {%{channel_id: channel_id, guild_id: guild_id, id: msg_id}}, _ws_state}
       ) do
     MessageDelete.handle(channel_id, guild_id, msg_id)
+  end
+
+  def handle_event({:GUILD_BAN_ADD, {guild_id, partial_member}, _ws_state}) do
+    GuildBanAdd.handle(guild_id, partial_member)
   end
 
   def handle_event({:GUILD_BAN_REMOVE, {guild_id, partial_member}, _ws_state}) do
