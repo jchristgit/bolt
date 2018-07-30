@@ -4,7 +4,7 @@ defmodule Bolt.USW do
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.{ModLog, Repo}
-  alias Bolt.Schema.{USWRuleConfig, USWPunishmentConfig}
+  alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
   alias Bolt.USW.{Deduplicator, Escalator, Filters}
   alias Ecto.Changeset
   alias Nostrum.Api

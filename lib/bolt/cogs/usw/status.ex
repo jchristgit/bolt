@@ -5,7 +5,7 @@ defmodule Bolt.Cogs.USW.Status do
 
   alias Bolt.Commander.Checks
   alias Bolt.{Constants, Paginator, Repo}
-  alias Bolt.Schema.{USWRuleConfig, USWPunishmentConfig}
+  alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field

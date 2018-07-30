@@ -18,9 +18,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
         select: infr.id
       )
 
-    active_timed_infractions =
-      Repo.all(active_timed_infractions_query)
-      |> IO.inspect()
+    active_timed_infractions = Repo.all(active_timed_infractions_query)
 
     log_with_infractions(guild_id, member, active_timed_infractions)
   end
