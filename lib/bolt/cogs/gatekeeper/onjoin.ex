@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
 
   alias Bolt.Commander.Checks
   alias Bolt.Converters
-  alias Bolt.{ErrorFormatters, Repo}
+  alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Bolt.Schema.JoinAction
   alias Nostrum.Api
   alias Nostrum.Struct.Channel
@@ -23,6 +23,19 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
     • `ignore`: Delete any configured actions.
     • `send <template:str> to user`: Attempts to send the given `template` to the user who joined.
       If the user has direct messages disabled, this will fail.
+    • `send <template:str> to <channel:textchannel>`: Sends the given `template` to the given `channel`.
+
+    Templates are regular text that have special values interpolated when they are about to be sent out.
+    You can use `{mention}` to mention the user who joined in the resulting text.
+
+    **Examples**:
+    ```rs
+    // On join, (attempt to) send "Welcome to our server!" to the user who joined
+    .keeper onjoin send "Welcome to our server!" to user
+
+    // On join, send "Welcome to our server, {mention}!" to the #welcome channel
+    .keeper onjoin send "Welcome to our server, {mention}!" to #welcome
+    ```
     """
 
   @impl true

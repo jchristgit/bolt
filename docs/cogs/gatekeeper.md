@@ -28,9 +28,19 @@ Multiple actions can be set at the same time, but only one action of each type m
   Sends the given template to the given channel.
   See the section below on templates.
   For example, to send "Welcome to our server, @user-who-joined" in the *#welcome* channel, you would use `.keeper send "Welcome to our server, {mention}" to #welcome`.
+  Note that if you want to use this for logging, you're looking in the wrong place.
+  Use the [Modlog functionality](cogs/modlog) for that.
 
 **Templates**:
 Templates are text with special interpolations.
 Basically, once a user joins, certain text in the template will be replaced, and the result will be sent.
 The following tokens are available:
 - `{mention}`: Mentions the given user. For example, `Welcome {mention}` would become `Welcome @Dude#0007` assuming the new user is named `Dude#0007`.
+
+```js
+// On join, (attempt to) send "Welcome to our server!" to the user who joined
+.keeper onjoin send "Welcome to our server!" to user
+
+// On join, send "Welcome to our server, {mention}!" to the #welcome channel
+.keeper onjoin send "Welcome to our server, {mention}!" to #welcome
+```
