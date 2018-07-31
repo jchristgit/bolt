@@ -81,8 +81,12 @@ defmodule Bolt.Commander.Server do
 
     ## Member join configuration management
     "keeper" => %{
+      "onaccept" => Cogs.GateKeeper.OnAccept,
       "onjoin" => Cogs.GateKeeper.OnJoin
     },
+
+    ## Rule verification
+    "accept" => Cogs.Accept,
 
     ## Bot Management commands
     "sudo" => Cogs.Sudo,

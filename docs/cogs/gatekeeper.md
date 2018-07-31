@@ -1,11 +1,50 @@
 # Gatekeeper
 Gatekeeper is Bolt's system which handles new members joining your guild.
-It can be configured to send messages to users on either a guild channel or directly.
-This cog lives under the command group `.gatekeeper`, but it's also possible to use it through the aliases `.keeper` or `.gk`.
+Additionally, it handles the `.accept` command used for member verification.
+With the exception of `.accept`, this cog lives under the command group `.gatekeeper`, but it's also possible to use it through the aliases `.keeper` or `.gk`.
 For brevity, this document uses the `.keeper` alias.
 
 
 ## Commands
+### `.accept`
+Run by members to verify that they have read the rules and further information that the server requires them to.
+
+### `.keeper onaccept <action...>`
+Sets actions to be executed when a member runs `.accept`.
+
+**Valid actions**:
+- `add role <role:role...>`
+
+  Adds the given `role` to members runnin `.accept`.
+  If the member already has the role, nothing happens.
+  Other errors are logged to the mod log with the event `ERROR`.
+
+- `remove role <role:role...>`
+
+  Removes the given `role` from members running `.accept`.
+  If the member does not have the role, nothing happens.
+  Other errors are logged to the mod log with the event `ERROR`.
+
+- `delete invocation`
+
+  Deletes the message running the command.
+
+- `ignore`
+
+  Deletes all existing actions that are set to run on `.accept`.
+
+```js
+// On `.accept`, remove the role 'Guest' from the member
+.keeper onaccept remove role Guest
+
+// On `.accept`, add the role 'Member' to the member
+.keeper onaccept add role Member
+
+// Remove all actions set to run on `.accept`.
+.keeper onaccept ignore
+```
+
+
 ### `.keeper onjoin <action...>`
 Sets an action to be executed when a user joins.
 Multiple actions can be set at the same time, but only one action of each type may be set at a time.
@@ -52,4 +91,7 @@ The following tokens are available:
 
 // On join, add the role 'Guest' to the user who joined
 .keeper onjoin add role Guest
+
+// Delete all actions that were set to apply on member join.
+.keeper onjoin ignore
 ```
