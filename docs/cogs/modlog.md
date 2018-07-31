@@ -129,18 +129,22 @@ to ensure the most important events are logged.
 
 
 ## Commands
-### `.modlog status`
-Shows the current configuration of the mod log (and where which events are logged).
-Requires the `ADMINISTRATOR` permission.
+### `.modlog status [unlogged]`
+Shows the current configuration of the mod log - specifically, where which events are logged.
+When invoked as `modlog status unlogged`, shows events that are not logged currently.
+Requires the `MANAGE_MESSAGES` permission.
 ```js
 // Show the current configuration of the mod log
 .modlog status
+
+// Show currently unlogged events
+.modlog status unlogged
 ```
 
 ### `.modlog set <event:str> <channel:textchannel>`
 Start logging the given `event` in the given `channel`.
 When 'all' is given for `event`, logs all events in the given `channel`.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Start logging the `INFRACTION_CREATE` event in the #stafflog channel.
 .modlog set INFRACTION_CREATE #stafflog
@@ -152,7 +156,7 @@ Requires the `ADMINISTRATOR` permission.
 ### `.modlog unset <event:str>`
 Stop logging the given `event` in the currently configured channel.
 When 'all' is given for `event`, stops logging all events.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Stop logging the `MESSAGE_DELETE` event in the #stafflog channel.
 .modlog unset MESSAGE_DELETE
@@ -164,7 +168,7 @@ Requires the `ADMINISTRATOR` permission.
 ### `.modlog events`
 Shows all events known to Bolt.
 This can be useful in conjunction with the `.modlog explain` command documented below.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Show all known events.
 .modlog events
@@ -172,7 +176,7 @@ Requires the `ADMINISTRATOR` permission.
 
 ### `.modlog explain <event:str>`
 Built-in event reference. Explains the given `event`.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Explain the `AUTOMOD` event.
 .modlog explain AUTOMOD
@@ -182,7 +186,7 @@ Requires the `ADMINISTRATOR` permission.
 Temporarily mutes the mod log.
 This is NOT persistent across restarts of Bolt.
 Unset mod logging with `.modlog unset all` if you disable mod logging for a prolonged period of time.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Mute the mod log temporarily.
 .modlog mute
@@ -190,7 +194,7 @@ Requires the `ADMINISTRATOR` permission.
 
 ### `.modlog unmute`
 Unmute the mod log again, if it was previously muted through `.modlog mute`.
-Requires the `ADMINISTRATOR` permission.
+Requires the `MANAGE_GUILD` permission.
 ```js
 // Unmute the mod log after it was muted previously.
 .modlog unmute

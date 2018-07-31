@@ -11,19 +11,20 @@ defmodule Bolt.Cogs.ModLog.Status do
   import Ecto.Query, only: [from: 2]
 
   @impl true
-  def usage, do: ["modlog status"]
+  def usage, do: ["modlog status", "modlog status unlogged"]
 
   @impl true
   def description,
     do: """
     View the current configuration of the mod log.
     Shows which events are logged in which channel(s).
-    Requires the MANAGE_MESSAGES permission.
+    If invoked as `modlog status unlogged`, shows which events are currently not logged.
+    Requires the `MANAGE_GUILD` permission.
     """
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
 
   @impl true
   def command(msg, []) do
@@ -62,6 +63,28 @@ defmodule Bolt.Cogs.ModLog.Status do
 
         Paginator.paginate_over(msg, base_embed, pages)
     end
+  end
+
+  def command(msg, ["unlogged"]) do
+    query =
+      from(config in ModLogConfig, where: config.guild_id == ^msg.guild_id, select: config.event)
+
+    logged_events =
+      query
+      |> Repo.all()
+      |> MapSet.new()
+
+    all_events = MapSet.new(ModLogConfig.valid_events())
+    unlogged_events = MapSet.difference(all_events, logged_events)
+
+    response =
+      if Enum.empty?(unlogged_events) do
+        "ℹ️  all known events are logged already"
+      else
+        "ℹ️  unlogged events: #{Enum.join(unlogged_events, ", ")}"
+      end
+
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
   def command(msg, _args) do

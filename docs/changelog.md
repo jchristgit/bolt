@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- add `modlog status unlogged` to view unlogged modlog events
+
 ## v0.10.2
 - prevent duplicate `add role` join actions on a per-role basis
 - prevent duplicate `send to` join actions on a per-channel basis

@@ -58,7 +58,7 @@ For support, suggestions, criticism or just casual chatter, feel free to join th
   * [Modlog](cogs/modlog)
     * [Events](cogs/modlog#events)
     * [Commands](cogs/modlog#commands)
-      * [`.modlog status`](cogs/modlog#modlog-status)
+      * [`.modlog status`](cogs/modlog#modlog-status-unlogged)
       * [`.modlog set`](cogs/modlog#modlog-set-lteventstrgt-ltchanneltextchannelgt)
       * [`.modlog unset`](cogs/modlog#modlog-unset-lteventstrgt)
       * [`.modlog events`](cogs/modlog#modlog-events)
