@@ -16,7 +16,6 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
       |> add_if_different(old_role, new_role, :mentionable)
       |> add_if_different(old_role, new_role, :name)
       |> add_if_different(old_role, new_role, :permissions)
-      |> add_if_different(old_role, new_role, :position)
       |> Enum.join(", ")
 
     ModLog.emit(

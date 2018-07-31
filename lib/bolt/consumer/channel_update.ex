@@ -15,7 +15,6 @@ defmodule Bolt.Consumer.ChannelUpdate do
         |> describe_changes(old_channel, new_channel, :parent_id)
         |> describe_changes(old_channel, new_channel, :nsfw)
         |> describe_changes(old_channel, new_channel, :permission_overwrites)
-        |> describe_changes(old_channel, new_channel, :position)
         |> describe_changes(old_channel, new_channel, :bitrate)
         |> describe_changes(old_channel, new_channel, :user_limit)
         |> Enum.join(", ")
