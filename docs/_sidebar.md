@@ -2,6 +2,7 @@
 * [Documentation syntax](documentation_syntax)
 * Functionality
   * [Automod](cogs/automod)
+  * [Gatekeeper](cogs/gatekeeper)
   * [Infractions](cogs/infractions)
   * [Meta](cogs/meta)
   * [Moderation](cogs/moderation)
