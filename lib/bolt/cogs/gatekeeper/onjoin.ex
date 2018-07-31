@@ -7,7 +7,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
   alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Bolt.Schema.JoinAction
   alias Nostrum.Api
-  alias Nostrum.Struct.Channel
+  alias Nostrum.Struct.{Channel, User}
   import Ecto.Query, only: [from: 2]
   require Logger
 
@@ -50,6 +50,12 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
       if total_deleted == 0 do
         "🚫 no actions to delete"
       else
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{User.full_name(msg.author)} deleted **#{total_deleted}** join action(s)"
+        )
+
         "👌 deleted **#{total_deleted}** join actions"
       end
 
@@ -68,6 +74,13 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
     response =
       case Repo.insert(action) do
         {:ok, _action} ->
+          ModLog.emit(
+            msg.guild_id,
+            "CONFIG_UPDATE",
+            "#{User.full_name(msg.author)} set gatekeeper to DM users with " <>
+              "```md\n#{template}``` on join"
+          )
+
           "👌 will now attempt to DM users with the given template on join"
 
         error ->
@@ -93,6 +106,13 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
              }
            },
            {:ok, _action} <- Repo.insert(action) do
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{User.full_name(msg.author)} set gatekeeper to send " <>
+            "```md\n#{template}``` to #{Channel.mention(channel)} on join"
+        )
+
         "👌 will now send the given template to #{Channel.mention(channel)} on join"
       else
         error ->
