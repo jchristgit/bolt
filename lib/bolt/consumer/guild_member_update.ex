@@ -4,6 +4,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
+  alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Guild.Member
@@ -13,32 +14,8 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   @spec handle(Guild.id(), Member.t(), Member.t()) :: ModLog.on_emit()
   def handle(guild_id, old_member, new_member) do
     perform_regular_modlog(guild_id, old_member, new_member)
-
-    with role_diff <- List.myers_difference(old_member.roles, new_member.roles),
-         removed_roles when removed_roles != [] <- Keyword.get(role_diff, :del, []),
-         removed_role_id <- List.first(removed_roles),
-         query <-
-           from(
-             infr in Infraction,
-             where:
-               infr.guild_id == ^guild_id and infr.user_id == ^new_member.user.id and infr.active and
-                 fragment("data->'role_id' = ?", ^removed_role_id) and infr.type == "temprole",
-             limit: 1,
-             select: infr
-           ),
-         active_temproles when active_temproles != [] <- Repo.all(query),
-         active_temprole <- List.first(active_temproles),
-         {:ok, _updated_infraction} <- Handler.update(active_temprole, %{active: false}) do
-      ModLog.emit(
-        guild_id,
-        "INFRACTION_UPDATE",
-        "role `#{removed_role_id}` was manually removed from #{User.full_name(new_member.user)}" <>
-          " (`#{new_member.user.id}`) while a temprole was active (##{active_temprole.id})" <>
-          ", the infraction is now inactive and bolt will not attempt to remove the role"
-      )
-    else
-      _err -> :ignored
-    end
+    check_manual_temprole_removal(guild_id, old_member, new_member)
+    check_forcenick_violation(guild_id, old_member, new_member)
   end
 
   @spec perform_regular_modlog(Guild.id(), Member.t(), Member.t()) :: ModLog.on_emit()
@@ -103,12 +80,97 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   end
 
   @spec format_role(Guild.id(), Role.id()) :: String.t()
-  def format_role(guild_id, role_id) do
+  defp format_role(guild_id, role_id) do
     with {:ok, guild} <- GuildCache.get(guild_id),
          role when role != nil <- Enum.find(guild.roles, &(&1.id == role_id)) do
       "``#{role.name}`` (`#{role.id}`)"
     else
       _err -> "#{role_id}"
+    end
+  end
+
+  @spec check_manual_temprole_removal(Guild.id(), Member.t(), Member.t()) ::
+          ModLog.on_emit() | :ignored
+  defp check_manual_temprole_removal(guild_id, old_member, new_member) do
+    with role_diff <- List.myers_difference(old_member.roles, new_member.roles),
+         removed_roles when removed_roles != [] <- Keyword.get(role_diff, :del, []),
+         removed_role_id <- List.first(removed_roles),
+         query <-
+           from(
+             infr in Infraction,
+             where:
+               infr.guild_id == ^guild_id and infr.user_id == ^new_member.user.id and infr.active and
+                 fragment("data->'role_id' = ?", ^removed_role_id) and infr.type == "temprole",
+             limit: 1,
+             select: infr
+           ),
+         active_temproles when active_temproles != [] <- Repo.all(query),
+         active_temprole <- List.first(active_temproles),
+         {:ok, _updated_infraction} <- Handler.update(active_temprole, %{active: false}) do
+      ModLog.emit(
+        guild_id,
+        "INFRACTION_UPDATE",
+        "role `#{removed_role_id}` was manually removed from #{User.full_name(new_member.user)}" <>
+          " (`#{new_member.user.id}`) while a temprole was active (##{active_temprole.id})" <>
+          ", the infraction is now inactive and bolt will not attempt to remove the role"
+      )
+    else
+      _err -> :ignored
+    end
+  end
+
+  @spec check_forcenick_violation(Guild.id(), Member.t(), Member.t()) ::
+          ModLog.on_emit() | :ignored
+  defp check_forcenick_violation(guild_id, old_member, new_member)
+
+  defp check_forcenick_violation(_guild_id, %Member{nick: old_nick}, %Member{nick: new_nick})
+       when old_nick == new_nick,
+       do: :ignored
+
+  defp check_forcenick_violation(guild_id, _old_member, new_member) do
+    active_forcenick =
+      Repo.get_by(Infraction,
+        guild_id: guild_id,
+        user_id: new_member.user.id,
+        active: true,
+        type: "forced_nick"
+      )
+
+    nick_description =
+      if new_member.nick == nil do
+        "removing their nickname"
+      else
+        "changing nickname to ``#{Helpers.clean_content(new_member.nick)}``"
+      end
+
+    with %Infraction{data: %{"nick" => forced_nick}} <- active_forcenick,
+         false <- forced_nick == new_member.nick,
+         {:ok} <- Api.modify_guild_member(guild_id, new_member.user.id, nick: forced_nick) do
+      ModLog.emit(
+        guild_id,
+        "INFRACTION_EVENTS",
+        "#{User.full_name(new_member.user)} (`#{new_member.user.id}`) attempted #{
+          nick_description
+        } " <> " but has an active forcenick, their nickname was reset to `#{forced_nick}`"
+      )
+    else
+      # No active forcenick - all good.
+      nil ->
+        :ignored
+
+      # New nick *is* the forced nick - all good, it was probably the bot that made this change.
+      true ->
+        :ignored
+
+      # New nick is not the forced nick, but we couldn't modify it due to an API error.
+      {:error, %{status_code: status, message: %{"message" => reason}}} ->
+        ModLog.emit(
+          guild_id,
+          "INFRACTION_EVENTS",
+          "failed to reset nick to forced nick on #{User.full_name(new_member.user)} (`#{
+            new_member.user.id
+          }`), " <> "got an API error: #{reason} (status code #{status})"
+        )
     end
   end
 end

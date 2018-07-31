@@ -32,6 +32,7 @@ defmodule Bolt.Commander.Server do
 
     ## Moderation Commands
     "clean" => Cogs.Clean,
+    "forcenick" => Cogs.ForceNick,
     "warn" => Cogs.Warn,
     "temprole" => Cogs.Temprole,
     "kick" => Cogs.Kick,

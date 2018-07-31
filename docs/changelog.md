@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## v0.9.0
 - infraction IDs of members with active infractions (only applies to temprole, tempmute, and mute)
   leaving are added to the leave log message
+- added the `forcenick` command
 
 ## v0.8.0
 - add the `GUILD_BAN_ADD` and `GUILD_BAN_REMOVE` modlog events

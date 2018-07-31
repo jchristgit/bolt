@@ -44,6 +44,7 @@ For support, suggestions, criticism or just casual chatter, feel free to join th
   * [Moderation](cogs/moderation)
     * [Commands](cogs/moderation#commands)
       * [`.warn`](cogs/moderation#warn-ltusermembergt-ltreasonstrgt)
+      * [`.forcenick`](cogs/moderation#forcenick-ltusermembergt-ltdurationdurationgt-nickstr)
       * [`.temprole`](cogs/moderation#temprole-ltusermembergt-ltrolerolegt-ltdurationdurationgt-reasonstr)
       * [`.kick`](cogs/moderation#kick-ltusermembergt-reasonstr)
       * [`.tempban`](cogs/moderation#tempban-ltusersnowflakemembergt-ltdurationdurationgt-reasonstr)

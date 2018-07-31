@@ -74,4 +74,16 @@ defmodule Bolt.Events.Deserializer do
 
     {:ok, func}
   end
+
+  def deserialize(%Infraction{type: "forced_nick"} = infraction) do
+    func = fn ->
+      alias Bolt.Repo
+      alias Bolt.Schema.Infraction
+
+      changeset = Infraction.changeset(infraction, %{active: false})
+      Repo.update(changeset)
+    end
+
+    {:ok, func}
+  end
 end

@@ -14,6 +14,14 @@ Requires the `MANAGE_MESSAGES` permission.
 .warn 252908391075151874 repeated spamming in voice chat
 ```
 
+### `.forcenick <user:member> <duration:duration> <nick:str...>`
+Temporarily apply the given nickname to the given user. If the member attempts changing their nickname while the infraction is active, bolt will reset it to the configured nickname and log it under `INFRACTION_EVENTS`.
+Requires the `MANAGE_NICKNAMES` permission.
+```rs
+// Apply the nickname "Bob the builder" to @Dude#0007 for 4 hours.
+.forcenick @Dude#0007 4h Bob the builder
+```
+
 ### `.temprole <user:member> <role:role> <duration:duration> [reason:str...]`
 Temporarily applies the given role to the given user. Bolt will remove the role after the given duration.
 An infraction will be created and stored in the infraction database.
