@@ -59,7 +59,9 @@ defmodule Bolt.Cogs.Infraction.Detail do
         %Field{
           name: "Type",
           value:
-            "#{General.emoji_for_type(infraction.type)} #{String.capitalize(infraction.type)}",
+            "#{General.emoji_for_type(infraction.type)} #{
+              infraction.type |> String.replace("_", " ") |> String.capitalize()
+            }",
           inline: true
         },
         %Field{
