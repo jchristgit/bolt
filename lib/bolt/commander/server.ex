@@ -79,6 +79,11 @@ defmodule Bolt.Commander.Server do
       default: Cogs.Tag
     },
 
+    ## Member join configuration management
+    "keeper" => %{
+      "onjoin" => Cogs.GateKeeper.OnJoin
+    },
+
     ## Bot Management commands
     "sudo" => Cogs.Sudo,
 
@@ -87,7 +92,9 @@ defmodule Bolt.Commander.Server do
   }
 
   @aliases %{
+    "gatekeeper" => "keeper",
     "ginfo" => "guildinfo",
+    "gk" => "keeper",
     "guild" => "guildinfo",
     "iam" => "assign",
     "iamn" => "remove",

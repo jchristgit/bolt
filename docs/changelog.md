@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- add the Gatekeeper cog
+- add support for DM-ing members on join or sending a message to a channel
+
 ## v0.9.0
 - infraction IDs of members with active infractions (only applies to temprole, tempmute, and mute)
   leaving are added to the leave log message

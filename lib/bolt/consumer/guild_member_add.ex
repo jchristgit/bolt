@@ -2,12 +2,12 @@ defmodule Bolt.Consumer.GuildMemberAdd do
   @moduledoc "Handles the `GUILD_MEMBER_ADD` event."
 
   alias Bolt.{Helpers, ModLog, Repo}
-  alias Bolt.Schema.Infraction
+  alias Bolt.Schema.{Infraction, JoinAction}
   alias Nostrum.Api
   alias Nostrum.Struct.{Guild, Message, Snowflake, User}
   import Ecto.Query, only: [from: 2]
 
-  @spec handle(Guild.id(), Guild.Member.id()) :: {:ok, Message.t()}
+  @spec handle(Guild.id(), Guild.Member.t()) :: {:ok, Message.t()}
   def handle(guild_id, member) do
     creation_datetime = Snowflake.creation_time(member.user.id)
 
@@ -18,6 +18,12 @@ defmodule Bolt.Consumer.GuildMemberAdd do
         "- account created #{Helpers.datetime_to_human(creation_datetime)}"
     )
 
+    check_active_temprole(guild_id, member)
+    execute_join_actions(guild_id, member)
+  end
+
+  @spec check_active_temprole(Guild.id(), Guild.Member.t()) :: :ignored | ModLog.on_emit()
+  defp check_active_temprole(guild_id, member) do
     query =
       from(
         infr in Infraction,
@@ -29,7 +35,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
 
     case Repo.all(query) do
       [] ->
-        :noop
+        :ignored
 
       infractions ->
         infractions
@@ -56,6 +62,48 @@ defmodule Bolt.Consumer.GuildMemberAdd do
               )
           end
         end)
+    end
+  end
+
+  @spec execute_join_actions(Guild.id(), Guild.Member.t()) :: :ok
+  defp execute_join_actions(guild_id, member) do
+    query = from(action in JoinAction, where: action.guild_id == ^guild_id)
+
+    query
+    |> Repo.all()
+    |> Enum.each(&execute_single_action(&1, guild_id, member))
+  end
+
+  @spec execute_single_action(JoinAction, Guild.id(), Guild.Member.t()) ::
+          {:ok, Message.t()} | :ignored
+  defp execute_single_action(action, guild_id, member)
+
+  defp execute_single_action(
+         %JoinAction{
+           action: "send_guild",
+           data: %{"channel_id" => target_channel, "template" => template}
+         },
+         _guild_id,
+         member
+       ) do
+    text = String.replace(template, "{mention}", User.mention(member.user))
+
+    {:ok, _msg} = Api.create_message(target_channel, text)
+  end
+
+  defp execute_single_action(
+         %JoinAction{action: "send_dm", data: %{"template" => template}},
+         _guild_id,
+         member
+       ) do
+    text = String.replace(template, "{mention}", User.mention(member.user))
+
+    case Api.create_dm(member.user.id) do
+      {:ok, dm_channel} ->
+        Api.create_message(dm_channel.id, text)
+
+      _error ->
+        :ignored
     end
   end
 end
