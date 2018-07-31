@@ -75,8 +75,27 @@ defmodule Bolt.Consumer.GuildMemberAdd do
   end
 
   @spec execute_single_action(JoinAction, Guild.id(), Guild.Member.t()) ::
-          {:ok, Message.t()} | :ignored
+          {:ok, Message.t()} | :ignored | :ok
   defp execute_single_action(action, guild_id, member)
+
+  defp execute_single_action(
+         %JoinAction{action: "add_role", data: %{"role_id" => role_id}},
+         guild_id,
+         member
+       ) do
+    case Api.add_guild_member_role(guild_id, member.user.id, role_id) do
+      {:ok} ->
+        :ok
+
+      {:error, %{status_code: status, message: %{"message" => reason}}} ->
+        ModLog.emit(
+          guild_id,
+          "ERROR",
+          "tried adding role `#{role_id}` to #{User.full_name(member.user)} (`#{member.user.id}`) " <>
+            "but got an API error: #{reason} (status code #{status})"
+        )
+    end
+  end
 
   defp execute_single_action(
          %JoinAction{
@@ -88,7 +107,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
        ) do
     text = String.replace(template, "{mention}", User.mention(member.user))
 
-    {:ok, _msg} = Api.create_message(target_channel, text)
+    Api.create_message(target_channel, text)
   end
 
   defp execute_single_action(

@@ -11,6 +11,11 @@ Sets an action to be executed when a user joins.
 Multiple actions can be set at the same time, but only one action of each type may be set at a time.
 
 **Valid actions**:
+- `add role <role:role...>`
+
+  Adds the given `role` to the member who joined.
+  In case this fails, it will log to mod log with the event `ERROR`.
+
 - `ignore`
 
   Deletes all current actions executed on join.
@@ -28,6 +33,7 @@ Multiple actions can be set at the same time, but only one action of each type m
   Sends the given template to the given channel.
   See the section below on templates.
   For example, to send "Welcome to our server, @user-who-joined" in the *#welcome* channel, you would use `.keeper send "Welcome to our server, {mention}" to #welcome`.
+  In case this fails, it will log to mod log with the event `ERROR`.
   Note that if you want to use this for logging, you're looking in the wrong place.
   Use the [Modlog functionality](cogs/modlog) for that.
 
@@ -43,4 +49,7 @@ The following tokens are available:
 
 // On join, send "Welcome to our server, {mention}!" to the #welcome channel
 .keeper onjoin send "Welcome to our server, {mention}!" to #welcome
+
+// On join, add the role 'Guest' to the user who joined
+.keeper onjoin add role Guest
 ```

@@ -24,6 +24,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
     • `send <template:str> to user`: Attempts to send the given `template` to the user who joined.
       If the user has direct messages disabled, this will fail.
     • `send <template:str> to <channel:textchannel>`: Sends the given `template` to the given `channel`.
+    • `add role <role:role...>`: Adds the given `role` to the member who joined.
 
     Templates are regular text that have special values interpolated when they are about to be sent out.
     You can use `{mention}` to mention the user who joined in the resulting text.
@@ -35,6 +36,9 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
 
     // On join, send "Welcome to our server, {mention}!" to the #welcome channel
     .keeper onjoin send "Welcome to our server, {mention}!" to #welcome
+
+    // On join, add the role 'Guest' to the user who joined
+    .keeper onjoin add role Guest
     ```
     """
 
@@ -42,6 +46,31 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
   def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
 
   @impl true
+  def command(msg, ["add", "role" | role_str]) do
+    response =
+      with {:ok, role} <- Converters.to_role(msg.guild_id, Enum.join(role_str, " ")),
+           join_action <- %JoinAction{
+             guild_id: msg.guild_id,
+             action: "add_role",
+             data: %{
+               "role_id" => role.id
+             }
+           },
+           {:ok, _action} <- Repo.insert(join_action) do
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{User.full_name(msg.author)} set gatekeeper to add role `#{role.name}` on join"
+        )
+
+        "👌 will now add role `#{role.name}` on join"
+      else
+        error -> ErrorFormatters.fmt(msg, error)
+      end
+
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
   def command(msg, ["ignore"]) do
     {total_deleted, _} =
       Repo.delete_all(from(action in JoinAction, where: action.guild_id == ^msg.guild_id))
