@@ -18,7 +18,7 @@ defmodule Bolt.Cogs.ForceNick do
   def description,
     do: """
     Apply the given nickname on the given member.
-    If the member attempts to change the nickname to anything else, Bolt will revert it to the forced nickname.
+    If the member attempts to change the nickname to anything else while the forced nick is active, Bolt will revert it.
 
     **Example**:
     ```rs
