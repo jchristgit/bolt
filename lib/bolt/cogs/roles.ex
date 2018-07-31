@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Roles do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{Constants, Helpers}
+  alias Bolt.{Constants, Helpers, Paginator}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Embed
@@ -28,62 +28,134 @@ defmodule Bolt.Cogs.Roles do
   end
 
   @impl true
-  def usage, do: ["roles [name:str]"]
+  def usage,
+    do: [
+      "roles [--compact] [--no-mention] " <>
+        "[--sort-by color|members|name|position] [--reverse|--no-reverse]"
+    ]
 
   @impl true
   def description,
     do: """
     Show all roles on the guild the command is invoked on.
-    When given a second argument, only roles which name contain the given `name` are returned (case-insensitive).
+
+    The following options can be given:
+    • `--compact`: Show roles comma-separated and without the ID instead of the default format
+    • `--no-mention`: Don't display the roles as mentions, but display their names instead
+    • `--sort-by color|members|name|position`: \
+    Specify the sorting order of the roles, defaults to `name`
+    • `--reverse|--no-reverse`: Reverse the sorting order - when `sort-by` \
+    is given as either *members*, *name* or *position*, \
+    `--reverse` is implied for sanity reasons, \
+    use `--no-reverse` to sort regularly
     """
 
   @impl true
   def predicates, do: [&Checks.guild_only/1]
 
   @impl true
-  def parse_args(args), do: Enum.join(args, " ")
+  def parse_args(args),
+    do:
+      OptionParser.parse(
+        args,
+        strict: [
+          compact: :boolean,
+          mention: :boolean,
+          reverse: :boolean,
+          sort_by: :string
+        ]
+      )
 
   @impl true
-  def command(msg, "") do
-    case get_role_list(msg.guild_id) do
-      {:ok, roles} ->
-        embed = %Embed{
-          title: "All roles on this guild",
-          description:
-            roles
-            |> Enum.sort_by(& &1.name)
-            |> Stream.reject(&(&1.name == "@everyone"))
-            |> Stream.map(&Role.mention/1)
-            |> Enum.join(", "),
-          color: Constants.color_blue()
-        }
+  def command(msg, {parsed, [], []}) do
+    compact = Keyword.get(parsed, :compact, false)
+    mention_roles = Keyword.get(parsed, :mention, true)
+    sort_by = Keyword.get(parsed, :sort_by, "name")
+    reverse = Keyword.get(parsed, :reverse)
 
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+    if sort_by not in ["color", "members", "name", "position"] do
+      "🚫 unknown sort order, use `color`, `members`, `name`, or `position`"
+    else
+      chunker = fn all_roles ->
+        all_roles
+        |> Enum.sort_by(&sort_key(sort_by, &1, msg.guild_id), get_sorter(sort_by, reverse))
+        |> Stream.map(&display_role(compact, mention_roles, &1))
+        |> Stream.chunk_every(15)
+        |> Stream.map(&Enum.join(&1, if(compact, do: ", ", else: "\n")))
+        |> Enum.map(&%Embed{description: &1})
+      end
 
-      {:error, reason} ->
-        response = "❌ could not fetch guild roles: #{Helpers.clean_content(reason)}"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+      title =
+        if parsed not in [[], [compact: true]],
+          do: "Roles matching query",
+          else: "All roles on this guild"
+
+      case get_role_list(msg.guild_id) do
+        {:ok, roles} ->
+          base_embed = %Embed{
+            title: title,
+            color: Constants.color_blue()
+          }
+
+          {:ok, _msg} = Paginator.paginate_over(msg, base_embed, chunker.(roles))
+
+        {:error, reason} ->
+          response = "❌ could not fetch guild roles: #{Helpers.clean_content(reason)}"
+          {:ok, _msg} = Api.create_message(msg.channel_id, response)
+      end
     end
   end
 
-  def command(msg, name) do
-    case get_role_list(msg.guild_id) do
-      {:ok, roles} ->
-        embed = %Embed{
-          title: "Roles matching `#{name}` on this guild (case-insensitive)",
-          description:
-            roles
-            |> Stream.filter(&String.contains?(String.downcase(&1.name), String.downcase(name)))
-            |> Stream.map(&Role.mention/1)
-            |> Enum.join(", "),
-          color: Constants.color_blue()
-        }
+  def command(msg, {_parsed, _args, invalid}) when invalid != [] do
+    description =
+      invalid
+      |> Stream.map(fn {option_name, value} ->
+        case value do
+          nil -> "`#{option_name}`"
+          val -> "`#{option_name}` (set to `#{val}`)"
+        end
+      end)
+      |> Enum.join(", ")
+      |> Helpers.clean_content()
 
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+    {:ok, _msg} =
+      Api.create_message(
+        msg.channel_id,
+        "🚫 unrecognized argument(s) or invalid value: #{description}"
+      )
+  end
 
-      {:error, reason} ->
-        response = "❌ could not fetch guild roles: #{Helpers.clean_content(reason)}"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  def command(msg, _args) do
+    response = "ℹ️ usage: `#{List.first(usage())}`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  @spec sort_key(sort_by :: String.t(), role :: Role.t(), guild_id :: Guild.id()) ::
+          non_neg_integer() | String.t()
+  defp sort_key("color", role, _guild_id), do: role.color
+
+  defp sort_key("members", role, guild_id) do
+    selector = fn guild -> Enum.count(guild.members, &(role.id in &1.roles)) end
+
+    case GuildCache.select(guild_id, selector) do
+      {:ok, count} -> count
+      {:error, _why} -> role.name
     end
   end
+
+  defp sort_key("name", role, _guild_id), do: role.name
+  defp sort_key("position", role, _guild_id), do: role.position
+
+  @spec get_sorter(sort_by :: String.t(), reverse :: boolean() | nil) ::
+          (term(), term() -> boolean())
+  defp get_sorter(sort_by, nil) when sort_by in ["members", "position"], do: &>=/2
+  defp get_sorter(_sort_by, nil), do: &<=/2
+  defp get_sorter(_sort_by, true), do: &>=/2
+  defp get_sorter(_sort_by, false), do: &<=/2
+
+  @spec display_role(compact :: boolean(), mention :: boolean(), role :: Role.t()) :: String.t()
+  defp display_role(true, true, role), do: Role.mention(role)
+  defp display_role(true, false, role), do: role.name
+  defp display_role(false, true, role), do: "`#{role.id}` - #{Role.mention(role)}"
+  defp display_role(false, false, role), do: "`#{role.id}` - #{role.name}"
 end

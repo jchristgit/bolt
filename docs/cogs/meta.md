@@ -62,6 +62,30 @@ Shows all members with the given role.
 
 ?> Changed in version [`0.8.0`](changelog#v080): Now shows username and discriminator in addition to the mention.
 
+## `.roles [options...]`
+Shows all roles on the server.
+The following options can be given to customize the output:
+- `--compact`: Separate roles by commas and omit the role ID
+- `--no-mention`: Display the role names instead of displaying the role mention
+- `--sort-by color|members|name|position`: Specify the sorting order of the roles, defaults to `name`
+- `--reverse|--no-reverse`: Reverse the sorting order - when `sort-by` is given as either *members*, *name* or *position*, `--reverse` is implied for sanity reasons, use `--no-reverse` to sort regularly
+```js
+// Show all roles on the server, sorted by name.
+.roles
+
+// Show all roles on the server, sorted by name, but order from Z to A instead of A to Z.
+.roles --no-reverse
+
+// Show all roles on the server, sorted by position.
+.roles --sort-by position
+
+// Show all roles on the server sorted by member count in compact format.
+.roles --compact --sort-by members
+
+// Show all roles in compact format, but display the role name instead of the role mention.
+.roles --no-mention
+```
+
 ### `.help [command:str]`
 Shows help for the given command or command group. When no command or command group is given, shows all available commands.
 `syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.

@@ -223,6 +223,7 @@ defmodule Bolt.Cogs.Clean do
         end
       end)
       |> Enum.join(", ")
+      |> Helpers.clean_content()
 
     {:ok, _msg} =
       Api.create_message(
