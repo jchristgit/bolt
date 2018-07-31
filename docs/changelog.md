@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.10.2
+- prevent duplicate `add role` join actions on a per-role basis
+- prevent duplicate 
+
 ## v0.10.1
 - prevent duplicate `add role` / `remove role` accept actions on a per-role basis
 - prevent duplicate `delete invocation` accept actions
