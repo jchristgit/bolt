@@ -81,6 +81,12 @@ defmodule Bolt.Commander.Checks do
     has_permission?(msg, :manage_guild)
   end
 
+  @doc "Checks that the message author has the `MANAGE_NICKNAMES` permission."
+  @spec can_manage_nicknames?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
+  def can_manage_nicknames?(msg) do
+    has_permission?(msg, :manage_nicknames)
+  end
+
   @doc "Checks that the message author is in the superuser list."
   @spec is_superuser?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
   def is_superuser?(msg) do
