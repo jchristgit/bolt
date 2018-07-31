@@ -116,11 +116,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
           "👌 will now attempt to DM users with the given template on join"
 
         error ->
-          Logger.error(fn ->
-            "Failed to create `send dm to user` configuration: #{inspect(error)}"
-          end)
-
-          "❌ unknown error trying to insert configuration"
+          ErrorFormatters.fmt(msg, error)
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
