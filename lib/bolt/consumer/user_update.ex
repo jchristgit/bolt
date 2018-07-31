@@ -8,7 +8,6 @@ defmodule Bolt.Consumer.UserUpdate do
   @spec handle(User.t(), User.t()) :: ModLog.on_emit()
   def handle(old_user, new_user) do
     difference_list = [
-      describe_diff(old_user.avatar, new_user.avatar, "avatar hash"),
       describe_diff(old_user.discriminator, new_user.discriminator, "discriminator"),
       describe_diff(old_user.username, new_user.username, "username")
     ]
@@ -42,9 +41,7 @@ defmodule Bolt.Consumer.UserUpdate do
 
   defp describe_diff(old_val, new_val, _key) when old_val == new_val, do: nil
 
-  defp describe_diff(old_val, new_val, key) do
-    "#{key} updated from #{old_val} to #{new_val}"
-  end
+  defp describe_diff(old_val, new_val, key), do: "#{key} updated from #{old_val} to #{new_val}"
 
   @spec contains_user(User.id(), Guild.t()) :: Enum.t()
   defp contains_user(user_id, guild) do
