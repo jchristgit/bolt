@@ -29,6 +29,8 @@ defmodule Bolt.Schema.ModLogConfig do
       "BOT_UPDATE",
       # guild configuration update
       "CONFIG_UPDATE",
+      # guild-specific error occurred
+      "ERROR",
       # infraction was created
       "INFRACTION_CREATE",
       # infraction was updated

@@ -61,6 +61,10 @@ Bolt knows the following events:
 
   Emitted when a channel is deleted.
 
+- `ERROR`
+
+  Emitted when bolt attempts to perform an automatic action but encounters an error.
+
 - `MESSAGE_EDIT`
 
   Emitted when a user edits a message. Bolt maintains an internal message
@@ -120,7 +124,7 @@ Bolt also includes built-in event explanations, available
 with the `.modlog events` and `.modlog explain <event:str>` commands.
 
 ?> It is recommended to at least enable logging for `AUTOMOD`, `BOT_UPDATE`,
-`CONFIG_UPDATE`, `INFRACTION_CREATE`, `INFRACTION_EVENTS` and `INFRACTION_UPDATE`
+`CONFIG_UPDATE`, `ERROR`, `INFRACTION_CREATE`, `INFRACTION_EVENTS` and `INFRACTION_UPDATE`
 to ensure the most important events are logged.
 
 

@@ -11,7 +11,8 @@ defmodule Bolt.ModLog do
   @event_emoji %{
     "AUTOMOD" => "🛡",
     "BOT_UPDATE" => "📄",
-    "CONFIG_UPDATE" => "📃",
+    "CONFIG_UPDATE" => "⚙",
+    "ERROR" => "❌",
     "INFRACTION_CREATE" => "📟",
     "INFRACTION_UPDATE" => "🖋",
     "INFRACTION_EVENTS" => "⏲",
