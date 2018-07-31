@@ -1,10 +1,12 @@
 # Changelog
 
-## Unreleased
-- add the `ERROR` modlog action
+## v0.10.1
+- prevent duplicate `add role` / `remove role` accept actions on a per-role basis
+- prevent duplicate `delete invocation` accept actions
 
 ## v0.10.0
 - add the Gatekeeper cog
+- add the `ERROR` modlog action
 
 ## v0.9.0
 - infraction IDs of members with active infractions (only applies to temprole, tempmute, and mute)

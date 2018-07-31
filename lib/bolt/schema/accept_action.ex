@@ -15,5 +15,13 @@ defmodule Bolt.Schema.AcceptAction do
     action
     |> cast(params, [:guild_id, :action, :data])
     |> validate_required([:guild_id, :action, :data])
+    |> unique_constraint(:"delete invocation",
+      name: :accept_action_guild_id_action_index,
+      message: "is already set to run on accept"
+    )
+    |> unique_constraint(:"role id",
+      name: :accept_action_guild_id_data__role_id__index,
+      message: "is already set to be added or removed on accept"
+    )
   end
 end

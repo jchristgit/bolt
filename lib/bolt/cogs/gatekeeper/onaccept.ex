@@ -52,12 +52,13 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   def command(msg, ["add", "role" | role_str]) do
     response =
       with {:ok, role} <- Converters.to_role(msg.guild_id, Enum.join(role_str, " ")),
-           accept_action <- %AcceptAction{
+           action_map <- %{
              guild_id: msg.guild_id,
              action: "add_role",
              data: %{"role_id" => role.id}
            },
-           {:ok, _created_action} <- Repo.insert(accept_action) do
+           changeset <- AcceptAction.changeset(%AcceptAction{}, action_map),
+           {:ok, _created_action} <- Repo.insert(changeset) do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
@@ -75,12 +76,13 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   def command(msg, ["remove", "role" | role_str]) do
     response =
       with {:ok, role} <- Converters.to_role(msg.guild_id, Enum.join(role_str, " ")),
-           accept_action <- %AcceptAction{
+           action_map <- %{
              guild_id: msg.guild_id,
              action: "remove_role",
              data: %{"role_id" => role.id}
            },
-           {:ok, _created_action} <- Repo.insert(accept_action) do
+           changeset <- AcceptAction.changeset(%AcceptAction{}, action_map),
+           {:ok, _created_action} <- Repo.insert(changeset) do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
@@ -96,14 +98,16 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   end
 
   def command(msg, ["delete", "invocation"]) do
-    accept_action = %AcceptAction{
+    action_map = %{
       guild_id: msg.guild_id,
       action: "delete_invocation",
       data: %{}
     }
 
+    changeset = AcceptAction.changeset(%AcceptAction{}, action_map)
+
     response =
-      case Repo.insert(accept_action) do
+      case Repo.insert(changeset) do
         {:ok, _struct} ->
           ModLog.emit(
             msg.guild_id,
