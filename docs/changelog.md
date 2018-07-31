@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.2
+- prevent duplicate `add role` join actions on a per-role basis
+- prevent duplicate `send to` join actions on a per-channel basis
+- prevent duplicate `send dm` join actions
+
 ## v0.10.1
 - prevent duplicate `add role` / `remove role` accept actions on a per-role basis
 - prevent duplicate `delete invocation` accept actions
