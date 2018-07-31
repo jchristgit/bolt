@@ -3,8 +3,9 @@ Larger guilds often have a bunch of roles that members should be able to assign 
 
 
 ## Commands
-### `.assign <role:role...>`
-Assigns the given self-assignable role from the message author.
+### `.assign <role_or_roles:role...>`
+Assigns the given self-assignable role to the message author.
+A list of roles can be given to assign multiple roles at once, however, if the role name spans more than one word, it must be quoted.
 Aliased to `.iam`.
 ```js
 // Assign the role called 'Blue'.
@@ -12,6 +13,9 @@ Aliased to `.iam`.
 
 // Same as above, but using the alias.
 .iam Blue
+
+ // Assign the roles 'Bean man' and 'Blue' - note that it's case-insensitive
+ .assign "bean man" blue
 ```
 
 ### `.remove <role:role...>`
