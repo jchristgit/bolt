@@ -86,4 +86,36 @@ defmodule Bolt.Events.Deserializer do
 
     {:ok, func}
   end
+
+  def deserialize(%Infraction{
+        type: "mute",
+        id: infraction_id,
+        guild_id: guild_id,
+        user_id: user_id,
+        data: %{
+          "role_id" => mute_role_id
+        }
+      }) do
+    func = fn ->
+      alias Bolt.ModLog
+      alias Nostrum.Api
+
+      modlog_message =
+        case Api.remove_guild_member_role(guild_id, user_id, mute_role_id) do
+          {:ok} ->
+            "user `#{user_id}` was unmuted (##{infraction_id})"
+
+          {:error, %{message: %{"message" => reason}}} ->
+            "failed to unmute `#{user_id}`, got API error: #{reason} (infraction ##{infraction_id})"
+        end
+
+      ModLog.emit(
+        guild_id,
+        "INFRACTION_EVENTS",
+        modlog_message
+      )
+    end
+
+    {:ok, func}
+  end
 end

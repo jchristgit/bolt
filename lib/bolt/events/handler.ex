@@ -31,7 +31,11 @@ defmodule Bolt.Events.Handler do
 
     with true <- infraction_map.type in Infraction.known_types(),
          {:ok, created_infraction} <- Repo.insert(changeset) do
-      GenServer.call(__MODULE__, {:create, created_infraction})
+      if created_infraction.expires_at != nil do
+        GenServer.call(__MODULE__, {:create, created_infraction})
+      else
+        {:ok, created_infraction}
+      end
     else
       false ->
         {:error, "`#{infraction_map.type}` is not a valid event type"}
@@ -48,7 +52,7 @@ defmodule Bolt.Events.Handler do
 
     with {:ok, _timer} <- GenServer.call(__MODULE__, {:drop_timer, infraction.id}),
          {:ok, updated_infraction} <- Repo.update(changeset) do
-      if updated_infraction.active do
+      if updated_infraction.expires_at != nil and updated_infraction.active do
         GenServer.call(
           __MODULE__,
           {:create, updated_infraction}
@@ -57,7 +61,7 @@ defmodule Bolt.Events.Handler do
 
       {:ok, updated_infraction}
     else
-      {:error, _reason} = error -> error
+      error -> error
     end
   end
 

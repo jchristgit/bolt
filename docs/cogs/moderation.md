@@ -17,9 +17,42 @@ Requires the `MANAGE_MESSAGES` permission.
 ### `.forcenick <user:member> <duration:duration> <nick:str...>`
 Temporarily apply the given nickname to the given user. If the member attempts changing their nickname while the infraction is active, bolt will reset it to the configured nickname and log it under `INFRACTION_EVENTS`.
 Requires the `MANAGE_NICKNAMES` permission.
-```rs
+```js
 // Apply the nickname "Bob the builder" to @Dude#0007 for 4 hours.
 .forcenick @Dude#0007 4h Bob the builder
+```
+
+### `.mute <user:member> [reason:str...]`
+Mutes the given member until `.unmute` is called or the role is removed manually.
+Requires a mute role to be set. See [`.role mute`](cogs/moderation#role-mute-muteroleroledelete) to configure it.
+Requires the `MANAGE_MESSAGES` permission.
+```js
+// Mute the given member.
+.mute @Dude#0007
+
+// Same as above, but provide a reason.
+.mute @Dude#0007 spamming after prior warning
+```
+
+### `.tempmute <user:member> <duration:duration> [reason:str...]`
+Temporarily mute the given member.
+Bolt will unmute the member after `duration`, a manual unmute is possible using `.unmute`.
+Requires a mute role to be set. See [`.role mute`](cogs/moderation#role-mute-muteroleroledelete) to configure it.
+Requires the `MANAGE_MESSAGES` permission.
+```js
+// Mute the given member for a day.
+.tempmute @Dude#0007 1d
+
+// Same as above, but provide a reason.
+.tempmute @Dude#0007 1d spamming after prior warning
+```
+
+### `.unmute <user:member...>`
+Unmutes the given member, given that they are currently muted.
+Requires the `MANAGE_MESSAGES` permission.
+```js
+// Unmute the given member.
+.unmute @Dude#0007
 ```
 
 ### `.temprole <user:member> <role:role> <duration:duration> [reason:str...]`
