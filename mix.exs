@@ -17,8 +17,7 @@ defmodule Bolt.MixProject do
   def application do
     [
       mod: {Bolt.Application, []},
-      # applications: [:timex],
-      extra_applications: [:logger]
+      applications: [:ecto, :postgrex, :nostrum],
     ]
   end
 
