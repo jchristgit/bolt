@@ -72,7 +72,8 @@ defmodule Bolt.Cogs.Assign do
         conversion_result = Converters.to_role(msg.guild_id, maybe_multi_word_name, true)
 
         if match?({:ok, _role}, conversion_result) do
-          # If yes, we only have a single role we care about, and the author specified a multi-word role.
+          # If yes, we only have a single role we care about,
+          # and the author specified a multi-word role.
           # Pass it along to the single-role command handler, it will perform the rest of the work.
           command(msg, [maybe_multi_word_name])
         else
@@ -126,8 +127,8 @@ defmodule Bolt.Cogs.Assign do
                roles: Enum.uniq(member.roles ++ Enum.map(selected_self_assignable_roles, & &1.id))
              ) do
         added_role_list =
-          Stream.map(selected_self_assignable_roles, & &1.name)
-          |> Stream.map(&"`#{&1}`")
+          selected_self_assignable_roles
+          |> Stream.map(&"`#{&1.name}`")
           |> Enum.join(", ")
           |> Helpers.clean_content()
 
