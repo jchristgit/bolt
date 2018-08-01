@@ -121,3 +121,21 @@ There are three ways to invoke `.clean`:
 // Delete only messages containing '.clean' sent by non-bots in the past 40 messages
 .clean --no-bots --content .clean --limit 40
 ```
+
+## Configuration commands
+### `.role mute [muterole:role...|delete]`
+Configures the role to be applied on usage of the `mute` and `tempmute` commands.
+Note that these commands can be used by users with the `MANAGE_MESSAGES` permission instead of `MANAGE_ROLES` to account for the usecase of having a staff role which doesn't have the permission to manage roles.
+Without any arguments, shows the currently configured mute role.
+When invoked as `.role mute delete`, deletes the currently configured mute role.
+
+```js
+// Show the currently configured mute role
+.role mute
+
+// Set the mute role to the role called 'Muted'
+.role mute Muted
+
+// Delete the currently configured mute role
+.role mute delete
+```

@@ -55,6 +55,8 @@ For support, suggestions, criticism or just casual chatter, feel free to join th
       * [`.tempban`](cogs/moderation#tempban-ltusersnowflakemembergt-ltdurationdurationgt-reasonstr)
       * [`.ban`](cogs/moderation#ban-ltusersnowflakemembergt-reasonstr)
       * [`.clean`](cogs/moderation#clean)
+    * [Configuration commands](cogs/moderation#configuration-commands)
+      * [`.role mute`](cogs/moderation#role-muteroleroledelete)
   * [Modlog](cogs/modlog)
     * [Events](cogs/modlog#events)
     * [Commands](cogs/modlog#commands)

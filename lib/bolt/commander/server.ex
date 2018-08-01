@@ -25,9 +25,15 @@ defmodule Bolt.Commander.Server do
     "lsar" => Cogs.Lsar,
     "assign" => Cogs.Assign,
     "remove" => Cogs.Remove,
+
+    ## Role configuration
     "role" => %{
+      ## Add / remove self-assignable roles
       "allow" => Cogs.Role.Allow,
-      "deny" => Cogs.Role.Deny
+      "deny" => Cogs.Role.Deny,
+
+      ## Roles for specific tasks
+      "mute" => Cogs.Role.Mute
     },
 
     ## Moderation Commands

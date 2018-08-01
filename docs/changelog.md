@@ -4,6 +4,7 @@
 - add `modlog status unlogged` to view unlogged modlog events
 - add various options to control the output of the `.roles` command
 - add support for assigning multiple roles at once in `.assign` command
+- add the `.role mute` command to configure the role to be applied on member mute
 
 ## v0.10.2
 - prevent duplicate `add role` join actions on a per-role basis
