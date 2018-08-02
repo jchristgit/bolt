@@ -18,11 +18,13 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
       |> add_if_different(old_role, new_role, :permissions)
       |> Enum.join(", ")
 
-    ModLog.emit(
-      guild_id,
-      "GUILD_ROLE_UPDATE",
-      Helpers.clean_content("role #{old_role.name} (`#{old_role.id}`) #{diff_string}")
-    )
+    unless diff_string == "" do
+      ModLog.emit(
+        guild_id,
+        "GUILD_ROLE_UPDATE",
+        Helpers.clean_content("role #{old_role.name} (`#{old_role.id}`) #{diff_string}")
+      )
+    end
   end
 
   @spec add_if_different([String.t()], Role.t(), Role.t(), atom()) :: [String.t()]

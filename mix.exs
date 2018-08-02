@@ -17,7 +17,7 @@ defmodule Bolt.MixProject do
   def application do
     [
       mod: {Bolt.Application, []},
-      applications: [:ecto, :postgrex, :nostrum],
+      applications: [:ecto, :postgrex, :nostrum]
     ]
   end
 

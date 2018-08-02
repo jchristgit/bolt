@@ -27,11 +27,13 @@ defmodule Bolt.Consumer.ChannelUpdate do
           _ -> "unknown channel type"
         end
 
-      ModLog.emit(
-        new_channel.guild_id,
-        "CHANNEL_UPDATE",
-        "#{type_string} #{Channel.mention(new_channel)} (`#{new_channel.id}`) #{diff_string}"
-      )
+      unless diff_string == "" do
+        ModLog.emit(
+          new_channel.guild_id,
+          "CHANNEL_UPDATE",
+          "#{type_string} #{Channel.mention(new_channel)} (`#{new_channel.id}`) #{diff_string}"
+        )
+      end
     end
   end
 

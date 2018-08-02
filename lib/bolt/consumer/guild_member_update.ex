@@ -28,13 +28,15 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       |> describe_if_changed(guild_id, old_member, new_member, :roles)
       |> Enum.join(", ")
 
-    ModLog.emit(
-      guild_id,
-      "GUILD_MEMBER_UPDATE",
-      Helpers.clean_content(
-        "#{User.full_name(new_member.user)} (`#{new_member.user.id}`) #{diff_string}"
+    unless diff_string == "" do
+      ModLog.emit(
+        guild_id,
+        "GUILD_MEMBER_UPDATE",
+        Helpers.clean_content(
+          "#{User.full_name(new_member.user)} (`#{new_member.user.id}`) #{diff_string}"
+        )
       )
-    )
+    end
   end
 
   @spec describe_if_changed([String.t()], Guild.id(), Member.t(), Member.t(), atom) :: [
