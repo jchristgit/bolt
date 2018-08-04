@@ -40,7 +40,7 @@ defmodule Bolt.Cogs.Role.Mute do
            {:ok, role} <-
              GuildCache.select(
                msg.guild_id,
-               &Enum.find(&1.roles, fn role -> role.id == role_id end)
+               &Map.get(&1.roles, role_id)
              ) do
         if role == nil do
           "ℹ️ mute role is currently set to an unknown role, does it exist?"

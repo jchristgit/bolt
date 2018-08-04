@@ -83,7 +83,7 @@ defmodule Bolt.Converters.Member do
   defp find_by_name_and_discrim(members, name, discrim) do
     result =
       Enum.find(
-        members,
+        Map.values(members),
         {
           :error,
           "there is no member named `#{Helpers.clean_content(name)}##{discrim}` on this guild"
@@ -102,7 +102,7 @@ defmodule Bolt.Converters.Member do
           String.t()
         ) :: {:ok, Member.t()} | {:error, String.t()}
   defp find_by_name(members, name) do
-    case Enum.find(members, &(&1.user.username == name)) do
+    case Enum.find(Map.values(members), &(&1.user.username == name)) do
       nil ->
         error_value = {
           :error,
@@ -110,7 +110,7 @@ defmodule Bolt.Converters.Member do
             "nicknamed `#{Helpers.clean_content(name)}` on this guild"
         }
 
-        case Enum.find(members, error_value, &(&1.nick == name)) do
+        case Enum.find(Map.values(members), error_value, &(&1.nick == name)) do
           {:error, _reason} = error -> error
           member -> {:ok, member}
         end

@@ -44,7 +44,7 @@ defmodule Bolt.Converters.Role do
         downcased_name = String.downcase(name)
 
         Enum.find(
-          roles,
+          Map.values(roles),
           {
             :error,
             "no role matching `#{Helpers.clean_content(name)}` found on this guild (case-insensitive)"
@@ -53,7 +53,7 @@ defmodule Bolt.Converters.Role do
         )
       else
         Enum.find(
-          roles,
+          Map.values(roles),
           {:error, "no role matching `#{Helpers.clean_content(name)}` found on this guild"},
           &(&1.name == name)
         )
@@ -82,10 +82,10 @@ defmodule Bolt.Converters.Role do
     case role_mention_to_id(text) do
       # We have a direct snowflake given. Try to find an exact match.
       {:ok, id} ->
-        case Enum.find(
+        case Map.get(
                roles,
-               {:error, "No role with ID `#{id}` found on this guild"},
-               &(&1.id == id)
+               id,
+               {:error, "No role with ID `#{id}` found on this guild"}
              ) do
           {:error, _reason} = error -> error
           role -> {:ok, role}
@@ -103,7 +103,8 @@ defmodule Bolt.Converters.Role do
   def role(guild_id, text, ilike) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
-        find_role(guild.roles, text, ilike)
+        roles = Map.values(guild.roles)
+        find_role(roles, text, ilike)
 
       {:error, _reason} ->
         case Api.get_guild_roles(guild_id) do

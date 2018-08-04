@@ -48,12 +48,9 @@ defmodule Bolt.Cogs.Tag.Info do
 
       [tag] ->
         creator_string =
-          with {:ok, guild} <- GuildCache.get(msg.guild_id),
-               member when member != nil <-
-                 Enum.find(guild.members, &(&1.user.id == tag.author_id)) do
-            "#{User.mention(member.user)}"
-          else
-            _err -> "unknown user (`#{tag.author_id}`)"
+          case GuildCache.select(msg.guild_id, &Map.get(&1.members, tag.author_id)) do
+            {:ok, author} when author != nil -> User.mention(author.user)
+            _error -> "unknown user (`#{tag.author_id}`)"
           end
 
         embed = %Embed{

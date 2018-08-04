@@ -120,7 +120,7 @@ defmodule Bolt.Cogs.Assign do
       with {:ok, member} <-
              GuildCache.select(
                msg.guild_id,
-               &Enum.find(&1.members, fn member -> member.user.id == msg.author.id end)
+               &Map.get(&1.members, msg.author.id)
              ),
            {:ok} <-
              Api.modify_guild_member(msg.guild_id, msg.author.id,

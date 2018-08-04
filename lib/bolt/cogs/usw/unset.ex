@@ -29,9 +29,7 @@ defmodule Bolt.Cogs.USW.Unset do
     rule = String.upcase(rule)
 
     response =
-      if rule not in USWRuleConfig.existing_rules() do
-        "🚫 unknown rule: `#{Helpers.clean_content(rule)}`"
-      else
+      if rule in USWRuleConfig.existing_rules() do
         case Repo.get_by(USWRuleConfig, guild_id: msg.guild_id, rule: rule) do
           nil ->
             "🚫 there is no configuration set up for rule `#{rule}`"
@@ -48,6 +46,8 @@ defmodule Bolt.Cogs.USW.Unset do
 
             "👌 deleted configuration for rule `#{rule}`"
         end
+      else
+        "🚫 unknown rule: `#{Helpers.clean_content(rule)}`"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

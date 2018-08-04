@@ -2,8 +2,8 @@ defmodule Bolt.Cogs.Tempmute do
   @moduledoc false
   @behaviour Bolt.Command
 
-  alias Bolt.Converters
   alias Bolt.Commander.Checks
+  alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.{Helpers, ModLog, Parsers, Repo}

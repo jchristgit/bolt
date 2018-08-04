@@ -84,7 +84,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   @spec format_role(Guild.id(), Role.id()) :: String.t()
   defp format_role(guild_id, role_id) do
     with {:ok, guild} <- GuildCache.get(guild_id),
-         role when role != nil <- Enum.find(guild.roles, &(&1.id == role_id)) do
+         role when role != nil <- Map.get(guild.roles, role_id) do
       "``#{role.name}`` (`#{role.id}`)"
     else
       _err -> "#{role_id}"

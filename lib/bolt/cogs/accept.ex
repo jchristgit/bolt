@@ -44,9 +44,8 @@ defmodule Bolt.Cogs.Accept do
         ModLog.emit(
           msg.guild_id,
           "ERROR",
-          "attempted adding role `#{role_id}` to user #{User.full_name(msg.author)} (`#{
-            msg.author.id
-          }`) " <>
+          "attempted adding role `#{role_id}` " <>
+            "to user #{User.full_name(msg.author)} (`#{msg.author.id}`) " <>
             "by invocation of `.accept`, but got an API error: #{reason} (status code #{status})"
         )
     end
@@ -64,9 +63,8 @@ defmodule Bolt.Cogs.Accept do
         ModLog.emit(
           msg.guild_id,
           "ERROR",
-          "attempted removing role `#{role_id}` from user #{User.full_name(msg.author)} (`#{
-            msg.author.id
-          }`) " <>
+          "attempted removing role `#{role_id}` " <>
+            "from user #{User.full_name(msg.author)} (`#{msg.author.id}`) " <>
             "by invocation of `.accept`, but got an API error: #{reason} (status code #{status})"
         )
     end

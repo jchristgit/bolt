@@ -73,7 +73,7 @@ defmodule Bolt.Cogs.MemberInfo do
   @impl true
   def command(msg, "") do
     with {:ok, guild} <- GuildCache.get(msg.guild_id),
-         member when member != nil <- Enum.find(guild.members, &(&1.user.id == msg.author.id)) do
+         member when member != nil <- Map.get(guild.members, msg.author.id) do
       embed = format_member_info(msg.guild_id, member)
       {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     else

@@ -2,9 +2,9 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
   @moduledoc "Handles the `GUILD_ROLE_CREATE` event."
 
   alias Bolt.{Helpers, ModLog}
+  alias Nostrum.Permission
   alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Guild.Role
-  alias Nostrum.Struct.Permission
 
   @spec handle(Guild.id(), Role.t(), Role.t()) :: ModLog.on_emit()
   def handle(guild_id, old_role, new_role) do
@@ -29,8 +29,8 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
 
   @spec add_if_different([String.t()], Role.t(), Role.t(), atom()) :: [String.t()]
   defp add_if_different(diff_list, old_role, new_role, :permissions) do
-    old_perms = Permission.from_bitset!(old_role.permissions)
-    new_perms = Permission.from_bitset!(new_role.permissions)
+    old_perms = Permission.from_bitset(old_role.permissions)
+    new_perms = Permission.from_bitset(new_role.permissions)
     difference = List.myers_difference(old_perms, new_perms)
 
     added_perms = difference |> Keyword.get_values(:ins) |> List.flatten()

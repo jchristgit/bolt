@@ -3,7 +3,8 @@ defmodule Bolt.Consumer.ChannelUpdate do
 
   alias Bolt.{Helpers, ModLog}
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.{Channel, Guild, Overwrite, Permission, User}
+  alias Nostrum.Permission
+  alias Nostrum.Struct.{Channel, Guild, Overwrite, User}
 
   @spec handle(Channel.t(), Channel.t()) :: ModLog.on_emit()
   def handle(old_channel, new_channel) do
@@ -148,8 +149,8 @@ defmodule Bolt.Consumer.ChannelUpdate do
   def format_overwrite_diff(guild_id, {nil, new_overwrite}) do
     # A new overwrite was created.
     # Describe which overwrites were added and which were removed.
-    added_permissions = Permission.from_bitset!(new_overwrite.allow)
-    removed_permissions = Permission.from_bitset!(new_overwrite.deny)
+    added_permissions = Permission.from_bitset(new_overwrite.allow)
+    removed_permissions = Permission.from_bitset(new_overwrite.deny)
 
     "added overwrite for #{format_overwrite_target(guild_id, new_overwrite)}, " <>
       Enum.join(
@@ -175,16 +176,16 @@ defmodule Bolt.Consumer.ChannelUpdate do
   def format_overwrite_diff(guild_id, {old_overwrite, new_overwrite})
       when old_overwrite != new_overwrite do
     # Find which explicit allow overwrites were added and removed.
-    old_allowed = Permission.from_bitset!(old_overwrite.allow)
-    new_allowed = Permission.from_bitset!(new_overwrite.allow)
+    old_allowed = Permission.from_bitset(old_overwrite.allow)
+    new_allowed = Permission.from_bitset(new_overwrite.allow)
 
     allowed_diff = List.myers_difference(old_allowed, new_allowed)
     added_allowed = allowed_diff |> Keyword.get_values(:ins) |> List.flatten()
     removed_allowed = allowed_diff |> Keyword.get_values(:del) |> List.flatten()
 
     # Find which explicit deny overwrites were added and removed.
-    old_denied = Permission.from_bitset!(old_overwrite.deny)
-    new_denied = Permission.from_bitset!(new_overwrite.deny)
+    old_denied = Permission.from_bitset(old_overwrite.deny)
+    new_denied = Permission.from_bitset(new_overwrite.deny)
 
     denied_diff = List.myers_difference(old_denied, new_denied)
     added_denied = denied_diff |> Keyword.get_values(:ins) |> List.flatten()
@@ -217,14 +218,14 @@ defmodule Bolt.Consumer.ChannelUpdate do
   def format_overwrite_target(guild_id, overwrite) do
     if overwrite.type == "role" do
       with {:ok, guild} <- GuildCache.get(guild_id),
-           role when role != nil <- Enum.find(guild.roles, &(&1.id == overwrite.id)) do
+           role when role != nil <- Map.get(guild.roles, overwrite.id) do
         "role #{Helpers.clean_content(role.name)} (`#{role.id}`)"
       else
         _err -> "role `#{overwrite.id}`"
       end
     else
       with {:ok, guild} <- GuildCache.get(guild_id),
-           member when member != nil <- Enum.find(guild.members, &(&1.user.id == overwrite.id)) do
+           member when member != nil <- Map.get(guild.members, overwrite.id) do
         "user #{Helpers.clean_content(User.full_name(member.user))} (`#{member.user.id}`)"
       else
         _err -> "user `#{overwrite.id}`"
@@ -236,11 +237,11 @@ defmodule Bolt.Consumer.ChannelUpdate do
   def format_overwrite(guild_id, overwrite, what) do
     "#{what} for #{format_overwrite_target(guild_id, overwrite)}:" <>
       (overwrite.allow
-       |> Permission.from_bitset!()
+       |> Permission.from_bitset()
        |> Enum.map(&"can #{&1}")
        |> Enum.join(", ")) <>
       (overwrite.deny
-       |> Permission.from_bitset!()
+       |> Permission.from_bitset()
        |> Enum.map(&"can not #{&1}")
        |> Enum.join(", "))
   end

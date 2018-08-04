@@ -73,9 +73,7 @@ defmodule Bolt.Cogs.Roles do
     sort_by = Keyword.get(parsed, :sort_by, "name")
     reverse = Keyword.get(parsed, :reverse)
 
-    if sort_by not in ["color", "members", "name", "position"] do
-      "🚫 unknown sort order, use `color`, `members`, `name`, or `position`"
-    else
+    if sort_by in ["color", "members", "name", "position"] do
       chunker = fn all_roles ->
         all_roles
         |> Enum.sort_by(&sort_key(sort_by, &1, msg.guild_id), get_sorter(sort_by, reverse))
@@ -86,9 +84,9 @@ defmodule Bolt.Cogs.Roles do
       end
 
       title =
-        if parsed not in [[], [compact: true]],
-          do: "Roles matching query",
-          else: "All roles on this guild"
+        if parsed in [[], [compact: true]],
+          do: "All roles on this guild",
+          else: "Roles matching query"
 
       case get_role_list(msg.guild_id) do
         {:ok, roles} ->
@@ -103,6 +101,8 @@ defmodule Bolt.Cogs.Roles do
           response = "❌ could not fetch guild roles: #{Helpers.clean_content(reason)}"
           {:ok, _msg} = Api.create_message(msg.channel_id, response)
       end
+    else
+      "🚫 unknown sort order, use `color`, `members`, `name`, or `position`"
     end
   end
 

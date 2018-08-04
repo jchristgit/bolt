@@ -35,7 +35,7 @@ defmodule Bolt.Cogs.Infraction.General do
 
       {:error, _reason} ->
         case GuildCache.get(guild_id) do
-          {:ok, guild} -> Enum.find(guild.members, default_string, &(&1.user.id == user_id))
+          {:ok, guild} -> Map.get(guild.members, user_id, default_string)
           {:error, _reason} -> default_string
         end
     end

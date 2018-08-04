@@ -47,13 +47,13 @@ defmodule Bolt.Helpers do
   def get_member(guild_id, author_id) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
-        case Enum.find(
+        case Map.get(
                guild.members,
+               author_id,
                {
                  :error,
                  "there is no member with ID #{author_id} in this guild"
-               },
-               &(&1.user.id == author_id)
+               }
              ) do
           {:error, reason} -> {:error, reason}
           member -> {:ok, member}

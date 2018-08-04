@@ -46,15 +46,15 @@ defmodule Bolt.Converters.Channel do
   defp find_channel(channels, text) do
     case channel_mention_to_id(text) do
       {:ok, id} ->
-        Enum.find(
+        Map.get(
           channels,
-          {:error, "No channel with ID `#{id}` found on this guild"},
-          &(&1.id == id)
+          id,
+          {:error, "No channel with ID `#{id}` found on this guild"}
         )
 
       {:error, _reason} ->
         Enum.find(
-          channels,
+          Map.values(channels),
           {:error, "No channel named `#{Helpers.clean_content(text)}` found on this guild"},
           &(&1.name == text)
         )

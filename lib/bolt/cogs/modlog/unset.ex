@@ -48,8 +48,6 @@ defmodule Bolt.Cogs.ModLog.Unset do
 
     response =
       if event not in ModLogConfig.valid_events() do
-        "🚫 `#{Helpers.clean_content(event)}` is not a known event"
-      else
         case Repo.get_by(ModLogConfig, guild_id: msg.guild_id, event: event) do
           nil ->
             "🚫 event `#{event}` has no log channel configured"
@@ -66,6 +64,8 @@ defmodule Bolt.Cogs.ModLog.Unset do
 
             "👌 unset the log channel for `#{event}` (was <##{config.channel_id}>)"
         end
+      else
+        "🚫 `#{Helpers.clean_content(event)}` is not a known event"
       end
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

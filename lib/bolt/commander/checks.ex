@@ -34,7 +34,7 @@ defmodule Bolt.Commander.Checks do
   @spec has_permission?(Message.t(), atom) :: {:ok, Message.t()} | {:error, String.t()}
   defp has_permission?(msg, permission) do
     with {:ok, guild} <- GuildCache.get(msg.guild_id),
-         member when member != nil <- Enum.find(guild.members, &(&1.user.id === msg.author.id)) do
+         member when member != nil <- Map.get(guild.members, msg.author.id) do
       if permission in Member.guild_permissions(member, guild) do
         {:ok, msg}
       else
