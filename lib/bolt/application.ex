@@ -21,6 +21,7 @@ defmodule Bolt.Application do
       {Bolt.USW.Deduplicator, name: Bolt.USW.Deduplicator},
       {Bolt.USW.Escalator, name: Bolt.USW.Escalator},
       {Bolt.MessageCache, name: Bolt.MessageCache},
+      {Bolt.Filter, name: Bolt.Filter},
       Bolt.Consumer
     ]
 
