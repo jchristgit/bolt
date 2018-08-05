@@ -82,16 +82,16 @@ defmodule Bolt.Filter do
     case Repo.all(query) do
       # If there are no longer any words, drop the entry as it'd be empty otherwise.
       [] ->
-        Logger.debug fn ->
+        Logger.debug(fn ->
           "Rebuild found 0 words for `#{guild_id}`, dropping graph entry"
-        end
+        end)
 
         {:noreply, Map.delete(guild_graphs, guild_id)}
 
       words ->
-        Logger.debug fn ->
+        Logger.debug(fn ->
           "Rebuilding graph for `#{guild_id}`"
-        end
+        end)
 
         new_graph = AhoCorasick.new(words)
         updated_state = Map.put(guild_graphs, guild_id, new_graph)
