@@ -47,25 +47,4 @@ defmodule BoltTest.USW.Deduplicator do
       refute Deduplicator.contains?(deduplicator, 3)
     end
   end
-
-  describe "the deduplicator" do
-    alias Bolt.USW.Deduplicator
-
-    setup do
-      deduplicator = start_supervised!(Deduplicator)
-      %{deduplicator: deduplicator}
-    end
-
-    test "adds new users and removes them after the given expiry", %{deduplicator: deduplicator} do
-      expiry_ms = 15
-      assert match?({:ok, _tref}, Deduplicator.add(deduplicator, 42, expiry_ms))
-      assert Deduplicator.contains?(deduplicator, 42)
-
-      # If we just sleep for `expiry_ms`, the Deduplicator doesn't seem to manage removing the
-      # user we added properly. When we sleep for exactly one millisecond longer, it works.
-      # If someone knows what is causing this, I'd be very interested.
-      Process.sleep(expiry_ms + 1)
-      refute Deduplicator.contains?(deduplicator, 42)
-    end
-  end
 end
