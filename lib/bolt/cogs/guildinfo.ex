@@ -21,11 +21,11 @@ defmodule Bolt.Cogs.GuildInfo do
           value: """
           Channels: #{
             if guild.channels != nil,
-              do: length(guild.channels),
+              do: map_size(guild.channels),
               else: "*unknown, guild not in cache*"
           }
           Emojis: #{length(guild.emojis)}
-          Roles: #{length(guild.roles)}
+          Roles: #{map_size(guild.roles)}
           Members: #{Map.get(guild, :member_count, "*guild not in cache*")}
           """,
           inline: true
