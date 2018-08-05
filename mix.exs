@@ -29,7 +29,7 @@ defmodule Bolt.MixProject do
       {:ecto, "~> 2.2"},
       {:postgrex, "~> 0.13"},
       {:timex, "~> 3.1"},
-      {:aho_corasick, "~> 0.0.1"},
+      {:libgraph, "~> 0.12.0"},
       {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test, runtime: false}

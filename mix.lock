@@ -22,6 +22,7 @@
   "idna": {:hex, :idna, "5.1.2", "e21cb58a09f0228a9e0b95eaa1217f1bcfc31a1aaa6e1fdf2f53a33f7dbd9494", [:rebar3], [{:unicode_util_compat, "0.3.1", [hex: :unicode_util_compat, repo: "hexpm", optional: false]}], "hexpm"},
   "jason": {:hex, :jason, "1.1.1", "d3ccb840dfb06f2f90a6d335b536dd074db748b3e7f5b11ab61d239506585eb2", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
   "kcl": {:hex, :kcl, "1.0.5", "d4abd1eefefc7b2a03e407d16ad60618f93d32cfe3a025baa37505a5811056ac", [:mix], [{:curve25519, ">= 1.0.2", [hex: :curve25519, repo: "hexpm", optional: false]}, {:ed25519, "~> 1.2", [hex: :ed25519, repo: "hexpm", optional: false]}, {:poly1305, "~> 1.0", [hex: :poly1305, repo: "hexpm", optional: false]}, {:salsa20, "~> 1.0", [hex: :salsa20, repo: "hexpm", optional: false]}], "hexpm"},
+  "libgraph": {:hex, :libgraph, "0.12.0", "e837d552ab739cc42042ae67a9a5433ed6c383becec705a4010114e1b73c9a36", [:mix], [], "hexpm"},
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm"},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], [], "hexpm"},
   "nostrum": {:git, "https://github.com/Kraigie/nostrum.git", "e5f8f880d1af785967df7b515b7c7f47c919ccda", []},
