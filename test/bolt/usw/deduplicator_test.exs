@@ -57,7 +57,7 @@ defmodule BoltTest.USW.Deduplicator do
     end
 
     test "adds new users and removes them after the given expiry", %{deduplicator: deduplicator} do
-      expiry_ms = 10
+      expiry_ms = 15
       assert match?({:ok, _tref}, Deduplicator.add(deduplicator, 42, expiry_ms))
       assert Deduplicator.contains?(deduplicator, 42)
 
