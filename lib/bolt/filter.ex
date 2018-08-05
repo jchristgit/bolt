@@ -3,7 +3,8 @@ defmodule Bolt.Filter do
 
   alias Bolt.Schema.FilteredWord
   alias Bolt.Repo
-  alias Nostrum.Struct.Message
+  alias Nostrum.Struct.{Guild, Message}
+  import Ecto.Query, only: [from: 2]
   require Logger
   use GenServer
 
@@ -18,6 +19,9 @@ defmodule Bolt.Filter do
   def check_for_matches(msg) do
     GenServer.call(__MODULE__, {:search, msg.guild_id, msg.content})
   end
+
+  @spec rebuild(Guild.id()) :: :ok
+  def rebuild(guild_id), do: GenServer.cast(__MODULE__, {:rebuild, guild_id})
 
   ## Callbacks
 
@@ -65,5 +69,33 @@ defmodule Bolt.Filter do
   @impl true
   def handle_call(:state, _from, guild_graphs) do
     {:reply, guild_graphs, guild_graphs}
+  end
+
+  @impl true
+  def handle_cast({:rebuild, guild_id}, guild_graphs) do
+    query =
+      from(filtered_word in FilteredWord,
+        where: filtered_word.guild_id == ^guild_id,
+        select: filtered_word.word
+      )
+
+    case Repo.all(query) do
+      # If there are no longer any words, drop the entry as it'd be empty otherwise.
+      [] ->
+        Logger.debug fn ->
+          "Rebuild found 0 words for `#{guild_id}`, dropping graph entry"
+        end
+
+        {:noreply, Map.delete(guild_graphs, guild_id)}
+
+      words ->
+        Logger.debug fn ->
+          "Rebuilding graph for `#{guild_id}`"
+        end
+
+        new_graph = AhoCorasick.new(words)
+        updated_state = Map.put(guild_graphs, guild_id, new_graph)
+        {:noreply, updated_state}
+    end
   end
 end

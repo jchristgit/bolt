@@ -59,4 +59,22 @@ defmodule Bolt.FilterTest do
                GenServer.call(filter_pid, {:search, row.guild_id, "genericsgenerics"})
     end
   end
+
+  describe "filter rebuilding" do
+    alias Bolt.Schema.FilteredWord
+
+    setup do
+      row = Bolt.Repo.insert!(%FilteredWord{guild_id: 42, word: "generics"})
+      {:ok, pid} = Bolt.Filter.start_link([])
+      %{filter_pid: pid, row: row}
+    end
+
+    test "properly adds new entries", %{filter_pid: filter_pid, row: row} do
+      Bolt.Repo.insert!(%FilteredWord{guild_id: row.guild_id, word: "badword"})
+      GenServer.cast(filter_pid, {:rebuild, row.guild_id})
+
+      match_mapset = MapSet.new([{"badword", 1, 7}])
+      assert ^match_mapset = GenServer.call(filter_pid, {:search, row.guild_id, "badword"})
+    end
+  end
 end
