@@ -14,7 +14,7 @@ defmodule Bolt.Cogs.Roles do
   defp get_role_list(guild_id) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
-        {:ok, guild.roles}
+        {:ok, Map.values(guild.roles)}
 
       {:error, _reason} ->
         case Api.get_guild_roles(guild_id) do
