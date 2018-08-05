@@ -1,4 +1,5 @@
 %{
+  "aho_corasick": {:hex, :aho_corasick, "0.0.1", "1c477fc17d9ae0509b2c7b56e15ff6009acd7c945773979de99857bef72bf661", [:mix], [], "hexpm"},
   "alchemy": {:git, "https://github.com/jchristgit/alchemy", "29290d6cecef9804fa6f6338812bff61f58f80dd", [branch: "add-guild-icon-url-function"]},
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
   "certifi": {:hex, :certifi, "2.3.1", "d0f424232390bf47d82da8478022301c561cf6445b5b5fb6a84d49a9e76d2639", [:rebar3], [{:parse_trans, "3.2.0", [hex: :parse_trans, repo: "hexpm", optional: false]}], "hexpm"},
