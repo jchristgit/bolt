@@ -81,6 +81,7 @@ defmodule Bolt.Helpers do
   defp find_role(guild_roles, member_roles) do
     role_match =
       guild_roles
+      |> Map.values()
       |> Stream.filter(&(&1.id in member_roles))
       |> Enum.max_by(& &1.position, fn -> {:error, "no roles on member"} end)
 

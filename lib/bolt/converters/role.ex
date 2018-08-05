@@ -44,7 +44,7 @@ defmodule Bolt.Converters.Role do
         downcased_name = String.downcase(name)
 
         Enum.find(
-          Map.values(roles),
+          roles,
           {
             :error,
             "no role matching `#{Helpers.clean_content(name)}` found on this guild (case-insensitive)"
@@ -53,7 +53,7 @@ defmodule Bolt.Converters.Role do
         )
       else
         Enum.find(
-          Map.values(roles),
+          roles,
           {:error, "no role matching `#{Helpers.clean_content(name)}` found on this guild"},
           &(&1.name == name)
         )
