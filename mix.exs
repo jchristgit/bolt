@@ -9,7 +9,8 @@ defmodule Bolt.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test]
+      preferred_cli_env: [coveralls: :test],
+      aliases: aliases()
     ]
   end
 
@@ -32,6 +33,12 @@ defmodule Bolt.MixProject do
       {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test, runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      test: ["ecto.migrate --quiet", "test --no-start"]
     ]
   end
 end
