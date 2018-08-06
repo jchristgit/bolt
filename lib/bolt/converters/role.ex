@@ -76,8 +76,11 @@ defmodule Bolt.Converters.Role do
   case-insensitive name comparison instead of
   case-sensitive.
   """
-  @spec find_role([Nostrum.Struct.Guild.Role.t()], String.t(), boolean) ::
-          {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
+  @spec find_role(
+          %{Nostrum.Struct.Guild.Role.id() => Nostrum.Struct.Guild.Role.t()},
+          String.t(),
+          boolean
+        ) :: {:ok, Nostrum.Struct.Guild.Role.t()} | {:error, String.t()}
   def find_role(roles, text, ilike) do
     case role_mention_to_id(text) do
       # We have a direct snowflake given. Try to find an exact match.
@@ -93,7 +96,9 @@ defmodule Bolt.Converters.Role do
 
       # We do not have a snowflake given, assume it's a name and search through the roles by name.
       {:error, _reason} ->
-        find_by_name(roles, text, ilike)
+        roles
+        |> Map.values()
+        |> find_by_name(text, ilike)
     end
   end
 
@@ -103,8 +108,7 @@ defmodule Bolt.Converters.Role do
   def role(guild_id, text, ilike) do
     case GuildCache.get(guild_id) do
       {:ok, guild} ->
-        roles = Map.values(guild.roles)
-        find_role(roles, text, ilike)
+        find_role(guild.roles, text, ilike)
 
       {:error, _reason} ->
         case Api.get_guild_roles(guild_id) do
