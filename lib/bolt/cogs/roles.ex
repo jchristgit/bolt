@@ -78,7 +78,7 @@ defmodule Bolt.Cogs.Roles do
         all_roles
         |> Enum.sort_by(&sort_key(sort_by, &1, msg.guild_id), get_sorter(sort_by, reverse))
         |> Stream.map(&display_role(compact, mention_roles, &1))
-        |> Stream.chunk_every(15)
+        |> Stream.chunk_every(if(compact, do: 50, else: 15))
         |> Stream.map(&Enum.join(&1, if(compact, do: ", ", else: "\n")))
         |> Enum.map(&%Embed{description: &1})
       end
