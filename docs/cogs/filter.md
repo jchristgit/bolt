@@ -18,11 +18,18 @@ Note that without a configured action, a filter being hit won't do anything.
 Check out the `filter action` command to see how to configure actions.
 Tokens must be unique (you can't filter one token multiple times).
 Requires the `MANAGE_GUILD` permission.
-
-```rs
+```js
 // Filter out messages containing the base invite
 .filter add discord.gg
 
 // Filter out messages containing "redis is a database"
 .filter add redis is a database
+```
+
+### `.filter remove <token:str...>`
+Removes the given token from the guild-wide filter.
+Requires the `MANAGE_GUILD` permission.
+```js
+// Remove the filter for `discord.gg`.
+.filter remove discord.gg
 ```

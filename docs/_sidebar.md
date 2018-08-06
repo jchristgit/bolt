@@ -3,6 +3,7 @@
 * Functionality
   * [Antispam](cogs/antispam)
   * [Gatekeeper](cogs/gatekeeper)
+  * [Filter](cogs/filter)
   * [Infractions](cogs/infractions)
   * [Meta](cogs/meta)
   * [Moderation](cogs/moderation)

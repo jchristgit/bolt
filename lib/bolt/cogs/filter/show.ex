@@ -26,7 +26,11 @@ defmodule Bolt.Cogs.Filter.Show do
   @impl true
   def command(msg, []) do
     query =
-      from(token in FilteredWord, where: token.guild_id == ^msg.guild_id, select: token.word, order_by: token.word)
+      from(token in FilteredWord,
+        where: token.guild_id == ^msg.guild_id,
+        select: token.word,
+        order_by: token.word
+      )
 
     base_embed = %Embed{
       title: "Filtered tokens",

@@ -97,7 +97,8 @@ defmodule Bolt.Commander.Server do
     ## Server filter management
     "filter" => %{
       "add" => Cogs.Filter.Add,
-      "show" => Cogs.Filter.Show
+      "show" => Cogs.Filter.Show,
+      "remove" => Cogs.Filter.Remove
     },
 
     ## Rule verification

@@ -32,6 +32,7 @@ For support, suggestions, criticism or just casual chatter, feel free to join th
     * [Commands](cogs/filter#commands)
       * [`.filter show`](cogs/filter#filter-show)
       * [`.filter add`](cogs/filter#filter-add-lttokenstrgt)
+      * [`.filter remove`](cogs/filter#filter-remove-lttokenstrgt)
   * [Infractions](cogs/infractions)
     * [Infraction Types](cogs/infractions#infraction-types)
     * [Commands](cogs/infractions#commands)
