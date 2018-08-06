@@ -18,8 +18,7 @@ defmodule Bolt.FilterTest do
 
     test "makes the filter return an empty mapset for any string", %{filter_pid: filter_pid} do
       result = GenServer.call(filter_pid, {:search, nil, "hello, world"})
-      empty_mapset = MapSet.new()
-      assert ^empty_mapset = result
+      assert result == []
     end
   end
 
@@ -38,25 +37,22 @@ defmodule Bolt.FilterTest do
     end
 
     test "returns no matches for unknown guilds", %{filter_pid: filter_pid} do
-      empty_mapset = MapSet.new()
-      assert ^empty_mapset = GenServer.call(filter_pid, {:search, 50, "generics"})
+      assert GenServer.call(filter_pid, {:search, 50, "generics"}) == []
     end
 
     test "returns no matches for unrelated words", %{filter_pid: filter_pid, row: row} do
-      empty_mapset = MapSet.new()
-      assert ^empty_mapset = GenServer.call(filter_pid, {:search, row.guild_id, "whatever"})
+      assert GenServer.call(filter_pid, {:search, row.guild_id, "whatever"}) == []
     end
 
     test "returns match for filtered word", %{filter_pid: filter_pid, row: row} do
-      match_mapset = MapSet.new([{"generics", 1, 8}])
-      assert ^match_mapset = GenServer.call(filter_pid, {:search, row.guild_id, "generics"})
+      expected = [{1, 8, 'generics'}]
+      assert GenServer.call(filter_pid, {:search, row.guild_id, "generics"}) == expected
     end
 
     test "returns one entry per match", %{filter_pid: filter_pid, row: row} do
-      match_mapset = MapSet.new([{"generics", 1, 8}, {"generics", 9, 8}])
+      expected = [{9, 16, 'generics'}, {1, 8, 'generics'}]
 
-      assert ^match_mapset =
-               GenServer.call(filter_pid, {:search, row.guild_id, "genericsgenerics"})
+      assert GenServer.call(filter_pid, {:search, row.guild_id, "genericsgenerics"}) == expected
     end
   end
 
@@ -73,8 +69,8 @@ defmodule Bolt.FilterTest do
       Bolt.Repo.insert!(%FilteredWord{guild_id: row.guild_id, word: "badword"})
       GenServer.cast(filter_pid, {:rebuild, row.guild_id})
 
-      match_mapset = MapSet.new([{"badword", 1, 7}])
-      assert ^match_mapset = GenServer.call(filter_pid, {:search, row.guild_id, "badword"})
+      expected = [{1, 7, 'badword'}]
+      assert GenServer.call(filter_pid, {:search, row.guild_id, "badword"}) == expected
     end
   end
 end
