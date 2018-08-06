@@ -54,6 +54,8 @@ defmodule Bolt.Cogs.InRole do
 
       pages =
         members
+        # Ignore users grabbed from presence updates, their username field will be `nil`.
+        |> Stream.reject(&(&1.user.username == nil))
         |> Enum.sort_by(&String.downcase(&1.user.username))
         |> Stream.map(&"#{User.full_name(&1.user)} (#{User.mention(&1.user)})")
         |> Stream.chunk_every(25)
