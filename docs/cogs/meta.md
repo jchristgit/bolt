@@ -67,7 +67,7 @@ Shows all roles on the server.
 The following options can be given to customize the output:
 - `--compact`: Separate roles by commas and omit the role ID
 - `--no-mention`: Display the role names instead of displaying the role mention
-- `--sort-by color|members|name|position`: Specify the sorting order of the roles, defaults to `name`
+- `--sort-by members|name|position`: Specify the sorting order of the roles, defaults to `name`
 - `--reverse|--no-reverse`: Reverse the sorting order - when `sort-by` is given as either *members*, *name* or *position*, `--reverse` is implied for sanity reasons, use `--no-reverse` to sort regularly
 ```js
 // Show all roles on the server, sorted by name.

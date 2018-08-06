@@ -31,7 +31,7 @@ defmodule Bolt.Cogs.Roles do
   def usage,
     do: [
       "roles [--compact] [--no-mention] " <>
-        "[--sort-by color|members|name|position] [--reverse|--no-reverse]"
+        "[--sort-by members|name|position] [--reverse|--no-reverse]"
     ]
 
   @impl true
@@ -42,7 +42,7 @@ defmodule Bolt.Cogs.Roles do
     The following options can be given:
     • `--compact`: Show roles comma-separated and without the ID instead of the default format
     • `--no-mention`: Don't display the roles as mentions, but display their names instead
-    • `--sort-by color|members|name|position`: \
+    • `--sort-by members|name|position`: \
     Specify the sorting order of the roles, defaults to `name`
     • `--reverse|--no-reverse`: Reverse the sorting order - when `sort-by` \
     is given as either *members*, *name* or *position*, \
@@ -73,7 +73,7 @@ defmodule Bolt.Cogs.Roles do
     sort_by = Keyword.get(parsed, :sort_by, "name")
     reverse = Keyword.get(parsed, :reverse)
 
-    if sort_by in ["color", "members", "name", "position"] do
+    if sort_by in ["members", "name", "position"] do
       chunker = fn all_roles ->
         all_roles
         |> Enum.sort_by(&sort_key(sort_by, &1, msg.guild_id), get_sorter(sort_by, reverse))
@@ -102,7 +102,7 @@ defmodule Bolt.Cogs.Roles do
           {:ok, _msg} = Api.create_message(msg.channel_id, response)
       end
     else
-      "🚫 unknown sort order, use `color`, `members`, `name`, or `position`"
+      "🚫 unknown sort order, use `members`, `name`, or `position`"
     end
   end
 
@@ -132,8 +132,6 @@ defmodule Bolt.Cogs.Roles do
 
   @spec sort_key(sort_by :: String.t(), role :: Role.t(), guild_id :: Guild.id()) ::
           non_neg_integer() | String.t()
-  defp sort_key("color", role, _guild_id), do: role.color
-
   defp sort_key("members", role, guild_id) do
     selector = fn guild ->
       guild.members
