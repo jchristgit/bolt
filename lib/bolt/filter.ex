@@ -15,7 +15,10 @@ defmodule Bolt.Filter do
     GenServer.start_link(__MODULE__, :ok, options)
   end
 
-  @spec check_for_matches(Message.t()) :: MapSet.t()
+  @spec check_for_matches(Message.t()) :: [
+          {start_index :: non_neg_integer(), end_index :: non_neg_integer(),
+           pattern :: charlist()}
+        ]
   def check_for_matches(msg) do
     GenServer.call(__MODULE__, {:search, msg.guild_id, msg.content})
   end
@@ -42,37 +45,38 @@ defmodule Bolt.Filter do
         state
       end)
       |> Enum.reduce(%{}, fn {guild_id, words}, acc ->
-        Map.put(acc, guild_id, AhoCorasick.new(words))
+        charlist_words = Enum.map(words, &String.to_charlist/1)
+        Map.put(acc, guild_id, :aho_corasick.build_tree(charlist_words))
       end)
 
     Logger.debug(fn ->
       total_ids = state |> Map.keys() |> length()
       total_words = state |> Map.values() |> Enum.count()
-      "Built aho-corasick graphs, total of #{total_words} words for #{total_ids} guilds."
+      "Built aho-corasick structures, total of #{total_words} words for #{total_ids} guilds."
     end)
 
     {:ok, state}
   end
 
   @impl true
-  def handle_call({:search, guild_id, content}, _from, guild_graphs) do
-    case Map.get(guild_graphs, guild_id) do
+  def handle_call({:search, guild_id, content}, _from, guild_trees) do
+    case Map.get(guild_trees, guild_id) do
       nil ->
-        {:reply, MapSet.new(), guild_graphs}
+        {:reply, [], guild_trees}
 
-      guild_graph ->
-        matches = AhoCorasick.search(guild_graph, content)
-        {:reply, matches, guild_graphs}
+      guild_tree ->
+        matches = :aho_corasick.match(String.to_charlist(content), guild_tree)
+        {:reply, matches, guild_trees}
     end
   end
 
   @impl true
-  def handle_call(:state, _from, guild_graphs) do
-    {:reply, guild_graphs, guild_graphs}
+  def handle_call(:state, _from, guild_trees) do
+    {:reply, guild_trees, guild_trees}
   end
 
   @impl true
-  def handle_cast({:rebuild, guild_id}, guild_graphs) do
+  def handle_cast({:rebuild, guild_id}, guild_trees) do
     query =
       from(filtered_word in FilteredWord,
         where: filtered_word.guild_id == ^guild_id,
@@ -86,15 +90,15 @@ defmodule Bolt.Filter do
           "Rebuild found 0 words for `#{guild_id}`, dropping graph entry"
         end)
 
-        {:noreply, Map.delete(guild_graphs, guild_id)}
+        {:noreply, Map.delete(guild_trees, guild_id)}
 
       words ->
         Logger.debug(fn ->
           "Rebuilding graph for `#{guild_id}`"
         end)
 
-        new_graph = AhoCorasick.new(words)
-        updated_state = Map.put(guild_graphs, guild_id, new_graph)
+        new_tree = :aho_corasick.build_tree(Enum.map(words, &String.to_charlist/1))
+        updated_state = Map.put(guild_trees, guild_id, new_tree)
         {:noreply, updated_state}
     end
   end
