@@ -1,5 +1,5 @@
-# Automod
-Bolt includes automod functionality named Uncomplicated Spam Wall (USW).
+# Antispam
+Bolt includes antispam functionality named Uncomplicated Spam Wall (USW).
 When configured properly, this can take a lot of work of moderators. This page describes how to do so.
 
 USW functions by applying *rules* on messages sent by users.

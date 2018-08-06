@@ -1,7 +1,7 @@
 * [Introduction](/)
 * [Documentation syntax](documentation_syntax)
 * Functionality
-  * [Automod](cogs/automod)
+  * [Antispam](cogs/antispam)
   * [Gatekeeper](cogs/gatekeeper)
   * [Infractions](cogs/infractions)
   * [Meta](cogs/meta)

@@ -14,7 +14,10 @@ defmodule Bolt.Cogs.Filter.Show do
   def usage, do: ["filter show"]
 
   @impl true
-  def description, do: "Show filtered tokens on this server."
+  def description, do: """
+  Show filtered tokens on this server.
+  Requires the `MANAGE_GUILD` permission.
+  """
 
   @impl true
   def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
