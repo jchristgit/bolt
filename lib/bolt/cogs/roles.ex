@@ -12,14 +12,14 @@ defmodule Bolt.Cogs.Roles do
 
   @spec get_role_list(Nostrum.Struct.Snowflake.t()) :: {:ok, [Role.t()]} | {:error, String.t()}
   defp get_role_list(guild_id) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        {:ok, Map.values(guild.roles)}
+    case GuildCache.select(guild_id, &Map.values(&1.roles)) do
+      {:ok, _roles} = result ->
+        result
 
       {:error, _reason} ->
         case Api.get_guild_roles(guild_id) do
-          {:ok, roles} ->
-            {:ok, roles}
+          {:ok, _roles} = result ->
+            result
 
           {:error, _api_error} ->
             {:error, "Couldn't look up guild from either the cache or the API"}
@@ -135,7 +135,11 @@ defmodule Bolt.Cogs.Roles do
   defp sort_key("color", role, _guild_id), do: role.color
 
   defp sort_key("members", role, guild_id) do
-    selector = fn guild -> Enum.count(guild.members, &(role.id in &1.roles)) end
+    selector = fn guild ->
+      guild.members
+      |> Map.values()
+      |> Enum.count(&(role.id in &1.roles))
+    end
 
     case GuildCache.select(guild_id, selector) do
       {:ok, count} -> count
