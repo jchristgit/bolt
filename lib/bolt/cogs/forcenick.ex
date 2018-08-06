@@ -93,7 +93,7 @@ defmodule Bolt.Cogs.ForceNick do
   end
 
   def command(msg, _args) do
-    response = "ℹ️ usage: #{List.first(usage())}"
+    response = "ℹ️ usage: `#{List.first(usage())}`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 end
