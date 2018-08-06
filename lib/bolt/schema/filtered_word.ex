@@ -15,6 +15,10 @@ defmodule Bolt.Schema.FilteredWord do
     filtered_word
     |> cast(params, [:guild_id, :word])
     |> validate_required([:guild_id, :word])
-    |> validate_length(:word, min: 5, max: 70)
+    |> validate_length(:word, min: 3, max: 70)
+    |> unique_constraint(:"the given word",
+      name: :filtered_words_pkey,
+      message: "is already present in the filter"
+    )
   end
 end
