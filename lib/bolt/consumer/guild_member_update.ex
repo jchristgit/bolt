@@ -32,9 +32,9 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       ModLog.emit(
         guild_id,
         "GUILD_MEMBER_UPDATE",
-        Helpers.clean_content(
-          "#{User.full_name(new_member.user)} (`#{new_member.user.id}`) #{diff_string}"
-        )
+        "#{new_member.user |> User.full_name() |> Helpers.clean_content()} (`#{new_member.user.id}`) #{
+          diff_string
+        }"
       )
     end
   end
@@ -85,7 +85,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   defp format_role(guild_id, role_id) do
     with {:ok, guild} <- GuildCache.get(guild_id),
          role when role != nil <- Map.get(guild.roles, role_id) do
-      "``#{role.name}`` (`#{role.id}`)"
+      "``#{Helpers.clean_content(role.name)}`` (`#{role.id}`)"
     else
       _err -> "#{role_id}"
     end
@@ -112,7 +112,8 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       ModLog.emit(
         guild_id,
         "INFRACTION_UPDATE",
-        "role `#{removed_role_id}` was manually removed from #{User.full_name(new_member.user)}" <>
+        "role `#{removed_role_id}` was manually removed from " <>
+          "#{Helpers.clean_content(User.full_name(new_member.user))}" <>
           " (`#{new_member.user.id}`) while a temprole was active (##{active_temprole.id})" <>
           ", the infraction is now inactive and bolt will not attempt to remove the role"
       )
