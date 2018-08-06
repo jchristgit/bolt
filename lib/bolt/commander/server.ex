@@ -94,6 +94,11 @@ defmodule Bolt.Commander.Server do
       "onjoin" => Cogs.GateKeeper.OnJoin
     },
 
+    ## Server filter management
+    "filter" => %{
+      "show" => Cogs.Filter.Show
+    },
+
     ## Rule verification
     "accept" => Cogs.Accept,
 
