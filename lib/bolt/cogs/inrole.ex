@@ -41,7 +41,11 @@ defmodule Bolt.Cogs.InRole do
          {:ok, members} <-
            GuildCache.select(
              msg.guild_id,
-             fn guild -> Enum.filter(guild.members, &(role.id in &1.roles)) end
+             fn guild ->
+               guild.members
+               |> Map.values()
+               |> Enum.filter(&(role.id in &1.roles))
+             end
            ) do
       base_embed = %Embed{
         title: "Members with role `#{role.name}` (`#{length(members)}` total)",
