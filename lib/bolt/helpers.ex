@@ -124,6 +124,7 @@ defmodule Bolt.Helpers do
     content
     |> String.replace("@everyone", "@\u200Beveryone")
     |> String.replace("@here", "@\u200Bhere")
+    |> String.replace("`", "\\`")
   end
 
   @doc "Convert text into either a raw snowflake or a snowflake + member."
