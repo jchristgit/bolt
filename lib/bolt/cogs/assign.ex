@@ -128,9 +128,10 @@ defmodule Bolt.Cogs.Assign do
              ) do
         added_role_list =
           selected_self_assignable_roles
-          |> Stream.map(&"`#{&1.name}`")
+          |> Stream.map(& &1.name)
+          |> Stream.map(&Helpers.clean_content/1)
+          |> Stream.map(&"`#{&1}`")
           |> Enum.join(", ")
-          |> Helpers.clean_content()
 
         ModLog.emit(
           msg.guild_id,
