@@ -1,9 +1,9 @@
 defmodule Bolt.Consumer.UserUpdate do
   @moduledoc "Handles the `USER_UPDATE` event."
 
-  alias Bolt.ModLog
+  alias Bolt.{Helpers, ModLog}
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.{Guild, User}
+  alias Nostrum.Struct.User
 
   @spec handle(User.t(), User.t()) :: ModLog.on_emit()
   def handle(old_user, new_user) do
@@ -21,7 +21,7 @@ defmodule Bolt.Consumer.UserUpdate do
       log_message = "#{User.full_name(old_user)} (`#{old_user.id}`) #{diff_description}"
 
       GuildCache.all()
-      |> Stream.filter(&contains_user(new_user.id, &1))
+      |> Stream.filter(&Map.has_key?(&1.members, new_user.id))
       |> Enum.each(
         &ModLog.emit(
           &1.id,
@@ -37,14 +37,9 @@ defmodule Bolt.Consumer.UserUpdate do
           User.avatar() | User.discriminator() | User.username(),
           String.t()
         ) :: String.t() | nil
-  defp describe_diff(old_val, new_val, name)
-
   defp describe_diff(old_val, new_val, _key) when old_val == new_val, do: nil
 
-  defp describe_diff(old_val, new_val, key), do: "#{key} updated from #{old_val} to #{new_val}"
-
-  @spec contains_user(User.id(), Guild.t()) :: Enum.t()
-  defp contains_user(user_id, guild) do
-    user_id in Stream.map(guild.members, & &1.user.id)
-  end
+  defp describe_diff(old_val, new_val, key),
+    do:
+      "#{key} updated from #{Helpers.clean_content(old_val)} to #{Helpers.clean_content(new_val)}"
 end
