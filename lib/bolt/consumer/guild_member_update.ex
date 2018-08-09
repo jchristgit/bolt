@@ -11,7 +11,14 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
-  @spec handle(Guild.id(), Member.t(), Member.t()) :: ModLog.on_emit()
+  @spec handle(guild_id :: Guild.id(), old_member :: Member.t() | nil, new_member :: Member.t()) ::
+          ModLog.on_emit()
+  def handle(guild_id, nil, new_member) do
+    # If the original member state could not be fetched from
+    # the cache, we can only check for a forcenick violation.
+    check_forcenick_violation(guild_id, nil, new_member)
+  end
+
   def handle(guild_id, old_member, new_member) do
     perform_regular_modlog(guild_id, old_member, new_member)
     check_manual_temprole_removal(guild_id, old_member, new_member)
@@ -122,7 +129,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
     end
   end
 
-  @spec check_forcenick_violation(Guild.id(), Member.t(), Member.t()) ::
+  @spec check_forcenick_violation(Guild.id(), Member.t() | nil, Member.t()) ::
           ModLog.on_emit() | :ignored
   defp check_forcenick_violation(guild_id, old_member, new_member)
 
