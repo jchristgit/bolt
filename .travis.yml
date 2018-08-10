@@ -1,6 +1,11 @@
 language: elixir
 elixir: '1.6.5'
+before_script:
+    - psql -c 'CREATE USER bolt;'
+    - psql -c 'CREATE DATABASE bolt OWNER bolt;'
 script:
     - mix format --check-formatted
     - mix credo --strict
     - mix test --no-start
+services:
+    - postgresql
