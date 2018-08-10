@@ -1,28 +1,32 @@
 sudo: enabled
 language: elixir
-elixir: '1.6.5'
+elixir: 1.6.5
 
 before_script:
-  - psql -c 'CREATE USER bolt;'
-  - psql -c 'CREATE DATABASE bolt OWNER bolt;'
+- psql -c 'CREATE USER bolt;'
+- psql -c 'CREATE DATABASE bolt OWNER bolt;'
 
 jobs:
   include:
-    - stage: check formatting
-      script:
-        - mix format --check-formatted
-    - stage: check code style
-      script:
-        - mix credo --strict
-    - stage: run tests
-      script:
-        - mix test --no-start
-    - stage: build and push docker image
-      if: branch = master
-      script:
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker build -t bolt .
-        - docker push $DOCKER_USERNAME/bolt
+  - stage: check
+    script:
+    - mix format --check-formatted
+    - mix credo --strict
+  - stage: test
+    script:
+    - mix test --no-start
+  - stage: build
+    if: branch = master
+    script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker build -t bolt .
+    - docker push $DOCKER_USERNAME/bolt
 
 services:
-  - postgresql
+- postgresql
+
+env:
+  DOCKER_USERNAME:
+    secure: H47nq3wVYuXJMtr0Bu7tV0yPpxuF+92aEA4GVgqby5AQL0YyUPau4AhYFSBd7Egs1VRDRlQzsX7NWCpjh6qYfFa53LJrXhYtbeiTYLLKgz0DbWSqCRNLeZ4W86vLVO1fDHkmjFVSczUk4lzBW4y4pn3zQdFXEAm5jPq0DXB4/O1ucfQ1oyNE6dyJMSWj1bBZuVoXkm+uaKdmdLB1qs7oSqJZ3VidRYfF/LItasX0br7sS3E/j6SHbPlzzrlzXvyOc0oRuksmS1bkMCdj+krStCF/idunoFxAERDLeiIvrTD8L8NDxHpYbXiIMAxYa4X2KmylHF907JQAup8Ekr511mw8PRpjRJzPRSDgHLFIZinoiXU7io7rVTChPnslsaSzJ2ToR+xmbk9RDWDIMtXBHl6JBYzUEyM5yYe1LPXUuRrU4ccNbzdzInsSLuMLi3TvmnIX1Ucx4bkphbFjQH5AJs51hPiuFMHBWXYdnb1AC6NC8nsgrI9lhduOHe4fhk1+l5IOEG/uOQQC8mpFn6mViOKCajWS32qLpNL07dUg0LdlFrXRIb9NKPyK1rWi14A1Iy9htKBhw0eN6Ykifr6fL430vHaprnxGdzEi2kCGh57n01otljs/HV495VeNe05sLeqyVGavsTf7jcayCYsB3HQNibVniEn4i8vMery3iYE=
+  DOCKER_PASSWORD:
+    secure: tzh26M8OtnP9W8tTrvEkT0lL1eb1MphYSrugCUOo8yCEBu49DHzYxnORpIA43iQ52c9qiPi5degSMyNc8zzhPbT89+ZDyCyuAuauYHfPAo/sF0gtvNXSsC66Qv8SOjoXfpFwJJGVYQTpWNbPGUHf9b2a02RDHd7lgEJwVeEnvFQS61J0J2R3rpCzDZx13QwoXxZLDZcCkGsqpUUsFn6Sk+6KGWSrGauPsu7xH3gSbT6LnBwFpsq9yx7W7DtQ9NT9QYXV6hfkBbhZi+ZgrcDYhSkCn8pEu4oVU51xE2fdXJrLGiDtLGjD7uy8RPf50l1NrKSr1EElDoSbs+PNuvXOweuiTrTCZISmmRlOIZc13tifGiRBZzAptaFB/ChfOoRS3x7Gj8xq0VabhaAUP8a7A91He18bxhLA9oHNGh6NsqHN5SycQAF7f6gkT7SiljBMQpwvOTDJE3z3bDQAY4iWrLsAUGFFdwddYYLF4T+ozMlGfOyvI0rIvSEdBHsQkMMX1M8culX/TllEVBoO24WhhQBjvIkViouCjdBdhy+/sxEqh8IV3q5iivxI9UTx0g3cdXK/AFg5gxkgVvLsAB1jq3VjzmWiCDkREcQ0ozs+2sNqjvhEa8UnuUxk28mcKx6d4bHsBR1eMouwXwgv6FRhTlqjSX2tD1s3IpbPbdvdrqA=
