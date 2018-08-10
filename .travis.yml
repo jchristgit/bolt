@@ -32,7 +32,7 @@ jobs:
   - stage: build
     if: branch = master
     script:
-    - echo "$DOCKER_PASSWORD" | sudo docker login -u "$DOCKER_USERNAME" --password-stdin
+    - echo "$DOCKER_PASSWORD" | sudo docker login --username "$DOCKER_USERNAME" --password-stdin
     - sudo docker build -t bolt .
     - sudo docker push $DOCKER_USERNAME/bolt
 
