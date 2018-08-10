@@ -2,9 +2,8 @@ defmodule Bolt.Cogs.Filter.Show do
   @moduledoc false
   @behaviour Bolt.Command
 
-  alias Bolt.Constants
   alias Bolt.Commander.Checks
-  alias Bolt.{Paginator, Repo}
+  alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.FilteredWord
   alias Nostrum.Api
   alias Nostrum.Struct.Embed

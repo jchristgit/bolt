@@ -1,14 +1,17 @@
 defmodule Bolt.FilterTest do
+  alias Bolt.{Filter, Repo}
   use ExUnit.Case, async: true
 
   setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Bolt.Repo)
-    Ecto.Adapters.SQL.Sandbox.mode(Bolt.Repo, {:shared, self()})
+    alias Ecto.Adapters.SQL.Sandbox
+
+    :ok = Sandbox.checkout(Bolt.Repo)
+    Sandbox.mode(Bolt.Repo, {:shared, self()})
   end
 
   describe "empty database" do
     setup do
-      {:ok, pid} = Bolt.Filter.start_link([])
+      {:ok, pid} = Filter.start_link([])
       %{filter_pid: pid}
     end
 
@@ -26,8 +29,8 @@ defmodule Bolt.FilterTest do
     alias Bolt.Schema.FilteredWord
 
     setup do
-      row = Bolt.Repo.insert!(%FilteredWord{guild_id: 42, word: "generics"})
-      {:ok, pid} = Bolt.Filter.start_link([])
+      row = Repo.insert!(%FilteredWord{guild_id: 42, word: "generics"})
+      {:ok, pid} = Filter.start_link([])
       %{filter_pid: pid, row: row}
     end
 
@@ -60,13 +63,13 @@ defmodule Bolt.FilterTest do
     alias Bolt.Schema.FilteredWord
 
     setup do
-      row = Bolt.Repo.insert!(%FilteredWord{guild_id: 42, word: "generics"})
-      {:ok, pid} = Bolt.Filter.start_link([])
+      row = Repo.insert!(%FilteredWord{guild_id: 42, word: "generics"})
+      {:ok, pid} = Filter.start_link([])
       %{filter_pid: pid, row: row}
     end
 
     test "properly adds new entries", %{filter_pid: filter_pid, row: row} do
-      Bolt.Repo.insert!(%FilteredWord{guild_id: row.guild_id, word: "badword"})
+      Repo.insert!(%FilteredWord{guild_id: row.guild_id, word: "badword"})
       GenServer.cast(filter_pid, {:rebuild, row.guild_id})
 
       expected = [{1, 7, 'badword'}]

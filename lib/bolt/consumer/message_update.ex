@@ -14,9 +14,9 @@ defmodule Bolt.Consumer.MessageUpdate do
       embed = %Embed{
         author: %Author{
           name: "#{msg.author.username}##{msg.author.discriminator} (#{msg.author.id})"
-          # FIXME: Once the nostrum bug with users being sent as raw maps
-          #        in the event payload is fixed, edit this back in, and change
-          #        the user#discrim building above to User.full_name/1.
+          # Once the nostrum bug with users being sent as raw maps
+          # in the event payload is fixed, edit this back in, and change
+          # the user#discrim building above to User.full_name/1.
           # icon_url: User.avatar_url(author)
         },
         color: Constants.color_blue(),

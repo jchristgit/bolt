@@ -1,8 +1,8 @@
 defmodule Bolt.Filter do
   @moduledoc "A `GenServer` which performs message filtering."
 
-  alias Bolt.Schema.FilteredWord
   alias Bolt.Repo
+  alias Bolt.Schema.FilteredWord
   alias Nostrum.Struct.{Guild, Message}
   import Ecto.Query, only: [from: 2]
   require Logger
