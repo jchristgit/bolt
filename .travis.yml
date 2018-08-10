@@ -1,11 +1,28 @@
+sudo: enabled
 language: elixir
 elixir: '1.6.5'
+
 before_script:
-    - psql -c 'CREATE USER bolt;'
-    - psql -c 'CREATE DATABASE bolt OWNER bolt;'
-script:
-    - mix format --check-formatted
-    - mix credo --strict
-    - mix test --no-start
+  - psql -c 'CREATE USER bolt;'
+  - psql -c 'CREATE DATABASE bolt OWNER bolt;'
+
+jobs:
+  include:
+    - stage: check formatting
+      script:
+        - mix format --check-formatted
+    - stage: check code style
+      script:
+        - mix credo --strict
+    - stage: run tests
+      script:
+        - mix test --no-start
+    - stage: build and push docker image
+      if: branch = master
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker build -t bolt .
+        - docker push $DOCKER_USERNAME/bolt
+
 services:
-    - postgresql
+  - postgresql
