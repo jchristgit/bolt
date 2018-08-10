@@ -93,7 +93,7 @@ defmodule Bolt.Cogs.MemberInfo do
       {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     else
       {:error, reason} ->
-        response = "❌ couldn't fetch member information: #{Helpers.clean_content(reason)}"
+        response = "❌ couldn't fetch member information: #{reason}"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
