@@ -21,7 +21,7 @@ jobs:
     - sudo cp /etc/postgresql/9.6/main/pg_hba.conf /etc/postgresql/10/main/pg_hba.conf
     - sudo service postgresql restart
     before_script:
-    - sudo -u postgres psql -c "CREATE USER travis PASSWORD 'travis';" -h localhost
+    - sudo -u postgres psql -c "CREATE USER travis PASSWORD 'travis' SUPERUSER;" -h localhost
     - psql -c 'CREATE USER bolt;' -h localhost -d postgres
     - psql -c 'CREATE DATABASE bolt_test OWNER bolt;' -h localhost -d postgres
     script:
