@@ -28,6 +28,8 @@ jobs:
     - mix ecto.create
     - mix ecto.migrate
     - mix test --no-start
+    env:
+      PGSQL_TEST_URL: postgres://bolt:@127.0.0.1/bolt_test
   - stage: build
     if: branch = master
     script:
