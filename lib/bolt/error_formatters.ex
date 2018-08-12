@@ -1,20 +1,16 @@
 defmodule Bolt.ErrorFormatters do
   @moduledoc "Pretty-prints various errors that commands produce."
 
-  alias Bolt.{BotLog, Helpers}
+  alias Bolt.BotLog
   alias Ecto.Changeset
   require Logger
 
   @spec fmt(Message.t(), term()) :: String.t()
   def fmt(msg, error)
 
-  def fmt(_msg, reason) when is_bitstring(reason) do
-    "❌ error: #{Helpers.clean_content(reason)}"
-  end
+  def fmt(_msg, reason) when is_bitstring(reason), do: "❌ error: #{reason}"
 
-  def fmt(_msg, {:error, reason}) when is_bitstring(reason) do
-    "❌ error: #{Helpers.clean_content(reason)}"
-  end
+  def fmt(_msg, {:error, reason}) when is_bitstring(reason), do: "❌ error: #{reason}"
 
   def fmt(_msg, {:error, %Changeset{} = changeset}) do
     error_map =
