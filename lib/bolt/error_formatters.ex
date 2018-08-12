@@ -3,6 +3,7 @@ defmodule Bolt.ErrorFormatters do
 
   alias Bolt.BotLog
   alias Ecto.Changeset
+  alias Nostrum.Error.ApiError
   require Logger
 
   @spec fmt(Message.t(), term()) :: String.t()
@@ -30,7 +31,7 @@ defmodule Bolt.ErrorFormatters do
     "❌ database error: #{description}"
   end
 
-  def fmt(_msg, {:error, %{status_code: status, message: %{"message" => reason}}}) do
+  def fmt(_msg, {:error, %ApiError{status_code: status, response: %{message: reason}}}) do
     "❌ API error: #{reason} (status code `#{status}`)"
   end
 
@@ -50,7 +51,7 @@ defmodule Bolt.ErrorFormatters do
   end
 
   def fmt(msg, error) do
-    BotLog.emit("""
+    """
     ❌ unexpected error caused by invocation: ```
     #{msg.content}
     ```
@@ -58,10 +59,12 @@ defmodule Bolt.ErrorFormatters do
     ```elixir
     #{inspect(error)}
     ```
-    """)
+    """
+    |> String.slice(0..1999)
+    |> BotLog.emit()
 
     Logger.error(fn ->
-      "unknown error, original message: #{inspect(msg)}, error: #{inspect(error)}"
+      "unknown error, original message: #{inspect(msg)}, error: #{inspect(error, pretty: true)}"
     end)
 
     "❌ sorry, some unexpected error occurred :("
