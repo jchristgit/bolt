@@ -8,7 +8,6 @@ defmodule Bolt.MixProject do
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
       aliases: aliases()
     ]
@@ -32,8 +31,7 @@ defmodule Bolt.MixProject do
       {:libgraph, "~> 0.12.0"},
       {:aho_corasick, git: "https://github.com/wudeng/aho-corasick.git"},
       {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.8", only: :test, runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false}
     ]
   end
 
