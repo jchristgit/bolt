@@ -6,7 +6,8 @@ defmodule Bolt.Cogs.Clean do
   alias Bolt.Commander.Checks
   alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog}
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, Snowflake, User}
+  alias Nostrum.Cache.Mapping.ChannelGuild
+  alias Nostrum.Struct.{Message, User}
 
   @impl true
   def usage, do: ["clean <amount:int>", "clean <options...>"]
@@ -17,7 +18,7 @@ defmodule Bolt.Cogs.Clean do
     Cleanup messages. The execution of this command can be customized with the following options:
     `--bots`: Only clean messages authored by bots
     `--no-bots`: Do not clean any messages authored by bots
-    `--limit <amount:int>`: Specify the limit of messages to delete
+    `--limit <amount:int>`: Specify the limit of messages to delete, capped at 1000
     `--channel <channel:textchannel>`: The channel to delete messages in
     `--user <user:snowflake|user>`: Only delete messages by this user, can be specified multiple times
     `--content <content:str>`: Only delete messages containing `content`
@@ -69,49 +70,62 @@ defmodule Bolt.Cogs.Clean do
     )
   end
 
-  @spec do_prune(Message.t(), [Snowflake.t()]) :: no_return()
-  defp do_prune(msg, message_ids) do
-    message_ids = Enum.reject(message_ids, &(&1 == msg.id))
+  @impl true
+  def command(msg, {options, [], []}) when options != [] do
+    with {:ok, target_channel_id} <-
+           parse_channel(msg.guild_id, options[:channel], msg.channel_id),
+         limit <- min(Keyword.get(options, :limit, 100), 1000),
+         {:ok, messages} when messages != [] <-
+           Api.get_channel_messages(target_channel_id, limit, {:before, msg.id}),
+         {:ok, message_stream} <- apply_filter(messages, :bots, options[:bots], msg.guild_id),
+         {:ok, message_stream} <-
+           apply_filter(message_stream, :user, options[:user], msg.guild_id),
+         {:ok, message_stream} <-
+           apply_filter(message_stream, :content, options[:content], msg.guild_id),
+         false <- Enum.empty?(message_stream),
+         messages_to_delete <- Enum.to_list(message_stream),
+         message_ids <- Enum.map(messages_to_delete, & &1.id),
+         {:ok} <- Api.bulk_delete_messages(msg.channel_id, message_ids) do
+      Api.create_reaction(msg.channel_id, msg.id, "👌")
 
-    with {:ok} <- Api.bulk_delete_messages(msg.channel_id, message_ids) do
-      {:ok} = Api.create_reaction(msg.channel_id, msg.id, "👌")
+      log_content =
+        messages_to_delete
+        |> Stream.map(
+          &"#{String.pad_leading(&1.author.username, 20)}##{&1.author.discriminator}: #{
+            &1.content
+          }"
+        )
+        |> Enum.reverse()
+        |> Enum.join("\n")
+
+      ModLog.emit(
+        msg.guild_id,
+        "MESSAGE_CLEAN",
+        "#{User.full_name(msg.author)} (`#{msg.author.id}`) deleted" <>
+          " #{length(messages_to_delete)} messages in <##{msg.channel_id}>",
+        file: %{
+          name: "deleted_messages.log",
+          body: log_content
+        }
+      )
     else
-      {:error, %{status_code: status, message: %{"message" => message}}} ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "❌ can't fetch channel messages or delete messages: #{message} (status #{status})"
-          )
+      {:ok, []} ->
+        # No messages returned from the API call
+        response = "🚫 no messages found, does the bot have `READ_MESSAGE_HISTORY` "
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+
+      # `message_stream` is empty
+      true ->
+        # No messages found after filter application
+        response = "🚫 no messages found matching the given options"
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+
+      error ->
+        response = ErrorFormatters.fmt(msg, error)
+        {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
 
-  @spec log_deleted(Message.t(), [Message.t()]) :: ModLog.on_emit()
-  defp log_deleted(invocation_message, messages) do
-    log_content =
-      messages
-      |> Stream.map(
-        &"#{String.pad_leading(&1.author.username, 20)}##{&1.author.discriminator}: #{&1.content}"
-      )
-      |> Enum.reverse()
-      |> Enum.join("\n")
-
-    ModLog.emit(
-      invocation_message.guild_id,
-      "MESSAGE_CLEAN",
-      "#{User.full_name(invocation_message.author)} (`#{invocation_message.author.id}`) deleted" <>
-        " #{length(messages)} messages in <##{invocation_message.channel_id}>",
-      file: %{
-        name: "deleted_messages.log",
-        body: log_content
-      }
-    )
-  end
-
-  @impl true
-  @spec command(
-          Message.t(),
-          {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
-        ) :: {:ok, Message.t()}
   def command(msg, {[], [], []}) do
     response =
       "ℹ️ usage: `#{List.first(usage())}` or `#{List.last(usage())}`, " <>
@@ -121,46 +135,23 @@ defmodule Bolt.Cogs.Clean do
   end
 
   def command(msg, {[], [maybe_amount | []], []}) do
-    with {amount, _rest} <- Integer.parse(maybe_amount),
-         {:ok, messages} when messages != [] <-
-           Api.get_channel_messages(
-             msg.channel_id,
-             amount
-           ) do
-      do_prune(msg, Enum.map(messages, & &1.id))
-      log_deleted(msg, messages)
-    else
+    case Integer.parse(maybe_amount) do
+      {amount, ""} ->
+        command(msg, {[limit: amount], [], []})
+
       :error ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "🚫 expected the message limit as the sole argument, but #{
-              Helpers.clean_content(maybe_amount)
-            } is not a valid number"
-          )
+        response =
+          "🚫 expected options or limit to prune as sole argument, " <> "see `help clean` for help"
 
-      {:ok, []} ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "❌ couldn't find any messages to delete, does the bot have `READ_MESSAGE_HISTORY` permission?"
-          )
-
-      error ->
-        response = ErrorFormatters.fmt(msg, error)
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end
 
-  def command(msg, {[], [_maybe_amount | unrecognized_args], []}) do
+  def command(msg, {[], [_maybe_amount | _unrecognized_args], []}) do
     {:ok, _msg} =
       Api.create_message(
         msg.channel_id,
-        "🚫 expected the message limit as the sole argument, but got `#{
-          unrecognized_args
-          |> Enum.join(" ")
-          |> Helpers.clean_content()
-        }` in addition to the expected limit"
+        "🚫 expected the message limit as the sole argument, but got some other unrecognized args"
       )
   end
 
@@ -168,32 +159,8 @@ defmodule Bolt.Cogs.Clean do
     {:ok, _msg} =
       Api.create_message(
         msg.channel_id,
-        "🚫 expected either a sole limit argument or exact options, got both"
+        "🚫 expected either a sole argument (amount to delete) or exact options, got both"
       )
-  end
-
-  def command(msg, {options, [], []}) when options != [] do
-    with {:ok, channel_id} <- parse_channel(msg, options),
-         {:ok, messages} <-
-           get_filtered_messages(
-             msg,
-             options,
-             channel_id
-           ) do
-      do_prune(msg, Enum.map(messages, & &1.id))
-      log_deleted(msg, messages)
-    else
-      {:error, %{message: %{"limit" => errors}, status_code: status}} ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "❌ API error: #{Enum.join(errors, ", ")} (status `#{status}`)"
-          )
-
-      error ->
-        response = ErrorFormatters.fmt(msg, error)
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
-    end
   end
 
   def command(msg, {_parsed, _args, invalid}) when invalid != [] do
@@ -215,149 +182,98 @@ defmodule Bolt.Cogs.Clean do
       )
   end
 
-  @spec parse_channel(Message.t(), keyword()) :: {:ok, Snowflake.t()} | {:error, String.t()}
-  defp parse_channel(msg, options) do
-    case options[:channel] do
-      nil ->
-        {:ok, msg.channel_id}
+  @spec parse_channel(
+          invocation_guild_id :: Guild.id(),
+          passed_channel :: String.t() | nil,
+          default_channel_id :: Channel.id()
+        ) :: {:ok, Channel.id()} | {:error, String.t()}
+  defp parse_channel(_guild_id, nil, default_id), do: {:ok, default_id}
 
-      value ->
-        case Converters.to_channel(msg.guild_id, value) do
-          {:ok, channel} -> {:ok, channel.id}
-          error -> error
-        end
+  defp parse_channel(guild_id, passed_channel, _default_id) do
+    case Converters.to_channel(guild_id, passed_channel) do
+      {:ok, channel} -> {:ok, channel.id}
+      {:error, reason} -> {:error, "could not parse `channel` argument: #{reason}"}
     end
   end
 
-  @spec snowflake_or_name_to_snowflake(
-          Message.t(),
-          String.t()
-        ) :: Snowflake.t() | :error
-  defp snowflake_or_name_to_snowflake(msg, maybe_user) do
-    case Integer.parse(maybe_user) do
-      {value, _remainder} ->
-        value
+  @spec apply_filter([Message.t()], atom(), String.t(), Guild.id()) ::
+          {:ok, [Message.t()]} | {:error, String.t()}
+  defp apply_filter(messages, option_name, option_val, guild_id)
 
-      :error ->
-        case Converters.to_member(msg.guild_id, maybe_user) do
-          {:ok, member} -> member.user.id
-          {:error, _reason} -> :error
-        end
-    end
-  end
+  defp apply_filter(messages, :bots, nil, _guild_id), do: {:ok, messages}
+  # `--bots` given: exclude non-bots
+  defp apply_filter(messages, :bots, true, _guild_id),
+    do: {:ok, Stream.filter(messages, & &1.author.bot)}
 
-  @spec parse_users(
-          Message.t(),
-          String.t() | [String.t()]
-        ) :: {:ok, [Snowflake.t()]} | {:error, String.t()}
-  def parse_users(_msg, nil) do
-    {:ok, []}
-  end
+  # `--no-bots` given: exclude bots
+  defp apply_filter(messages, :bots, false, _guild_id),
+    do: {:ok, Stream.reject(messages, & &1.author.bot)}
 
-  def parse_users(msg, user) when is_bitstring(user) do
-    case snowflake_or_name_to_snowflake(msg, user) do
-      :error ->
-        {:error,
-         "🚫 `#{Helpers.clean_content(user)}` is not a valid user (of this guild) or snowflake"}
+  defp apply_filter(messages, :user, nil, _guild_id), do: {:ok, messages}
+  # single `--user` flag given, `OptionParser` passes it as a string
+  defp apply_filter(messages, :user, user, _guild_id) when is_bitstring(user) do
+    [%Message{channel_id: channel_id}] = Enum.take(messages, 1)
 
-      snowflake ->
-        {:ok, [snowflake]}
-    end
-  end
-
-  def parse_users(msg, users) when is_list(users) do
-    valid_users =
-      users
-      |> Enum.map(&snowflake_or_name_to_snowflake(msg, &1))
-      |> Enum.reject(&(&1 == :error))
-
-    if Enum.empty?(valid_users) do
-      {:error, "❌ failed to parse any valid users"}
+    with {:ok, guild_id} <- ChannelGuild.get_guild(channel_id),
+         {:ok, snowflake} <- parse_snowflake(guild_id, user) do
+      filtered = Stream.filter(messages, &(&1.author.id == snowflake))
+      {:ok, filtered}
     else
-      {:ok, valid_users}
-    end
-  end
-
-  @spec bot_filter(Message.t(), keyword()) :: boolean()
-  def bot_filter(msg, options) do
-    # if `User.bot` is `nil`, then the user isn't a bot
-    is_bot =
-      case msg.author.bot do
-        nil -> false
-        val -> val
-      end
-
-    cond do
-      # no bot filter specified, passthrough
-      options[:bots] == nil ->
-        true
-
-      # --bots specified: filter out non-bots
-      options[:bots] ->
-        is_bot
-
-      # --no-bots specified: filter out bots
-      !options[:bots] ->
-        !is_bot
-    end
-  end
-
-  @spec get_filtered_messages(
-          Message.t(),
-          keyword(),
-          Channel.id()
-        ) ::
-          {:ok,
-           [
-             Message.t()
-           ]}
-          | {:error, String.t()}
-  defp get_filtered_messages(msg, options, channel_id) do
-    limit = Keyword.get(options, :limit, 30)
-
-    # Since the command invocation is excluded from the prune,
-    # add one to the limit to ensure the `limit` option is consistent.
-    channel_messages = Api.get_channel_messages(channel_id, limit + 1)
-
-    with {:ok, messages} when messages != [] <- channel_messages,
-         {:ok, users} <- parse_users(msg, options[:user]) do
-      to_delete =
-        messages
-        |> Enum.filter(&bot_filter(&1, options))
-        # Don't delete the original command invocation message.
-        |> Enum.reject(&(&1.id == msg.id))
-
-      # Was the `content` option given?
-      # If yes, only delete messages with the given content.
-      to_delete =
-        if options[:content] != nil do
-          Enum.filter(
-            to_delete,
-            &String.contains?(&1.content, options[:content])
-          )
-        else
-          to_delete
-        end
-
-      # Do we have any users we want to include specifically, instead of
-      # scanning through all messages? If yes, only return messages
-      # authored by the filtered users. otherwise, return all
-      if Enum.empty?(users) do
-        {:ok, to_delete}
-      else
-        {
-          :ok,
-          to_delete
-          |> Enum.filter(&(&1.author.id in users))
-        }
-      end
-    else
-      {:ok, []} ->
-        {:error,
-         "❌ couldn't find any messages in the channel - does the bot have the `READ_MESSAGE_HISTORY` permission?"}
-
       error ->
-        {:error, ErrorFormatters.fmt(msg, error)}
+        error
+    end
+  end
+
+  # multiple `--user` flags given
+  defp apply_filter(messages, :user, users, guild_id) do
+    parsed_snowflakes = Enum.map(users, &parse_snowflake(guild_id, &1))
+
+    # Did any given flag not parse correctly?
+    if Enum.any?(parsed_snowflakes, &match?({:error, _reason}, &1)) do
+      # If yes, build a string of errors and return it.
+      error_description =
+        parsed_snowflakes
+        |> Stream.filter(&match?({:error, _reason}, &1))
+        |> Stream.map(&elem(&1, 1))
+        |> Stream.map(&"• #{&1}")
+        |> Enum.join("\n")
+
+      {:error, "🚫 failed to parse `--user` flag:\n#{error_description}"}
+    else
+      # If not, return only messages that were sent by the given snowflakes.
+      filtered_messages = Stream.filter(messages, &(&1.author.id in parsed_snowflakes))
+      {:ok, filtered_messages}
+    end
+  end
+
+  defp apply_filter(messages, :content, nil, _guild_id), do: {:ok, messages}
+
+  defp apply_filter(messages, :content, content, _guild_id) do
+    {:ok, Stream.filter(messages, &(content in &1.content))}
+  end
+
+  @spec parse_snowflake(Guild.id(), String.t()) :: {:ok, User.id()} | {:error, String.t()}
+  defp parse_snowflake(guild_id, user_string) do
+    case Integer.parse(user_string) do
+      # If the given flag is a valid integer, we're going to
+      # assume that the command invocator passed a raw snowflake
+      # to the `--user` flag.
+      # Although the member converter accounts for this, it only
+      # searches members on the guild. If a user left the server,
+      # we have no way of converting a regular user string properly.
+      {snowflake, ""} ->
+        {:ok, snowflake}
+
+      _error ->
+        # Otherwise, assume it's a string describing a guild member,
+        # so let's ask the converter to find us the matching member.
+        case Converters.to_member(guild_id, user_string) do
+          {:ok, member} ->
+            {:ok, member.user.id}
+
+          error ->
+            error
+        end
     end
   end
 end

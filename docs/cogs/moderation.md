@@ -135,7 +135,7 @@ There are two ways to invoke `.clean`:
 * `--bots`: delete only bot messages
 * `--no-bots`: don't delete any bot messages
 * `--content <text:str>`: delete only messages containing `text`
-* `--limit <limit:int>`: deletes up to `limit` messages, defaults to 30
+* `--limit <limit:int>`: deletes up to `limit` messages, capped at 1000
 
 ```js
 // Delete the last 80 messages
