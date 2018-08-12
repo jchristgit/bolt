@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- removed default `.clean` invocation
+
 ## v0.11.0
 - add `modlog status unlogged` to view unlogged modlog events
 - add various options to control the output of the `.roles` command

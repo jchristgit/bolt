@@ -9,7 +9,7 @@ defmodule Bolt.Cogs.Clean do
   alias Nostrum.Struct.{Message, Snowflake, User}
 
   @impl true
-  def usage, do: ["clean [amount:int=30]", "clean <options...>"]
+  def usage, do: ["clean <amount:int>", "clean <options...>"]
 
   @impl true
   def description,
@@ -24,9 +24,6 @@ defmodule Bolt.Cogs.Clean do
 
     **Examples**:
     ```rs
-    // delete 30 messages in the current channel (default)
-    clean
-
     // delete 60 messages in the current channel
     clean 60
 
@@ -116,25 +113,11 @@ defmodule Bolt.Cogs.Clean do
           {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
         ) :: {:ok, Message.t()}
   def command(msg, {[], [], []}) do
-    case Api.get_channel_messages(msg.channel_id, 30) do
-      {:ok, []} ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "❌ need `READ_MESSAGE_HISTORY` permission to do that"
-          )
+    response =
+      "ℹ️ usage: `#{List.first(usage())}` or `#{List.last(usage())}`, " <>
+        "see `help clean` for options"
 
-      {:ok, messages} ->
-        do_prune(msg, Enum.map(messages, & &1.id))
-        log_deleted(msg, messages)
-
-      {:error, %{status_code: status, message: %{"message" => message}}} ->
-        {:ok, _msg} =
-          Api.create_message(
-            msg.channel_id,
-            "❌ can't fetch messages: #{message} (status #{status})"
-          )
-    end
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
   def command(msg, {[], [maybe_amount | []], []}) do
