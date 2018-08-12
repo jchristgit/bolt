@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.11.1
 - removed default `.clean` invocation
+- fix `modlog unset` command not checking valid events properly
 
 ## v0.11.0
 - add `modlog status unlogged` to view unlogged modlog events
