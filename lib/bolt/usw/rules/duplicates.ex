@@ -1,6 +1,6 @@
-defmodule Bolt.USW.Filters.Duplicates do
+defmodule Bolt.USW.Rules.Duplicates do
   @moduledoc "Filters duplicated messages by multiple authors."
-  @behaviour Bolt.USW.Filter
+  @behaviour Bolt.USW.Rule
 
   alias Bolt.{MessageCache, USW}
   alias Nostrum.Cache.UserCache

@@ -1,5 +1,5 @@
-defmodule Bolt.USW.Filter do
-  @moduledoc "Defines the base callback that all filters should implement."
+defmodule Bolt.USW.Rule do
+  @moduledoc "Defines the base callback that all rules should implement."
 
   alias Nostrum.Struct.{Message, Snowflake}
 

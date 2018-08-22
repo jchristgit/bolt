@@ -1,6 +1,6 @@
-defmodule Bolt.USW.Filters.Links do
+defmodule Bolt.USW.Rules.Links do
   @moduledoc "Checks for repeated links sent by a single user."
-  @behaviour Bolt.USW.Filter
+  @behaviour Bolt.USW.Rule
 
   alias Bolt.{MessageCache, USW}
   alias Nostrum.Struct.{Message, Snowflake}
