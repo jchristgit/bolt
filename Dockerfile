@@ -1,6 +1,6 @@
 FROM elixir:1.6-alpine
 
-RUN apk add git
+RUN apk add git tini
 
 COPY . /app
 WORKDIR /app
@@ -16,4 +16,5 @@ RUN mix compile
 
 USER bolt
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["mix", "run", "--no-halt"]
