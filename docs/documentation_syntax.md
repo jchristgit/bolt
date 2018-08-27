@@ -53,3 +53,5 @@ Bolt understands the following types:
 
   When passing arguments of this type, use the form `<amount><unit>`. For example, to pass
   a duration spanning 5 days, use `5d`. You can also combined multiple units, for example `2h30m`.
+  To specify the current point in time (an "empty" duration from the bot's view), use `now`. For
+  example, you can use `.infr expiry 42 now` to instantly expire an infraction.

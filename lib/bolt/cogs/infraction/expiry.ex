@@ -33,24 +33,21 @@ defmodule Bolt.Cogs.Infraction.Expiry do
       with {id, _rest} <- Integer.parse(maybe_id),
            infraction when infraction != nil <-
              Repo.get_by(Infraction, id: id, guild_id: msg.guild_id),
-           {:ok, converted_expiry} <-
-             Parsers.human_future_date(
-               new_expiry,
-               infraction.inserted_at
-             ),
-           {:ok, updated_infraction} <-
-             Handler.update(infraction, %{expires_at: converted_expiry}) do
-        ModLog.emit(
-          msg.guild_id,
-          "INFRACTION_UPDATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) changed expiry for ##{infraction.id}" <>
-            " to #{Helpers.datetime_to_human(updated_infraction.expires_at)}" <>
-            ", was #{Helpers.datetime_to_human(infraction.expires_at)}"
-        )
+           {:ok, offset_seconds} <- Parsers.duration_string_to_seconds(new_expiry),
+           updated_expiry <-
+             DateTime.utc_now()
+             |> DateTime.to_unix()
+             |> Kernel.+(offset_seconds)
+             |> DateTime.from_unix!(),
+           {:ok, updated_infraction} <- Handler.update(infraction, %{expires_at: updated_expiry}) do
+        emit_log(msg, infraction, updated_infraction, offset_seconds)
 
-        "👌 infraction ##{infraction.id} now expires at #{
-          Helpers.datetime_to_human(updated_infraction.expires_at)
-        }"
+        expiry_string =
+          if offset_seconds == 0,
+            do: "expires now",
+            else: "now expires at #{Helpers.datetime_to_human(updated_infraction.expires_at)}"
+
+        "👌 infraction ##{infraction.id} #{expiry_string}"
       else
         nil ->
           "🚫 no infraction with ID `#{Helpers.clean_content(maybe_id)}` found"
@@ -69,4 +66,25 @@ defmodule Bolt.Cogs.Infraction.Expiry do
     response = "ℹ️ usage: `infraction expiry <id:int> <expiry:duration>`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
+
+  @spec emit_log(Message.t(), Infraction, Infraction, non_neg_integer()) :: ModLog.on_emit()
+  defp emit_log(msg, old_infraction, new_infraction, 0),
+    do:
+      ModLog.emit(
+        msg.guild_id,
+        "INFRACTION_UPDATE",
+        "#{User.full_name(msg.author)} (`#{msg.author.id}`) set ##{new_infraction.id} to expire now, " <>
+          "was #{Helpers.datetime_to_human(old_infraction.expires_at)}"
+      )
+
+  defp emit_log(msg, old_infraction, new_infraction, _offset_seconds),
+    do:
+      ModLog.emit(
+        msg.guild_id,
+        "INFRACTION_UPDATE",
+        "#{User.full_name(msg.author)} (`#{msg.author.id}`) changed expiry for " <>
+          "##{new_infraction.id} " <>
+          "to #{Helpers.datetime_to_human(new_infraction.expires_at)}, " <>
+          "was #{Helpers.datetime_to_human(old_infraction.expires_at)}"
+      )
 end

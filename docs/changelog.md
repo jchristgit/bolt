@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- support `now` for duration specificatoins
+- `infr expiry` is now relative to the current time
+
 ## v0.11.1
 - removed default `.clean` invocation
 - fix `modlog unset` command not checking valid events properly

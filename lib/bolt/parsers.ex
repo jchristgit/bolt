@@ -45,8 +45,13 @@ defmodule Bolt.Parsers do
 
   @doc """
   Parse a duration string, e.g. `3h30m`, to seconds.
+  `now` is interpreted as 0 seconds.
   """
   @spec duration_string_to_seconds(String.t()) :: {:ok, Calendar.second()} | {:error, String.t()}
+  def duration_string_to_seconds(text)
+
+  def duration_string_to_seconds("now"), do: {:ok, 0}
+
   def duration_string_to_seconds(text) do
     if String.trim(text) == "" do
       {:error, "cannot parse a duration from an empty string"}
@@ -68,7 +73,7 @@ defmodule Bolt.Parsers do
 
       case Enum.find(parsed_seconds, &match?({:error, _}, &1)) do
         {:error, reason} ->
-          {:error, reason}
+          {:error, "failed to parse duration: #{reason}"}
 
         nil ->
           total_seconds =

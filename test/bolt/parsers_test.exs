@@ -4,6 +4,10 @@ defmodule BoltTest.Parsers do
   describe "Parsers.duration_string_to_seconds/1" do
     alias Bolt.Parsers
 
+    test "converts `now` properly" do
+      assert Parsers.duration_string_to_seconds("now") == {:ok, 0}
+    end
+
     test "converts seconds properly" do
       assert Parsers.duration_string_to_seconds("10s") == {:ok, 10}
       assert Parsers.duration_string_to_seconds("30s") == {:ok, 30}
@@ -44,10 +48,6 @@ defmodule BoltTest.Parsers do
 
     test "errors with an empty string" do
       assert match?({:error, _}, Parsers.duration_string_to_seconds(""))
-    end
-
-    test "errors with only whitespace" do
-      assert match?({:error, _}, Parsers.duration_string_to_seconds("      "))
     end
 
     test "errors with only numbers" do
