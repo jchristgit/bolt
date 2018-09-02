@@ -22,7 +22,7 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
       ModLog.emit(
         guild_id,
         "GUILD_ROLE_UPDATE",
-        Helpers.clean_content("role #{old_role.name} (`#{old_role.id}`) #{diff_string}")
+        "role #{old_role.name} (`#{old_role.id}`) #{diff_string}"
       )
     end
   end
@@ -60,10 +60,15 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
           diff_list ++ ["no longer #{key}"]
 
         true ->
-          diff_list ++
-            [
+          description =
+            if key == :name do
+              "name updated from `#{Helpers.clean_content(old_value)}` " <>
+                "to `#{Helpers.clean_content(new_value)}`"
+            else
               "#{Atom.to_string(key)} updated from `#{old_value}` to `#{new_value}`"
-            ]
+            end
+
+          diff_list ++ [description]
       end
     else
       diff_list
