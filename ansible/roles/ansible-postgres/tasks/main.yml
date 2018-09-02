@@ -1,0 +1,7 @@
+---
+- name: ensure ansible postgres dependencies are installed
+  become: yes
+  apt: name={{ item }}
+  with_items:
+    - libpq-dev
+    - python-psycopg2

@@ -1,0 +1,7 @@
+---
+bolt:
+  docker_image_name: jchristhub/bolt
+  postgres:
+    database: bolt
+    host: localhost
+    user: bolt

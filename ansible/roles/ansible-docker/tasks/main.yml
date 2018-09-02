@@ -1,0 +1,8 @@
+---
+- name: ensure python-pip, python-virtualenv, and python-docker are installed
+  become: yes
+  package: name={{ item }}
+  with_items:
+    - python-pip
+    - python-virtualenv
+    - python-docker
