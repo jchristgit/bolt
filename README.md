@@ -13,6 +13,10 @@ A Discord guild moderation bot for managing large servers.
 - `iex -S mix`
 
 
+## Deployment
+I deploy via Ansible, see [`ansible/README.md`](ansible/README.md) for details.
+
+
 ## Configuration
 You can configure the prefix used by using the environment variable `BOT_PREFIX`.
 If you want to, you can set up a bot log channel with the `BOTLOG_CHANNEL` environment
