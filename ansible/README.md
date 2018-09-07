@@ -28,3 +28,5 @@ You may need to specify
 hash_behaviour = merge
 ```
 in your `ansible.cfg` in order to be able to override single variables.
+
+If you don't already have the required roles, you can install them using `ansible-galaxy`.
