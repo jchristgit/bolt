@@ -5,7 +5,7 @@ defmodule Bolt.USW do
   alias Bolt.Events.Handler
   alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
-  alias Bolt.USW.{Deduplicator, Escalator, Filters}
+  alias Bolt.USW.{Deduplicator, Escalator, Rules}
   alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.{GuildCache, Me}
@@ -14,11 +14,11 @@ defmodule Bolt.USW do
   require Logger
 
   @filter_name_to_function %{
-    "BURST" => &Filters.Burst.apply/4,
-    "DUPLICATES" => &Filters.Duplicates.apply/4,
-    "LINKS" => &Filters.Links.apply/4,
-    "MENTIONS" => &Filters.Mentions.apply/4,
-    "NEWLINES" => &Filters.Newlines.apply/4
+    "BURST" => &Rules.Burst.apply/4,
+    "DUPLICATES" => &Rules.Duplicates.apply/4,
+    "LINKS" => &Rules.Links.apply/4,
+    "MENTIONS" => &Rules.Mentions.apply/4,
+    "NEWLINES" => &Rules.Newlines.apply/4
   }
 
   @spec config_to_fn(Message.t(), USWRuleConfig) :: (() -> :action | :passthrough)
