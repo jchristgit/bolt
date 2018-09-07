@@ -4,7 +4,7 @@ defmodule Bolt.MixProject do
   def project do
     [
       app: :bolt,
-      version: "0.11.0",
+      version: "0.11.2",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -28,10 +28,10 @@ defmodule Bolt.MixProject do
       {:ecto, "~> 2.2"},
       {:postgrex, "~> 0.13"},
       {:timex, "~> 3.1"},
-      {:libgraph, "~> 0.12.0"},
       {:aho_corasick, git: "https://github.com/wudeng/aho-corasick.git"},
       {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
+      {:distillery, "~> 2.0", runtime: false}
     ]
   end
 
