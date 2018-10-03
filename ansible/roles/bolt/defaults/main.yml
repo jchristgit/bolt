@@ -5,3 +5,4 @@ bolt:
     database: bolt
     host: localhost
     user: bolt
+    pool_size: 10

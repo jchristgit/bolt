@@ -68,5 +68,5 @@
       BOTLOG_CHANNEL: "{{ bolt.botlog_channel }}"
       SUPERUSERS: "{{ bolt.superusers }}"
       BOT_TOKEN: "{{ bolt.bot_token }}"
-      PGSQL_URL: "ecto://{{ bolt.postgres.user }}:{{ bolt.postgres.password }}@{{ bolt.postgres.host }}/{{ bolt.postgres.database }}"
+      PGSQL_URL: "ecto://{{ bolt.postgres.user }}:{{ bolt.postgres.password }}@{{ bolt.postgres.host }}/{{ bolt.postgres.database }}?pool_size={{ bolt.postgres.pool_size }}"
   tags: refresh
