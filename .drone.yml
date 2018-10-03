@@ -1,0 +1,31 @@
+pipeline:
+  bolt:
+    image: elixir:${ELIXIR_VERSION}-alpine
+    commands:
+      - mix deps.get
+      - mix compile
+      - mix credo --strict
+      - mix format --check-formatted
+      - mix test
+    environment:
+      - BOT_TOKEN=no
+      - PGSQL_URL=ecto://postgres@postgres/postgres
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION}-alpine
+    environment:
+      - POSTGRESQL_DB=bolt
+      - POSTGRESQL_PASSWORD=supersecret
+      - POSTGRESQL_USER=bolt
+
+matrix:
+  ELIXIR_VERSION:
+    - 1.6
+    - 1.7
+
+  POSTGRES_VERSION:
+    - 10
+    - 11
+
+# vim: sw=2 ts=2:
