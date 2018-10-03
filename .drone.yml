@@ -2,8 +2,7 @@ pipeline:
   bolt:
     image: elixir:${ELIXIR_VERSION}-alpine
     commands:
-      - mix deps.get
-      - mix compile
+      - mix do local.hex --force, local.rebar --force, deps.get, compile
       - mix credo --strict
       - mix format --check-formatted
       - mix test
