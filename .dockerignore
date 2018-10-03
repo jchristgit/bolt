@@ -1,8 +1,15 @@
 *.ez
 .git
 _build
+CHANGELOG.md
+cover
 deps
+docker-compose.yml
+Dockerfile
 docs
 erl_crash.dump
+LICENSE
+README.md
 rel
 releases
+test
