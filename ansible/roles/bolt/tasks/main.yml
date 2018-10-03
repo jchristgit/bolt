@@ -1,72 +1,27 @@
 ---
-- name: ensure the `{{ bolt.postgres.user }}` postgres user exists
+- name: ensure the compose file directory exists
   become: yes
-  become_user: postgres
-  postgresql_user:
-    name: "{{ bolt.postgres.user }}"
-    password: "{{ bolt.postgres.password }}"
+  file:
+    path: /opt/compose
+    state: directory
 
-- name: ensure the `{{ bolt.postgres.database }}` postgres database exists
+- name: ensure we have an up-to-date compose file
   become: yes
-  become_user: postgres
-  postgresql_db: name={{ bolt.postgres.database }} encoding=UTF-8 owner={{ bolt.postgres.user }}
-
-- name: ensure the `bolt` image is up-to-date
-  become: yes
-  docker_image:
-    name: "{{ bolt.docker_image_name }}"
+  get_url:
+    url: "{{ bolt_compose_file_url }}"
+    dest: /opt/compose/bolt.yml
     force: yes
-  tags: refresh
 
-- name: check if we have migrations to run
+- name: ensure the stack is deployed
   become: yes
-  shell: >
-    docker run
-    --env PGSQL_URL='ecto://{{ bolt.postgres.user }}:{{ bolt.postgres.password }}@{{ bolt.postgres.host }}/{{ bolt.postgres.database }}'
-    --name=bolt-migration-checker
-    --network=host
-    --rm "{{ bolt.docker_image_name }}"
-    mix ecto.migrations
-    | tail -n 2
-    | grep -q down
-  register: migration_grep_result
-  changed_when: false  # doesn't touch anything
-  failed_when: migration_grep_result.rc not in [0, 1]
-  tags: refresh
-
-- name: run migrations
-  become: yes
-  block:
-    - name: ensure bolt is stopped
-      docker_container: name=bolt state=stopped
-
-    - name: migrate the database
-      docker_container:
-        name: bolt-migrator
-        image: "{{ bolt.docker_image_url }}"
-        detach: no
-        pull: yes
-        network_mode: host
-        recreate: yes
-        command: "mix ecto.migrate"
-        env:
-          PGSQL_URL: "ecto://{{ bolt.postgres.user }}:{{ bolt.postgres.password }}@{{ bolt.postgres.host }}/{{ bolt.postgres.database }}"
-  when: migration_grep_result.rc == 0
-  tags: refresh
-
-- name: restart the container
-  become: yes
-  docker_container:
+  docker_stack:
     name: bolt
-    image: "{{ bolt.docker_image_name }}"
-    network_mode: host
-    recreate: yes
-    restart: yes
-    restart_policy: unless-stopped
-    env:
-      BASE_DOC_URL: "{{ bolt.base_doc_url }}"
-      BOTLOG_CHANNEL: "{{ bolt.botlog_channel }}"
-      SUPERUSERS: "{{ bolt.superusers }}"
-      BOT_TOKEN: "{{ bolt.bot_token }}"
-      PGSQL_URL: "ecto://{{ bolt.postgres.user }}:{{ bolt.postgres.password }}@{{ bolt.postgres.host }}/{{ bolt.postgres.database }}?pool_size={{ bolt.postgres.pool_size }}"
-  tags: refresh
+    compose:
+      - /opt/compose/bolt.yml
+    state: present
+  environment:
+    BASE_DOC_URL: "{{ bolt_base_doc_url }}"
+    BOTLOG_CHANNEL: "{{ bolt_botlog_channel }}"
+    BOT_TOKEN: "{{ bolt_bot_token }}"
+    POSTGRES_PASSWORD: "{{ bolt_postgres_password }}"
+    SUPERUSERS: "{{ bolt_superusers }}"
