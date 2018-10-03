@@ -10,6 +10,9 @@
   get_url:
     url: "{{ bolt_compose_file_url }}"
     dest: /opt/compose/bolt.yml
+    owner: root
+    group: root
+    mode: 0400
     force: yes
 
 - name: ensure the stack is deployed
