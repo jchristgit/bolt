@@ -2,6 +2,7 @@ pipeline:
   bolt:
     image: elixir:${ELIXIR_VERSION}-alpine
     commands:
+      - apk add --no-cache git
       - mix do local.hex --force, local.rebar --force, deps.get, compile
       - mix credo --strict
       - mix format --check-formatted
