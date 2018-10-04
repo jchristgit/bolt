@@ -27,7 +27,7 @@ services:
     networks:
       - postgres
     volumes:
-      - postgres:/var/lib/postgresql
+      - postgres:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=bolt
       - POSTGRES_USER=bolt
