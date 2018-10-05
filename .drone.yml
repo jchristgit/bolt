@@ -1,6 +1,6 @@
 pipeline:
   bolt:
-    image: elixir:${ELIXIR_VERSION}-alpine
+    image: elixir:1.7-alpine
     commands:
       - apk add --no-cache git
       - mix do local.hex --force, local.rebar --force, deps.get, compile
@@ -22,10 +22,6 @@ services:
       - POSTGRESQL_USER=bolt
 
 matrix:
-  ELIXIR_VERSION:
-    - 1.6
-    - 1.7
-
   POSTGRES_VERSION:
     - 10
     - 11
