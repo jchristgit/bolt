@@ -10,7 +10,7 @@ pipeline:
       - mix test --no-start
     environment:
       - BOT_TOKEN=no
-      - PGSQL_URL=ecto://postgres@postgres/postgres
+      - PGSQL_TEST_URL=ecto://postgres@postgres/postgres
       - MIX_ENV=test
 
 services:
