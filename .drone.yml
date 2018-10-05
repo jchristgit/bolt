@@ -6,10 +6,12 @@ pipeline:
       - mix do local.hex --force, local.rebar --force, deps.get, compile
       - mix credo --strict
       - mix format --check-formatted
-      - mix test
+      - mix ecto.create
+      - mix test --no-start
     environment:
       - BOT_TOKEN=no
       - PGSQL_URL=ecto://postgres@postgres/postgres
+      - MIX_ENV=test
 
 services:
   postgres:
