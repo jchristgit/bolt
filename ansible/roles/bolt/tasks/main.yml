@@ -1,30 +1,9 @@
 ---
-- name: ensure the compose file directory exists
-  become: yes
-  file:
-    path: /opt/compose
-    state: directory
-
-- name: ensure we have an up-to-date compose file
-  become: yes
-  get_url:
-    url: "{{ bolt_compose_file_url }}"
-    dest: /opt/compose/bolt.yml
-    owner: root
-    group: root
-    mode: 0400
-    force: yes
-
-- name: ensure the stack is deployed
-  become: yes
-  docker_stack:
+- include_role:
     name: bolt
-    compose:
-      - /opt/compose/bolt.yml
-    state: present
-  environment:
-    BASE_DOC_URL: "{{ bolt_base_doc_url }}"
-    BOTLOG_CHANNEL: "{{ bolt_botlog_channel }}"
-    BOT_TOKEN: "{{ bolt_bot_token }}"
-    POSTGRES_PASSWORD: "{{ bolt_postgres_password }}"
-    SUPERUSERS: "{{ bolt_superusers }}"
+    tasks_from: "{{ task_name }}"
+  with_items:
+    - postgres
+    - stack
+  loop_control:
+    loop_var: task_name

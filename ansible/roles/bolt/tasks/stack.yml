@@ -1,0 +1,33 @@
+---
+- name: ensure the stack definition file directory exists
+  become: yes
+  file:
+    path: /opt/docker/stack
+    state: directory
+    owner: root
+    group: root
+    mode: 0400
+
+- name: ensure we have an up-to-date stack definition
+  become: yes
+  copy:
+    src: stack.yml
+    dest: /opt/docker/stack/bolt.yml
+    owner: root
+    group: root
+    mode: 0400
+
+- name: ensure the stack is deployed
+  become: yes
+  docker_stack:
+    name: bolt
+    compose:
+      - /opt/docker/stack/bolt.yml
+    state: present
+  environment:
+    BASE_DOC_URL: "{{ bolt_base_doc_url }}"
+    BOTLOG_CHANNEL: "{{ bolt_botlog_channel }}"
+    BOT_TOKEN: "{{ bolt_bot_token }}"
+    PGSQL_URL: "ecto://{{ bolt_postgres_user }}:{{ bolt_postgres_password }}@{{ bolt_postgres_host }}/{{ bolt_postgres_database }}?pool_size={{ bolt_postgres_pool_size }}"
+    POSTGRES_PASSWORD: "{{ bolt_postgres_password }}"
+    SUPERUSERS: "{{ bolt_superusers }}"
