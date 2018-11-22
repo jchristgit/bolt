@@ -90,6 +90,7 @@ defmodule Bolt.Commander.Server do
 
     ## Member join configuration management
     "keeper" => %{
+      "actions" => Cogs.GateKeeper.Actions,
       "onaccept" => Cogs.GateKeeper.OnAccept,
       "onjoin" => Cogs.GateKeeper.OnJoin
     },

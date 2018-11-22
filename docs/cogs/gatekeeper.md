@@ -9,6 +9,21 @@ For brevity, this document uses the `.keeper` alias.
 ### `.accept`
 Run by members to verify that they have read the rules and further information that the server requires them to.
 
+### `.keeper actions [accept|join]`
+Show configured actions. When `accept` or `join` are given, only shows accept
+or join actions on their own.
+
+```js
+// Show all configured actions.
+.keeper actions
+
+// Show only configured accept actions.
+.keeper actions accept
+```
+
+?> Added in version `0.12.0`.
+
+
 ### `.keeper onaccept <action...>`
 Sets actions to be executed when a member runs `.accept`.
 

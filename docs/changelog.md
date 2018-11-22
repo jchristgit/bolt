@@ -3,6 +3,7 @@
 ## Unreleased
 - support `now` for duration specificatoins
 - `infr expiry` is now relative to the current time
+- add `.keeper actions` command
 
 ## v0.11.1
 - removed default `.clean` invocation
