@@ -32,7 +32,7 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
   defp format_entry({"send_guild", %{"channel_id" => channel_id, "template" => template}}),
     do: "send template ``#{template}`` to <##{channel_id}>"
 
-  defp format_entry({"delete invocation", _}), do: "delete the command invocation"
+  defp format_entry({"delete_invocation", _}), do: "delete the command invocation"
 
   @spec display_entries([AcceptAction.t()], [JoinAction.t()], Channel.id()) ::
           {:ok, Message.t()} | Api.error()
