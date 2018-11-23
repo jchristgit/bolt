@@ -2,10 +2,10 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
   @moduledoc "Show configured actions on the guild."
   @behaviour Bolt.Command
 
-  alias Bolt.Constants
   alias Bolt.Commander.Checks
-  alias Bolt.Schema.{AcceptAction, JoinAction}
+  alias Bolt.Constants
   alias Bolt.Repo
+  alias Bolt.Schema.{AcceptAction, JoinAction}
   alias Nostrum.Api
   alias Nostrum.Struct.{Channel, Embed, Message}
   import Ecto.Query, only: [from: 2]
@@ -68,42 +68,42 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
 
   @impl true
   def command(msg, []) do
-    accept_actions =
+    accept_query =
       from(action in AcceptAction,
         where: action.guild_id == ^msg.guild_id,
         select: {action.action, action.data}
       )
-      |> Repo.all()
 
-    join_actions =
+    join_query =
       from(action in JoinAction,
         where: action.guild_id == ^msg.guild_id,
         select: {action.action, action.data}
       )
-      |> Repo.all()
 
+    accept_actions = Repo.all(accept_query)
+    join_actions = Repo.all(join_query)
     display_entries(accept_actions, join_actions, msg.channel_id)
   end
 
   def command(msg, ["accept"]) do
-    accept_actions =
+    query =
       from(action in AcceptAction,
         where: action.guild_id == ^msg.guild_id,
         select: {action.action, action.data}
       )
-      |> Repo.all()
 
+    accept_actions = Repo.all(query)
     display_entries(accept_actions, [], msg.channel_id)
   end
 
   def command(msg, ["join"]) do
-    join_actions =
+    query =
       from(action in JoinAction,
         where: action.guild_id == ^msg.guild_id,
         select: {action.action, action.data}
       )
-      |> Repo.all()
 
+    join_actions = Repo.all(query)
     display_entries([], join_actions, msg.channel_id)
   end
 
