@@ -26,6 +26,7 @@ defmodule Bolt.MixProject do
     [
       {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
       {:ecto_sql, "~> 3.0"},
+      {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},
       {:timex, "~> 3.1"},
       {:aho_corasick, git: "https://github.com/wudeng/aho-corasick.git"},
