@@ -34,44 +34,34 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
 
   defp format_entry({"delete_invocation", _}), do: "delete the command invocation"
 
+  @spec put_actions(
+          embed :: Embed.t(),
+          header :: String.t(),
+          actions :: [AcceptAction.t() | JoinAction.t()]
+        ) :: Embed.t()
+  defp put_actions(embed, _header, []), do: embed
+
+  defp put_actions(embed, header, actions),
+    do:
+      put_field(embed, header, actions |> Stream.map(&"• #{format_entry(&1)}") |> Enum.join("\n"))
+
+  @spec put_empty_description(Embed.t(), String.t()) :: Embed.t()
+  defp put_empty_description(%Embed{fields: nil} = embed, description),
+    do: put_description(embed, description)
+
+  defp put_empty_description(embed, _description), do: embed
+
   @spec display_entries([AcceptAction.t()], [JoinAction.t()], Channel.id()) ::
           {:ok, Message.t()} | Api.error()
   defp display_entries(accept_actions, join_actions, channel_id) do
-    embed = %Embed{
-      title: "configured gatekeeper actions",
-      color: Constants.color_blue()
-    }
-
-    embed = if Enum.any?(accept_actions) do
-      put_field(
-        embed,
-        "accept actions",
-        accept_actions
-        |> Stream.map(&"• #{format_entry(&1)}")
-        |> Enum.join("\n")
-      )
-    else
-      embed
-    end
-
     embed =
-      if Enum.any?(join_actions) do
-        put_field(
-          embed,
-          "join actions",
-          join_actions
-          |> Stream.map(&"• #{format_entry(&1)}")
-          |> Enum.join("\n")
-        )
-      else
-        embed
-      end
-
-    embed = if embed.fields == nil or Enum.empty?(embed.fields) do
-      put_description(embed, "Hmm, seems like there's nothing here yet.")
-    else
-      embed
-    end
+      %Embed{
+        title: "configured gatekeeper actions",
+        color: Constants.color_blue()
+      }
+      |> put_actions("accept actions", accept_actions)
+      |> put_actions("join actions", join_actions)
+      |> put_empty_description("Hmm, seems like there's nothing here yet.")
 
     {:ok, _msg} = Api.create_message(channel_id, embed: embed)
   end
@@ -79,11 +69,17 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
   @impl true
   def command(msg, []) do
     accept_actions =
-      from(action in AcceptAction, select: {action.action, action.data})
+      from(action in AcceptAction,
+        where: action.guild_id == ^msg.guild_id,
+        select: {action.action, action.data}
+      )
       |> Repo.all()
 
     join_actions =
-      from(action in JoinAction, select: {action.action, action.data})
+      from(action in JoinAction,
+        where: action.guild_id == ^msg.guild_id,
+        select: {action.action, action.data}
+      )
       |> Repo.all()
 
     display_entries(accept_actions, join_actions, msg.channel_id)
@@ -91,7 +87,10 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
 
   def command(msg, ["accept"]) do
     accept_actions =
-      from(action in AcceptAction, select: {action.action, action.data})
+      from(action in AcceptAction,
+        where: action.guild_id == ^msg.guild_id,
+        select: {action.action, action.data}
+      )
       |> Repo.all()
 
     display_entries(accept_actions, [], msg.channel_id)
@@ -99,7 +98,10 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
 
   def command(msg, ["join"]) do
     join_actions =
-      from(action in JoinAction, select: {action.action, action.data})
+      from(action in JoinAction,
+        where: action.guild_id == ^msg.guild_id,
+        select: {action.action, action.data}
+      )
       |> Repo.all()
 
     display_entries([], join_actions, msg.channel_id)
