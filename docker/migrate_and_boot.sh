@@ -18,18 +18,17 @@ function ping_postgres() {
 # Wait for the PostgreSQL container to be accessible.
 while [[ ! ping_postgres ]]; do
     if [[ $attempt -eq $max_retries ]]; then
-        echo [!] Unable to access PostgreSQL container after maximum
+        echo [!] Unable to access PostgreSQL after maximum
         echo [!] specified timeout of $timeout seconds.
         exit 1
     fi
 
-    echo [i] Waiting for the PostgreSQL container to boot,
+    echo [i] Waiting for the PostgreSQL to boot,
     echo [i] attempt $attempt/$max_retries. Sleeping for $interval s.
     sleep $interval
     let attempt+=1
 done
 
-# Create the migration table if it does not exist yet,
-# ensure our schema is up-to-date, and start bolt.
-mix do ecto.create --quiet, ecto.migrate --quiet
+# Ensure our schema is up-to-date, and start bolt.
+mix do ecto.migrate --quiet
 mix run --no-halt
