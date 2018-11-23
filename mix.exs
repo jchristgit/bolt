@@ -17,7 +17,7 @@ defmodule Bolt.MixProject do
   def application do
     [
       mod: {Bolt.Application, []},
-      applications: [:ecto, :postgrex, :nostrum]
+      applications: [:ecto_sql, :postgrex, :nostrum]
     ]
   end
 
@@ -25,8 +25,8 @@ defmodule Bolt.MixProject do
   defp deps do
     [
       {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
-      {:ecto, "~> 2.2"},
-      {:postgrex, "~> 0.13"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, "~> 0.14"},
       {:timex, "~> 3.1"},
       {:aho_corasick, git: "https://github.com/wudeng/aho-corasick.git"},
       {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
