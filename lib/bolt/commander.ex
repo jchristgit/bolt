@@ -31,6 +31,26 @@ defmodule Bolt.Commander do
     |> Enum.find(&match?({:error, _embed}, &1))
   end
 
+  @spec row_to_command([{String.t(), Module.t() | Map.t() | {:alias, Module.t() | Map.t()}}]) ::
+          nil | Module.t() | Map.t() | {:alias, Module.t() | Map.t()}
+  defp row_to_command([]), do: nil
+  defp row_to_command([{name, command}]), do: command
+
+  @spec maybe_load_alias(nil | {:alias, Module.t() | Map.t()}) :: nil | Module.t() | Map.t()
+  defp maybe_load_alias({:alias, command}) do
+    :ets.lookup(:commands, command)
+    |> row_to_command()
+  end
+
+  defp maybe_load_alias(maybe_command), do: maybe_command
+
+  @spec lookup_command(String.t()) :: nil | Map.t() | Module.t()
+  def lookup_command(name) do
+    :ets.lookup(:commands, name)
+    |> row_to_command()
+    |> maybe_load_alias()
+  end
+
   @spec parse_args(Module.t(), [String.t()]) :: [String.t()] | any()
   defp parse_args(command_module, args) do
     if function_exported?(command_module, :parse_args, 1) do
@@ -103,7 +123,7 @@ defmodule Bolt.Commander do
   @spec handle_message(Message.t()) :: :ignored | {:ok, Message.t()} | any()
   def handle_message(msg) do
     with [@prefix <> command_name | args] <- try_split(msg.content),
-         cmd_module_or_map when cmd_module_or_map != nil <- Server.lookup(command_name) do
+         cmd_module_or_map when cmd_module_or_map != nil <- lookup_command(command_name) do
       handle_command(cmd_module_or_map, msg, args)
     else
       _err -> :ignored

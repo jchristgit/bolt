@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Help do
 
   @behaviour Bolt.Command
 
-  alias Bolt.Commander.Server
+  alias Bolt.Commander
   alias Bolt.{Constants, Helpers}
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -46,8 +46,7 @@ defmodule Bolt.Cogs.Help do
     embed = %Embed{
       title: "All commands",
       description:
-        Server.all_commands()
-        |> Map.keys()
+        :ets.select(:commands, [{{:"$1", :"$2"}, [not: {:is_tuple, :"$2"}], [:"$1"]}])
         |> Stream.map(&"`#{@prefix}#{&1}`")
         |> (fn commands ->
               """
@@ -69,7 +68,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   def command(msg, [command_name]) do
-    case Server.lookup(command_name) do
+    case Commander.lookup_command(command_name) do
       nil ->
         response = "🚫 unknown command, check `help` to view all"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
@@ -105,7 +104,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   def command(msg, [command_group, subcommand_name]) do
-    with command_map when is_map(command_map) <- Server.lookup(command_group) do
+    with command_map when is_map(command_map) <- Commander.lookup_command(command_group) do
       case Map.fetch(command_map, subcommand_name) do
         {:ok, command_module} ->
           embed = format_command_detail("#{command_group} #{subcommand_name}", command_module)
@@ -122,11 +121,11 @@ defmodule Bolt.Cogs.Help do
           {:ok, _msg} = Api.create_message(msg.channel_id, response)
       end
     else
-      nil ->
+      [] ->
         response = "🚫 no command group named `#{Helpers.clean_content(command_group)}` found"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
-      false ->
+      [{_name, _module}] ->
         response =
           "🚫 that command has no subcommands, use" <>
             " `help #{command_group}` for information on it"

@@ -6,6 +6,7 @@ defmodule Bolt.Commander.Server do
   """
 
   alias Bolt.Cogs
+  require Logger
   use GenServer
 
   @commands %{
@@ -151,29 +152,18 @@ defmodule Bolt.Commander.Server do
 
   @impl true
   def init(:ok) do
-    {:ok, {@commands, @aliases}}
-  end
+    tid = :ets.new(:commands, [{:read_concurrency, true}, :set, :protected, :named_table])
 
-  @impl true
-  def handle_call(:all_commands, _from, {commands, _} = state) do
-    {:reply, commands, state}
-  end
+    ets_commands = Enum.to_list(@commands)
+    :ets.insert(:commands, ets_commands)
+    Logger.debug("Loaded #{length(ets_commands)} commands.")
 
-  @impl true
-  def handle_call({:lookup, name}, _from, {commands, aliases}) do
-    case Map.get(commands, name) do
-      nil ->
-        case Map.get(aliases, name) do
-          nil ->
-            {:reply, nil, {commands, aliases}}
+    ets_aliases =
+      Enum.map(@aliases, fn {alias_name, command_name} -> {alias_name, {:alias, command_name}} end)
 
-          command_alias ->
-            module_or_map = Map.get(commands, command_alias)
-            {:reply, module_or_map, {commands, aliases}}
-        end
+    :ets.insert(:commands, ets_aliases)
+    Logger.debug("Loaded #{length(ets_aliases)} aliases.")
 
-      module_or_map ->
-        {:reply, module_or_map, {commands, aliases}}
-    end
+    {:ok, tid}
   end
 end
