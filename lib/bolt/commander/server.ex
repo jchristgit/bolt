@@ -136,23 +136,29 @@ defmodule Bolt.Commander.Server do
     GenServer.start_link(__MODULE__, :ok, options)
   end
 
-  @doc "Return a map with all available commands."
-  @spec all_commands :: map
-  def all_commands do
-    GenServer.call(__MODULE__, :all_commands)
+  @doc "Add a regular command or command group."
+  @spec add_command(String.t(), Module.t() | Map.t()) :: :ok
+  def add_command(name, command) do
+    GenServer.call(__MODULE__, {:add, name, command})
   end
 
-  @doc "Fetch the command module or submap for the given command name. Respects aliases."
-  @spec lookup(String.t()) :: map | Module.t() | nil
-  def lookup(command_name) do
-    GenServer.call(__MODULE__, {:lookup, command_name})
+  @doc "Add an alias to another command."
+  @spec add_alias(String.t(), String.t()) :: :ok
+  def add_alias(name, aliased_to) do
+    GenServer.call(__MODULE__, {:add, name, {:alias, aliased_to}})
+  end
+
+  @doc "Drop a single command or alias from the command table."
+  @spec delete_entry(String.t()) :: :ok
+  def delete_entry(name) do
+    GenServer.call(__MODULE__, {:drop, name})
   end
 
   ## Server Callbacks
 
   @impl true
   def init(:ok) do
-    tid = :ets.new(:commands, [{:read_concurrency, true}, :set, :protected, :named_table])
+    tid = :ets.new(:commands, [{:read_concurrency, true}, :ordered_set, :protected, :named_table])
 
     ets_commands = Enum.to_list(@commands)
     :ets.insert(:commands, ets_commands)
@@ -165,5 +171,16 @@ defmodule Bolt.Commander.Server do
     Logger.debug("Loaded #{length(ets_aliases)} aliases.")
 
     {:ok, tid}
+  end
+
+  @impl true
+  def handle_call({:add, name, entry}, _from, tid) do
+    :ets.insert(tid, {name, entry})
+    {:reply, :ok, tid}
+  end
+
+  def handle_call({:drop, name}, _from, tid) do
+    :ets.delete(tid, name)
+    {:reply, :ok, tid}
   end
 end

@@ -46,6 +46,18 @@ defmodule Bolt.Cogs.Sudo do
     Log.command(msg, args)
   end
 
+  def command(msg, ["load" | args]) do
+    alias Bolt.Cogs.Sudo.Load
+
+    Load.command(msg, args)
+  end
+
+  def command(msg, ["unload" | args]) do
+    alias Bolt.Cogs.Sudo.Unload
+
+    Unload.command(msg, args)
+  end
+
   def command(msg, _args) do
     response = "🚫 unknown subcommand"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
