@@ -5,6 +5,7 @@
 - `infr expiry` is now relative to the current time
 - add `.keeper actions` command
 - support command loading and unloading at runtime through the `sudo` cog
+- prevent `role` alias to `roleinfo` from shadowing `role [subcommand]`
 
 ## v0.11.1
 - removed default `.clean` invocation

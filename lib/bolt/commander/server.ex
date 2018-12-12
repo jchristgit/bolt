@@ -124,8 +124,7 @@ defmodule Bolt.Commander.Server do
     "man" => "help",
     "minfo" => "memberinfo",
     "member" => "memberinfo",
-    "rinfo" => "roleinfo",
-    "role" => "roleinfo"
+    "rinfo" => "roleinfo"
   }
 
   ## Client API
