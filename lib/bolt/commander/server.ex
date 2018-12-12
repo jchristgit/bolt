@@ -161,13 +161,13 @@ defmodule Bolt.Commander.Server do
 
     ets_commands = Enum.to_list(@commands)
     :ets.insert(:commands, ets_commands)
-    Logger.debug("Loaded #{length(ets_commands)} commands.")
+    Logger.debug(fn -> "Loaded #{length(ets_commands)} commands." end)
 
     ets_aliases =
       Enum.map(@aliases, fn {alias_name, command_name} -> {alias_name, {:alias, command_name}} end)
 
     :ets.insert(:commands, ets_aliases)
-    Logger.debug("Loaded #{length(ets_aliases)} aliases.")
+    Logger.debug(fn -> "Loaded #{length(ets_aliases)} aliases." end)
 
     {:ok, tid}
   end
