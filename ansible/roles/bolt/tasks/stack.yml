@@ -17,6 +17,12 @@
     group: root
     mode: 0400
 
+- name: ensure the bolt image is up-to-date
+  become: yes
+  docker_image:
+    name: jchristhub/bolt
+    force: yes
+
 - name: ensure the stack is deployed
   become: yes
   docker_stack:
