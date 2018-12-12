@@ -13,15 +13,35 @@ defmodule Bolt.Application do
         ) :: {:ok, pid()} | {:ok, pid(), Application.state()} | {:error, term()}
   def start(_type, _args) do
     children = [
+      # Manages the PostgreSQL connection.
       Bolt.Repo,
+
+      # Handles timed events of infractions.
       {Bolt.Events.Handler, name: Bolt.Events.Handler},
+
+      # Loads commands and aliases and handles writes to them.
       {Bolt.Commander.Server, name: Bolt.Commander.Server},
+
+      # Allows for embed pagination.
       {Bolt.Paginator, name: Bolt.Paginator},
+
+      # Stores guilds with silenced mod logs.
       {Bolt.ModLog.Silencer, name: Bolt.ModLog.Silencer},
+
+      # A lock that ensures that USW does not react
+      # twice when a user hits configured limits.
       {Bolt.USW.Deduplicator, name: Bolt.USW.Deduplicator},
+
+      # Escalates the punishment time of users which were punished recently.
       {Bolt.USW.Escalator, name: Bolt.USW.Escalator},
+
+      # Caches messages for mod log purposes.
       {Bolt.MessageCache, name: Bolt.MessageCache},
+
+      # Holds Aho-Corasick trees used for filtering messages.
       {Bolt.Filter, name: Bolt.Filter},
+
+      # Consumes gateway events.
       Bolt.Consumer
     ]
 
