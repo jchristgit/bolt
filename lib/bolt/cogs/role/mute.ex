@@ -28,6 +28,7 @@ defmodule Bolt.Cogs.Role.Mute do
 
     // Set the mute role to a role called 'Muted'
     .role mute Muted
+    ```
     """
 
   @impl true
