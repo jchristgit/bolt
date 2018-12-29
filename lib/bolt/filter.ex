@@ -87,14 +87,14 @@ defmodule Bolt.Filter do
       # If there are no longer any words, drop the entry as it'd be empty otherwise.
       [] ->
         Logger.debug(fn ->
-          "Rebuild found 0 words for `#{guild_id}`, dropping graph entry"
+          "Filter graph rebuild found 0 words for guild `#{guild_id}`, dropping graph entry"
         end)
 
         {:noreply, Map.delete(guild_trees, guild_id)}
 
       words ->
         Logger.debug(fn ->
-          "Rebuilding graph for `#{guild_id}`"
+          "Rebuilding filter graph for guild `#{guild_id}`."
         end)
 
         new_tree = :aho_corasick.build_tree(Enum.map(words, &String.to_charlist/1))
