@@ -14,7 +14,6 @@ defmodule Bolt.Commander do
   that will be invoked if no subcommand was found.
   """
 
-  alias Bolt.Commander.Server
   alias Nostrum.Api
   alias Nostrum.Struct.{Embed, Message}
 
@@ -34,7 +33,7 @@ defmodule Bolt.Commander do
   @spec row_to_command([{String.t(), Module.t() | Map.t() | {:alias, Module.t() | Map.t()}}]) ::
           nil | Module.t() | Map.t() | {:alias, Module.t() | Map.t()}
   defp row_to_command([]), do: nil
-  defp row_to_command([{name, command}]), do: command
+  defp row_to_command([{_name, command}]), do: command
 
   @spec maybe_load_alias(nil | {:alias, Module.t() | Map.t()}) :: nil | Module.t() | Map.t()
   defp maybe_load_alias({:alias, command}) do
