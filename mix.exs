@@ -30,7 +30,7 @@ defmodule Bolt.MixProject do
       {:postgrex, "~> 0.14"},
       {:timex, "~> 3.1"},
       {:aho_corasick, git: "https://github.com/wudeng/aho-corasick.git"},
-      {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
       {:distillery, "~> 2.0", runtime: false}
     ]
