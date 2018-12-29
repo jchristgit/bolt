@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Filter.Add do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{ErrorFormatters, Repo}
+  alias Bolt.{ErrorFormatters, Filter, Repo}
   alias Bolt.Schema.FilteredWord
   alias Nostrum.Api
 
@@ -45,6 +45,7 @@ defmodule Bolt.Cogs.Filter.Add do
     response =
       case Repo.insert(changeset) do
         {:ok, _struct} ->
+          Filter.rebuild(msg.guild_id)
           "👌 token added to filter"
 
         error ->

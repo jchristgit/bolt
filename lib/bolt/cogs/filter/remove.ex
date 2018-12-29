@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Filter.Remove do
   @behaviour Bolt.Command
 
   alias Bolt.Commander.Checks
-  alias Bolt.{ErrorFormatters, Repo}
+  alias Bolt.{ErrorFormatters, Filter, Repo}
   alias Bolt.Schema.FilteredWord
   alias Nostrum.Api
 
@@ -33,6 +33,7 @@ defmodule Bolt.Cogs.Filter.Remove do
     response =
       with row when row != nil <- Repo.get_by(FilteredWord, guild_id: msg.guild_id, word: token),
            {:ok, _deleted_row} <- Repo.delete(row) do
+        Filter.rebuild(msg.guild_id)
         "👌 will no longer filter that token"
       else
         nil -> "🚫 the given token is not filtered"
