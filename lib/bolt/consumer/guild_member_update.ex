@@ -79,9 +79,9 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       cond do
         new_value === true -> diff_list ++ ["now #{key}"]
         new_value === false -> diff_list ++ ["no longer #{key}"]
-        old_value === nil -> diff_list ++ ["added #{key} ``#{new_value}``"]
-        new_value === nil -> diff_list ++ ["removed #{key} ``#{old_value}``"]
-        true -> diff_list ++ ["updated #{key} from ``#{old_value}`` to ``#{new_value}``"]
+        old_value === nil -> diff_list ++ ["added #{key} ``#{Helpers.clean_content(new_value)}``"]
+        new_value === nil -> diff_list ++ ["removed #{key} ``#{Helpers.clean_content(old_value)}``"]
+        true -> diff_list ++ ["updated #{key} from ``#{Helpers.clean_content(old_value)}`` to ``#{Helpers.clean_content(new_value)}``"]
       end
     else
       diff_list
