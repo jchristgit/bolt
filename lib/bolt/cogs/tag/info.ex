@@ -24,7 +24,7 @@ defmodule Bolt.Cogs.Tag.Info do
   @impl true
   def parse_args(args), do: Enum.join(args, " ")
 
-  @since "0.3.0"
+  @doc since: "0.3.0"
   @impl true
   def command(msg, "") do
     response = "ℹ️ usage: `tag info <name:str...>`"
