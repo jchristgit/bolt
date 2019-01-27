@@ -1,7 +1,7 @@
 ---
 bolt_postgres_database: bolt
 bolt_postgres_user: bolt
-bolt_postgres_host: "{{ ansible_docker_gwbridge.ipv4.address }}"
-bolt_postgres_password: "{{ lookup('password', 'secrets/' + ansible_nodename + '/bolt/postgres/' + bolt_postgres_user + '/password') }}"
+bolt_postgres_host: localhost
+bolt_postgres_password: "{{ lookup('password', 'secrets/' + ansible_nodename + '/postgres/users/' + bolt_postgres_user + '/password') }}"
 
 bolt_postgres_pool_size: 10

@@ -1,9 +1,42 @@
 ---
-- include_role:
+- name: ensure the `{{ bolt_postgres_user }}` postgres user exists
+  become: yes
+  become_user: postgres
+  postgresql_user:
     name: bolt
-    tasks_from: "{{ task_name }}"
-  with_items:
+    password: "{{ bolt_postgres_password }}"
+    state: present
+  tags:
+    - bolt
     - postgres
-    - stack
-  loop_control:
-    loop_var: task_name
+
+- name: ensure the `{{ bolt_postgres_database }}` postgres database exists
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    name: bolt
+    owner: "{{ bolt_postgres_user }}"
+    state: present
+  tags:
+    - bolt
+    - postgres
+
+- name: ensure the container is deployed
+  become: yes
+  docker_container:
+    memory: 150M
+    image: jchristhub/bolt
+    name: bolt
+    network_mode: host
+    state: started
+    hostname: bolt
+    restart_policy: unless-stopped
+    env:
+      BASE_DOC_URL: "{{ bolt_base_doc_url }}"
+      BOTLOG_CHANNEL: "{{ bolt_botlog_channel }}"
+      BOT_TOKEN: "{{ bolt_bot_token }}"
+      PGSQL_URL: "ecto://{{ bolt_postgres_user }}:{{ bolt_postgres_password }}@{{ bolt_postgres_host }}/{{ bolt_postgres_database }}?pool_size={{ bolt_postgres_pool_size }}"
+      POSTGRES_PASSWORD: "{{ bolt_postgres_password }}"
+      SUPERUSERS: "{{ bolt_superusers }}"
+
+# vim: sw=2 ts=2:

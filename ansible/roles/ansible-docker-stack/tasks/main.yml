@@ -1,5 +1,0 @@
----
-- name: ensure `jsondiff` and `pyyaml` are installed
-  become: yes
-  pip:
-    name: [jsondiff, pyyaml]
