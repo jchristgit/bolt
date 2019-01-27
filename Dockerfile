@@ -1,11 +1,8 @@
-FROM elixir:1.7-alpine
+FROM elixir:1.8-alpine
 
-RUN \
-        apk add --no-cache git tini \
-    && \
-        addgroup bolt \
-    && \
-        adduser bolt -G bolt -D
+ENV MIX_ENV=prod
+
+RUN apk add --no-cache --virtual .build-deps git && apk add --no-cache bash
 
 WORKDIR /app
 
@@ -14,9 +11,6 @@ WORKDIR /app
 # and not the dependencies) we only recompile
 # the actual app itself instead of fetching all
 # dependencies and compiling them first.
-ENV \
-    MIX_ENV=prod \
-    MIX_HOME=/home/bolt
 
 COPY mix.exs mix.lock ./
 RUN mix do local.hex --force, \
@@ -25,9 +19,8 @@ RUN mix do local.hex --force, \
            deps.compile
 
 COPY . /app
-RUN mix compile
+RUN mix release \
+    && apk del .build-deps
 
-USER bolt
-
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["mix", "run", "--no-halt"]
+ENTRYPOINT ["/app/_build/prod/rel/bolt/bin/bolt"]
+CMD ["foreground"]
