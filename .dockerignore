@@ -12,5 +12,8 @@ erl_crash.dump
 LICENSE
 README.md
 rel
+!rel/config.exs
+!rel/etc
+!rel/vm.args
 releases
 test
