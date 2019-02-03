@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.ModLog.Events do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.{Constants, Paginator}
   alias Bolt.Schema.ModLogConfig

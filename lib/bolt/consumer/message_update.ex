@@ -2,6 +2,7 @@ defmodule Bolt.Consumer.MessageUpdate do
   @moduledoc "Handles the `MESSAGE_UPDATE` event."
 
   alias Bolt.{Constants, Helpers, MessageCache, ModLog}
+  alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.{Author, Field}
   alias Nostrum.Struct.Snowflake
@@ -13,7 +14,7 @@ defmodule Bolt.Consumer.MessageUpdate do
 
       embed = %Embed{
         author: %Author{
-          name: "#{msg.author.username}##{msg.author.discriminator} (#{msg.author.id})"
+          name: format_author(from_cache)
           # Once the nostrum bug with users being sent as raw maps
           # in the event payload is fixed, edit this back in, and change
           # the user#discrim building above to User.full_name/1.
@@ -52,6 +53,17 @@ defmodule Bolt.Consumer.MessageUpdate do
       ModLog.emit_embed(msg.guild_id, "MESSAGE_EDIT", embed)
 
       MessageCache.update(msg)
+    end
+  end
+
+  defp format_author(cached_message)
+
+  defp format_author(nil), do: nil
+
+  defp format_author(cached_message) do
+    case UserCache.get(cached_message.author_id) do
+      {:ok, author} -> "#{author.username}##{author.discriminator} (#{author.id})"
+      _ -> "uncached (`#{cached_message.author_id}`)"
     end
   end
 end

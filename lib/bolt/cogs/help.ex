@@ -1,10 +1,10 @@
 defmodule Bolt.Cogs.Help do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
-  alias Bolt.Commander
   alias Bolt.{Constants, Helpers}
+  alias Nosedrum.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
@@ -46,7 +46,8 @@ defmodule Bolt.Cogs.Help do
     embed = %Embed{
       title: "All commands",
       description:
-        :ets.select(:commands, [{{:"$1", :"$2"}, [not: {:is_tuple, :"$2"}], [:"$1"]}])
+        CommandStorage.all_commands()
+        |> Map.keys()
         |> Stream.map(&"`#{@prefix}#{&1}`")
         |> (fn commands ->
               """
@@ -68,7 +69,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   def command(msg, [command_name]) do
-    case Commander.lookup_command(command_name) do
+    case CommandStorage.lookup_command(command_name) do
       nil ->
         response = "🚫 unknown command, check `help` to view all"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
@@ -104,7 +105,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   def command(msg, [command_group, subcommand_name]) do
-    with command_map when is_map(command_map) <- Commander.lookup_command(command_group) do
+    with command_map when is_map(command_map) <- CommandStorage.lookup_command(command_group) do
       case Map.fetch(command_map, subcommand_name) do
         {:ok, command_module} ->
           embed = format_command_detail("#{command_group} #{subcommand_name}", command_module)

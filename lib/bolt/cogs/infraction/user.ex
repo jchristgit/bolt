@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Infraction.User do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Cogs.Infraction.General
   alias Bolt.Commander.Checks

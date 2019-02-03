@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.Tempmute do
   @moduledoc false
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.Converters

@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.Filter.Remove do
   @moduledoc false
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.{ErrorFormatters, Filter, Repo}

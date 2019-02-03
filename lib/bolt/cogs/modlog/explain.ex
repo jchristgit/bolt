@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.ModLog.Explain do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.{Constants, Helpers}
   alias Bolt.Schema.ModLogConfig

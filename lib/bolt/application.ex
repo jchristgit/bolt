@@ -18,9 +18,7 @@ defmodule Bolt.Application do
 
       # Handles timed events of infractions.
       {Bolt.Events.Handler, name: Bolt.Events.Handler},
-
-      # Loads commands and aliases and handles writes to them.
-      {Bolt.Commander.Server, name: Bolt.Commander.Server},
+      Nosedrum.Storage.ETS,
 
       # Allows for embed pagination.
       {Bolt.Paginator, name: Bolt.Paginator},

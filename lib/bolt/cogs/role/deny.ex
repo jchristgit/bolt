@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Role.Deny do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers, ModLog, Repo}

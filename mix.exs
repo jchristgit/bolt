@@ -24,7 +24,8 @@ defmodule Bolt.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
+      {:nostrum, github: "Kraigie/nostrum", override: true},
+      {:nosedrum, "~> 0.1"},
       {:ecto_sql, "~> 3.0"},
       {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},

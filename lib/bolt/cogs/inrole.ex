@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.InRole do
   @moduledoc "Shows members in the given role."
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.{Constants, Converters, ErrorFormatters, Paginator}

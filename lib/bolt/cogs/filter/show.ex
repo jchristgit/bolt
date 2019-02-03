@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.Filter.Show do
   @moduledoc false
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.{Constants, Paginator, Repo}

@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Tag.Raw do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.Repo

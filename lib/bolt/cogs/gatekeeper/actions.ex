@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.GateKeeper.Actions do
   @moduledoc "Show configured actions on the guild."
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.Constants

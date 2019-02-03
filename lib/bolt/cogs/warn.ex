@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Warn do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}

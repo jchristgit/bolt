@@ -15,6 +15,9 @@ config :bolt,
       value
     end)
 
+config :nosedrum,
+  prefix: System.get_env("BOT_PREFIX") || "."
+
 config :bolt, Bolt.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: System.get_env("PGSQL_URL")

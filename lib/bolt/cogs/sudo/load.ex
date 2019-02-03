@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Sudo.Load do
   @moduledoc "Load a command or alias."
 
-  alias Bolt.Commander.Server
+  alias Nosedrum.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Nostrum.Struct.User
   require Logger
@@ -18,15 +18,17 @@ defmodule Bolt.Cogs.Sudo.Load do
   end
 
   def command(msg, [name, "aliased", "to", alias_target]) do
+    # soon...
     reply =
-      case :ets.lookup(:commands, alias_target) do
-        [{_name, {:alias, _target}}] ->
+      case CommandStorage.lookup_alias(alias_target) do
+        nil ->
           "🚫 cannot create an alias to an alias"
 
-        [_result] ->
-          case :ets.lookup(:commands, name) do
+        _ ->
+          case CommandStorage.lookup_command(name) do
             [] ->
-              Server.add_alias(name, alias_target)
+              # soon [2]...
+              CommandStorage.add_alias(name, alias_target)
 
               Logger.info(
                 "`#{User.full_name(msg.author)}` aliased command `#{name}` to `#{alias_target}`."
@@ -59,25 +61,25 @@ defmodule Bolt.Cogs.Sudo.Load do
           "🚫 unknown command module `#{module_name}`"
 
         module ->
-          case :ets.lookup(:commands, name) do
-            [{name, {:alias, target}}] ->
-              "🚫 `#{name}` is already loaded as an alias to `#{target}`"
+          case CommandStorage.lookup_command(name) do
+            # [{name, {:alias, target}}] ->
+            #  "🚫 `#{name}` is already loaded as an alias to `#{target}`"
 
-            [{name, subcommands}] when is_map(subcommands) ->
+            subcommands when is_map(subcommands) ->
               "🚫 `#{name}` is already loaded as a command group"
 
-            [{name, module}] ->
-              short_modname = String.replace_leading("#{module}", "Elixir.", "")
-              "🚫 `#{name}` is already loaded as `#{short_modname}`"
-
-            [] ->
-              Server.add_command(name, module)
+            nil ->
+              CommandStorage.add_command({name}, module)
 
               Logger.info(
                 "`#{User.full_name(msg.author)}` loaded command `#{name}` as `#{module}`."
               )
 
               "👌 `#{module_name}` is now loaded as `#{name}`"
+
+            module ->
+              short_modname = String.replace_leading("#{module}", "Elixir.", "")
+              "🚫 `#{name}` is already loaded as `#{short_modname}`"
           end
       end
 

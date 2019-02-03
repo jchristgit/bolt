@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Ed do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Nostrum.Api
 

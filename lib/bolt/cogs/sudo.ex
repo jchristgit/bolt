@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Sudo do
   @moduledoc false
 
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Nostrum.Api

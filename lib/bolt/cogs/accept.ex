@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.Accept do
   @moduledoc false
-  @behaviour Bolt.Command
+  @behaviour Nosedrum.Command
 
   alias Bolt.Commander.Checks
   alias Bolt.{ModLog, Repo}
