@@ -4,7 +4,8 @@ defmodule Bolt.Consumer.GuildMemberAdd do
   alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.{Infraction, JoinAction}
   alias Nostrum.Api
-  alias Nostrum.Struct.{Guild, Message, Snowflake, User}
+  alias Nostrum.Snowflake
+  alias Nostrum.Struct.{Guild, Message, User}
   import Ecto.Query, only: [from: 2]
 
   @spec handle(Guild.id(), Guild.Member.t()) :: {:ok, Message.t()}

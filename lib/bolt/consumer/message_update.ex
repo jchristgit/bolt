@@ -3,9 +3,9 @@ defmodule Bolt.Consumer.MessageUpdate do
 
   alias Bolt.{Constants, Helpers, MessageCache, ModLog}
   alias Nostrum.Cache.UserCache
+  alias Nostrum.Snowflake
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.{Author, Field}
-  alias Nostrum.Struct.Snowflake
 
   @spec handle(Nostrum.Struct.Message.t()) :: :ok
   def handle(msg) do

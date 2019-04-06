@@ -130,7 +130,7 @@ defmodule Bolt.Consumer.Ready do
     :ok = Api.update_status(:online, "you | .help", 3)
   end
 
-  def load_commands() do
+  def load_commands do
     Enum.each(@commands, fn {name, cog} -> CommandStorage.add_command({name}, cog) end)
   end
 end

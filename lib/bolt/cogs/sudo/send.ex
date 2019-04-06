@@ -3,7 +3,8 @@ defmodule Bolt.Cogs.Sudo.Send do
 
   alias Bolt.Converters
   alias Nostrum.Api
-  alias Nostrum.Struct.{Message, Snowflake}
+  alias Nostrum.Snowflake
+  alias Nostrum.Struct.Message
 
   @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
   def command(msg, [channel_or_snowflake | content_list]) do

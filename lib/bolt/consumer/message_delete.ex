@@ -3,7 +3,8 @@ defmodule Bolt.Consumer.MessageDelete do
 
   alias Bolt.{Constants, Helpers, MessageCache, ModLog}
   alias Nostrum.Cache.UserCache
-  alias Nostrum.Struct.{Channel, Embed, Guild, Message, Snowflake, User}
+  alias Nostrum.Snowflake
+  alias Nostrum.Struct.{Channel, Embed, Guild, Message, User}
   import Nostrum.Struct.Embed
 
   @spec handle(Channel.id(), Guild.id(), Message.id()) :: {:ok, Message.t()}

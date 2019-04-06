@@ -7,9 +7,9 @@ defmodule Bolt.Cogs.RoleInfo do
   alias Bolt.{Converters, Helpers}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
+  alias Nostrum.Snowflake
   alias Nostrum.Struct.{Embed, Guild}
   alias Nostrum.Struct.Guild.Role
-  alias Nostrum.Struct.Snowflake
 
   @impl true
   def usage, do: ["roleinfo <role:role>"]

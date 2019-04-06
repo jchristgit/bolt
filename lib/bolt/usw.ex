@@ -9,7 +9,8 @@ defmodule Bolt.USW do
   alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.{GuildCache, Me}
-  alias Nostrum.Struct.{Message, Snowflake, User}
+  alias Nostrum.Snowflake
+  alias Nostrum.Struct.{Message, User}
   import Ecto.Query, only: [from: 2]
   require Logger
 
