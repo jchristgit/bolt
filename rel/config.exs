@@ -43,7 +43,7 @@ environment :dev do
 end
 
 environment :prod do
-  set include_erts: false
+  set include_erts: true
   set include_src: false
   set cookie: (System.get_env("PROD_COOKIE") || Config.Helpers.generate_cookie()) |> String.to_atom()
   set vm_args: "rel/vm.args"
