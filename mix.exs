@@ -17,7 +17,7 @@ defmodule Bolt.MixProject do
   def application do
     [
       mod: {Bolt.Application, []},
-      applications: [:ecto_sql, :postgrex, :nostrum]
+      applications: [:crow, :ecto_sql, :postgrex, :nostrum]
     ]
   end
 
@@ -32,6 +32,10 @@ defmodule Bolt.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},
+
+      # Monitoring
+      {:crow, github: "jchristgit/crow", override: true},
+      {:crow_plugins, github: "jchristgit/crow_plugins"},
 
       # Miscellaneous
       {:timex, "~> 3.1"},
