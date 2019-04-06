@@ -150,12 +150,10 @@ defmodule Bolt.Cogs.Assign do
         end
       else
         {:ok, nil} ->
-          {:ok, _msg} =
-            Api.create_message(msg.channel_id, "❌ you are currently not cached for this guild")
+          "❌ you are currently not cached for this guild"
 
         error ->
-          description = ErrorFormatters.fmt(msg, error)
-          {:ok, _msg} = Api.create_message(msg.channel_id, description)
+          ErrorFormatters.fmt(msg, error)
       end
     end
   end
