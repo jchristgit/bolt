@@ -21,6 +21,14 @@
     - bolt
     - postgres
 
+- name: ensure the image is up-to-date
+  become: yes
+  docker_image:
+    name: jchristhub/bolt
+    force: yes
+    pull: yes
+    state: present
+
 - name: ensure the container is deployed
   become: yes
   docker_container:
