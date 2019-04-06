@@ -117,7 +117,7 @@ defmodule Bolt.Cogs.Assign do
       "🚫 no valid roles to be given - if you meant to assign a single role, " <>
         "check your spelling. errors:\n#{errors |> Stream.map(&"• #{&1}") |> Enum.join("\n")}"
     else
-      with {:ok, member} <-
+      with {:ok, member} when member != nil <-
              GuildCache.select(
                msg.guild_id,
                &Map.get(&1.members, msg.author.id)
