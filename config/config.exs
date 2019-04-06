@@ -28,6 +28,7 @@ config :nostrum,
 
 config :crow,
   plugins: [
+    Bolt.CrowPlugins.GuildMembers,
     CrowPlugins.BEAM.Memory,
     CrowPlugins.BEAM.SystemInfo
   ]
