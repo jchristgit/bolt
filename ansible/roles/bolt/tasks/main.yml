@@ -28,6 +28,9 @@
     force: yes
     pull: yes
     state: present
+  tags:
+    - bolt
+    - docker
 
 - name: ensure the container is deployed
   become: yes
@@ -46,5 +49,8 @@
       PGSQL_URL: "ecto://{{ bolt_postgres_user }}:{{ bolt_postgres_password }}@{{ bolt_postgres_host }}/{{ bolt_postgres_database }}?pool_size={{ bolt_postgres_pool_size }}"
       POSTGRES_PASSWORD: "{{ bolt_postgres_password }}"
       SUPERUSERS: "{{ bolt_superusers }}"
+  tags:
+    - bolt
+    - docker
 
 # vim: sw=2 ts=2:
