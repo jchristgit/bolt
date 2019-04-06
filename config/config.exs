@@ -27,6 +27,7 @@ config :nostrum,
   num_shards: :auto
 
 config :crow,
+  ip: {127, 0, 0, 1},
   plugins: [
     Bolt.CrowPlugins.GuildMembers,
     CrowPlugins.BEAM.Memory,
