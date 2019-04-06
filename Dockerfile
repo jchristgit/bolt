@@ -1,4 +1,4 @@
-FROM elixir:1.8-alpine
+FROM elixir:1.8.1-alpine@sha256:f6a0647245a467f7affee2e635341eb40d4b9dee88467f3b14a30707dbd21308
 
 ENV MIX_ENV=prod
 
