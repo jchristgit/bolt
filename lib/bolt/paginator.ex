@@ -72,6 +72,8 @@ defmodule Bolt.Paginator do
 
     # Drop the paginator from the pool after 15 minutes.
     Process.send_after(__MODULE__, {:drop, msg.id}, 15 * 60 * 1_000)
+
+    {:ok, msg}
   end
 
   ## Server Callbacks
