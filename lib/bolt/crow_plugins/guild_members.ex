@@ -39,7 +39,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
         [
           'multigraph guild_members.gid_#{id}',
           'graph_title member count for #{name}',
-          'graph_vlabel member_count',
+          'graph_vlabel member count',
           'graph_args -l 0 --base 1000',
           'graph_category discord',
           'graph_info total member count for guild #{name} (#{id})',
