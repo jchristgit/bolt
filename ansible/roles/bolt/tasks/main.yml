@@ -24,13 +24,13 @@
 - name: ensure the container is deployed
   become: yes
   docker_container:
-    memory: 150M
+    hostname: bolt
     image: jchristhub/bolt
+    memory: 150M
     name: bolt
     network_mode: host
-    state: started
-    hostname: bolt
     restart_policy: unless-stopped
+    state: started
     env:
       BASE_DOC_URL: "{{ bolt_base_doc_url }}"
       BOTLOG_CHANNEL: "{{ bolt_botlog_channel }}"
