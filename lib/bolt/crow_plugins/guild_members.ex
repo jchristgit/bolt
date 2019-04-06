@@ -15,7 +15,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
       'graph_title guild member count',
       'graph_vlabel member count',
       'graph_args -l 0 --base 1000',
-      'graph_category discord.guilds',
+      'graph_category discord',
       'graph_info total member count in all guilds bolt can see',
       'members.label total members',
       'members.min 0'
@@ -41,7 +41,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
           'graph_title member count for #{name}',
           'graph_vlabel member_count',
           'graph_args -l 0 --base 1000',
-          'graph_category discord.guilds',
+          'graph_category discord',
           'graph_info total member count for guild #{name} (#{id})',
           'members.label total members',
           'members.min 0'
