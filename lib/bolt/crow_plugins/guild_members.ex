@@ -3,6 +3,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
   A multigraph plugin that displays the total amount of guild members that
   bolt can see along with per-guild member count graphs.
   """
+  # credo:disable-for-this-file Credo.Check.Refactor.PipeChainStart
 
   alias Nostrum.Cache.GuildCache
   @behaviour Crow.Plugin
@@ -25,7 +26,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
   @doc false
   @impl true
   def values do
-    total_members = GuildCache.select_all(& &1.member_count) |> Enum.sum()
+    total_members = Enum.sum(GuildCache.select_all(& &1.member_count))
 
     [
       'multigraph guild_members',
