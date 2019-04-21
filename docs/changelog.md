@@ -6,6 +6,7 @@
 - add `.keeper actions` command
 - support command loading and unloading at runtime through the `sudo` cog
 - prevent `role` alias to `roleinfo` from shadowing `role [subcommand]`
+- display more specific error when `.assign` cannot find command author in guild
 
 ## v0.11.1
 - removed default `.clean` invocation

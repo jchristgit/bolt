@@ -149,7 +149,11 @@ defmodule Bolt.Cogs.Assign do
           """
         end
       else
-        error -> ErrorFormatters.fmt(msg, error)
+        {:ok, nil} ->
+          "❌ you are currently not cached for this guild"
+
+        error ->
+          ErrorFormatters.fmt(msg, error)
       end
     end
   end
