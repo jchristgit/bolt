@@ -1,4 +1,4 @@
-FROM erlang:21.3.6
+FROM erlang:21.2.7
 
 # elixir expects utf8.
 ENV ELIXIR_VERSION="v1.7.4" \
