@@ -5,3 +5,15 @@ bolt_postgres_host: localhost
 bolt_postgres_password: "{{ lookup('password', 'secrets/' + ansible_nodename + '/postgres/users/' + bolt_postgres_user + '/password') }}"
 
 bolt_postgres_pool_size: 10
+
+bolt_repository_url: https://github.com/jchristgit/bolt
+# git reference
+bolt_version: master
+bolt_release_version: 0.11.2
+bolt_checkout_directory: /usr/local/src/bolt
+
+bolt_cookie: "{{ lookup('password', 'secrets/' + ansible_nodename + '/bolt/erlang.cookie') }}"
+bolt_service_user: bolt
+bolt_home_directory: /opt/bolt
+
+# vim: sw=2 ts=2:

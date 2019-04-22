@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=discord guild moderation bot
+Documentation={{ bolt_repository_url }}
+Requires=postgresql.service network-online.target
+After=postgresql.service network-online.target
+
+[Service]
+User={{ bolt_service_user }}
+ExecStart=/opt/bolt/bolt-{{ bolt_release_version }}-{{ bolt_checkout.after[:5] }}/bin/bolt foreground
+
+EnvironmentFile=/etc/opt/bolt/bolt.env
+MemoryHigh=180M
+MemoryMax=200M
+RemainAfterExit=no
+Restart=on-failure
+RestartSec=5
+SyslogIdentifier=bolt
+WorkingDirectory=/opt/bolt/bolt-{{ bolt_release_version }}-{{ bolt_checkout.after[:5] }}/
+
+[Install]
+WantedBy=network-online.target
+
+# vim: ft=conf:

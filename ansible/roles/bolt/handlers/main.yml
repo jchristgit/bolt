@@ -1,0 +1,13 @@
+---
+- name: reload the systemd daemon
+  become: yes
+  systemd:
+    daemon_reload: yes
+
+- name: restart bolt
+  become: yes
+  systemd:
+    name: bolt
+    state: restarted
+
+# vim: sw=2 ts=2:
