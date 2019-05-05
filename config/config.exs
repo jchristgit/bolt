@@ -30,6 +30,9 @@ config :crow,
   ip: {127, 0, 0, 1},
   plugins: [
     Bolt.CrowPlugins.GuildMembers,
+    CrowPlugins.BEAM.ContextSwitches,
+    CrowPlugins.BEAM.GarbageCollections,
+    CrowPlugins.BEAM.IO,
     CrowPlugins.BEAM.Memory,
     CrowPlugins.BEAM.SystemInfo
   ]
