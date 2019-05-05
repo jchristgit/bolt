@@ -10,6 +10,12 @@ defmodule Bolt.CrowPlugins.GuildMembers do
 
   @doc false
   @impl true
+  def name do
+    'guild_members'
+  end
+
+  @doc false
+  @impl true
   def config do
     [
       'multigraph guild_members',
