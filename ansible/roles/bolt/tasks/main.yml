@@ -27,7 +27,7 @@
     dest: "{{ bolt_checkout_directory }}"
     repo: "{{ bolt_repository_url }}"
     version: "{{ bolt_version }}"
-    umask: '0077'
+    umask: '00077'
   register: bolt_checkout
   tags:
     - bolt
