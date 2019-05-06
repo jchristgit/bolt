@@ -50,6 +50,7 @@
 - name: ensure the assembler docker image is up-to-date
   become: yes
   docker_image:
+    force: yes
     path: "{{ bolt_checkout_directory }}"
     dockerfile: "{{ bolt_checkout_directory }}/docker/assembler/Dockerfile"
     name: jchristhub/bolt-assembler:{{ bolt_version }}
