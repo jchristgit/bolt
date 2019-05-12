@@ -21,7 +21,9 @@ defmodule Bolt.Consumer.Ready do
     ## Self-assignable roles
     "lsar" => Cogs.Lsar,
     "assign" => Cogs.Assign,
+    "iam" => Cogs.Assign,
     "remove" => Cogs.Remove,
+    "iamn" => Cogs.Remove,
 
     ## Role configuration
     "role" => %{
