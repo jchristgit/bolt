@@ -38,8 +38,16 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec apply(Message.t()) :: :noop | :ok | nil
+  @doc """
+  Apply spam filters on the given message.
+
+  ## Return value
+  If the message pops a spam filter and the filter takes action,
+  `:action` is returned. Otherwise, `nil` is returned.
+  """
+  @spec apply(Message.t()) :: nil | :action
   def apply(msg) do
+    # https://github.com/rrrene/credo/issues/634
     query =
       from(
         config in USWRuleConfig,
@@ -47,15 +55,10 @@ defmodule Bolt.USW do
         select: config
       )
 
-    case Repo.all(query) do
-      [] ->
-        :noop
-
-      configurations ->
-        configurations
-        |> Stream.map(&config_to_fn(msg, &1))
-        |> Enum.find(:ok, &(&1.() == :action))
-    end
+    query
+    |> Repo.all()
+    |> Stream.map(&config_to_fn(msg, &1))
+    |> Enum.find(&(&1.() == :action))
   end
 
   @spec execute_config(USWPunishmentConfig, User.t(), String.t()) ::
