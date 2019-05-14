@@ -174,4 +174,18 @@ defmodule Bolt.Helpers do
            "hierarchy to run that, but you don't have any roles"}
     end
   end
+
+  @doc """
+  Return `plural` when the given integer is not one, otherwise, return `singular`.
+
+  ## Examples
+
+      iex> pluralize(1, "sheep", "sheep")
+      "sheep"
+      iex> pluralize(5, "sheep", "sheep")
+      "sheep"
+  """
+  @spec pluralize(Integer.t(), String.t(), String.t()) :: String.t()
+  def pluralize(1, singular, _plural), do: singular
+  def pluralize(_n, _singular, plural), do: plural
 end
