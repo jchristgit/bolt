@@ -170,9 +170,9 @@ defmodule Bolt.USW do
     case Api.create_dm(user.id) do
       {:ok, dm} ->
         guild_desc =
-          case GuildCache.get(guild_id) do
-            {:ok, guild} ->
-              guild.name
+          case GuildCache.select(guild_id, & &1.name) do
+            {:ok, guild_name} ->
+              guild_name
 
             _error ->
               guild_id
