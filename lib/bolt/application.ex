@@ -4,6 +4,7 @@ defmodule Bolt.Application do
   Starts the required processes, including the gateway consumer.
   """
 
+  alias Bolt.CrowPlugins.GuildMessageCounts
   use Application
 
   @impl true
@@ -43,7 +44,17 @@ defmodule Bolt.Application do
       Bolt.Consumer
     ]
 
+    bootstrap_ets_tables()
     options = [strategy: :rest_for_one, name: Bolt.Supervisor]
     Supervisor.start_link(children, options)
+  end
+
+  def bootstrap_ets_tables do
+    :ets.new(GuildMessageCounts.table_name(), [
+      {:write_concurrency, true},
+      :ordered_set,
+      :public,
+      :named_table
+    ])
   end
 end

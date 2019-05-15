@@ -86,6 +86,14 @@ The following options can be given to customize the output:
 .roles --no-mention
 ```
 
+### `.graphs`
+Bolt aggregates a couple of anonymous statistics. This command links you to the statistics that bolt collects.
+
+```js
+// Link to bolt's graphs.
+.graph
+```
+
 ### `.help [command:str]`
 Shows help for the given command or command group. When no command or command group is given, shows all available commands.
 `syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.

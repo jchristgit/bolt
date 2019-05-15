@@ -57,6 +57,14 @@ defmodule Bolt.Consumer.Ready do
       "user" => Cogs.Infraction.User,
       "expiry" => Cogs.Infraction.Expiry
     },
+    # man this is one awful way to do aliases
+    "infr" => %{
+      "detail" => Cogs.Infraction.Detail,
+      "reason" => Cogs.Infraction.Reason,
+      "list" => Cogs.Infraction.List,
+      "user" => Cogs.Infraction.User,
+      "expiry" => Cogs.Infraction.Expiry
+    },
 
     ## Mod Log management
     "modlog" => %{

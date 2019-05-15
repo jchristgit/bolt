@@ -1,7 +1,6 @@
 use Mix.Config
 
 config :bolt,
-  base_doc_url: System.get_env("BASE_DOC_URL"),
   botlog_channel: System.get_env("BOTLOG_CHANNEL"),
   ecto_repos: [Bolt.Repo],
   prefix: System.get_env("BOT_PREFIX") || ".",
@@ -11,7 +10,8 @@ config :bolt,
     |> Enum.map(fn user_id ->
       {value, _} = Integer.parse(user_id)
       value
-    end)
+    end),
+  web_domain: System.get_env("WEB_DOMAIN")
 
 config :bolt, Bolt.Repo,
   adapter: Ecto.Adapters.Postgres,
