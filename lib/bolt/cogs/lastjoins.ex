@@ -104,7 +104,7 @@ defmodule Bolt.Cogs.LastJoins do
           fields: fields
         }
 
-        {ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
 
       {:error, _reason} ->
         {:ok, _msg} = Api.create_message(msg.channel_id, "guild uncached, sorry")
