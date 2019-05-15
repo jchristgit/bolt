@@ -37,10 +37,10 @@ defmodule Bolt.CrowPlugins.GuildMessageCounts do
       'graph_vlabel messages',
       'graph_args -l 0 --base 1000',
       'graph_category discord',
+      'graph_scale no',
       'graph_info total messages in all guilds bolt can see',
       'messages.label messages',
-      'messages.type COUNTER',
-      'messages.min 0'
+      'messages.type COUNTER'
     ] ++ config_for_guilds()
   end
 
@@ -69,11 +69,11 @@ defmodule Bolt.CrowPlugins.GuildMessageCounts do
         'graph_title message count for #{name}',
         'graph_vlabel message count',
         'graph_args -l 0 --base 1000',
+        'graph_scale no',
         'graph_category discord',
         'graph_info messages for guild #{name} (#{guild_id})',
         'messages.label messages',
-        'messages.type COUNTER',
-        'messages.min 0'
+        'messages.type COUNTER'
       ]
     end)
     |> :lists.concat()
