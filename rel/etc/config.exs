@@ -22,4 +22,4 @@ config :nostrum,
   num_shards: :auto
 
 config :logger,
-  level: :warn
+  level: :info
