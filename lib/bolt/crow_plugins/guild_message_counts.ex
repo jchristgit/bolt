@@ -33,12 +33,13 @@ defmodule Bolt.CrowPlugins.GuildMessageCounts do
   def config do
     [
       'multigraph guild_message_counts',
-      'graph_title message count across all guilds',
-      'graph_vlabel messages',
+      'graph_title messages per hour across all guilds',
+      'graph_vlabel messages per hour',
       'graph_args -l 0',
       'graph_category discord',
+      'graph_period hour',
       'graph_scale no',
-      'graph_info total messages in all guilds bolt can see',
+      'graph_info messages per hour in all guilds bolt can see',
       'messages.label messages',
       'messages.min 0',
       'messages.type DERIVE'
@@ -67,12 +68,13 @@ defmodule Bolt.CrowPlugins.GuildMessageCounts do
 
       [
         'multigraph guild_message_counts.gid_#{guild_id}',
-        'graph_title message count for #{name}',
-        'graph_vlabel message count',
+        'graph_title message counts for #{name}',
+        'graph_vlabel messages per hour',
+        'graph_period hour',
         'graph_args -l 0',
         'graph_scale no',
         'graph_category discord',
-        'graph_info messages for guild #{name} (#{guild_id})',
+        'graph_info messages sent per hour for guild #{name} (#{guild_id})',
         'messages.label messages',
         'messages.min 0',
         'messages.type DERIVE'
