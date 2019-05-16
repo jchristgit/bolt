@@ -11,22 +11,23 @@ defmodule Bolt.ModLog do
   @event_emoji %{
     "AUTOMOD" => "🛡",
     "BOT_UPDATE" => "📄",
+    "CHANNEL_CREATE" => "#⃣",
+    "CHANNEL_UPDATE" => "♻",
     "CONFIG_UPDATE" => "⚙",
     "ERROR" => "❌",
-    "INFRACTION_CREATE" => "📟",
-    "INFRACTION_UPDATE" => "🖋",
-    "INFRACTION_EVENTS" => "⏲",
-    "CHANNEL_CREATE" => "#⃣",
     "GUILD_BAN_ADD" => "🔨",
     "GUILD_BAN_REMOVE" => "🤝",
     "GUILD_MEMBER_ADD" => "📥",
     "GUILD_MEMBER_REMOVE" => "📤",
     "GUILD_MEMBER_UPDATE" => "♻",
+    "GUILD_ROLE_DELETE" => "🚮",
     "GUILD_ROLE_UPDATE" => "♻",
-    "CHANNEL_UPDATE" => "♻",
-    "MESSAGE_EDIT" => "🖊",
+    "INFRACTION_CREATE" => "📟",
+    "INFRACTION_EVENTS" => "⏲",
+    "INFRACTION_UPDATE" => "🖋",
+    "MESSAGE_CLEAN" => "🗑",
     "MESSAGE_DELETE" => "🗑",
-    "MESSAGE_CLEAN" => "🗑"
+    "MESSAGE_EDIT" => "🖊"
   }
 
   @typedoc "The return type used by `emit`. Set as a type for convenience."
