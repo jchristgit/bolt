@@ -22,7 +22,7 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
       ModLog.emit(
         guild_id,
         "GUILD_ROLE_UPDATE",
-        "role #{old_role.name} (`#{old_role.id}`) #{diff_string}"
+        "role #{Helpers.clean_content(old_role.name)} (`#{old_role.id}`) #{diff_string}"
       )
     end
   end
