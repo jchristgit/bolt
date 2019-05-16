@@ -103,7 +103,12 @@ defmodule Bolt.Cogs.Graphs do
 
   @spec graph_link(String.t(), Guild.id(), String.t()) :: String.t()
   defp graph_link(name, guild_id, scale) do
+    # We build a custom timestamp here that is added at the end of the endpoint.
+    # It doesn't do anything in Munin (more specifically, nginx), but it forces
+    # Discord's media proxy to refresh the graph every 5 minutes.
+    stamp = DateTime.utc_now() |> DateTime.to_unix() |> Kernel.div(60 * 5)
+
     "https://munin.#{Application.get_env(:bolt, :web_domain)}/munin/bolt/bolt" <>
-      "/#{name}/gid_#{guild_id}-#{scale}.png"
+      "/#{name}/gid_#{guild_id}-#{scale}.png?t=#{stamp}"
   end
 end
