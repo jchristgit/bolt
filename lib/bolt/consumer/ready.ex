@@ -17,6 +17,7 @@ defmodule Bolt.Consumer.Ready do
     "memberinfo" => Cogs.MemberInfo,
     "roleinfo" => Cogs.RoleInfo,
     "roles" => Cogs.Roles,
+    "graphs" => Cogs.Graphs,
 
     ## Self-assignable roles
     "lsar" => Cogs.Lsar,
