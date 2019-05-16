@@ -10,9 +10,6 @@ defmodule Bolt.Cogs.Graphs do
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild
 
-  # The base URL at which the Munin graphs live.
-  @munin_base_url "https://munin.#{Application.get_env(:bolt, :web_domain)}/munin/bolt/bolt"
-
   # Known time scales.
   @time_scales ["day", "week", "month", "year"]
 
@@ -62,7 +59,6 @@ defmodule Bolt.Cogs.Graphs do
         icon_url: "https://avatars0.githubusercontent.com/u/909917?s=200&v=4"
       }
     }
-    |> IO.inspect
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
@@ -106,6 +102,8 @@ defmodule Bolt.Cogs.Graphs do
   end
 
   @spec graph_link(String.t(), Guild.id(), String.t()) :: String.t()
-  defp graph_link(name, guild_id, scale),
-    do: @munin_base_url <> "/#{name}/gid_#{guild_id}-#{scale}.png"
+  defp graph_link(name, guild_id, scale) do
+    "https://munin.#{Application.get_env(:bolt, :web_domain)}/munin/bolt/bolt" <>
+      "/#{name}/gid_#{guild_id}-#{scale}.png"
+  end
 end
