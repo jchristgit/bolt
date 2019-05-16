@@ -10,9 +10,7 @@ defmodule Bolt.Consumer.GuildRoleCreate do
     ModLog.emit(
       guild_id,
       "GUILD_ROLE_CREATE",
-      Helpers.clean_content(
-        "role #{Helpers.clean_content(created_role.name)} (`#{created_role.id}`) was created"
-      )
+      "role #{Helpers.clean_content(created_role.name)} (`#{created_role.id}`) was created"
     )
   end
 end
