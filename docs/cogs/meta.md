@@ -88,11 +88,26 @@ The following options can be given to customize the output:
 ```
 
 ### `.graphs`
-Bolt aggregates a couple of anonymous statistics. This command links you to the statistics that bolt collects.
+Bolt aggregates a couple of anonymous statistics.
+
+This command displays individual graphs on Discord.
+
+The following graphs are currently collected:
+- `members`, which counts total server members.
+- `messages`, which counts average messages per hour.
+
+By default, bolt will display graphs for the last day, but you
+can also display them over the past `week`, `month`, or `year`.
 
 ```js
-// Link to bolt's graphs.
-.graph
+// Display message count statistics over the past week.
+.graphs messages week
+
+// Display member count statistics over the past year.
+.graphs members year
+
+// Display an overview over collected graphs and usage information.
+.graphs
 ```
 
 ### `.help [command:str]`
