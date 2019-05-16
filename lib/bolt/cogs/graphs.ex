@@ -62,6 +62,7 @@ defmodule Bolt.Cogs.Graphs do
         icon_url: "https://avatars0.githubusercontent.com/u/909917?s=200&v=4"
       }
     }
+    |> IO.inspect
 
     {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
   end
