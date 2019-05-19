@@ -3,9 +3,10 @@ defmodule Bolt.USW do
 
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{ModLog, Repo}
+  alias Bolt.Helpers
   alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
   alias Bolt.USW.{Deduplicator, Escalator, Rules}
+  alias Bolt.{ModLog, Repo}
   alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.{GuildCache, Me}
@@ -75,6 +76,8 @@ defmodule Bolt.USW do
          description
        ) do
     with false <- Deduplicator.contains?(user.id),
+         %User{id: my_id} <- Me.get(),
+         {:is_above, {:ok, true}} <- {:is_above, Helpers.is_above(guild_id, my_id, user.id)},
          {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id) do
       escalator_level = Escalator.level_for(user.id)
 
@@ -126,6 +129,9 @@ defmodule Bolt.USW do
       # Deduplicator is active
       true ->
         Logger.debug("Deduplicator is active. Not applying temporary role.")
+
+      {:is_above, {:ok, false}} ->
+        Logger.debug("self is not above target user, ignoring USW breach")
 
       {:error, %{status_code: status, message: %{"message" => reason}}} ->
         ModLog.emit(

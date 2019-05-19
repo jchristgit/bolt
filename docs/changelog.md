@@ -9,6 +9,8 @@
 - support command loading and unloading at runtime through the `sudo` cog
 - prevent `role` alias to `roleinfo` from shadowing `role [subcommand]`
 - display more specific error when `.assign` cannot find command author in guild
+- users that are above or equal in the role hierarchy to bolt will now be ignored
+  by USW
 
 ## v0.11.1
 - removed default `.clean` invocation
@@ -88,3 +90,5 @@
 
 ## v0.2.0
 - Initial release
+
+<!-- vim: set textwidth=80 sw=2 ts=2: -->
