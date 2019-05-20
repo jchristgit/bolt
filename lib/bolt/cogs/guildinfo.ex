@@ -3,8 +3,8 @@ defmodule Bolt.Cogs.GuildInfo do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.{Constants, Helpers}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Snowflake
@@ -112,7 +112,7 @@ defmodule Bolt.Cogs.GuildInfo do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, []) do

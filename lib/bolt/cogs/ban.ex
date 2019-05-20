@@ -3,11 +3,11 @@ defmodule Bolt.Cogs.Ban do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
+  alias Bolt.{Helpers, ModLog, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
@@ -35,7 +35,7 @@ defmodule Bolt.Cogs.Ban do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:ban_members)]
 
   @spec check_tempban(String.t(), User.id(), Nostrum.Struct.Message.t()) :: :ok
   defp check_tempban(base_string, user_id, msg) do

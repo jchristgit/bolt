@@ -2,10 +2,10 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
   @moduledoc "Show configured actions on the guild."
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Constants
   alias Bolt.Repo
   alias Bolt.Schema.{AcceptAction, JoinAction}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.{Channel, Embed, Message}
   import Ecto.Query, only: [from: 2]
@@ -23,7 +23,7 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @spec format_entry({action :: String.t(), data :: map()}) :: String.t()
   defp format_entry({"add_role", %{"role_id" => role_id}}), do: "add role `#{role_id}`"

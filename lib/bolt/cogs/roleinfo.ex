@@ -3,13 +3,13 @@ defmodule Bolt.Cogs.RoleInfo do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.{Converters, Helpers}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Snowflake
-  alias Nostrum.Struct.{Embed, Guild}
   alias Nostrum.Struct.Guild.Role
+  alias Nostrum.Struct.{Embed, Guild}
 
   @impl true
   def usage, do: ["roleinfo <role:role>"]
@@ -22,7 +22,7 @@ defmodule Bolt.Cogs.RoleInfo do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

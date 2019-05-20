@@ -3,9 +3,9 @@ defmodule Bolt.Cogs.Lsar do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
-  alias Bolt.{Constants, Converters, Paginator, Repo}
   alias Bolt.Schema.SelfAssignableRoles
+  alias Bolt.{Constants, Converters, Paginator, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Footer
@@ -34,7 +34,7 @@ defmodule Bolt.Cogs.Lsar do
   def description, do: "Shows all self-assignable roles on this guild."
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()} | reference()

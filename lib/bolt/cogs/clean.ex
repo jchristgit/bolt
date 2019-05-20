@@ -3,8 +3,8 @@ defmodule Bolt.Cogs.Clean do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.Mapping.ChannelGuild
   alias Nostrum.Struct.{Message, User}
@@ -44,7 +44,7 @@ defmodule Bolt.Cogs.Clean do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
 
   @impl true
   def parse_args(args) do

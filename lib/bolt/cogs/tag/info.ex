@@ -3,10 +3,10 @@ defmodule Bolt.Cogs.Tag.Info do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Constants
-  alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.Tag
+  alias Bolt.{Helpers, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.{Embed, User}
@@ -19,7 +19,7 @@ defmodule Bolt.Cogs.Tag.Info do
   def description, do: "Shows detailed information about the given tag."
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

@@ -3,11 +3,11 @@ defmodule Bolt.Cogs.Infraction.Expiry do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
+  alias Bolt.{Helpers, ModLog, Parsers, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   require Logger
@@ -25,7 +25,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
   def command(msg, [maybe_id, new_expiry]) do

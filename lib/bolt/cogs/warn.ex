@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Warn do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
   alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -27,7 +27,7 @@ defmodule Bolt.Cogs.Warn do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
 
   @impl true
   def command(msg, [user | reason_list]) do

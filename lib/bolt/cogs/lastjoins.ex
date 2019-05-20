@@ -3,7 +3,8 @@ defmodule Bolt.Cogs.LastJoins do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.{Commander.Checks, Constants, Helpers, MessageCache}
+  alias Bolt.{Constants, Helpers, MessageCache}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.{Embed, User}
@@ -43,7 +44,7 @@ defmodule Bolt.Cogs.LastJoins do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
 
   @impl true
   def parse_args(args) do

@@ -3,12 +3,12 @@ defmodule Bolt.Cogs.Temprole do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
+  alias Bolt.{Helpers, ModLog, Parsers, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
@@ -35,7 +35,7 @@ defmodule Bolt.Cogs.Temprole do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_roles?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_roles)]
 
   @impl true
   def command(msg, [user, role, duration | reason_list]) do

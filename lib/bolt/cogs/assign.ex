@@ -3,9 +3,9 @@ defmodule Bolt.Cogs.Assign do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
+  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.User
@@ -29,7 +29,7 @@ defmodule Bolt.Cogs.Assign do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, [role_name]) do

@@ -2,11 +2,11 @@ defmodule Bolt.Cogs.ForceNick do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
-  alias Bolt.{Converters, ErrorFormatters}
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
+  alias Bolt.{Converters, ErrorFormatters}
+  alias Bolt.{Helpers, ModLog, Parsers, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   require Logger
@@ -29,7 +29,7 @@ defmodule Bolt.Cogs.ForceNick do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_nicknames?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_nicknames)]
 
   @impl true
   def command(msg, [user, duration | nick]) when nick != [] do

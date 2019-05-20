@@ -3,9 +3,9 @@ defmodule Bolt.Cogs.Tag.Raw do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Repo
   alias Bolt.Schema.Tag
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   import Ecto.Query, only: [from: 2]
 
@@ -16,7 +16,7 @@ defmodule Bolt.Cogs.Tag.Raw do
   def description, do: "Returns the raw contents of the tag named `name` as a file."
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def parse_args(args), do: Enum.join(args, " ")

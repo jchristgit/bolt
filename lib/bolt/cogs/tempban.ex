@@ -3,9 +3,9 @@ defmodule Bolt.Cogs.Tempban do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
+  alias Nosedrum.Predicates
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -35,7 +35,7 @@ defmodule Bolt.Cogs.Tempban do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_ban_members?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:ban_members)]
 
   @impl true
   def command(msg, [user, duration | reason_list]) do

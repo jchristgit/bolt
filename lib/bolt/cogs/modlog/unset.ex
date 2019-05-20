@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.ModLog.Unset do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
   alias Bolt.{Helpers, ModLog, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
@@ -22,7 +22,7 @@ defmodule Bolt.Cogs.ModLog.Unset do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
   def command(msg, ["all"]) do

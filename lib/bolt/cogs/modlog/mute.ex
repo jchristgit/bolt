@@ -3,9 +3,9 @@ defmodule Bolt.Cogs.ModLog.Mute do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.ModLog
   alias Bolt.ModLog.Silencer
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
@@ -23,7 +23,7 @@ defmodule Bolt.Cogs.ModLog.Mute do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
   def command(msg, []) do

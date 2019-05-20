@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.USW.Set do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
   alias Bolt.{ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.USWRuleConfig
   alias Nostrum.Api
@@ -33,7 +33,7 @@ defmodule Bolt.Cogs.USW.Set do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
   def command(msg, [rule_name, count_str, interval_str]) do

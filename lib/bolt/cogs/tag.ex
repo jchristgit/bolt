@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Tag do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
 
   @impl true
   def usage,
@@ -26,7 +26,7 @@ defmodule Bolt.Cogs.Tag do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, args) do

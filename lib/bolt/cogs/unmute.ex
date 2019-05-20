@@ -2,13 +2,13 @@ defmodule Bolt.Cogs.Unmute do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.Infraction
+  alias Bolt.{ModLog, Repo}
   alias Ecto.Changeset
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
@@ -24,7 +24,7 @@ defmodule Bolt.Cogs.Unmute do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
 
   @impl true
   def command(msg, user_list) when user_list != [] do

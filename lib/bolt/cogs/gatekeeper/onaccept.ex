@@ -2,10 +2,10 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Converters
-  alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Bolt.Schema.AcceptAction
+  alias Bolt.{ErrorFormatters, ModLog, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
@@ -26,7 +26,7 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
   def command(msg, ["ignore"]) do

@@ -2,9 +2,9 @@ defmodule Bolt.Cogs.Accept do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
-  alias Bolt.{ModLog, Repo}
   alias Bolt.Schema.AcceptAction
+  alias Bolt.{ModLog, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
@@ -18,7 +18,7 @@ defmodule Bolt.Cogs.Accept do
       "Verifies that you have read and accept the guild's rules and other information you have been asked to read."
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, _args) do

@@ -2,10 +2,10 @@ defmodule Bolt.Cogs.Graphs do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Constants
   alias Bolt.CrowPlugins.GuildMembers, as: GuildMembersPlugin
   alias Bolt.CrowPlugins.GuildMessageCounts, as: GuildMessageCountsPlugin
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild
@@ -40,7 +40,7 @@ defmodule Bolt.Cogs.Graphs do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, ["members", scale]) when scale in @time_scales do

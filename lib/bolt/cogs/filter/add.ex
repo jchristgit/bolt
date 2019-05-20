@@ -2,7 +2,7 @@ defmodule Bolt.Cogs.Filter.Add do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
   alias Bolt.{ErrorFormatters, Filter, Repo}
   alias Bolt.Schema.FilteredWord
   alias Nostrum.Api
@@ -29,7 +29,7 @@ defmodule Bolt.Cogs.Filter.Add do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_guild?/1]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
   def command(msg, []) do

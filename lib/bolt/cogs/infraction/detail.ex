@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
   @behaviour Nosedrum.Command
 
   alias Bolt.Cogs.Infraction.General
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
   alias Bolt.{Constants, Helpers, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
@@ -127,7 +127,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
 
   @impl true
   def predicates,
-    do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
 
   @impl true
   def command(msg, [maybe_id]) do

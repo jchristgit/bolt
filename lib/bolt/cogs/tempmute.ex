@@ -2,12 +2,12 @@ defmodule Bolt.Cogs.Tempmute do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Bolt.Schema.{Infraction, MuteRole}
+  alias Bolt.{Helpers, ModLog, Parsers, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
@@ -30,7 +30,7 @@ defmodule Bolt.Cogs.Tempmute do
     """
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1, &Checks.can_manage_messages?/1]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
 
   @impl true
   def command(msg, [user_str, duration | reason_list]) do

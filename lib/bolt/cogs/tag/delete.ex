@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Tag.Delete do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Nosedrum.Predicates
   alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.Tag
   alias Nostrum.Api
@@ -22,7 +22,7 @@ defmodule Bolt.Cogs.Tag.Delete do
   def parse_args(args), do: Enum.join(args, " ")
 
   @impl true
-  def predicates, do: [&Checks.guild_only/1]
+  def predicates, do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, tag_name) do
