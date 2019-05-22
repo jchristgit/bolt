@@ -28,18 +28,14 @@ defmodule Bolt.Application do
       # Stores guilds with silenced mod logs.
       {Bolt.ModLog.Silencer, name: Bolt.ModLog.Silencer},
 
-      # A lock that ensures that USW does not react
-      # twice when a user hits configured limits.
-      {Bolt.USW.Deduplicator, name: Bolt.USW.Deduplicator},
-
-      # Escalates the punishment time of users which were punished recently.
-      {Bolt.USW.Escalator, name: Bolt.USW.Escalator},
-
       # Caches messages for mod log purposes.
       {Bolt.MessageCache, name: Bolt.MessageCache},
 
       # Holds Aho-Corasick trees used for filtering messages.
       {Bolt.Filter, name: Bolt.Filter},
+
+      # Supervises the Uncomplicated Spam Wall processes.
+      Bolt.USWSupervisor,
 
       # Supervises Discord Gateway event consumers.
       Bolt.ConsumerSupervisor
