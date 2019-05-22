@@ -1,5 +1,5 @@
-defmodule Bolt.Commander.Checks do
-  @moduledoc "Implements various checks used by commands."
+defmodule Bolt.Predicates do
+  @moduledoc "Implements various predicates used by commands."
 
   alias Bolt.{BotLog, Helpers}
   alias Nostrum.Struct.{Message, User}

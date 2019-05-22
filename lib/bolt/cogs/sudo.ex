@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.Sudo do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.Commander.Checks
+  alias Bolt.Predicates
   alias Nostrum.Api
 
   @impl true
@@ -19,7 +19,7 @@ defmodule Bolt.Cogs.Sudo do
     """
 
   @impl true
-  def predicates, do: [&Checks.is_superuser?/1]
+  def predicates, do: [&Predicates.is_superuser?/1]
 
   @impl true
   def command(msg, ["guilds" | args]) do
