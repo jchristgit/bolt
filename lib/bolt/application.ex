@@ -1,7 +1,8 @@
 defmodule Bolt.Application do
   @moduledoc """
   The entry point for bolt.
-  Starts the required processes, including the gateway consumer.
+
+  Starts the required processes, including the gateway consumer supervisor.
   """
 
   alias Bolt.CrowPlugins.GuildMessageCounts
@@ -40,8 +41,8 @@ defmodule Bolt.Application do
       # Holds Aho-Corasick trees used for filtering messages.
       {Bolt.Filter, name: Bolt.Filter},
 
-      # Consumes gateway events.
-      Bolt.Consumer
+      # Supervises Discord Gateway event consumers.
+      Bolt.ConsumerSupervisor
     ]
 
     bootstrap_ets_tables()
