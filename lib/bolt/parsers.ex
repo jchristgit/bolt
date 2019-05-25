@@ -88,7 +88,7 @@ defmodule Bolt.Parsers do
         |> Enum.map(&seconds/1)
 
       case Enum.find(parsed_seconds, &match?({:error, _}, &1)) do
-        {:error, reason} = res ->
+        {:error, _reason} = res ->
           res
 
         nil ->
