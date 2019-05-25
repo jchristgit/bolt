@@ -1,6 +1,8 @@
 defmodule BoltTest.Parsers do
   use ExUnit.Case, async: true
 
+  doctest Bolt.Parsers
+
   describe "Parsers.duration_string_to_seconds/1" do
     alias Bolt.Parsers
 
@@ -64,6 +66,10 @@ defmodule BoltTest.Parsers do
     test "errors with invalid unit" do
       assert match?({:error, _}, Parsers.duration_string_to_seconds("3z"))
       assert match?({:error, _}, Parsers.duration_string_to_seconds("5d3z"))
+    end
+
+    test "errors with < 0 for time unit" do
+      assert {:error, _} = Parsers.duration_string_to_seconds("-1d")
     end
   end
 

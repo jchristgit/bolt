@@ -4,48 +4,63 @@ defmodule Bolt.Parsers do
   not related to the command handler.
   """
 
+  @single_digit_numbers Enum.map(0..9, &Integer.to_string/1)
+
   alias Bolt.Helpers
 
-  @spec parse_pos_integer(String.t()) :: {:ok, integer} | {:error, String.t()}
-  defp parse_pos_integer(number) do
-    case Integer.parse(number) do
-      {value, _remainder} ->
-        if value < 0 do
-          {:error, "number must not be negative (parsed #{value} from #{number})"}
-        else
-          {:ok, value}
-        end
-
-      :error ->
-        {:error, "#{number} is not a valid number"}
-    end
+  @spec seconds(String.t()) :: {:ok, integer} | {:error, String.t()}
+  defp seconds(duration) when byte_size(duration) < 2 do
+    {:error, "must specify at least the unit and time, e.g. `3d`, `4h`"}
   end
 
-  @spec seconds(String.t()) :: {:ok, integer} | {:error, String.t()}
-  defp seconds(maybe_duration) do
-    with string_length when string_length >= 2 <- String.length(maybe_duration),
-         {amount, unit} <- String.split_at(maybe_duration, -1),
-         {:ok, value} <- parse_pos_integer(amount) do
-      case unit do
-        "w" -> {:ok, value * 604_800}
-        "d" -> {:ok, value * 86_400}
-        "h" -> {:ok, value * 3_600}
-        "m" -> {:ok, value * 60}
-        "s" -> {:ok, value}
-        _ -> {:error, "invalid unit: #{unit}"}
-      end
-    else
-      number when is_integer(number) and number < 2 ->
-        {:error, "must specify at least the unit and time, e.g. `3d`, `4h`"}
+  defp seconds(duration) do
+    {amount, unit} = String.split_at(duration, -1)
+    # The amount being an integer is validated below.
+    {value, _remainder} = Integer.parse(amount)
 
-      {:error, _reason} = error ->
-        error
+    case unit do
+      "w" -> {:ok, value * 604_800}
+      "d" -> {:ok, value * 86_400}
+      "h" -> {:ok, value * 3_600}
+      "m" -> {:ok, value * 60}
+      "s" -> {:ok, value}
+      _ -> {:error, "invalid unit: #{unit}"}
     end
   end
 
   @doc """
   Parse a duration string, e.g. `3h30m`, to seconds.
-  `now` is interpreted as 0 seconds.
+  The following tokens are supported:
+
+    - `s` for seconds
+    - `m` for minutes
+    - `h` for hours
+    - `d` for days
+    - `w` for weeks
+
+  Additionally, `now` is accepted as `0s`.
+
+  ## Arguments
+
+    - `text` - the string to parse.
+
+  ## Return value
+
+    - `{:ok, seconds}` is returned if the string could be parsed correctly.
+    - `{:error, reason}` is returned if there was a parsing error due to invalid
+      time unit or otherwise bad tokens.
+
+  ## Examples
+
+    iex> import Bolt.Parsers, only: [duration_string_to_seconds: 1]
+    iex> duration_string_to_seconds("now")
+    {:ok, 0}
+    iex> duration_string_to_seconds("")
+    {:error, "cannot parse a duration from an empty string"}
+    iex> duration_string_to_seconds("1")
+    {:error, "must specify at least the unit and time, e.g. `3d`, `4h`"}
+    iex> duration_string_to_seconds("1m30s")
+    {:ok, 90}
   """
   @spec duration_string_to_seconds(String.t()) :: {:ok, Calendar.second()} | {:error, String.t()}
   def duration_string_to_seconds(text)
@@ -63,17 +78,18 @@ defmodule Bolt.Parsers do
         # Thanks to https://github.com/JoeBanks13
         # for coming up with this smart solution.
         |> Enum.reduce("", fn char, acc ->
-          case Integer.parse(char) do
-            :error -> acc <> char <> " "
-            _value -> acc <> char
+          if char in @single_digit_numbers do
+            acc <> char
+          else
+            acc <> char <> " "
           end
         end)
         |> String.split()
         |> Enum.map(&seconds/1)
 
       case Enum.find(parsed_seconds, &match?({:error, _}, &1)) do
-        {:error, reason} ->
-          {:error, "failed to parse duration: #{reason}"}
+        {:error, reason} = res ->
+          res
 
         nil ->
           total_seconds =
@@ -86,7 +102,24 @@ defmodule Bolt.Parsers do
     end
   end
 
-  @doc "Parse a 'human' datetime that lies in the future."
+  @doc """
+  Parse a 'human' datetime that lies in the future.
+
+  While `duration_string_to_seconds/1` returns the total amount of seconds specified
+  in a duration string, this function adds those seconds on top of the given
+  `starting_timestamp`.
+
+  ## Arguments
+
+    - `text` - the string to parse.
+    - `starting_timestamp` - the point in time to which the parsed seconds should be
+      added.
+
+  ## Return value
+
+    - `{:ok, datetime}` is returned if parsing was successful,
+    - `{:error, reason}` otherwise.
+  """
   @spec human_future_date(String.t()) :: {:ok, DateTime.t()} | {:error, String.t()}
   def human_future_date(text, starting_timestamp \\ DateTime.utc_now()) do
     case duration_string_to_seconds(text) do
