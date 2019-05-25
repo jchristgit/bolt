@@ -6,6 +6,7 @@ defmodule Bolt.Application do
   """
 
   alias Bolt.CrowPlugins.GuildMessageCounts
+  require Logger
   use Application
 
   @impl true
@@ -40,6 +41,14 @@ defmodule Bolt.Application do
       # Supervises Discord Gateway event consumers.
       Bolt.ConsumerSupervisor
     ]
+
+    case :prometheus_httpd.start() do
+      {:ok, _pid} ->
+        Logger.debug("Started Prometheus scraping HTTP endpoint.")
+
+      other ->
+        Logger.info("Cannot start `:prometheus_httpd`: #{inspect other}")
+    end
 
     bootstrap_ets_tables()
     options = [strategy: :rest_for_one, name: Bolt.Supervisor]

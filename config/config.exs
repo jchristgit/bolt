@@ -38,6 +38,11 @@ config :crow,
     CrowPlugins.BEAM.SystemInfo
   ]
 
+config :prometheus, :prometheus_httpd,
+  path: "/metrics",
+  format: :auto,
+  port: 8088
+
 config :tzdata, :autoupdate, :disabled
 
 # This configuration is loaded before any dependency and is restricted
