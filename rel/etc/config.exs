@@ -23,8 +23,3 @@ config :nostrum,
 
 config :logger,
   level: :info
-
-config :prometheus, :prometheus_httpd,
-  path: "/metrics",
-  format: :auto,
-  port: 8088
