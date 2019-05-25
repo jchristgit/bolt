@@ -20,4 +20,7 @@ variables are configurable, with the bold variables being required:
 
 If you don't already have the required roles, you can install them using `ansible-galaxy`.
 
+Migrations are not handled automatically. The simplest way to run these is to
+`remote_console` into a live instance and call Ecto.
+
 <!-- vim: set textwidth=80 sw=2 ts=2: -->
