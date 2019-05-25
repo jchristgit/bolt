@@ -75,7 +75,7 @@ defmodule Bolt.Parsers do
         text
         |> Helpers.clean_content()
         |> String.codepoints()
-        # Thanks to https://github.com/JoeBanks13
+        # Thanks to https://github.com/jos-b
         # for coming up with this smart solution.
         |> Enum.reduce("", fn char, acc ->
           if char in @single_digit_numbers do
