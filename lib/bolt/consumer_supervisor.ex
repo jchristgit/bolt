@@ -16,7 +16,7 @@ defmodule Bolt.ConsumerSupervisor do
   def init(_args) do
     children =
       for n <- 1..System.schedulers_online(),
-          do: Supervisor.child_spec({Bolt.Consumer, []}, id: [:bolt, :consumer, n])
+          do: Supervisor.child_spec({Bolt.Consumer, []}, id: {:bolt, :consumer, n})
 
     Supervisor.init(children, strategy: :one_for_one)
   end
