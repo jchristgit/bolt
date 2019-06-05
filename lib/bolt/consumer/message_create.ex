@@ -15,6 +15,14 @@ defmodule Bolt.Consumer.MessageCreate do
       MessageCache.consume(msg)
       USW.apply(msg)
       GuildMessageCounts.record_message(msg)
+
+      if msg.guild_id != nil do
+        :ok =
+          :prometheus_counter.inc(
+            :bolt_guild_messages_total,
+            [msg.guild_id, msg.channel_id]
+          )
+      end
     end
   end
 end

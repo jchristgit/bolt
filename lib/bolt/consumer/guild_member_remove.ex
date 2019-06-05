@@ -4,6 +4,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
+  alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.{Guild, User}
   import Ecto.Query, only: [from: 2]
 
@@ -21,6 +22,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
     active_timed_infractions = Repo.all(active_timed_infractions_query)
 
     log_with_infractions(guild_id, member, active_timed_infractions)
+    instrument(guild_id)
   end
 
   @spec log_with_infractions(Guild.id(), Guild.Member.t(), [Infraction]) :: ModLog.on_emit()
@@ -46,5 +48,13 @@ defmodule Bolt.Consumer.GuildMemberRemove do
       "#{User.full_name(member.user)} (`#{member.user.id}`) has left " <>
         "- had #{length(active_infractions)} active infraction(s) (#{infraction_ids})"
     )
+  end
+
+  @spec instrument(Guild.id()) :: :ok
+  defp instrument(guild_id) do
+    with {:ok, count} when count != nil <-
+           GuildCache.select_by(%{id: guild_id}, & &1.member_count) do
+      :ok = :prometheus_gauge.set(:bolt_guild_members, [guild_id], count)
+    end
   end
 end
