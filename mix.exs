@@ -36,7 +36,6 @@ defmodule Bolt.MixProject do
       # Monitoring
       {:prometheus_ex, "~> 3.0"},
       {:prometheus_httpd, "~> 2.1"},
-
       {:crow, github: "jchristgit/crow", override: true},
       {:crow_plugins, github: "jchristgit/crow_plugins"},
 
