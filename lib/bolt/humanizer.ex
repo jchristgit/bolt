@@ -6,6 +6,7 @@ defmodule Bolt.Humanizer do
   alias Nostrum.Struct.Guild.Role
   alias Nostrum.Struct.User
   import Nosedrum.Helpers, only: [escape_server_mentions: 1]
+  import Nostrum.Snowflake, only: [is_snowflake: 1]
   require Logger
 
   @doc "Humanize a role."
@@ -20,15 +21,25 @@ defmodule Bolt.Humanizer do
     end
   end
 
-  @doc "Humanize a user."
+  @doc """
+  Humanize a user.
+
+  This function can be called with either a user ID to look up a user in
+  the cache and format him, or given a struct to format directly.
+  """
   @spec human_user(User.id()) :: String.t()
-  def human_user(user_id) do
+  @spec human_user(User.t()) :: String.t()
+  def human_user(user_id) when is_snowflake(user_id) do
     case UserCache.get(user_id) do
       {:ok, user} ->
-        escape_server_mentions("#{User.full_name(user)} (`#{user_id}`)")
+        human_user(user)
 
       _other ->
         "`#{user_id}`"
     end
+  end
+
+  def human_user(%User{} = user) do
+    escape_server_mentions("#{User.full_name(user)} (`#{user.id}`)")
   end
 end
