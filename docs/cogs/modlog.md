@@ -181,21 +181,3 @@ Requires the `MANAGE_GUILD` permission.
 // Explain the `AUTOMOD` event.
 .modlog explain AUTOMOD
 ```
-
-### `.modlog mute`
-Temporarily mutes the mod log.
-This is NOT persistent across restarts of Bolt.
-Unset mod logging with `.modlog unset all` if you disable mod logging for a prolonged period of time.
-Requires the `MANAGE_GUILD` permission.
-```js
-// Mute the mod log temporarily.
-.modlog mute
-```
-
-### `.modlog unmute`
-Unmute the mod log again, if it was previously muted through `.modlog mute`.
-Requires the `MANAGE_GUILD` permission.
-```js
-// Unmute the mod log after it was muted previously.
-.modlog unmute
-```
