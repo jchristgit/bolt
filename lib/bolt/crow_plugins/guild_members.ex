@@ -21,7 +21,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
       'multigraph guild_members',
       'graph_title total visible guild members across all guilds',
       'graph_vlabel member count',
-      'graph_args -l 0 --base 1000',
+      'graph_args --base 1000',
       'graph_category discord',
       'graph_info total member count in all guilds bolt can see',
       'members.label total visible members'
@@ -47,7 +47,7 @@ defmodule Bolt.CrowPlugins.GuildMembers do
         'multigraph guild_members.gid_#{id}',
         'graph_title member count for #{name}',
         'graph_vlabel member count',
-        'graph_args -l 0 --base 1000',
+        'graph_args --base 1000',
         'graph_category discord',
         'graph_info total member count for guild #{name} (#{id})',
         'members.label total members'
