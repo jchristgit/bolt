@@ -41,7 +41,7 @@ defmodule Bolt.CrowPlugins.GuildMessageCounts do
       'graph_scale no',
       'graph_info messages per hour in all guilds bolt can see',
       'messages.label messages',
-      'messages.min 0',
+      # 'messages.min 0',
       'messages.type DERIVE'
     ] ++ config_for_guilds()
   end
@@ -76,7 +76,7 @@ defmodule Bolt.CrowPlugins.GuildMessageCounts do
         'graph_category discord',
         'graph_info messages sent per hour for guild #{name} (#{guild_id})',
         'messages.label messages',
-        'messages.min 0',
+        # 'messages.min 0',
         'messages.type DERIVE'
       ]
     end)
