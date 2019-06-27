@@ -2,11 +2,12 @@ defmodule Bolt.Cogs.Accept do
   @moduledoc false
   @behaviour Nosedrum.Command
 
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.AcceptAction
-  alias Bolt.{ModLog, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
   @impl true
@@ -45,7 +46,7 @@ defmodule Bolt.Cogs.Accept do
           msg.guild_id,
           "ERROR",
           "attempted adding role `#{role_id}` " <>
-            "to user #{User.full_name(msg.author)} (`#{msg.author.id}`) " <>
+            "to user #{Humanizer.human_user(msg.author)} " <>
             "by invocation of `.accept`, but got an API error: #{reason} (status code #{status})"
         )
     end
@@ -64,7 +65,7 @@ defmodule Bolt.Cogs.Accept do
           msg.guild_id,
           "ERROR",
           "attempted removing role `#{role_id}` " <>
-            "from user #{User.full_name(msg.author)} (`#{msg.author.id}`) " <>
+            "from user #{Humanizer.human_user(msg.author)} " <>
             "by invocation of `.accept`, but got an API error: #{reason} (status code #{status})"
         )
     end

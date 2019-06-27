@@ -3,9 +3,14 @@ defmodule Bolt.Cogs.Warn do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
+  alias Bolt.Converters
+  alias Bolt.ErrorFormatters
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
 
@@ -46,8 +51,8 @@ defmodule Bolt.Cogs.Warn do
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) has warned" <>
-            " #{User.full_name(member.user)} (`#{member.user.id}`) with reason `#{reason}`"
+          "#{Humanizer.human_user(msg.author)} has warned" <>
+            " #{Humanizer.human_user(member.user)} with reason `#{reason}`"
         )
 
         "👌 warned #{User.full_name(member.user)} (`#{Helpers.clean_content(reason)}`)"

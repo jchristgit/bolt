@@ -1,7 +1,7 @@
 defmodule Bolt.Consumer.GuildMemberAdd do
   @moduledoc "Handles the `GUILD_MEMBER_ADD` event."
 
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.{Helpers, Humanizer, ModLog, Repo}
   alias Bolt.Schema.{Infraction, JoinAction}
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
@@ -16,7 +16,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
     ModLog.emit(
       guild_id,
       "GUILD_MEMBER_ADD",
-      "#{User.full_name(member.user)} (`#{member.user.id}`) has joined " <>
+      "#{Humanizer.human_user(member.user)} has joined " <>
         "- account created #{Helpers.datetime_to_human(creation_datetime)}"
     )
 
@@ -52,15 +52,15 @@ defmodule Bolt.Consumer.GuildMemberAdd do
             ModLog.emit(
               guild_id,
               "INFRACTION_EVENTS",
-              "member #{User.full_name(member.user)} (`#{member.user.id}`) with active temprole" <>
-                " (`#{temprole_infraction.data["role_id"]}`) rejoined, temporary role was reapplied"
+              "member #{Humanizer.human_user(member.user)} with active temprole" <>
+                " (#{Humanizer.human_role(guild_id, temprole_infraction.data["role_id"])}) rejoined, temporary role was reapplied"
             )
           else
             {:error, %{message: %{"message" => reason}}} ->
               ModLog.emit(
                 guild_id,
                 "INFRACTION_EVENTS",
-                "member #{User.full_name(member.user)} (`#{member.user.id}`) with active temprole" <>
+                "member #{Humanizer.human_user(member.user)} with active temprole" <>
                   " rejoined, but failed to reapply role: `#{reason}`"
               )
           end
@@ -94,7 +94,9 @@ defmodule Bolt.Consumer.GuildMemberAdd do
         ModLog.emit(
           guild_id,
           "ERROR",
-          "tried adding role `#{role_id}` to #{User.full_name(member.user)} (`#{member.user.id}`) " <>
+          "tried adding role #{Humanizer.human_role(guild_id, role_id)} to #{
+            Humanizer.human_user(member.user)
+          } " <>
             "but got an API error: #{reason} (status code #{status})"
         )
     end

@@ -3,11 +3,14 @@ defmodule Bolt.Cogs.USW.Set do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{ErrorFormatters, Helpers, ModLog, Repo}
+  alias Bolt.ErrorFormatters
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.USWRuleConfig
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["usw set <rule:str> <count:int> [per] <interval:int>"]
@@ -59,7 +62,7 @@ defmodule Bolt.Cogs.USW.Set do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) updated USW configuration: " <>
+          "#{Humanizer.human_user(msg.author)} updated USW configuration: " <>
             "now allowing max **#{count}** objects per **#{interval}**s in rule `#{rule_name}`"
         )
 

@@ -2,13 +2,14 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   @moduledoc "Handles the `GUILD_MEMBER_UPDATE` event."
 
   alias Bolt.Events.Handler
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Guild.Member
-  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
   @spec handle(guild_id :: Guild.id(), old_member :: Member.t() | nil, new_member :: Member.t()) ::
@@ -39,9 +40,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       ModLog.emit(
         guild_id,
         "GUILD_MEMBER_UPDATE",
-        "#{new_member.user |> User.full_name() |> Helpers.clean_content()} (`#{new_member.user.id}`) #{
-          diff_string
-        }"
+        "#{Humanizer.human_user(new_member.user)} #{diff_string}"
       )
     end
   end
@@ -63,11 +62,11 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
     diff_list ++
       Enum.map(
         added_roles,
-        &"role added #{format_role(guild_id, &1)}"
+        &"role added #{Humanizer.human_role(guild_id, &1)}"
       ) ++
       Enum.map(
         removed_roles,
-        &"role removed #{format_role(guild_id, &1)}"
+        &"role removed #{Humanizer.human_role(guild_id, &1)}"
       )
   end
 
@@ -102,16 +101,6 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
     end
   end
 
-  @spec format_role(Guild.id(), Role.id()) :: String.t()
-  defp format_role(guild_id, role_id) do
-    with {:ok, guild} <- GuildCache.get(guild_id),
-         role when role != nil <- Map.get(guild.roles, role_id) do
-      "``#{Helpers.clean_content(role.name)}`` (`#{role.id}`)"
-    else
-      _err -> "#{role_id}"
-    end
-  end
-
   @spec check_manual_temprole_removal(Guild.id(), Member.t(), Member.t()) ::
           ModLog.on_emit() | :ignored
   defp check_manual_temprole_removal(guild_id, old_member, new_member) do
@@ -133,9 +122,9 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       ModLog.emit(
         guild_id,
         "INFRACTION_UPDATE",
-        "role `#{removed_role_id}` was manually removed from " <>
-          "#{Helpers.clean_content(User.full_name(new_member.user))}" <>
-          " (`#{new_member.user.id}`) while a temprole was active (##{active_temprole.id})" <>
+        "role #{Humanizer.human_role(guild_id, removed_role_id)} was manually removed from " <>
+          "#{Humanizer.human_user(new_member.user)}" <>
+          "  while a temprole was active (##{active_temprole.id})" <>
           ", the infraction is now inactive and bolt will not attempt to remove the role"
       )
     else
@@ -173,9 +162,8 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       ModLog.emit(
         guild_id,
         "INFRACTION_EVENTS",
-        "#{User.full_name(new_member.user)} (`#{new_member.user.id}`) attempted #{
-          nick_description
-        } " <> " but has an active forcenick, their nickname was reset to `#{forced_nick}`"
+        "#{Humanizer.human_user(new_member.user)} attempted #{nick_description} " <>
+          " but has an active forcenick, nickname was reset to `#{forced_nick}`"
       )
     else
       # No active forcenick - all good.
@@ -191,9 +179,9 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
         ModLog.emit(
           guild_id,
           "INFRACTION_EVENTS",
-          "failed to reset nick to forced nick on #{User.full_name(new_member.user)} (`#{
-            new_member.user.id
-          }`), " <> "got an API error: #{reason} (status code #{status})"
+          "failed to reset nick to forced nick on #{Humanizer.human_user(new_member.user)} got an API error: #{
+            reason
+          } (status code #{status})"
         )
     end
   end

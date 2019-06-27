@@ -3,11 +3,11 @@ defmodule Bolt.Cogs.ModLog.Unmute do
 
   @behaviour Nosedrum.Command
 
+  alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.ModLog.Silencer
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["modlog mute"]
@@ -32,7 +32,7 @@ defmodule Bolt.Cogs.ModLog.Unmute do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) has unmuted the modlog"
+          "#{Humanizer.human_user(msg.author)} has unmuted the modlog"
         )
 
         "👌 mod log is no longer silenced"

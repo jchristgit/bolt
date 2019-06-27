@@ -3,11 +3,14 @@ defmodule Bolt.Cogs.Role.Allow do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, Helpers, ModLog, Repo}
+  alias Bolt.Converters
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["role allow <role:role...>"]
@@ -58,14 +61,14 @@ defmodule Bolt.Cogs.Role.Allow do
               ModLog.emit(
                 msg.guild_id,
                 "CONFIG_UPDATE",
-                "#{User.full_name(msg.author)} (`#{msg.author.id}`) added" <>
-                  " `#{role.name}` (`#{role.id}`) to self-assignable roles"
+                "#{Humanizer.human_user(msg.author)} added" <>
+                  " #{Humanizer.human_role(msg.guild_id, role)} to self-assignable roles"
               )
 
-              "👌 role `#{Helpers.clean_content(role.name)}` is now self-assignable"
+              "👌 role #{Humanizer.human_role(msg.guild_id, role)} is now self-assignable"
 
             role.id in existing_row.roles ->
-              "🚫 role `#{Helpers.clean_content(role.name)}` is already self-assignable"
+              "🚫 role #{Humanizer.human_role(msg.guild_id, role)} is already self-assignable"
 
             true ->
               updated_row = %{
@@ -78,11 +81,11 @@ defmodule Bolt.Cogs.Role.Allow do
               ModLog.emit(
                 msg.guild_id,
                 "CONFIG_UPDATE",
-                "#{User.full_name(msg.author)} (`#{msg.author.id}`) added" <>
-                  " `#{role.name}` (`#{role.id}`) to self-assignable roles"
+                "#{Humanizer.human_user(msg.author)}) added" <>
+                  " #{Humanizer.human_role(msg.guild_id, role)} to self-assignable roles"
               )
 
-              "👌 role `#{Helpers.clean_content(role.name)}` is now self-assignable"
+              "👌 role #{Humanizer.human_role(msg.guild_id, role)} is now self-assignable"
           end
 
         {:error, reason} ->

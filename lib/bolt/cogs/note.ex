@@ -3,11 +3,14 @@ defmodule Bolt.Cogs.Note do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, ErrorFormatters, ModLog, Repo}
+  alias Bolt.Converters
+  alias Bolt.ErrorFormatters
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["note <user:member> <note:str...>"]
@@ -46,11 +49,11 @@ defmodule Bolt.Cogs.Note do
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) added a note to" <>
-            " #{User.full_name(member.user)} (`#{member.user.id}`), contents: `#{note}`"
+          "#{Humanizer.human_user(msg.author)} added a note to" <>
+            " #{Humanizer.human_user(member.user)}, contents: `#{note}`"
         )
 
-        "👌 note created for #{User.full_name(member.user)} (`#{member.user.id}`)"
+        "👌 note created for #{Humanizer.human_user(member.user)}"
       else
         "" ->
           "🚫 note may not be empty"

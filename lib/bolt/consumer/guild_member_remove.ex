@@ -1,11 +1,12 @@
 defmodule Bolt.Consumer.GuildMemberRemove do
   @moduledoc "Handles the `GUILD_MEMBER_REMOVE` event."
 
+  alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.{Guild, User}
+  alias Nostrum.Struct.Guild
   import Ecto.Query, only: [from: 2]
 
   @spec handle(Guild.id(), Guild.Member.t()) :: ModLog.on_emit()
@@ -32,7 +33,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
     ModLog.emit(
       guild_id,
       "GUILD_MEMBER_REMOVE",
-      "#{User.full_name(member.user)} (`#{member.user.id}`) has left"
+      "#{Humanizer.human_user(member.user)} has left"
     )
   end
 
@@ -45,7 +46,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
     ModLog.emit(
       guild_id,
       "GUILD_MEMBER_REMOVE",
-      "#{User.full_name(member.user)} (`#{member.user.id}`) has left " <>
+      "#{Humanizer.human_user(member.user)} has left " <>
         "- had #{length(active_infractions)} active infraction(s) (#{infraction_ids})"
     )
   end

@@ -5,8 +5,9 @@ defmodule Bolt.Cogs.Unmute do
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Bolt.{ModLog, Repo}
   alias Ecto.Changeset
   alias Nosedrum.Predicates
   alias Nostrum.Api

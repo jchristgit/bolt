@@ -5,11 +5,14 @@ defmodule Bolt.Cogs.Infraction.Expiry do
 
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Parsers
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
   require Logger
 
   @impl true
@@ -73,7 +76,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
       ModLog.emit(
         msg.guild_id,
         "INFRACTION_UPDATE",
-        "#{User.full_name(msg.author)} (`#{msg.author.id}`) set ##{new_infraction.id} to expire now, " <>
+        "#{Humanizer.human_user(msg.author)} set ##{new_infraction.id} to expire now, " <>
           "was #{Helpers.datetime_to_human(old_infraction.expires_at)}"
       )
 
@@ -82,7 +85,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
       ModLog.emit(
         msg.guild_id,
         "INFRACTION_UPDATE",
-        "#{User.full_name(msg.author)} (`#{msg.author.id}`) changed expiry for " <>
+        "#{Humanizer.human_user(msg.author)} changed expiry for " <>
           "##{new_infraction.id} " <>
           "to #{Helpers.datetime_to_human(new_infraction.expires_at)}, " <>
           "was #{Helpers.datetime_to_human(old_infraction.expires_at)}"

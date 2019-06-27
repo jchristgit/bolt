@@ -4,10 +4,8 @@ defmodule Bolt.Cogs.Kick do
   @behaviour Nosedrum.Command
 
   alias Nosedrum.Predicates
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
-  alias Bolt.Schema.Infraction
+  alias Bolt.{Converters, ErrorFormatters, Helpers, Humanizer, ModLog, Repo, Schema.Infraction}
   alias Nostrum.Api
-  alias Nostrum.Struct.User
   require Logger
 
   @impl true
@@ -53,12 +51,12 @@ defmodule Bolt.Cogs.Kick do
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) kicked" <>
-            " #{User.full_name(member.user)} (`#{member.user.id}`)" <>
+          "#{Humanizer.human_user(msg.author)} kicked" <>
+            " #{Humanizer.human_user(member.user)}" <>
             if(reason != "", do: " with reason `#{reason}`", else: "")
         )
 
-        response = "👌 kicked #{User.full_name(member.user)} (`#{member.user.id}`)"
+        response = "👌 kicked #{Humanizer.human_user(member.user)})"
 
         if reason != "" do
           response <> " with reason `#{Helpers.clean_content(reason)}`"

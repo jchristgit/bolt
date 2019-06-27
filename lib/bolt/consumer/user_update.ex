@@ -1,7 +1,7 @@
 defmodule Bolt.Consumer.UserUpdate do
   @moduledoc "Handles the `USER_UPDATE` event."
 
-  alias Bolt.{Helpers, ModLog}
+  alias Bolt.{Helpers, Humanizer, ModLog}
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.User
 
@@ -18,7 +18,7 @@ defmodule Bolt.Consumer.UserUpdate do
       |> Enum.join(", ")
 
     unless diff_description == "" do
-      log_message = "#{User.full_name(old_user)} (`#{old_user.id}`) #{diff_description}"
+      log_message = "#{Humanizer.human_user(old_user)} #{diff_description}"
 
       GuildCache.all()
       |> Stream.filter(&Map.has_key?(&1.members, new_user.id))

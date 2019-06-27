@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.Infraction.General do
   @moduledoc "General utilities used across the infraction subcommands."
 
+  alias Bolt.Humanizer
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Cache.UserCache
-  alias Nostrum.Struct.User
 
   @type_emojis %{
     "note" => "📔",
@@ -31,7 +31,7 @@ defmodule Bolt.Cogs.Infraction.General do
 
     case UserCache.get(user_id) do
       {:ok, user} ->
-        "#{User.full_name(user)} (`#{user.id}`)"
+        Humanizer.human_user(user)
 
       {:error, _reason} ->
         case GuildCache.get(guild_id) do

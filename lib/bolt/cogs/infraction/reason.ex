@@ -3,11 +3,13 @@ defmodule Bolt.Cogs.Infraction.Reason do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["infraction reason <id:int> <new_reason:str...>"]
@@ -41,7 +43,7 @@ defmodule Bolt.Cogs.Infraction.Reason do
           ModLog.emit(
             msg.guild_id,
             "INFRACTION_UPDATE",
-            "#{User.full_name(msg.author)} (`#{msg.author.id}`) " <>
+            "#{Humanizer.human_user(msg.author)} " <>
               if(
                 infraction.reason == nil,
                 do:

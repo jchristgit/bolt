@@ -1,10 +1,9 @@
 defmodule Bolt.Consumer.ChannelUpdate do
   @moduledoc "Handles the `CHANNEL_UPDATE` event."
 
-  alias Bolt.{Helpers, ModLog}
-  alias Nostrum.Cache.GuildCache
+  alias Bolt.{Helpers, Humanizer, ModLog}
   alias Nostrum.Permission
-  alias Nostrum.Struct.{Channel, Guild, Overwrite, User}
+  alias Nostrum.Struct.{Channel, Guild, Overwrite}
 
   @spec handle(Channel.t(), Channel.t()) :: ModLog.on_emit()
   def handle(old_channel, new_channel) do
@@ -217,19 +216,9 @@ defmodule Bolt.Consumer.ChannelUpdate do
   @spec format_overwrite_target(Guild.id(), Overwrite.t()) :: String.t()
   def format_overwrite_target(guild_id, overwrite) do
     if overwrite.type == "role" do
-      with {:ok, guild} <- GuildCache.get(guild_id),
-           role when role != nil <- Map.get(guild.roles, overwrite.id) do
-        "role #{Helpers.clean_content(role.name)} (`#{role.id}`)"
-      else
-        _err -> "role `#{overwrite.id}`"
-      end
+      "role #{Humanizer.human_role(guild_id, overwrite.id)}"
     else
-      with {:ok, guild} <- GuildCache.get(guild_id),
-           member when member != nil <- Map.get(guild.members, overwrite.id) do
-        "user #{Helpers.clean_content(User.full_name(member.user))} (`#{member.user.id}`)"
-      else
-        _err -> "user `#{overwrite.id}`"
-      end
+      "user #{Humanizer.human_user(overwrite.id)}"
     end
   end
 

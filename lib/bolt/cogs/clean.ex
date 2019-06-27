@@ -3,11 +3,16 @@ defmodule Bolt.Cogs.Clean do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog}
+  alias Bolt.Converters
+  alias Bolt.ErrorFormatters
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.Mapping.ChannelGuild
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.Message
+  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["clean <amount:int>", "clean <options...>"]
@@ -101,7 +106,7 @@ defmodule Bolt.Cogs.Clean do
       ModLog.emit(
         msg.guild_id,
         "MESSAGE_CLEAN",
-        "#{User.full_name(msg.author)} (`#{msg.author.id}`) deleted" <>
+        "#{Humanizer.human_user(msg.author)} deleted" <>
           " #{length(messages_to_delete)} messages in <##{msg.channel_id}>",
         file: %{
           name: "deleted_messages.log",

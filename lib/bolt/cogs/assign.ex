@@ -4,11 +4,10 @@ defmodule Bolt.Cogs.Assign do
   @behaviour Nosedrum.Command
 
   alias Bolt.Schema.SelfAssignableRoles
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
+  alias Bolt.{Converters, ErrorFormatters, Helpers, Humanizer, ModLog, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.User
   require Logger
 
   @impl true
@@ -41,8 +40,8 @@ defmodule Bolt.Cogs.Assign do
         ModLog.emit(
           msg.guild_id,
           "AUTOMOD",
-          "gave #{User.full_name(msg.author)} (`#{msg.author.id}`)" <>
-            " the self-assignable role `#{role.name}`"
+          "gave #{Humanizer.human_user(msg.author)}" <>
+            " the self-assignable role #{Humanizer.human_role(msg.guild_id, role.id)}"
         )
 
         "👌 gave you the `#{Helpers.clean_content(role.name)}` role"
@@ -126,6 +125,10 @@ defmodule Bolt.Cogs.Assign do
              Api.modify_guild_member(msg.guild_id, msg.author.id,
                roles: Enum.uniq(member.roles ++ Enum.map(selected_self_assignable_roles, & &1.id))
              ) do
+        # TODO: Investigate using `Humanizer.human_role/2` here. It is
+        #       not exactly user-friendly for the "gave you roles x, y, z",
+        #       but might be a lot nicer for the mod log than simply having
+        #       strings, and also stays consistent with the rest of the code.
         added_role_list =
           selected_self_assignable_roles
           |> Stream.map(& &1.name)
@@ -136,7 +139,7 @@ defmodule Bolt.Cogs.Assign do
         ModLog.emit(
           msg.guild_id,
           "AUTOMOD",
-          "gave #{User.full_name(msg.author)} (`#{msg.author.id}`)" <>
+          "gave #{Humanizer.human_user(msg.author)}" <>
             " the self-assignable roles #{added_role_list}"
         )
 

@@ -6,11 +6,14 @@ defmodule Bolt.Cogs.Temprole do
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Parsers
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
   @impl true
@@ -76,15 +79,15 @@ defmodule Bolt.Cogs.Temprole do
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) applied temporary role" <>
-            " #{role.name} (`#{role.id}`) to #{User.full_name(member.user)}" <>
-            " (`#{member.user.id}`) until #{Helpers.datetime_to_human(expiry)}" <>
+          "#{Humanizer.human_user(msg.author)} applied temporary role" <>
+            " #{Humanizer.human_role(msg.guild_id, role)} to #{Humanizer.human_user(member.user)}" <>
+            " until #{Helpers.datetime_to_human(expiry)}" <>
             if(reason != "", do: " with reason `#{reason}`", else: "")
         )
 
         response =
-          "👌 temporary role `#{role.name}` applied to " <>
-            "#{User.full_name(member.user)} until #{Helpers.datetime_to_human(expiry)}"
+          "👌 temporary role #{Humanizer.human_role(msg.guild_id, role)} applied to " <>
+            "#{Humanizer.human_user(member.user)} until #{Helpers.datetime_to_human(expiry)}"
 
         if reason != "" do
           response <> " with reason `#{Helpers.clean_content(reason)}`"

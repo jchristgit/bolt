@@ -4,14 +4,21 @@ defmodule Bolt.USW do
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.Helpers
-  alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
-  alias Bolt.USW.{Deduplicator, Escalator, Rules}
-  alias Bolt.{ModLog, Repo}
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
+  alias Bolt.Schema.USWPunishmentConfig
+  alias Bolt.Schema.USWRuleConfig
+  alias Bolt.USW.Deduplicator
+  alias Bolt.USW.Escalator
+  alias Bolt.USW.Rules
   alias Ecto.Changeset
   alias Nostrum.Api
-  alias Nostrum.Cache.{GuildCache, Me}
+  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.Me
   alias Nostrum.Snowflake
-  alias Nostrum.Struct.{Message, User}
+  alias Nostrum.Struct.Message
+  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
   require Logger
 
@@ -120,7 +127,9 @@ defmodule Bolt.USW do
       ModLog.emit(
         guild_id,
         "AUTOMOD",
-        "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
+        "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
+          Humanizer.human_user(user)
+        }" <>
           " for #{expiry_seconds}s: #{description}" <> level_string
       )
 
@@ -137,7 +146,9 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "attempted adding temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
+          "attempted adding temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
+            Humanizer.human_user(user)
+          })" <>
             " but got API error: #{reason} (status code #{status})"
         )
 
@@ -145,7 +156,9 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`)" <>
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
+            Humanizer.human_user(user)
+          }" <>
             " but could not create an event to remove it after #{expiry_seconds}s:" <>
             ErrorFormatters.fmt(nil, error)
         )
@@ -154,7 +167,9 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "added temporary role `#{role_id}` to #{User.full_name(user)} (`#{user.id}`) " <>
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
+            Humanizer.human_user(user)
+          } " <>
             "but got an unexpected error: #{ErrorFormatters.fmt(nil, error)}"
         )
     end

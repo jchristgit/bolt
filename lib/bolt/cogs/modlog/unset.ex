@@ -3,11 +3,13 @@ defmodule Bolt.Cogs.ModLog.Unset do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["modlog unset <event:str>"]
@@ -32,7 +34,7 @@ defmodule Bolt.Cogs.ModLog.Unset do
     ModLog.emit(
       msg.guild_id,
       "CONFIG_UPDATE",
-      "#{User.full_name(msg.author)} (`#{msg.author.id}`) unset the log channel" <>
+      "#{Humanizer.human_user(msg.author)} unset the log channel" <>
         " for ALL events"
     )
 
@@ -58,7 +60,7 @@ defmodule Bolt.Cogs.ModLog.Unset do
             ModLog.emit(
               msg.guild_id,
               "CONFIG_UPDATE",
-              "#{User.full_name(msg.author)} (`#{msg.author.id}`) unset the log channel" <>
+              "#{Humanizer.human_user(msg.author)} unset the log channel" <>
                 " for event `#{event}` (was <##{config.channel_id}>)"
             )
 

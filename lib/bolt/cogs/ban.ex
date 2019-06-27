@@ -3,10 +3,16 @@ defmodule Bolt.Cogs.Ban do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.ErrorFormatters
-  alias Bolt.Events.Handler
-  alias Bolt.Schema.Infraction
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.{
+    ErrorFormatters,
+    Events.Handler,
+    Helpers,
+    Humanizer,
+    ModLog,
+    Repo,
+    Schema.Infraction
+  }
+
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -85,17 +91,12 @@ defmodule Bolt.Cogs.Ban do
            },
            changeset <- Infraction.changeset(%Infraction{}, infraction),
            {:ok, _created_infraction} <- Repo.insert(changeset) do
-        user_string =
-          if converted_user != nil do
-            "#{User.full_name(converted_user)} (`#{converted_user.id}`)"
-          else
-            "`#{user_id}`"
-          end
+        user_string = Humanizer.human_user(converted_user || user_id)
 
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) banned #{user_string}" <>
+          "#{Humanizer.human_user(msg.author)} banned #{user_string}" <>
             if(reason != "", do: " with reason `#{reason}`", else: "")
         )
 

@@ -3,13 +3,20 @@ defmodule Bolt.Cogs.Tempban do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.ErrorFormatters
-  alias Bolt.Events.Handler
   alias Nosedrum.Predicates
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
-  alias Bolt.Schema.Infraction
+
+  alias Bolt.{
+    Helpers,
+    Humanizer,
+    ErrorFormatters,
+    Events.Handler,
+    ModLog,
+    Parsers,
+    Repo,
+    Schema.Infraction
+  }
+
   alias Nostrum.Api
-  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
   require Logger
 
@@ -64,17 +71,12 @@ defmodule Bolt.Cogs.Tempban do
              expires_at: expiry
            },
            {:ok, _created_infraction} <- Handler.create(infraction_map) do
-        user_string =
-          if converted_user == nil do
-            "`#{user_id}`"
-          else
-            "#{User.full_name(converted_user)} (`#{user_id}`)"
-          end
+        user_string = Humanizer.human_user(converted_user || user_id)
 
         ModLog.emit(
           msg.guild_id,
           "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) temporarily banned" <>
+          "#{Humanizer.human_user(msg.author)} temporarily banned" <>
             " #{user_string} until #{Helpers.datetime_to_human(expiry)}" <>
             if(reason != "", do: " with reason `#{Helpers.clean_content(reason)}`", else: "")
         )

@@ -3,11 +3,15 @@ defmodule Bolt.Cogs.ModLog.Set do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
+  alias Bolt.Converters
+  alias Bolt.ErrorFormatters
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
 
   @impl true
@@ -44,7 +48,7 @@ defmodule Bolt.Cogs.ModLog.Set do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) set the log channel" <>
+          "#{Humanizer.human_user(msg.author)} set the log channel" <>
             " for ALL events to <##{channel.id}>"
         )
 
@@ -79,7 +83,7 @@ defmodule Bolt.Cogs.ModLog.Set do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
-          "#{User.full_name(msg.author)} (`#{msg.author.id}`) set the log channel" <>
+          "#{Humanizer.human_user(msg.author)} set the log channel" <>
             " for event `#{event}` to <##{channel.id}>"
         )
 

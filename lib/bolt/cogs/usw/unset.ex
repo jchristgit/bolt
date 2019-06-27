@@ -3,11 +3,13 @@ defmodule Bolt.Cogs.USW.Unset do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Helpers, ModLog, Repo}
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.USWRuleConfig
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["usw unset <rule:str>"]
@@ -40,7 +42,7 @@ defmodule Bolt.Cogs.USW.Unset do
             ModLog.emit(
               msg.guild_id,
               "CONFIG_UPDATE",
-              "#{User.full_name(msg.author)} (`#{msg.author.id}`) deleted USW " <>
+              "#{Humanizer.human_user(msg.author)} deleted USW " <>
                 "configuration for rule `#{rule}`"
             )
 

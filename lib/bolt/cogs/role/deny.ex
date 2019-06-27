@@ -3,11 +3,15 @@ defmodule Bolt.Cogs.Role.Deny do
 
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, Helpers, ModLog, Repo}
+  alias Bolt.Converters
+  alias Bolt.Humanizer
+  alias Bolt.Helpers
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
+  alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
 
   @impl true
   def usage, do: ["role deny <role:role...>"]
@@ -63,11 +67,11 @@ defmodule Bolt.Cogs.Role.Deny do
               ModLog.emit(
                 msg.guild_id,
                 "CONFIG_UPDATE",
-                "#{User.full_name(msg.author)} (`#{msg.author.id}`) removed" <>
-                  " `#{role.name}` (`#{role.id}`) from self-assignable roles"
+                "#{Humanizer.human_user(msg.author)} removed" <>
+                  " #{Humanizer.human_role(msg.guild_id, role)} from self-assignable roles"
               )
 
-              "👌 role `#{Helpers.clean_content(role.name)}` is no longer self-assignable"
+              "👌 role #{Humanizer.human_role(msg.guild_id, role)} is no longer self-assignable"
           end
 
         {:error, reason} ->
