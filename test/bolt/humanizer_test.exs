@@ -1,6 +1,7 @@
 defmodule Bolt.HumanizerTest do
   alias Bolt.Humanizer
   alias Nostrum.Cache.Guild.GuildRegister
+  alias Nostrum.Struct.Guild.Role
   import Nosedrum.Helpers, only: [escape_server_mentions: 1]
   use ExUnit.Case
 
@@ -28,8 +29,9 @@ defmodule Bolt.HumanizerTest do
         channels: %{},
         members: %{},
         roles: %{
-          role_id => %{
-            name: role_name
+          role_id => %Role{
+            name: role_name,
+            id: role_id
           }
         },
         name: "test guild"
@@ -40,7 +42,7 @@ defmodule Bolt.HumanizerTest do
     end
 
     test "returns role ID only on unknown roles", %{guild_id: guild_id} do
-      assert "`-1`" = Humanizer.human_role(guild_id, -1)
+      assert "`5555`" = Humanizer.human_role(guild_id, 5555)
     end
 
     test "returns escaped role name on known roles", %{

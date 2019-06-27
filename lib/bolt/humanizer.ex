@@ -9,16 +9,26 @@ defmodule Bolt.Humanizer do
   import Nostrum.Snowflake, only: [is_snowflake: 1]
   require Logger
 
-  @doc "Humanize a role."
+  @doc """
+  Humanize a role.
+
+  This function can be called with either a role & guild ID to look up
+  a role in the cache and format it, or given a struct to format directly.
+  """
   @spec human_role(Guild.id(), Role.id()) :: String.t()
-  def human_role(guild_id, role_id) do
+  @spec human_role(Guild.id(), Role.t()) :: String.t()
+  def human_role(guild_id, role_id) when is_snowflake(role_id) do
     case GuildCache.select_by([id: guild_id], &Map.get(&1.roles, role_id)) do
       {:ok, role} when role != nil ->
-        escape_server_mentions("#{role.name} (`#{role_id}`)")
+        human_role(nil, role)
 
       _other ->
         "`#{role_id}`"
     end
+  end
+
+  def human_role(_guild_id, %Role{name: name, id: id}) do
+    escape_server_mentions("#{name} (`#{id}`)")
   end
 
   @doc """
