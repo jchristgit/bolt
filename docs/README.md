@@ -80,7 +80,7 @@ For support, suggestions, criticism or just casual chatter, feel free to join th
   * [Self-assignable roles](cogs/self_assignable_roles)
     * [Commands](cogs/self_assignable_roles#commands)
       * [`.assign`](cogs/self_assignable_roles#assign-ltrolerolegt)
-      * [`.remove`](cogs/self_assignable_roles#remove-ltrolerolegt)
+      * [`.unassign`](cogs/self_assignable_roles#unassign-ltrolerolegt)
       * [`.lsar`](cogs/self_assignable_roles#lsar)
       * [`.role allow`](cogs/self_assignable_roles#role-allow-ltrolerolegt)
       * [`.role deny`](cogs/self_assignable_roles#role-deny-ltrolerolegt)

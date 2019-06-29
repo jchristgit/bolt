@@ -18,12 +18,12 @@ Aliased to `.iam`.
  .assign "bean man" blue
 ```
 
-### `.remove <role:role...>`
-Removes the given self-assignable role from the message author.
+### `.unassign <role:role...>`
+Unassign the given self-assignable role from the message author.
 Aliased to `.iamn`.
 ```js
 // Remove the role called 'Blue'.
-.remove Blue
+.unassign Blue
 
 // Same as above, but using the alias.
 .iamn Blue

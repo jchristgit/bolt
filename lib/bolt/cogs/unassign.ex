@@ -1,4 +1,4 @@
-defmodule Bolt.Cogs.Remove do
+defmodule Bolt.Cogs.Unassign do
   @moduledoc false
 
   @behaviour Nosedrum.Command
@@ -10,19 +10,19 @@ defmodule Bolt.Cogs.Remove do
   alias Nostrum.Struct.User
 
   @impl true
-  def usage, do: ["remove <role:role...>"]
+  def usage, do: ["unassign <role:role...>"]
 
   @impl true
   def description,
     do: """
-    Remove the given self-assignable role from yourself.
+    Unassign the given self-assignable role from yourself.
     To see which roles are self-assignable, use `lsar`.
     Aliased to `iamn`.
 
     **Examples**:
     ```rs
     // unassign the role 'Movie Nighter'
-    remove movie nighter
+    unassign movie nighter
     ```
     """
 
@@ -34,7 +34,7 @@ defmodule Bolt.Cogs.Remove do
 
   @impl true
   def command(msg, "") do
-    response = "🚫 expected the role name to remove, got nothing"
+    response = "🚫 expected the role name to unassign, got nothing"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 

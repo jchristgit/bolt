@@ -11,6 +11,7 @@
 - display more specific error when `.assign` cannot find command author in guild
 - users that are above or equal in the role hierarchy to bolt will now be ignored
   by USW
+- rename `.remove` to `.unassign`
 
 ## v0.11.1
 - removed default `.clean` invocation

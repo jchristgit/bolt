@@ -31,8 +31,8 @@ defmodule Bolt.Consumer.Ready do
     "lsar" => Cogs.Lsar,
     "assign" => Cogs.Assign,
     "iam" => Cogs.Assign,
-    "remove" => Cogs.Remove,
-    "iamn" => Cogs.Remove,
+    "unassign" => Cogs.Unassign,
+    "iamn" => Cogs.Unassign,
 
     ## Role configuration
     "role" => %{
