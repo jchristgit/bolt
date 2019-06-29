@@ -41,7 +41,6 @@ defmodule Bolt.MixProject do
 
       # Miscellaneous
       {:timex, "~> 3.1"},
-      {:aho_corasick, git: "https://github.com/wudeng/aho-corasick.git"},
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

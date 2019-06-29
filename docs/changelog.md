@@ -12,6 +12,7 @@
 - users that are above or equal in the role hierarchy to bolt will now be ignored
   by USW
 - rename `.remove` to `.unassign`
+- remove `filter` commands (for now)
 
 ## v0.11.1
 - removed default `.clean` invocation

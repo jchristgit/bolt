@@ -32,9 +32,6 @@ defmodule Bolt.Application do
       # Caches messages for mod log purposes.
       {Bolt.MessageCache, name: Bolt.MessageCache},
 
-      # Holds Aho-Corasick trees used for filtering messages.
-      {Bolt.Filter, name: Bolt.Filter},
-
       # Supervises the Uncomplicated Spam Wall processes.
       Bolt.USWSupervisor,
 
