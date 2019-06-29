@@ -5,6 +5,14 @@ defmodule Bolt.Consumer.Ready do
   alias Bolt.{BotLog, Cogs}
   alias Nostrum.Api
 
+  @infraction_group %{
+    "detail" => Cogs.Infraction.Detail,
+    "reason" => Cogs.Infraction.Reason,
+    "list" => Cogs.Infraction.List,
+    "user" => Cogs.Infraction.User,
+    "expiry" => Cogs.Infraction.Expiry
+  }
+
   @commands %{
     ## Bot meta commands
     "help" => Cogs.Help,
@@ -51,21 +59,9 @@ defmodule Bolt.Consumer.Ready do
 
     ## Infraction database operations
     "note" => Cogs.Note,
-    "infraction" => %{
-      "detail" => Cogs.Infraction.Detail,
-      "reason" => Cogs.Infraction.Reason,
-      "list" => Cogs.Infraction.List,
-      "user" => Cogs.Infraction.User,
-      "expiry" => Cogs.Infraction.Expiry
-    },
-    # man this is one awful way to do aliases
-    "infr" => %{
-      "detail" => Cogs.Infraction.Detail,
-      "reason" => Cogs.Infraction.Reason,
-      "list" => Cogs.Infraction.List,
-      "user" => Cogs.Infraction.User,
-      "expiry" => Cogs.Infraction.Expiry
-    },
+    "infraction" => @infraction_group,
+    # Alias
+    "infr" => @infraction_group,
 
     ## Mod Log management
     "modlog" => %{
