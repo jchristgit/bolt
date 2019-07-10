@@ -27,7 +27,7 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm"},
   "mimerl": {:hex, :mimerl, "1.2.0", "67e2d3f571088d5cfd3e550c383094b47159f3eee8ffa08e64106cdf5e981be3", [:rebar3], [], "hexpm"},
   "nosedrum": {:hex, :nosedrum, "0.2.0", "98069c6ba7c897587cef05693b10ea0f606f38660ada9339cba59d0161ff760d", [:mix], [{:nostrum, "~> 0.3", [hex: :nostrum, repo: "hexpm", optional: false]}], "hexpm"},
-  "nostrum": {:git, "https://github.com/jchristgit/nostrum.git", "7970ea469a62dbcbbd6534c11f123f6c5cd74cf5", [ref: "🔫"]},
+  "nostrum": {:git, "https://github.com/jchristgit/nostrum.git", "1193ef62ecd26d81f4509fb1553b46e92d9132ab", [ref: "🔫"]},
   "parse_trans": {:hex, :parse_trans, "3.3.0", "09765507a3c7590a784615cfd421d101aec25098d50b89d7aa1d66646bc571c1", [:rebar3], [], "hexpm"},
   "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
   "postgrex": {:hex, :postgrex, "0.14.3", "5754dee2fdf6e9e508cbf49ab138df964278700b764177e8f3871e658b345a1e", [:mix], [{:connection, "~> 1.0", [hex: :connection, repo: "hexpm", optional: false]}, {:db_connection, "~> 2.0", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 1.5", [hex: :decimal, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}], "hexpm"},
