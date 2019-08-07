@@ -7,7 +7,8 @@ defmodule Bolt.RaidManager do
   automatically.
   """
 
-  @drop_after :timer.seconds(30)  # :timer.minutes(30)
+  # :timer.minutes(30)
+  @drop_after :timer.seconds(30)
 
   alias Nostrum.Struct.Guild
   use GenServer

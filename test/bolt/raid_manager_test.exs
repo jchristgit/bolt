@@ -13,7 +13,7 @@ defmodule Bolt.RaidManagerTest do
     end
 
     test "returns empty mapset for unknown guilds", %{pid: pid} do
-      response = RaidManager.get(pid, 123190231)
+      response = RaidManager.get(pid, 123_190_231)
 
       assert %MapSet{} = response
       assert Enum.empty?(response)
@@ -28,7 +28,7 @@ defmodule Bolt.RaidManagerTest do
   end
 
   describe "deleting selections" do
-    @guild_id 120914
+    @guild_id 120_914
     @added_members [:baz]
 
     setup do
