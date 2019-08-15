@@ -32,11 +32,11 @@ defmodule Bolt.Consumer do
 
   @impl true
   @spec handle_event(Nostrum.Consumer.event()) :: any()
-  def handle_event({:CHANNEL_CREATE, {new_channel}, _ws_state}) do
+  def handle_event({:CHANNEL_CREATE, new_channel, _ws_state}) do
     ChannelCreate.handle(new_channel)
   end
 
-  def handle_event({:CHANNEL_DELETE, {deleted_channel}, _ws_state}) do
+  def handle_event({:CHANNEL_DELETE, deleted_channel, _ws_state}) do
     ChannelDelete.handle(deleted_channel)
   end
 
@@ -44,16 +44,16 @@ defmodule Bolt.Consumer do
     ChannelUpdate.handle(old_channel, new_channel)
   end
 
-  def handle_event({:MESSAGE_CREATE, {msg}, _ws_state}) do
+  def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
     MessageCreate.handle(msg)
   end
 
-  def handle_event({:MESSAGE_UPDATE, {msg}, _ws_state}) do
+  def handle_event({:MESSAGE_UPDATE, msg, _ws_state}) do
     MessageUpdate.handle(msg)
   end
 
   def handle_event(
-        {:MESSAGE_DELETE, {%{channel_id: channel_id, guild_id: guild_id, id: msg_id}}, _ws_state}
+        {:MESSAGE_DELETE, %{channel_id: channel_id, guild_id: guild_id, id: msg_id}, _ws_state}
       ) do
     MessageDelete.handle(channel_id, guild_id, msg_id)
   end
@@ -78,11 +78,11 @@ defmodule Bolt.Consumer do
     GuildMemberUpdate.handle(guild_id, old_member, new_member)
   end
 
-  def handle_event({:MESSAGE_REACTION_ADD, {reaction}, _ws_state}) do
+  def handle_event({:MESSAGE_REACTION_ADD, reaction, _ws_state}) do
     MessageReactionAdd.handle(reaction)
   end
 
-  def handle_event({:GUILD_CREATE, {guild}, _ws_state}) do
+  def handle_event({:GUILD_CREATE, guild, _ws_state}) do
     GuildCreate.handle(guild)
   end
 
@@ -102,7 +102,7 @@ defmodule Bolt.Consumer do
     GuildRoleUpdate.handle(guild_id, old_role, new_role)
   end
 
-  def handle_event({:READY, {data}, _ws_state}) do
+  def handle_event({:READY, data, _ws_state}) do
     Ready.handle(data)
   end
 
