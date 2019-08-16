@@ -30,9 +30,7 @@ defmodule Bolt.Consumer.Ready do
     ## Self-assignable roles
     "lsar" => Cogs.Lsar,
     "assign" => Cogs.Assign,
-    "iam" => Cogs.Assign,
     "unassign" => Cogs.Unassign,
-    "iamn" => Cogs.Unassign,
 
     ## Role configuration
     "role" => %{
@@ -118,17 +116,17 @@ defmodule Bolt.Consumer.Ready do
   }
 
   @aliases %{
-    "gatekeeper" => "keeper",
-    "ginfo" => "guildinfo",
-    "gk" => "keeper",
-    "guild" => "guildinfo",
-    "iam" => "assign",
-    "iamn" => "remove",
-    "infr" => "infraction",
-    "man" => "help",
-    "minfo" => "memberinfo",
-    "member" => "memberinfo",
-    "rinfo" => "roleinfo"
+    "gatekeeper" => Map.fetch!(@commands, "keeper"),
+    "ginfo" => Map.fetch!(@commands, "guildinfo"),
+    "gk" => Map.fetch!(@commands, "keeper"),
+    "guild" => Map.fetch!(@commands, "guildinfo"),
+    "iam" => Map.fetch!(@commands, "assign"),
+    "iamn" => Map.fetch!(@commands, "unassign"),
+    "infr" => Map.fetch!(@commands, "infraction"),
+    "man" => Map.fetch!(@commands, "help"),
+    "member" => Map.fetch!(@commands, "memberinfo"),
+    "minfo" => Map.fetch!(@commands, "memberinfo"),
+    "rinfo" => Map.fetch!(@commands, "roleinfo")
   }
 
   @spec handle(map()) :: :ok
@@ -138,7 +136,9 @@ defmodule Bolt.Consumer.Ready do
     :ok = Api.update_status(:online, "you | .help", 3)
   end
 
-  def load_commands do
-    Enum.each(@commands, fn {name, cog} -> CommandStorage.add_command({name}, cog) end)
+  defp load_commands do
+    [@commands, @aliases]
+    |> Stream.concat()
+    |> Enum.each(fn {name, cog} -> CommandStorage.add_command({name}, cog) end)
   end
 end
