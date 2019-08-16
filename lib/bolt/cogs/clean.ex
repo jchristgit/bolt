@@ -8,6 +8,7 @@ defmodule Bolt.Cogs.Clean do
   alias Bolt.Helpers
   alias Bolt.Humanizer
   alias Bolt.ModLog
+  alias Bolt.Parsers
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.Mapping.ChannelGuild
@@ -169,7 +170,7 @@ defmodule Bolt.Cogs.Clean do
   end
 
   def command(msg, {_parsed, _args, invalid}) when invalid != [] do
-    invalid_args = Bolt.Parsers.describe_invalid_args(invalid)
+    invalid_args = Parsers.describe_invalid_args(invalid)
 
     {:ok, _msg} =
       Api.create_message(

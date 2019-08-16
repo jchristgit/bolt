@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.LastJoins do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.{Constants, Helpers, MessageCache}
+  alias Bolt.{Constants, Helpers, Parsers, MessageCache}
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
@@ -113,7 +113,7 @@ defmodule Bolt.Cogs.LastJoins do
   end
 
   def command(msg, {_parsed, _args, invalid}) when invalid != [] do
-    invalid_args = Bolt.Parsers.describe_invalid_args(invalid)
+    invalid_args = Parsers.describe_invalid_args(invalid)
 
     {:ok, _msg} =
       Api.create_message(
