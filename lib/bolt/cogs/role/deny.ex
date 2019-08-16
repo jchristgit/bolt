@@ -4,7 +4,6 @@ defmodule Bolt.Cogs.Role.Deny do
   @behaviour Nosedrum.Command
 
   alias Bolt.Converters
-  alias Bolt.Humanizer
   alias Bolt.Helpers
   alias Bolt.Humanizer
   alias Bolt.ModLog

@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.LastJoins do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.{Constants, Helpers, Parsers, MessageCache}
+  alias Bolt.{Constants, Helpers, MessageCache, Parsers}
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache

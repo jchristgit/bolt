@@ -6,10 +6,10 @@ defmodule Bolt.Cogs.Tempban do
   alias Nosedrum.Predicates
 
   alias Bolt.{
-    Helpers,
-    Humanizer,
     ErrorFormatters,
     Events.Handler,
+    Helpers,
+    Humanizer,
     ModLog,
     Parsers,
     Repo,
