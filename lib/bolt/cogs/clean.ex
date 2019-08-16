@@ -169,16 +169,7 @@ defmodule Bolt.Cogs.Clean do
   end
 
   def command(msg, {_parsed, _args, invalid}) when invalid != [] do
-    invalid_args =
-      invalid
-      |> Stream.map(fn {option_name, value} ->
-        case value do
-          nil -> "`#{option_name}`"
-          val -> "`#{option_name}` (set to `#{val}`)"
-        end
-      end)
-      |> Enum.join(", ")
-      |> Helpers.clean_content()
+    invalid_args = Bolt.Parsers.describe_invalid_args(invalid)
 
     {:ok, _msg} =
       Api.create_message(

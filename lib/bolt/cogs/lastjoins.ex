@@ -112,20 +112,8 @@ defmodule Bolt.Cogs.LastJoins do
     end
   end
 
-  # this is copied straight outta the clean cog. if I see this copied somewhere
-  # again, i should probably refactor it, but knowing myself, i will probably forget
-  # about it and have 20 copies of this by the end of the year
   def command(msg, {_parsed, _args, invalid}) when invalid != [] do
-    invalid_args =
-      invalid
-      |> Stream.map(fn {option_name, value} ->
-        case value do
-          nil -> "`#{option_name}`"
-          val -> "`#{option_name}` (set to `#{val}`)"
-        end
-      end)
-      |> Enum.join(", ")
-      |> Helpers.clean_content()
+    invalid_args = Bolt.Parsers.describe_invalid_args(invalid)
 
     {:ok, _msg} =
       Api.create_message(

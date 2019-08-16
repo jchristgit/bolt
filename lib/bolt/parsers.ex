@@ -6,7 +6,7 @@ defmodule Bolt.Parsers do
 
   @single_digit_numbers Enum.map(0..9, &Integer.to_string/1)
 
-  alias Bolt.Helpers
+  import Bolt.Helpers, only: [clean_content: 1]
 
   @spec seconds(String.t()) :: {:ok, integer} | {:error, String.t()}
   defp seconds(duration) when byte_size(duration) < 2 do
@@ -73,7 +73,7 @@ defmodule Bolt.Parsers do
     else
       parsed_seconds =
         text
-        |> Helpers.clean_content()
+        |> clean_content()
         |> String.codepoints()
         # Thanks to https://github.com/jos-b
         # for coming up with this smart solution.
@@ -132,5 +132,17 @@ defmodule Bolt.Parsers do
       {:error, _reason} = error ->
         error
     end
+  end
+
+  @doc """
+  Describe which arguments were invalid and why.
+  """
+  def describe_invalid_args(arguments) do
+    arguments
+    |> Stream.map(fn
+      {option_name, nil} -> "`#{clean_content(option_name)}`"
+      {option_name, val} -> "`#{clean_content(option_name)}` (set to `#{clean_content(val)}`)"
+    end)
+    |> Enum.join(", ")
   end
 end
