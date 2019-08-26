@@ -9,6 +9,8 @@ defmodule Bolt.Cogs.Help do
   alias Nostrum.Struct.Embed
 
   @prefix Application.fetch_env!(:bolt, :prefix)
+  @online_manual_link Application.get_env(:bolt, :web_domain) ||
+                        "127.0.0.1/i-didnt-configure-bolts-documentation-domain"
 
   @spec format_command_detail(String.t(), Module.t()) :: Embed.t()
   def format_command_detail(name, command_module) do
@@ -55,13 +57,9 @@ defmodule Bolt.Cogs.Help do
 
               Want a full introduction? Check out `#{@prefix}guide`.
               You can also join [bolt's server here](https://discord.gg/5REguKf).
+              An extensive manual is available at https://#{@online_manual_link}.
               """
             end).(),
-      footer: %Embed.Footer{
-        text:
-          "Online documentation: " <>
-            "https://#{Application.get_env(:bolt, :web_domain) || "(not set on this instance)"}"
-      },
       color: Constants.color_blue()
     }
 
