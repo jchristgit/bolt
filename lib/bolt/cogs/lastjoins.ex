@@ -73,6 +73,7 @@ defmodule Bolt.Cogs.LastJoins do
 
         fields =
           members
+          |> Stream.reject(&(&1.joined_at == nil))
           |> Enum.sort_by(
             &(&1.joined_at |> DateTime.from_iso8601() |> elem(1) |> DateTime.to_unix()),
             &>=/2
