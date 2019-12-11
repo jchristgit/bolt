@@ -10,16 +10,39 @@ After=postgresql.service network-online.target
 User={{ bolt_service_user }}
 ExecStart=/bin/sh {{ bolt_directory }}/current/bin/bolt start
 
+WorkingDirectory={{ bolt_directory }}/current
 EnvironmentFile=/etc/opt/bolt/bolt.env
+
 MemoryHigh=180M
 MemoryMax=200M
 RemainAfterExit=no
 Restart=on-failure
 RestartSec=5
 SyslogIdentifier=bolt
-ProtectSystem=full
+
+# boxy boxy
+CapabilityBoundingSet=
+LockPersonality=true
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+PrivateUsers=true
+ProtectControlGroups=true
 ProtectHome=true
-WorkingDirectory={{ bolt_directory }}/current
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+# Allow the release entry point to create temporary files in here.
+ReadWritePaths={{ deploy_helper.new_release_path }}
+RemoveIPC=true
+RestrictAddressFamilies=AF_INET
+RestrictNamespaces=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+UMask=0077
 
 [Install]
 WantedBy=network-online.target
