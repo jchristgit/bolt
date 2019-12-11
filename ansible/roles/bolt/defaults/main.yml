@@ -14,6 +14,8 @@ bolt_checkout_directory: /usr/local/src/bolt
 
 bolt_cookie: "{{ lookup('password', 'secrets/' + ansible_nodename + '/bolt/erlang.cookie') }}"
 bolt_service_user: bolt
-bolt_home_directory: /opt/bolt
+bolt_directory: /opt/bolt
+
+bolt_pgsql_url: ecto://{{ bolt_postgres_user }}:{{ bolt_postgres_password }}@{{ bolt_postgres_host }}/{{ bolt_postgres_database }}?pool_size={{ bolt_postgres_pool_size }}
 
 # vim: sw=2 ts=2:

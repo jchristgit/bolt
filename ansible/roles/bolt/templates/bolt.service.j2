@@ -8,7 +8,7 @@ After=postgresql.service network-online.target
 
 [Service]
 User={{ bolt_service_user }}
-ExecStart=/opt/bolt/bolt-{{ bolt_release_version }}-{{ bolt_checkout.after[:5] }}/bin/bolt foreground
+ExecStart=/bin/sh {{ bolt_directory }}/current/bin/bolt start
 
 EnvironmentFile=/etc/opt/bolt/bolt.env
 MemoryHigh=180M
@@ -17,9 +17,11 @@ RemainAfterExit=no
 Restart=on-failure
 RestartSec=5
 SyslogIdentifier=bolt
-WorkingDirectory=/opt/bolt/bolt-{{ bolt_release_version }}-{{ bolt_checkout.after[:5] }}/
+ProtectSystem=full
+ProtectHome=true
+WorkingDirectory={{ bolt_directory }}/current
 
 [Install]
 WantedBy=network-online.target
 
-# vim: ft=conf:
+# vim: ft=dosini.jinja2:

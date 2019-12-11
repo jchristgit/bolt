@@ -1,13 +1,5 @@
 ---
 dependencies:
-  - role: postgres
+  - role: postgresql
 
   - role: ansible-postgres
-
-  - role: geerlingguy.docker
-    become: yes
-    docker_apt_ignore_key_errors: False
-
-  - role: geerlingguy.pip
-    become: yes
-    pip_install_packages: [docker]

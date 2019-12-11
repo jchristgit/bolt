@@ -1,8 +1,44 @@
 ---
-- name: ensure postgres is installed
-  become: yes
-  apt: name=postgresql
+- name: install https repository dependencies
+  package:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+  tags:
+    - packages
+    - postgresql
 
-- name: ensure postgres is started and enabled
-  become: yes
-  service: name=postgresql state=started enabled=yes
+- name: add the postgresql apt key
+  apt_key:
+    id: ACCC4CF8
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+  tags:
+    - apt
+    - postgresql
+
+- name: add the postgresql apt repository
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_lsb.codename }}-pgdg main
+    state: present
+  tags:
+    - apt
+    - postgresql
+
+- name: install postgresql {{ postgresql_version }}
+  apt:
+    name: postgresql-{{ postgresql_version }}
+    state: present
+  tags:
+    - packages
+    - postgresql
+
+- name: start and enable postgresql {{ postgresql_version }}
+  service:
+    name: postgresql@{{ postgresql_version }}-main
+    state: started
+    enabled: true
+  tags:
+    - postgresql
+    - services

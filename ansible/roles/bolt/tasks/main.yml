@@ -1,6 +1,32 @@
 ---
-- name: ensure the `{{ bolt_postgres_user }}` postgres user exists
-  become: yes
+- name: install the erlang solutions apt key
+  apt_key:
+    id: 434975BD900CCBE4F7EE1B1ED208507CA14F4FCA
+    url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
+    state: present
+  tags:
+    - bolt
+
+- name: install the erlang solutions apt repository
+  apt_repository:
+    repo: deb https://packages.erlang-solutions.com/debian {{ ansible_distribution_release }} contrib
+    state: present
+  tags:
+    - bolt
+
+- name: install elixir and erlang dependencies
+  apt:
+    name:
+      - elixir
+      - erlang-dev
+      - erlang-eunit
+      - erlang-parsetools
+    state: present
+  tags:
+    - bolt
+
+- name: create the `{{ bolt_postgres_user }}` postgres user
+  become: true
   become_user: postgres
   postgresql_user:
     name: bolt
@@ -10,8 +36,8 @@
     - bolt
     - postgres
 
-- name: ensure the `{{ bolt_postgres_database }}` postgres database exists
-  become: yes
+- name: create the `{{ bolt_postgres_database }}` postgres database
+  become: true
   become_user: postgres
   postgresql_db:
     name: bolt
@@ -21,98 +47,104 @@
     - bolt
     - postgres
 
-- name: ensure the checkout is up-to-date
-  become: yes
+- name: ensure the bolt user is up-to-date
+  user:
+    name: "{{ bolt_service_user }}"
+    home: "{{ bolt_directory }}"
+    system: true
+    state: present
+  tags:
+    - bolt
+
+- name: make the bolt directory only readable for bolt
+  file:
+    path: "{{ bolt_directory }}"
+    mode: 0700
+  tags:
+    - bolt
+
+- name: set up the deployment directory
+  become: true
+  become_user: "{{ bolt_service_user }}"
+  deploy_helper:
+    path: "{{ bolt_directory }}"
+    state: present
+  tags:
+    - bolt
+
+- name: checkout the source
+  become: true
+  become_user: "{{ bolt_service_user }}"
   git:
-    dest: "{{ bolt_checkout_directory }}"
+    dest: "{{ deploy_helper.shared_path }}/repository"
     repo: "{{ bolt_repository_url }}"
     version: "{{ bolt_version }}"
-    umask: '00077'
-  register: bolt_checkout
+    umask: '0077'
   tags:
     - bolt
     - git
   notify:
     - restart bolt
 
-- name: ensure the bolt user is up-to-date
-  become: yes
-  user:
-    name: "{{ bolt_service_user }}"
-    home: "{{ bolt_home_directory }}"
-    system: yes
-    state: present
+- name: download dependencies
+  become: true
+  become_user: "{{ bolt_service_user }}"
+  shell: umask 077 && exec /usr/bin/mix do local.hex --force, local.rebar --force, deps.get --only prod
+  args:
+    chdir: "{{ deploy_helper.shared_path }}/repository"
   tags:
     - bolt
-  notify:
-    - restart bolt
+  register: bolt_command_mix_deps_get
+  changed_when: "'All dependencies are up to date' not in bolt_command_mix_deps_get.stdout"
+  environment:
+    MIX_ENV: prod
 
-- name: ensure the assembler docker image is up-to-date
-  become: yes
-  docker_image:
-    build:
-      path: "{{ bolt_checkout_directory }}"
-      dockerfile: "{{ bolt_checkout_directory }}/docker/assembler/Dockerfile"
-      pull: no
-    force_source: yes
-    name: jchristhub/bolt-assembler:{{ bolt_version }}
-    source: build
-    state: present
+- name: build a release
+  become: true
+  become_user: "{{ bolt_service_user }}"
+  shell: umask 077 && exec /usr/bin/nice /usr/bin/mix release --overwrite
+  args:
+    chdir: "{{ deploy_helper.shared_path }}/repository"
   tags:
     - bolt
-    - docker
-    - release
+  register: bolt_command_mix_release
+  changed_when: "'Compiling' in bolt_command_mix_release.stdout"
+  environment:
+    MIX_ENV: prod
 
-- name: assemble a release with distillery
-  become: yes
-  docker_container:
-    cleanup: yes
-    command: /build/docker/assembler/build.sh
-    detach: no
-    image: jchristhub/bolt-assembler:{{ bolt_version }}
-    keep_volumes: no
-    memory: 500M
-    name: bolt-assembler-{{ bolt_version }}
-    network_mode: host
-    working_dir: "{{ bolt_checkout_directory }}"
-    env:
-      PROD_COOKIE: "{{ bolt_cookie }}"
-    volumes:
-      - "{{ bolt_checkout_directory }}:/build"
+- name: run migrations
+  become: true
+  become_user: "{{ bolt_service_user }}"
+  command: /usr/bin/mix ecto.migrate --all
+  args:
+    chdir: "{{ deploy_helper.shared_path }}/repository"
   tags:
     - bolt
-    - docker
-    - release
+  environment:
+    MIX_ENV: prod
+    PGSQL_URL: "{{ bolt_pgsql_url }}"
 
-- name: ensure the release directory exists
-  become: yes
-  file:
-    path: /opt/bolt/bolt-{{ bolt_release_version }}-{{ bolt_checkout.after[:5] }}
-    state: directory
-    owner: "{{ bolt_service_user }}"
-    group: root
-    mode: '0700'
+- name: copy release to current release directory
+  become: true
+  become_user: "{{ bolt_service_user }}"
+  copy:
+    src: "{{ deploy_helper.shared_path }}/repository/_build/prod/rel/bolt/"
+    remote_src: true
+    dest: "{{ deploy_helper.new_release_path }}"
   tags:
     - bolt
-    - release
 
-- name: unpack the archive into bolt's home directory
-  become: yes
-  unarchive:
-    copy: no
-    src: "{{ bolt_checkout_directory }}/rel/artifacts/bolt-{{ bolt_release_version }}.tar.gz"
-    dest: /opt/bolt/bolt-{{ bolt_release_version }}-{{ bolt_checkout.after[:5] }}
-    owner: "{{ bolt_service_user }}"
-    group: root
-    mode: '0700'
+- name: finalize the release
+  become: true
+  become_user: "{{ bolt_service_user }}"
+  deploy_helper:
+    path: "{{ bolt_directory }}"
+    release: "{{ deploy_helper.new_release }}"
+    state: finalize
   tags:
     - bolt
-    - release
-  notify:
-    - restart bolt
 
 - name: ensure the configuration directory is present
-  become: yes
   file:
     path: /etc/opt/bolt
     owner: root #"{{ bolt_service_user }}"
@@ -145,10 +177,19 @@
     owner: root
     group: root
     mode: '0444'
+  register: bolt_service_file
   tags:
     - bolt
   notify:
-    - reload the systemd daemon
     - restart bolt
+
+- name: start and enable bolt
+  systemd:
+    daemon_reload: "{{ bolt_service_file is changed }}"
+    name: bolt.service
+    state: started
+    enabled: true
+  tags:
+    - bolt
 
 # vim: sw=2 ts=2:

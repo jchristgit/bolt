@@ -1,8 +1,8 @@
 ---
-- name: restart postgres
-  become: yes
-  service: name=postgres state=restarted
-
-- name: reload postgres
-  become: yes
-  service: name=postgres state=reloaded
+- name: restart the postgresql cluster
+  service:
+    name: postgresql@{{ postgresql_version }}-main
+    state: restarted
+  tags:
+    - role::postgresql
+    - role::postgresql::restart
