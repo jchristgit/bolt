@@ -1,6 +1,6 @@
 sudo: enabled
 language: elixir
-elixir: 1.7.2
+elixir: 1.9.4
 
 jobs:
   include:
