@@ -44,7 +44,6 @@ the official Discord server linked to in the help command.
       * [`.roleinfo`](cogs/meta#roleinfo-ltrolerolegt)
       * [`.memberinfo`](cogs/meta#memberinfo-membermember)
       * [`.inrole`](cogs/meta#inrole-rolerole)
-      * [`.graphs`](cogs/meta#graphs)
       * [`.help`](cogs/meta#help-commandstr)
       * [`.guide`](cogs/meta#guide)
       * [`.stats`](cogs/meta#stats)

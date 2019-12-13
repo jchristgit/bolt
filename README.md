@@ -33,12 +33,8 @@ these commands.
 
 ## Monitoring
 
-Bolt runs a munin node which listens on localhost, port 4949 by default. This
-node can be used to inspect live BEAM runtime statistics along with information
-about the Discord servers bolt is on.
-
-To use it, point a munin master to the host that bolt runs on, or simply run
-`nc localhost 4949` to give it a try.
+Bolt runs a Prometheus metrics endpoint on port 8081, which supplies live BEAM
+runtime statistics along with application metrics from Bolt.
 
 
 <!-- vim: set textwidth=80 sw=2 ts=2: -->

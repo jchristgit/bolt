@@ -26,18 +26,6 @@ config :nostrum,
   token: System.get_env("BOT_TOKEN"),
   num_shards: :auto
 
-config :crow,
-  ip: {127, 0, 0, 1},
-  plugins: [
-    Bolt.CrowPlugins.GuildMembers,
-    Bolt.CrowPlugins.GuildMessageCounts,
-    CrowPlugins.BEAM.ContextSwitches,
-    CrowPlugins.BEAM.GarbageCollections,
-    CrowPlugins.BEAM.IO,
-    CrowPlugins.BEAM.Memory,
-    CrowPlugins.BEAM.SystemInfo
-  ]
-
 config :tzdata, :autoupdate, :disabled
 
 # This configuration is loaded before any dependency and is restricted

@@ -87,29 +87,6 @@ The following options can be given to customize the output:
 .roles --no-mention
 ```
 
-### `.graphs`
-Bolt aggregates a couple of anonymous statistics.
-
-This command displays individual graphs on Discord.
-
-The following graphs are currently collected:
-- `members`, which counts total server members.
-- `messages`, which counts average messages per hour.
-
-By default, bolt will display graphs for the last day, but you
-can also display them over the past `week`, `month`, or `year`.
-
-```js
-// Display message count statistics over the past week.
-.graphs messages week
-
-// Display member count statistics over the past year.
-.graphs members year
-
-// Display an overview over collected graphs and usage information.
-.graphs
-```
-
 ### `.help [command:str]`
 Shows help for the given command or command group. When no command or command group is given, shows all available commands.
 `syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.

@@ -2,7 +2,6 @@
 
 ## Unreleased
 - added the `.lastjoins` command
-- added the `.graphs` command
 - support `now` for duration specificatoins
 - `infr expiry` is now relative to the current time
 - add `.keeper actions` command

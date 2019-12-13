@@ -5,7 +5,6 @@ defmodule Bolt.Application do
   Starts the required processes, including the gateway consumer supervisor.
   """
 
-  alias Bolt.CrowPlugins.GuildMessageCounts
   require Logger
   use Application
 
@@ -53,13 +52,6 @@ defmodule Bolt.Application do
   end
 
   def bootstrap_instrumentation do
-    :ets.new(GuildMessageCounts.table_name(), [
-      {:write_concurrency, true},
-      :ordered_set,
-      :public,
-      :named_table
-    ])
-
     true =
       :prometheus_gauge.declare(
         name: :bolt_guild_members,
