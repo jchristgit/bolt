@@ -46,8 +46,7 @@ defmodule Bolt.MixProject do
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false},
-      {:distillery, "~> 2.0", runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.3", only: :dev, runtime: false}
     ]
   end
 
