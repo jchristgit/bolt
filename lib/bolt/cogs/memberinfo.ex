@@ -89,10 +89,11 @@ defmodule Bolt.Cogs.MemberInfo do
   end
 
   def command(msg, maybe_member) do
-    with {:ok, fetched_member} <- Converters.to_member(msg.guild_id, maybe_member) do
-      embed = format_member_info(msg.guild_id, fetched_member)
-      {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
-    else
+    case Converters.to_member(msg.guild_id, maybe_member) do
+      {:ok, fetched_member} ->
+        embed = format_member_info(msg.guild_id, fetched_member)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+
       {:error, reason} ->
         response = "❌ couldn't fetch member information: #{reason}"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)

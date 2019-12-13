@@ -43,19 +43,19 @@ defmodule Bolt.Consumer.GuildMemberAdd do
       infractions ->
         infractions
         |> Enum.each(fn temprole_infraction ->
-          with {:ok} <-
-                 Api.add_guild_member_role(
-                   guild_id,
-                   member.user.id,
-                   temprole_infraction.data["role_id"]
-                 ) do
-            ModLog.emit(
-              guild_id,
-              "INFRACTION_EVENTS",
-              "member #{Humanizer.human_user(member.user)} with active temprole" <>
-                " (#{Humanizer.human_role(guild_id, temprole_infraction.data["role_id"])}) rejoined, temporary role was reapplied"
-            )
-          else
+          case Api.add_guild_member_role(
+                 guild_id,
+                 member.user.id,
+                 temprole_infraction.data["role_id"]
+               ) do
+            {:ok} ->
+              ModLog.emit(
+                guild_id,
+                "INFRACTION_EVENTS",
+                "member #{Humanizer.human_user(member.user)} with active temprole" <>
+                  " (#{Humanizer.human_role(guild_id, temprole_infraction.data["role_id"])}) rejoined, temporary role was reapplied"
+              )
+
             {:error, %{message: %{"message" => reason}}} ->
               ModLog.emit(
                 guild_id,

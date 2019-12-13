@@ -14,13 +14,14 @@ defmodule Bolt.Events.Deserializer do
       alias Bolt.ModLog
       alias Nostrum.Api
 
-      with {:ok} <- Api.remove_guild_member_role(guild_id, user_id, role_id) do
-        ModLog.emit(
-          guild_id,
-          "INFRACTION_EVENTS",
-          "removed temporary role `#{role_id}` from `#{user_id}`"
-        )
-      else
+      case Api.remove_guild_member_role(guild_id, user_id, role_id) do
+        {:ok} ->
+          ModLog.emit(
+            guild_id,
+            "INFRACTION_EVENTS",
+            "removed temporary role `#{role_id}` from `#{user_id}`"
+          )
+
         {:error, %{message: %{"message" => reason}}} ->
           ModLog.emit(
             guild_id,
@@ -49,13 +50,14 @@ defmodule Bolt.Events.Deserializer do
       alias Bolt.ModLog
       alias Nostrum.Api
 
-      with {:ok} <- Api.remove_guild_ban(guild_id, user_id) do
-        ModLog.emit(
-          guild_id,
-          "INFRACTION_EVENTS",
-          "removed temporary ban for `#{user_id}`"
-        )
-      else
+      case Api.remove_guild_ban(guild_id, user_id) do
+        {:ok} ->
+          ModLog.emit(
+            guild_id,
+            "INFRACTION_EVENTS",
+            "removed temporary ban for `#{user_id}`"
+          )
+
         {:error, %{message: %{"message" => reason}}} ->
           ModLog.emit(
             guild_id,

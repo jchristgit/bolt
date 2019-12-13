@@ -65,10 +65,12 @@ defmodule Bolt.Converters.Member do
       {name, discrim} = String.split_at(text, index - 1)
       discrim = String.trim_leading(discrim, "#")
 
-      with {value, _remainder} when value in 0001..9999 <- Integer.parse(discrim) do
-        {name, discrim}
-      else
-        _err -> :error
+      case Integer.parse(discrim) do
+        {value, _remainder} when value in 0001..9999 ->
+          {name, discrim}
+
+        _err ->
+          :error
       end
     else
       :error

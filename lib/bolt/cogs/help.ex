@@ -105,6 +105,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   def command(msg, [command_group, subcommand_name]) do
+    # credo:disable-for-next-line Credo.Check.Refactor.WithClauses
     with command_map when is_map(command_map) <- CommandStorage.lookup_command(command_group) do
       case Map.fetch(command_map, subcommand_name) do
         {:ok, command_module} ->

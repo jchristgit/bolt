@@ -81,9 +81,10 @@ defmodule Bolt.Cogs.GuildInfo do
 
   @spec fetch_and_build(Nostrum.Struct.Snowflake.t(), String.t()) :: String.t()
   defp fetch_and_build(guild_id, on_not_found) do
-    with {:ok, guild} <- GuildCache.get(guild_id) do
-      format_guild_info(guild)
-    else
+    case GuildCache.get(guild_id) do
+      {:ok, guild} ->
+        format_guild_info(guild)
+
       {:error, _reason} ->
         case Api.get_guild(guild_id) do
           {:ok, guild} ->

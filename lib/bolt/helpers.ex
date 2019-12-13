@@ -97,22 +97,25 @@ defmodule Bolt.Helpers do
           User.id()
         ) :: {:ok, Role.t()} | {:error, String.t()}
   def top_role_for(guild_id, member_id) do
-    with {:ok, member} <- get_member(guild_id, member_id) do
-      case GuildCache.get(guild_id) do
-        {:ok, guild} ->
-          find_role(guild.roles, member.roles)
+    case get_member(guild_id, member_id) do
+      {:ok, member} ->
+        case GuildCache.get(guild_id) do
+          {:ok, guild} ->
+            find_role(guild.roles, member.roles)
 
-        {:error, _reason} ->
-          case Api.get_guild_roles(guild_id) do
-            {:ok, roles} ->
-              find_role(roles, member.roles)
+          {:error, _reason} ->
+            # credo:disable-for-next-line Credo.Check.Refactor.Nesting
+            case Api.get_guild_roles(guild_id) do
+              {:ok, roles} ->
+                find_role(roles, member.roles)
 
-            {:error, _} ->
-              {:error, "guild was not in the cache, nor could it be fetched from the API"}
-          end
-      end
-    else
-      {:error, _reason} = error -> error
+              {:error, _} ->
+                {:error, "guild was not in the cache, nor could it be fetched from the API"}
+            end
+        end
+
+      {:error, _reason} = error ->
+        error
     end
   end
 
@@ -147,27 +150,28 @@ defmodule Bolt.Helpers do
   @doc "Checks that `actor_id`'s top role is above `target_id`s top role on `guild_id`."
   @spec is_above(Guild.id(), User.id(), User.id()) :: {:ok, true | false} | {:error, String.t()}
   def is_above(guild_id, actor_id, target_id) do
-    with {:ok, actor_top_role} <- top_role_for(guild_id, actor_id) do
-      case top_role_for(guild_id, target_id) do
-        {:ok, target_top_role} ->
-          {:ok, actor_top_role.position > target_top_role.position}
+    case top_role_for(guild_id, actor_id) do
+      {:ok, actor_top_role} ->
+        case top_role_for(guild_id, target_id) do
+          {:ok, target_top_role} ->
+            {:ok, actor_top_role.position > target_top_role.position}
 
-        # If the author passed all checks and got around to invoke the command,
-        # happens to have a single role, and the target member does not have any
-        # roles, then the author is always above the member in the hierarchy.
-        # This does not take guild ownership into account.
-        {:error, "no roles on member"} ->
-          {:ok, true}
+          # If the author passed all checks and got around to invoke the command,
+          # happens to have a single role, and the target member does not have any
+          # roles, then the author is always above the member in the hierarchy.
+          # This does not take guild ownership into account.
+          {:error, "no roles on member"} ->
+            {:ok, true}
 
-        # If the target user is no longer on the guild, then the actor is surely above them
-        # in the role hierarchy. This is usually the case with bans.
-        {:error, "there is no member with ID " <> _remainder} ->
-          {:ok, true}
+          # If the target user is no longer on the guild, then the actor is surely above them
+          # in the role hierarchy. This is usually the case with bans.
+          {:error, "there is no member with ID " <> _remainder} ->
+            {:ok, true}
 
-        {:error, _reason} = error ->
-          error
-      end
-    else
+          {:error, _reason} = error ->
+            error
+        end
+
       _err ->
         {:error,
          "you need to be above the target user in the role " <>
