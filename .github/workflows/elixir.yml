@@ -39,6 +39,8 @@ jobs:
     - name: Check code style
       run: mix credo --strict
     - name: Run Tests
-      run: mix test --no-start
+      run: mix test --no-start --cover
       env:
-        PGSQL_URL: postgres://bolt:bolt@$postgres:${{ job.services.postgres.ports[5432] }}/bolt
+        PGSQL_TEST_URL: postgres://bolt:bolt@postgres:${{ job.services.postgres.ports[5432] }}/bolt
+
+# vim: sw=2 ts=2:
