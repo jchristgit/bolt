@@ -41,8 +41,8 @@ defmodule Bolt.Consumer.GuildMemberAdd do
         :ignored
 
       infractions ->
-        infractions
-        |> Enum.each(fn temprole_infraction ->
+        Enum.each(infractions, fn temprole_infraction ->
+          # credo:disable-for-next-line Credo.Check.Refactor.Nesting
           case Api.add_guild_member_role(
                  guild_id,
                  member.user.id,
