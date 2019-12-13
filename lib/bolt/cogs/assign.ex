@@ -125,10 +125,6 @@ defmodule Bolt.Cogs.Assign do
              Api.modify_guild_member(msg.guild_id, msg.author.id,
                roles: Enum.uniq(member.roles ++ Enum.map(selected_self_assignable_roles, & &1.id))
              ) do
-        # TODO: Investigate using `Humanizer.human_role/2` here. It is
-        #       not exactly user-friendly for the "gave you roles x, y, z",
-        #       but might be a lot nicer for the mod log than simply having
-        #       strings, and also stays consistent with the rest of the code.
         added_role_list =
           selected_self_assignable_roles
           |> Stream.map(& &1.name)
