@@ -35,8 +35,9 @@ defmodule Bolt.Helpers do
   "dd.mm.yy hh:mm (n [seconds/minutes/hours/days/weeks/months/years] ago)"
   """
   @spec datetime_to_human(DateTime.t()) :: String.t()
-  def datetime_to_human(datetime) do
-    "#{Timex.format!(datetime, "%d.%m.%y %H:%M", :strftime)} (#{Timex.from_now(datetime)})"
+  def datetime_to_human(dt) do
+    padded_minute = dt.minute |> Integer.to_string() |> String.pad_leading(2, "0")
+    "#{dt.day}.#{dt.month}.#{dt.year} #{dt.hour}:#{padded_minute} (#{Timex.from_now(dt)})"
   end
 
   @doc "Try to return a member of the given guild ID with the given author ID."
