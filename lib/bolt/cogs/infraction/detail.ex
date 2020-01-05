@@ -76,7 +76,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
     }
     |> add_specific_fields(infraction)
     |> add_field_if(
-      DateTime.diff(infraction.inserted_at, infraction.updated_at, :seconds) <= 0,
+      DateTime.diff(infraction.inserted_at, infraction.updated_at, :second) <= 0,
       3,
       fn ->
         %Field{
