@@ -22,7 +22,7 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm"},
   "mimerl": {:hex, :mimerl, "1.2.0", "67e2d3f571088d5cfd3e550c383094b47159f3eee8ffa08e64106cdf5e981be3", [:rebar3], [], "hexpm"},
   "nosedrum": {:hex, :nosedrum, "0.2.0", "98069c6ba7c897587cef05693b10ea0f606f38660ada9339cba59d0161ff760d", [:mix], [{:nostrum, "~> 0.3", [hex: :nostrum, repo: "hexpm", optional: false]}], "hexpm"},
-  "nostrum": {:git, "https://github.com/Kraigie/nostrum.git", "c9359955c6fa7c2832cc05c2612ecff185d3c81a", []},
+  "nostrum": {:git, "https://github.com/Kraigie/nostrum.git", "2dee20fe4be03c93ea54ef673c2894f8138ffcb6", []},
   "parse_trans": {:hex, :parse_trans, "3.3.0", "09765507a3c7590a784615cfd421d101aec25098d50b89d7aa1d66646bc571c1", [:rebar3], [], "hexpm"},
   "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
   "postgrex": {:hex, :postgrex, "0.15.3", "5806baa8a19a68c4d07c7a624ccdb9b57e89cbc573f1b98099e3741214746ae4", [:mix], [{:connection, "~> 1.0", [hex: :connection, repo: "hexpm", optional: false]}, {:db_connection, "~> 2.1", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 1.5", [hex: :decimal, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}], "hexpm"},
