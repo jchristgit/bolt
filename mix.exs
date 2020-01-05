@@ -39,8 +39,6 @@ defmodule Bolt.MixProject do
 
       # Miscellaneous
       {:timex, "~> 3.1"},
-      # See https://github.com/edgurgel/httpoison/issues/393
-      {:hackney, ">= 1.15.2", override: true},
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
