@@ -5,7 +5,6 @@ defmodule Bolt.Cogs.Clean do
 
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
-  alias Bolt.Helpers
   alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Parsers
