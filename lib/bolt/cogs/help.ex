@@ -52,6 +52,7 @@ defmodule Bolt.Cogs.Help do
       description:
         CommandStorage.all_commands()
         |> Map.keys()
+        |> Enum.sort()
         |> Stream.map(&"`#{@prefix}#{&1}`")
         |> (fn commands ->
               """
