@@ -1,5 +1,5 @@
 defmodule Bolt.Cogs.Sudo.Load do
-  @moduledoc "Load a command or alias."
+  @moduledoc "Load a command."
 
   alias Nosedrum.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
@@ -12,48 +12,6 @@ defmodule Bolt.Cogs.Sudo.Load do
     _ -> nil
   end
 
-  def command(msg, [name, "aliased", "to", alias_target]) when name == alias_target do
-    reply = "🚫 cannot create an alias that references itself"
-    {:ok, _msg} = Api.create_message(msg.channel_id, reply)
-  end
-
-  def command(msg, [name, "aliased", "to", alias_target]) do
-    # soon...
-    reply =
-      case CommandStorage.lookup_alias(alias_target) do
-        nil ->
-          "🚫 cannot create an alias to an alias"
-
-        _ ->
-          case CommandStorage.lookup_command(name) do
-            [] ->
-              # soon [2]...
-              CommandStorage.add_alias(name, alias_target)
-
-              Logger.info(
-                "`#{User.full_name(msg.author)}` aliased command `#{name}` to `#{alias_target}`."
-              )
-
-              "👌 `#{name}` is now aliased to `#{alias_target}`"
-
-            [{_name, {:alias, target}}] ->
-              "🚫 `#{name}` is already aliased to `#{target}`"
-
-            [{_name, command_group}] when is_map(command_group) ->
-              "🚫 `#{name}` is already loaded as a command group"
-
-            [{_name, command_module}] ->
-              short_modname = String.replace_leading("#{command_module}", "Elixir.", "")
-              "🚫 `#{name}` is already loaded as `#{short_modname}`"
-          end
-
-        [] ->
-          "🚫 `#{alias_target}` is an unknown command or command group"
-      end
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, reply)
-  end
-
   def command(msg, [name, module_name]) do
     reply =
       case to_command_module(module_name) do
@@ -62,9 +20,6 @@ defmodule Bolt.Cogs.Sudo.Load do
 
         module ->
           case CommandStorage.lookup_command(name) do
-            # [{name, {:alias, target}}] ->
-            #  "🚫 `#{name}` is already loaded as an alias to `#{target}`"
-
             subcommands when is_map(subcommands) ->
               "🚫 `#{name}` is already loaded as a command group"
 
@@ -90,7 +45,6 @@ defmodule Bolt.Cogs.Sudo.Load do
     reply = """
     ℹ usage:
     - `sudo load <command_name:str> <module:str>`
-    - `sudo load <name:str> aliased to <target_command:str>`
     """
 
     {:ok, _msg} = Api.create_message(msg.channel_id, reply)
