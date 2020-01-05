@@ -22,12 +22,8 @@ defmodule Bolt.Helpers do
     "no"
   """
   @spec bool_to_human(boolean) :: String.t()
-  def bool_to_human(value) do
-    case value do
-      true -> "yes"
-      false -> "no"
-    end
-  end
+  def bool_to_human(true), do: "yes"
+  def bool_to_human(false), do: "no"
 
   @doc """
   Converts a valid datetime to a
