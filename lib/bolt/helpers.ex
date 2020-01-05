@@ -8,7 +8,6 @@ defmodule Bolt.Helpers do
   alias Nostrum.Struct.Guild.{Member, Role}
   alias Nostrum.Struct.User
   require Logger
-  use Timex
 
   @doc """
   Convert a boolean value to the

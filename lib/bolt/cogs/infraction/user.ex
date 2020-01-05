@@ -11,7 +11,6 @@ defmodule Bolt.Cogs.Infraction.User do
   alias Nostrum.Struct.Embed
   alias Timex.Duration
   import Ecto.Query, only: [from: 2]
-  use Timex
 
   @impl true
   def usage, do: ["infraction user <user:snowflake|member...>"]

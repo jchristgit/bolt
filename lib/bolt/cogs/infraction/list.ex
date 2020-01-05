@@ -4,14 +4,14 @@ defmodule Bolt.Cogs.Infraction.List do
   @behaviour Nosedrum.Command
 
   alias Bolt.Cogs.Infraction.General
-  alias Nosedrum.Predicates
-  alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.Infraction
+  alias Bolt.{Constants, Paginator, Repo}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.Me
   alias Nostrum.Struct.Embed
+  alias Timex.Duration
   import Ecto.Query, only: [from: 2]
-  use Timex
 
   @impl true
   def usage, do: ["infraction list"]

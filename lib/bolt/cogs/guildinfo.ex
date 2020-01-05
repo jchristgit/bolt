@@ -9,7 +9,6 @@ defmodule Bolt.Cogs.GuildInfo do
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Snowflake
   alias Nostrum.Struct.{Embed, Guild}
-  use Timex
 
   @spec format_guild_info(Guild.t()) :: Embed.t()
   defp format_guild_info(guild) do

@@ -11,7 +11,6 @@ defmodule Bolt.Cogs.USW.Status do
   alias Nostrum.Struct.Embed.Field
   alias Timex.Duration
   import Ecto.Query, only: [from: 2]
-  use Timex
 
   @impl true
   def usage, do: ["usw status"]
