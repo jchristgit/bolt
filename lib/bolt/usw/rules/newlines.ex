@@ -17,6 +17,7 @@ defmodule Bolt.USW.Rules.Newlines do
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
       |> Stream.filter(&(&1.author_id == msg.author.id))
       |> Stream.map(& &1.content)
+      |> Stream.reject(&(&1 == nil))
       |> Stream.map(&Regex.scan(@newline_re, &1))
       |> Stream.map(&Enum.count(&1))
       |> Enum.sum()
