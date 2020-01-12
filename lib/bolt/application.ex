@@ -25,9 +25,6 @@ defmodule Bolt.Application do
       # Allows for embed pagination.
       {Bolt.Paginator, name: Bolt.Paginator},
 
-      # Stores guilds with silenced mod logs.
-      {Bolt.ModLog.Silencer, name: Bolt.ModLog.Silencer},
-
       # Caches messages for mod log purposes.
       {Bolt.MessageCache, name: Bolt.MessageCache},
 

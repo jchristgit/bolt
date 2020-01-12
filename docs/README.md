@@ -70,8 +70,6 @@ the official Discord server linked to in the help command.
       * [`.modlog unset`](cogs/modlog#modlog-unset-lteventstrgt)
       * [`.modlog events`](cogs/modlog#modlog-events)
       * [`.modlog explain`](cogs/modlog#modlog-explain-lteventstrgt)
-      * [`.modlog mute`](cogs/modlog#modlog-mute)
-      * [`.modlog unmute`](cogs/modlog#modlog-unmute)
   * [Self-assignable roles](cogs/self_assignable_roles)
     * [Commands](cogs/self_assignable_roles#commands)
       * [`.assign`](cogs/self_assignable_roles#assign-ltrolerolegt)

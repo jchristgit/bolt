@@ -1,7 +1,6 @@
 defmodule Bolt.ModLog do
   @moduledoc "Distributes gateway or bot events to the appropriate channels."
 
-  alias Bolt.ModLog.Silencer
   alias Bolt.Repo
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api
@@ -47,21 +46,21 @@ defmodule Bolt.ModLog do
           Keyword.t()
         ) :: on_emit()
   def emit(guild_id, event, content, opts \\ []) do
-    with %ModLogConfig{channel_id: channel_id} <-
-           Repo.get_by(ModLogConfig, guild_id: guild_id, event: event),
-         false <- Silencer.is_silenced?(guild_id) do
-      event_emoji = Map.get(@event_emoji, event, "?")
+    case Repo.get_by(ModLogConfig, guild_id: guild_id, event: event) do
+      %ModLogConfig{channel_id: channel_id} ->
+        event_emoji = Map.get(@event_emoji, event, "?")
 
-      opts =
-        if content != "" do
-          Keyword.put(opts, :content, "#{event_emoji} #{content}")
-        else
-          opts
-        end
+        opts =
+          if content != "" do
+            Keyword.put(opts, :content, "#{event_emoji} #{content}")
+          else
+            opts
+          end
 
-      Api.create_message(channel_id, opts)
-    else
-      _err -> :noop
+        Api.create_message(channel_id, opts)
+
+      _other ->
+        :noop
     end
   end
 
