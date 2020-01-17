@@ -81,7 +81,7 @@ defmodule Bolt.Cogs.Role.Allow do
               ModLog.emit(
                 msg.guild_id,
                 "CONFIG_UPDATE",
-                "#{Humanizer.human_user(msg.author)}) added" <>
+                "#{Humanizer.human_user(msg.author)} added" <>
                   " #{Humanizer.human_role(msg.guild_id, role)} to self-assignable roles"
               )
 
