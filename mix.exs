@@ -26,7 +26,7 @@ defmodule Bolt.MixProject do
     [
       # Discord interfacing
       {:nosedrum, "~> 0.2"},
-      {:nostrum, github: "Kraigie/nostrum", override: true},
+      {:nostrum, "~> 0.4", override: true},
 
       # PostgreSQL interfacing
       {:ecto_sql, "~> 3.0"},

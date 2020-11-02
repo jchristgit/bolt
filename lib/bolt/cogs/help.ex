@@ -8,7 +8,8 @@ defmodule Bolt.Cogs.Help do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
-  @prefix Application.fetch_env!(:bolt, :prefix)
+  @spec prefix() :: String.t()
+  defp prefix, do: Application.fetch_env!(:bolt, :prefix)
 
   @spec format_command_detail(String.t(), Module.t()) :: Embed.t()
   def format_command_detail(name, command_module) do
@@ -18,7 +19,7 @@ defmodule Bolt.Cogs.Help do
       ```ini
       #{
         command_module.usage()
-        |> Stream.map(&"#{@prefix}#{&1}")
+        |> Stream.map(&"#{prefix()}#{&1}")
         |> Enum.join("\n")
       }
       ```
@@ -53,12 +54,12 @@ defmodule Bolt.Cogs.Help do
         CommandStorage.all_commands()
         |> Map.keys()
         |> Enum.sort()
-        |> Stream.map(&"`#{@prefix}#{&1}`")
+        |> Stream.map(&"`#{prefix()}#{&1}`")
         |> (fn commands ->
               """
               #{Enum.join(commands, ", ")}
 
-              Want a full introduction? Check out `#{@prefix}guide`.
+              Want a full introduction? Check out `#{prefix()}guide`.
               You can also join [bolt's server here](https://discord.gg/5REguKf).
               An extensive manual is available at https://#{online_manual_link}.
               """
