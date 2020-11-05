@@ -138,6 +138,6 @@ defmodule Bolt.Consumer.Ready do
   defp load_commands do
     [@commands, @aliases]
     |> Stream.concat()
-    |> Enum.each(fn {name, cog} -> CommandStorage.add_command({name}, cog) end)
+    |> Enum.each(fn {name, cog} -> CommandStorage.add_command([name], cog) end)
   end
 end

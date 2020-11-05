@@ -10,7 +10,20 @@ defmodule Bolt.Consumer.MessageCreate do
   @spec handle(Message.t()) :: :ok | nil
   def handle(msg) do
     unless msg.author.bot do
-      CommandInvoker.handle_message(msg, @nosedrum_storage_implementation)
+      case CommandInvoker.handle_message(msg, @nosedrum_storage_implementation) do
+        {:error, {:unknown_subcommand, name, :known, known}} ->
+          Api.create_message(
+            msg.channel_id,
+            "🚫 unknown subcommand, known subcommands: `#{Enum.join(known, "`, `")}`"
+          )
+
+        {:error, :predicate, {:error, reason}} ->
+          Api.create_message(msg.channel_id, "❌ cannot evaluate permissions: #{reason}")
+
+        _ ->
+          :ok
+      end
+
       MessageCache.consume(msg)
       USW.apply(msg)
 
