@@ -4,7 +4,7 @@ bolt_postgres_user: bolt
 bolt_postgres_host: localhost
 bolt_postgres_password: "{{ lookup('password', 'secrets/' + ansible_nodename + '/postgres/users/' + bolt_postgres_user + '/password') }}"
 
-bolt_postgres_pool_size: 10
+bolt_postgres_pool_size: 2
 
 bolt_repository_url: https://github.com/jchristgit/bolt
 # git reference
