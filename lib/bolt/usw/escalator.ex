@@ -9,7 +9,7 @@ defmodule Bolt.USW.Escalator do
     Agent.start_link(fn -> %{} end, options)
   end
 
-  @spec maybe_cancel_timer(reference(), Map.t()) :: {Map.t(), {non_neg_integer(), reference()}}
+  @spec maybe_cancel_timer(reference(), Map.t() | nil) :: {Map.t() | nil, {non_neg_integer(), reference()}}
   defp maybe_cancel_timer(timer_reference, settings) do
     case settings do
       {level, timer} ->
