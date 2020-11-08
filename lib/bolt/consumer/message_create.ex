@@ -12,7 +12,7 @@ defmodule Bolt.Consumer.MessageCreate do
   def handle(msg) do
     unless msg.author.bot do
       case CommandInvoker.handle_message(msg, @nosedrum_storage_implementation) do
-        {:error, {:unknown_subcommand, name, :known, known}} ->
+        {:error, {:unknown_subcommand, _name, :known, known}} ->
           Api.create_message(
             msg.channel_id,
             "🚫 unknown subcommand, known subcommands: `#{Enum.join(known, "`, `")}`"
