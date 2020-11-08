@@ -5,6 +5,7 @@ defmodule Bolt.Consumer.MessageCreate do
 
   alias Bolt.{MessageCache, USW}
   alias Nosedrum.Invoker.Split, as: CommandInvoker
+  alias Nostrum.Api
   alias Nostrum.Struct.Message
 
   @spec handle(Message.t()) :: :ok | nil
