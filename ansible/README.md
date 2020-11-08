@@ -18,8 +18,6 @@ variables are configurable, with the bold variables being required:
 - `bolt_superusers`: A colon-separated list of user IDs that may use the `sudo`
   command.
 
-If you don't already have the required roles, you can install them using `ansible-galaxy`.
-
 Migrations are not handled automatically. The simplest way to run these is to
 `remote_console` into a live instance and call Ecto.
 
