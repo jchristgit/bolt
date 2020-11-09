@@ -22,7 +22,15 @@ config :bolt, Bolt.Repo,
 
 config :nostrum,
   token: System.get_env("BOT_TOKEN"),
-  num_shards: :auto
+  num_shards: :auto,
+  gateway_intents: [
+    :direct_messages,
+    :guild_bans,
+    :guild_members,
+    :guild_message_reactions,
+    :guild_messages,
+    :guilds
+  ]
 
 config :tzdata, :autoupdate, :disabled
 
