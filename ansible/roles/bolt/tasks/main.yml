@@ -121,9 +121,11 @@
     chdir: "{{ deploy_helper.shared_path }}/repository"
   tags:
     - role::bolt
+  register: bold_command_ecto_migrate
   environment:
     MIX_ENV: prod
     PGSQL_URL: "{{ bolt_pgsql_url }}"
+  changed_when: "'Migrated' in bolt_command_ecto_migrate.stdout"
 
 - name: copy release to current release directory
   become: true
