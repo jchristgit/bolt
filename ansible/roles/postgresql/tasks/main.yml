@@ -33,12 +33,3 @@
   tags:
     - packages
     - postgresql
-
-- name: start and enable postgresql {{ postgresql_version }}
-  service:
-    name: postgresql@{{ postgresql_version }}-main
-    state: started
-    enabled: true
-  tags:
-    - postgresql
-    - services
