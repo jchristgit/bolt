@@ -67,6 +67,7 @@
   become: true
   become_user: "{{ bolt_service_user }}"
   deploy_helper:
+    release: "{{ bolt_release | default(omit) }}"
     path: "{{ bolt_directory }}"
     state: present
   tags:
