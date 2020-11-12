@@ -121,7 +121,7 @@
     chdir: "{{ deploy_helper.shared_path }}/repository"
   tags:
     - role::bolt
-  register: bold_command_ecto_migrate
+  register: bolt_command_ecto_migrate
   environment:
     MIX_ENV: prod
     PGSQL_URL: "{{ bolt_pgsql_url }}"
