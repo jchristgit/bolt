@@ -16,6 +16,7 @@ defmodule Bolt.Cogs.Ed do
 
   @impl true
   def command(msg, _args) do
-    {:ok, _msg} = Api.create_message(msg.channel_id, content: "?", message_reference: msg.id)
+    {:ok, _msg} =
+      Api.create_message(msg.channel_id, content: "?", message_reference: %{message_id: msg.id})
   end
 end
