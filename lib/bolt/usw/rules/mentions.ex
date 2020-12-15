@@ -15,7 +15,7 @@ defmodule Bolt.USW.Rules.Mentions do
       |> MessageCache.recent_in_guild(:infinity, Bolt.MessageCache)
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
       |> Stream.filter(&(&1.author.id == msg.author.id))
-      |> Stream.map(& &1.total_mentions)
+      |> Stream.map(&length(&1.mentions))
       |> Enum.sum()
 
     if recent_mentions >= limit do
