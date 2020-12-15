@@ -2,7 +2,7 @@ defmodule Bolt.Repo.Migrations.DropFilteredWordsTable do
   use Ecto.Migration
 
   def up do
-    drop table("filtered_words")
+    drop(table("filtered_words"))
   end
 
   def down do
