@@ -1,7 +1,8 @@
 defmodule Bolt.Consumer.MessageDelete do
   @moduledoc "Handles the `MESSAGE_DELETE` event."
 
-  alias Bolt.{Constants, Helpers, MessageCache, ModLog}
+  alias Bolt.{Constants, Helpers, ModLog}
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Cache.UserCache
   alias Nostrum.Snowflake
   alias Nostrum.Struct.{Channel, Embed, Guild, Message, User}
@@ -9,7 +10,7 @@ defmodule Bolt.Consumer.MessageDelete do
 
   @spec handle(Channel.id(), Guild.id(), Message.id()) :: {:ok, Message.t()}
   def handle(channel_id, guild_id, msg_id) do
-    cached_message = MessageCache.get(guild_id, msg_id)
+    cached_message = MessageCache.get(guild_id, msg_id, Bolt.MessageCache)
 
     embed =
       %Embed{
@@ -47,7 +48,7 @@ defmodule Bolt.Consumer.MessageDelete do
   end
 
   defp add_author(embed, cached_msg) do
-    case UserCache.get(cached_msg.author_id) do
+    case UserCache.get(cached_msg.author.id) do
       {:ok, user} -> put_author(embed, User.full_name(user), nil, User.avatar_url(user))
       _error -> embed
     end

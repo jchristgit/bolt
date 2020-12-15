@@ -26,7 +26,7 @@ defmodule Bolt.Application do
       {Bolt.Paginator, name: Bolt.Paginator},
 
       # Caches messages for mod log purposes.
-      {Bolt.MessageCache, name: Bolt.MessageCache},
+      {Nosedrum.MessageCache.Agent, name: Bolt.MessageCache},
 
       # Supervises the Uncomplicated Spam Wall processes.
       Bolt.USWSupervisor,

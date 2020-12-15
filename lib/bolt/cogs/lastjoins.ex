@@ -3,7 +3,8 @@ defmodule Bolt.Cogs.LastJoins do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.{Constants, Helpers, MessageCache, Parsers}
+  alias Bolt.{Constants, Helpers, Parsers}
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
@@ -139,7 +140,7 @@ defmodule Bolt.Cogs.LastJoins do
   # full result sets later. and that said, we only ever evaluate as many
   # results as needed due to streams
   defp filter_by_options(members, guild_id, [{:messages, true} | options]) do
-    messages = MessageCache.recent_in_guild(guild_id)
+    messages = MessageCache.recent_in_guild(guild_id, :infinity, Bolt.MessageCache)
     recent_authors = MapSet.new(messages, & &1.author_id)
 
     members
@@ -148,7 +149,7 @@ defmodule Bolt.Cogs.LastJoins do
   end
 
   defp filter_by_options(members, guild_id, [{:messages, false} | options]) do
-    messages = MessageCache.recent_in_guild(guild_id)
+    messages = MessageCache.recent_in_guild(guild_id, :infinity, Bolt.MessageCache)
     recent_authors = MapSet.new(messages, & &1.author_id)
 
     members

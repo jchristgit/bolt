@@ -2,7 +2,8 @@ defmodule Bolt.USW.Rules.Burst do
   @moduledoc "Filters messages sent in quick succession."
   @behaviour Bolt.USW.Rule
 
-  alias Bolt.{MessageCache, USW}
+  alias Bolt.USW
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Struct.{Message, Snowflake}
 
   @impl true
@@ -11,9 +12,9 @@ defmodule Bolt.USW.Rules.Burst do
   def apply(msg, limit, interval, interval_seconds_ago_snowflake) do
     total_recents =
       msg.guild_id
-      |> MessageCache.recent_in_guild()
+      |> MessageCache.recent_in_guild(:infinity, Bolt.MessageCache)
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
-      |> Stream.filter(&(&1.author_id == msg.author.id))
+      |> Stream.filter(&(&1.author.id == msg.author.id))
       |> Enum.take(limit)
       |> length()
 

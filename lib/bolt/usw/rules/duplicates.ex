@@ -2,7 +2,8 @@ defmodule Bolt.USW.Rules.Duplicates do
   @moduledoc "Filters duplicated messages by multiple authors."
   @behaviour Bolt.USW.Rule
 
-  alias Bolt.{MessageCache, USW}
+  alias Bolt.USW
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Snowflake
   require Logger
@@ -13,7 +14,7 @@ defmodule Bolt.USW.Rules.Duplicates do
   def apply(msg, limit, interval, interval_seconds_ago_snowflake) do
     relevant_messages =
       msg.guild_id
-      |> MessageCache.recent_in_guild()
+      |> MessageCache.recent_in_guild(:infinity, Bolt.MessageCache)
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
       |> Stream.filter(&(&1.content == msg.content))
       |> Enum.take(limit)

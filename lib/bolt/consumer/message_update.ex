@@ -1,7 +1,8 @@
 defmodule Bolt.Consumer.MessageUpdate do
   @moduledoc "Handles the `MESSAGE_UPDATE` event."
 
-  alias Bolt.{Constants, Helpers, MessageCache, ModLog}
+  alias Bolt.{Constants, Helpers, ModLog}
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Cache.UserCache
   alias Nostrum.Snowflake
   alias Nostrum.Struct.Embed
@@ -11,7 +12,7 @@ defmodule Bolt.Consumer.MessageUpdate do
   @spec handle(Nostrum.Struct.Message.t()) :: :ok | :ignored
   def handle(%Message{content: content, guild_id: guild_id} = msg)
       when content != "" and guild_id != nil do
-    from_cache = MessageCache.get(msg.guild_id, msg.id)
+    from_cache = MessageCache.get(msg.guild_id, msg.id, Bolt.MessageCache)
 
     embed = %Embed{
       author: %Author{
@@ -53,7 +54,7 @@ defmodule Bolt.Consumer.MessageUpdate do
 
     ModLog.emit_embed(msg.guild_id, "MESSAGE_EDIT", embed)
 
-    MessageCache.update(msg)
+    MessageCache.update(msg, Bolt.MessageCache)
   end
 
   def handle(_msg) do
@@ -65,7 +66,7 @@ defmodule Bolt.Consumer.MessageUpdate do
   defp format_author(nil), do: nil
 
   defp format_author(cached_message) do
-    case UserCache.get(cached_message.author_id) do
+    case UserCache.get(cached_message.author.id) do
       {:ok, author} -> "#{author.username}##{author.discriminator} (#{author.id})"
       _ -> "uncached (`#{cached_message.author_id}`)"
     end

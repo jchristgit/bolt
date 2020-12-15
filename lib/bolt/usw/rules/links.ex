@@ -2,7 +2,8 @@ defmodule Bolt.USW.Rules.Links do
   @moduledoc "Checks for repeated links sent by a single user."
   @behaviour Bolt.USW.Rule
 
-  alias Bolt.{MessageCache, USW}
+  alias Bolt.USW
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Struct.{Message, Snowflake}
 
   # Taken from Matthew O'Riordan on StackOverflow: https://stackoverflow.com/a/8234912/1955716
@@ -15,9 +16,9 @@ defmodule Bolt.USW.Rules.Links do
   def apply(msg, limit, interval, interval_seconds_ago_snowflake) do
     recent_links =
       msg.guild_id
-      |> MessageCache.recent_in_guild()
+      |> MessageCache.recent_in_guild(:infinity, Bolt.MessageCache)
       |> Stream.filter(&(&1.id >= interval_seconds_ago_snowflake))
-      |> Stream.filter(&(&1.author_id == msg.author.id))
+      |> Stream.filter(&(&1.author.id == msg.author.id))
       |> Stream.map(& &1.content)
       |> Stream.map(&Regex.scan(@link_re, &1))
       |> Stream.map(&Enum.count(&1))

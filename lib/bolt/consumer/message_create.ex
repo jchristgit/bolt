@@ -3,8 +3,9 @@ defmodule Bolt.Consumer.MessageCreate do
 
   @nosedrum_storage_implementation Nosedrum.Storage.ETS
 
-  alias Bolt.{MessageCache, USW}
+  alias Bolt.USW
   alias Nosedrum.Invoker.Split, as: CommandInvoker
+  alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Api
   alias Nostrum.Struct.Message
 
@@ -25,7 +26,7 @@ defmodule Bolt.Consumer.MessageCreate do
           :ok
       end
 
-      MessageCache.consume(msg)
+      MessageCache.consume(msg, Bolt.MessageCache)
       USW.apply(msg)
 
       if msg.guild_id != nil do
