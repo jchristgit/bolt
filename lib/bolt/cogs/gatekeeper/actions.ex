@@ -2,10 +2,10 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
   @moduledoc "Show configured actions on the guild."
   @behaviour Nosedrum.Command
 
+  alias Nosedrum.Predicates
   alias Bolt.Constants
   alias Bolt.Repo
   alias Bolt.Schema.{AcceptAction, JoinAction}
-  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.{Channel, Embed, Message}
   import Ecto.Query, only: [from: 2]
@@ -66,43 +66,36 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
     {:ok, _msg} = Api.create_message(channel_id, embed: embed)
   end
 
+  @spec actions_for_guild(Guild.id(), :accept | :join) :: Ecto.Query.t()
+  defp actions_for_guild(guild_id, :accept) do
+    from(action in AcceptAction,
+      where: action.guild_id == ^guild_id,
+      select: {action.action, action.data}
+    )
+  end
+
+  defp actions_for_guild(guild_id, :join) do
+    from(action in JoinAction,
+      where: action.guild_id == ^guild_id,
+      select: {action.action, action.data}
+    )
+  end
+
   @impl true
   def command(msg, []) do
-    accept_query =
-      from(action in AcceptAction,
-        where: action.guild_id == ^msg.guild_id,
-        select: {action.action, action.data}
-      )
-
-    join_query =
-      from(action in JoinAction,
-        where: action.guild_id == ^msg.guild_id,
-        select: {action.action, action.data}
-      )
-
-    accept_actions = Repo.all(accept_query)
-    join_actions = Repo.all(join_query)
+    accept_actions = Repo.all(actions_for_guild(msg.guild_id, :accept))
+    join_actions = Repo.all(actions_for_guild(msg.guild_id, :join))
     display_entries(accept_actions, join_actions, msg.channel_id)
   end
 
   def command(msg, ["accept"]) do
-    query =
-      from(action in AcceptAction,
-        where: action.guild_id == ^msg.guild_id,
-        select: {action.action, action.data}
-      )
-
+    query = actions_for_guild(msg.guild_id, :accept)
     accept_actions = Repo.all(query)
     display_entries(accept_actions, [], msg.channel_id)
   end
 
   def command(msg, ["join"]) do
-    query =
-      from(action in JoinAction,
-        where: action.guild_id == ^msg.guild_id,
-        select: {action.action, action.data}
-      )
-
+    query = actions_for_guild(msg.guild_id, :join)
     join_actions = Repo.all(query)
     display_entries([], join_actions, msg.channel_id)
   end
