@@ -2,10 +2,10 @@ defmodule Bolt.Cogs.GateKeeper.Actions do
   @moduledoc "Show configured actions on the guild."
   @behaviour Nosedrum.Command
 
-  alias Nosedrum.Predicates
   alias Bolt.Constants
   alias Bolt.Repo
   alias Bolt.Schema.{AcceptAction, JoinAction}
+  alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.{Channel, Embed, Message}
   import Ecto.Query, only: [from: 2]
