@@ -34,7 +34,7 @@ defmodule Bolt.Cogs.Tag.Raw do
         tag in Tag,
         where:
           tag.guild_id == ^msg.guild_id and
-            fragment("LOWER(?)", tag.name) == ^String.downcase(name),
+            tag.name == ^name,
         select: tag
       )
 
