@@ -5,6 +5,8 @@
 - support `now` for duration specificatoins
 - `infr expiry` is now relative to the current time
 - add `.keeper actions` command
+- replace existing modlog channel when `.modlog set` is used for an already
+  logged event
 
 # v0.11.2
 - support command loading and unloading at runtime through the `sudo` cog

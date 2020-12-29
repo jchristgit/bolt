@@ -70,16 +70,18 @@ defmodule Bolt.Cogs.ModLog.Set do
     event = String.upcase(event)
 
     response =
-      with true <- event in ModLogConfig.valid_events(),
-           nil <- Repo.get_by(ModLogConfig, guild_id: msg.guild_id, event: event),
-           {:ok, channel} <- Converters.to_channel(msg.guild_id, channel),
+      with {:ok, channel} <- Converters.to_channel(msg.guild_id, channel),
            config_map <- %{
              guild_id: msg.guild_id,
              channel_id: channel.id,
              event: event
            },
            changeset <- ModLogConfig.changeset(%ModLogConfig{}, config_map),
-           {:ok, _created_config} <- Repo.insert(changeset) do
+           {:ok, _created_config} <-
+             Repo.insert(changeset,
+               on_conflict: {:replace, [:channel_id]},
+               conflict_target: [:guild_id, :event]
+             ) do
         ModLog.emit(
           msg.guild_id,
           "CONFIG_UPDATE",
@@ -89,12 +91,6 @@ defmodule Bolt.Cogs.ModLog.Set do
 
         "👌 will now log `#{event}` events in <##{channel.id}>"
       else
-        false ->
-          "🚫 unknown event: `#{Helpers.clean_content(event)}`"
-
-        %ModLogConfig{channel_id: channel_id} ->
-          "🚫 this event is already being logged in <##{channel_id}>"
-
         error ->
           ErrorFormatters.fmt(msg, error)
       end
