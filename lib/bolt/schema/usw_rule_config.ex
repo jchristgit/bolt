@@ -17,8 +17,14 @@ defmodule Bolt.Schema.USWRuleConfig do
     config
     |> cast(params, [:guild_id, :rule, :count, :interval])
     |> validate_required([:guild_id, :rule, :count, :interval])
-    |> validate_inclusion(:count, 2..150, message: "needs to be within 3 and 120")
-    |> validate_inclusion(:interval, 5..60, message: "needs to be within 5 and 60")
+    |> check_constraint(:count,
+      name: "count_within_bounds",
+      message: "needs to be within 3 and 120"
+    )
+    |> check_constraint(:interval,
+      name: "interval_within_bounds",
+      message: "needs to be within 5 and 60"
+    )
     |> validate_inclusion(:rule, existing_rules())
   end
 
