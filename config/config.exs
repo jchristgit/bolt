@@ -35,6 +35,9 @@ config :nostrum,
     :guilds
   ]
 
+config :porcelain,
+  goon_warn_if_missing: false
+
 config :tzdata, :autoupdate, :disabled
 
 # This configuration is loaded before any dependency and is restricted
