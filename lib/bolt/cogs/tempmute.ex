@@ -42,14 +42,14 @@ defmodule Bolt.Cogs.Tempmute do
              Repo.get_by(Infraction,
                guild_id: msg.guild_id,
                user_id: member.user.id,
-               type: "mute",
+               type: "tempmute",
                active: true
              ),
            %MuteRole{role_id: mute_role_id} <- Repo.get(MuteRole, msg.guild_id),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <- Api.add_guild_member_role(msg.guild_id, member.user.id, mute_role_id),
            infraction_map <- %{
-             type: "mute",
+             type: "tempmute",
              guild_id: msg.guild_id,
              actor_id: msg.author.id,
              user_id: member.user.id,

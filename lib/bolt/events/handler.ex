@@ -29,16 +29,13 @@ defmodule Bolt.Events.Handler do
   def create(infraction_map) do
     changeset = Infraction.changeset(%Infraction{}, infraction_map)
 
-    with true <- infraction_map.type in Infraction.known_types(),
-         {:ok, created_infraction} <- Repo.insert(changeset) do
-      if created_infraction.expires_at != nil do
-        GenServer.call(__MODULE__, {:create, created_infraction})
-      else
-        {:ok, created_infraction}
-      end
-    else
-      false ->
-        {:error, "`#{infraction_map.type}` is not a valid event type"}
+    case Repo.insert(changeset) do
+      {:ok, created_infraction} ->
+        if created_infraction.expires_at != nil do
+          GenServer.call(__MODULE__, {:create, created_infraction})
+        else
+          {:ok, created_infraction}
+        end
 
       {:error, _reason} = error ->
         response = ErrorFormatters.fmt(nil, error)

@@ -33,36 +33,9 @@ defmodule Bolt.Schema.Infraction do
       :active
     ])
     |> validate_required([:type, :guild_id, :user_id, :actor_id])
-    |> validate_inclusion(:type, known_types())
-    |> validate_expiry()
-  end
-
-  @spec validate_expiry(Changeset.t()) :: Changeset.t()
-  defp validate_expiry(changeset) do
-    type = get_field(changeset, :type)
-    expiry = get_field(changeset, :expires_at)
-
-    if type in ["tempmute", "temprole", "tempban"] and expiry == nil do
-      add_error(changeset, :expires_at, "may not be `nil` for temporary infractions")
-    else
-      changeset
-    end
-  end
-
-  def known_types do
-    [
-      "note",
-      "tempmute",
-      "mute",
-      "unmute",
-      "forced_nick",
-      "temprole",
-      "warning",
-      "kick",
-      "softban",
-      "tempban",
-      "ban",
-      "unban"
-    ]
+    |> check_constraint(:expires_at,
+      name: "expiry_required_on_timed_infractions",
+      message: "must be set for timed infractions"
+    )
   end
 end
