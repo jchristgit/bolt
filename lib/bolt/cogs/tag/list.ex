@@ -21,12 +21,15 @@ defmodule Bolt.Cogs.Tag.List do
 
   @impl true
   def command(msg, []) do
-    query = from(tag in Tag, where: tag.guild_id == ^msg.guild_id, select: tag.name)
+    query =
+      from(tag in Tag,
+        where: tag.guild_id == ^msg.guild_id,
+        select: fragment("'• ' || ?", tag.name)
+      )
 
     pages =
       query
       |> Repo.all()
-      |> Stream.map(&"• #{&1}")
       |> Stream.chunk_every(8)
       |> Enum.map(fn chunk ->
         %Embed{
