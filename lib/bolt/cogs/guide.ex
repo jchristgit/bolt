@@ -141,7 +141,8 @@ defmodule Bolt.Cogs.Guide do
       To configure a punishment, use `usw punish`. For example, to apply the role "Muted" to someone triggering a filter for 5 minutes, use `usw punish temprole Muted 5m`.
       To set up filters, use `usw set <filter> <count> <interval>`. For example, `usw set BURST 5 10` would mean "allow 5 messages to pass through the `BURST` filter within 10 seconds.
       To unset configuration for a filter, use `usw unset <filter>`.
-      Bolt will not create any infractions for hit filters.
+      Bolt will create infractions for hit filters depending on the punishment, which
+      you can see via the `(automod)` word in the infraction reason.
 
       You can see the current configuration for USW on your guild using `usw status`.
       As always, use `help usw` if you need further help with this command.
