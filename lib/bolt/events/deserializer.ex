@@ -90,14 +90,15 @@ defmodule Bolt.Events.Deserializer do
   end
 
   def deserialize(%Infraction{
-        type: "mute",
+        type: type,
         id: infraction_id,
         guild_id: guild_id,
         user_id: user_id,
         data: %{
           "role_id" => mute_role_id
         }
-      }) do
+      })
+      when type in ["tempmute", "mute"] do
     func = fn ->
       alias Bolt.ModLog
       alias Nostrum.Api
