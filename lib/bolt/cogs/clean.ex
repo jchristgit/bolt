@@ -107,7 +107,7 @@ defmodule Bolt.Cogs.Clean do
         msg.guild_id,
         "MESSAGE_CLEAN",
         "#{Humanizer.human_user(msg.author)} deleted" <>
-          " #{length(messages_to_delete)} messages in <##{msg.channel_id}>",
+          " #{length(messages_to_delete)} messages in <##{target_channel_id}>",
         file: %{
           name: "deleted_messages.log",
           body: log_content
