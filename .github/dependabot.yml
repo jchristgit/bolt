@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: mix
+    directory: /
+    schedule:
+      interval: weekly
+    assignees:
+      - jchristgit
+
+# vim: set sw=2 ts=2:
