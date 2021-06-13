@@ -141,7 +141,7 @@ defmodule Bolt.Cogs.LastJoins do
   # results as needed due to streams
   defp filter_by_options(members, guild_id, [{:messages, true} | options]) do
     messages = MessageCache.recent_in_guild(guild_id, :infinity, Bolt.MessageCache)
-    recent_authors = MapSet.new(messages, & &1.author_id)
+    recent_authors = MapSet.new(messages, & &1.author.id)
 
     members
     |> Stream.filter(&MapSet.member?(recent_authors, &1.user.id))
@@ -150,7 +150,7 @@ defmodule Bolt.Cogs.LastJoins do
 
   defp filter_by_options(members, guild_id, [{:messages, false} | options]) do
     messages = MessageCache.recent_in_guild(guild_id, :infinity, Bolt.MessageCache)
-    recent_authors = MapSet.new(messages, & &1.author_id)
+    recent_authors = MapSet.new(messages, & &1.author.id)
 
     members
     |> Stream.filter(&(not MapSet.member?(recent_authors, &1.user.id)))
