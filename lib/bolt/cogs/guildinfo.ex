@@ -19,11 +19,9 @@ defmodule Bolt.Cogs.GuildInfo do
         %Embed.Field{
           name: "Statistics",
           value: """
-          Channels: #{
-            if guild.channels != nil,
-              do: map_size(guild.channels),
-              else: "*unknown, guild not in cache*"
-          }
+          Channels: #{if guild.channels != nil,
+            do: map_size(guild.channels),
+            else: "*unknown, guild not in cache*"}
           Emojis: #{length(guild.emojis)}
           Roles: #{map_size(guild.roles)}
           Members: #{Map.get(guild, :member_count, "*guild not in cache*")}

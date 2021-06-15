@@ -96,9 +96,7 @@ defmodule Bolt.Cogs.Clean do
       log_content =
         messages_to_delete
         |> Stream.map(
-          &"#{String.pad_leading(&1.author.username, 20)}##{&1.author.discriminator}: #{
-            &1.content
-          }"
+          &"#{String.pad_leading(&1.author.username, 20)}##{&1.author.discriminator}: #{&1.content}"
         )
         |> Enum.reverse()
         |> Enum.join("\n")

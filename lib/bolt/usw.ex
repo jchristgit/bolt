@@ -127,9 +127,7 @@ defmodule Bolt.USW do
       ModLog.emit(
         guild_id,
         "AUTOMOD",
-        "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
-          Humanizer.human_user(user)
-        }" <>
+        "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
           " for #{expiry_seconds}s: #{description}" <> level_string
       )
 
@@ -146,9 +144,7 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "attempted adding temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
-            Humanizer.human_user(user)
-          })" <>
+          "attempted adding temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)})" <>
             " but got API error: #{reason} (status code #{status})"
         )
 
@@ -156,9 +152,7 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
-            Humanizer.human_user(user)
-          }" <>
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
             " but could not create an event to remove it after #{expiry_seconds}s:" <>
             ErrorFormatters.fmt(nil, error)
         )
@@ -167,9 +161,7 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{
-            Humanizer.human_user(user)
-          } " <>
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)} " <>
             "but got an unexpected error: #{ErrorFormatters.fmt(nil, error)}"
         )
     end

@@ -81,12 +81,7 @@ defmodule Bolt.Cogs.Infraction.User do
       if(
         infr.expires_at != nil,
         do:
-          "(for #{
-            infr.inserted_at
-            |> DateTime.diff(infr.expires_at)
-            |> Duration.from_seconds()
-            |> Timex.format_duration(:humanized)
-          }) ",
+          "(for #{infr.inserted_at |> DateTime.diff(infr.expires_at) |> Duration.from_seconds() |> Timex.format_duration(:humanized)}) ",
         else: ""
       ) <>
       if(infr.expires_at != nil and infr.active, do: "**", else: "") <>

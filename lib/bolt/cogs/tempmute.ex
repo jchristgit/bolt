@@ -69,9 +69,7 @@ defmodule Bolt.Cogs.Tempmute do
         )
 
         base_response =
-          "👌 #{User.full_name(member.user)} is now muted until #{
-            Helpers.datetime_to_human(expiry)
-          }"
+          "👌 #{User.full_name(member.user)} is now muted until #{Helpers.datetime_to_human(expiry)}"
 
         if reason do
           base_response <> " (`#{reason}`)"

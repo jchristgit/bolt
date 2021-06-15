@@ -17,11 +17,7 @@ defmodule Bolt.Cogs.Help do
       title: "❔ `#{name}`",
       description: """
       ```ini
-      #{
-        command_module.usage()
-        |> Stream.map(&"#{prefix()}#{&1}")
-        |> Enum.join("\n")
-      }
+      #{command_module.usage() |> Stream.map(&"#{prefix()}#{&1}") |> Enum.join("\n")}
       ```
       #{command_module.description()}
       """,

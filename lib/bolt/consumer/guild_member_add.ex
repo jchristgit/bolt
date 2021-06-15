@@ -92,9 +92,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
         ModLog.emit(
           guild_id,
           "ERROR",
-          "tried adding role #{Humanizer.human_role(guild_id, role_id)} to #{
-            Humanizer.human_user(member.user)
-          } " <>
+          "tried adding role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(member.user)} " <>
             "but got an API error: #{reason} (status code #{status})"
         )
     end

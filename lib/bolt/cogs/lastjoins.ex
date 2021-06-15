@@ -30,9 +30,7 @@ defmodule Bolt.Cogs.LastJoins do
     `--roles`: Display only new members with any roles
     `--no-messages`: Display only new members that have not sent any messages
     `--messages`: Display only new members that have sent any messages
-    `--total`: The total amount of members to display, defaults to #{@default_shown}, maximum is #{
-      @maximum_shown
-    }
+    `--total`: The total amount of members to display, defaults to #{@default_shown}, maximum is #{@maximum_shown}
 
     **Examples**:
     ```rs

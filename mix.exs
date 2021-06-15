@@ -33,6 +33,7 @@ defmodule Bolt.MixProject do
       {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},
 
+      # Monitoring (CAW CAW CAW)
       {:crow, "~> 0.1"},
       {:crow_plugins, "~> 0.1"},
 

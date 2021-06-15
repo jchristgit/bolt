@@ -91,9 +91,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
         true ->
           diff_list ++
             [
-              "updated #{key} from ``#{Helpers.clean_content(old_value)}`` to ``#{
-                Helpers.clean_content(new_value)
-              }``"
+              "updated #{key} from ``#{Helpers.clean_content(old_value)}`` to ``#{Helpers.clean_content(new_value)}``"
             ]
       end
     else
@@ -179,9 +177,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
         ModLog.emit(
           guild_id,
           "INFRACTION_EVENTS",
-          "failed to reset nick to forced nick on #{Humanizer.human_user(new_member.user)} got an API error: #{
-            reason
-          } (status code #{status})"
+          "failed to reset nick to forced nick on #{Humanizer.human_user(new_member.user)} got an API error: #{reason} (status code #{status})"
         )
     end
   end

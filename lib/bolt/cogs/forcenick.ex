@@ -63,14 +63,10 @@ defmodule Bolt.Cogs.ForceNick do
               msg.guild_id,
               "INFRACTION_CREATE",
               "#{User.full_name(msg.author)} has forced the nickname `#{nickname}` on " <>
-                "#{User.full_name(member.user)} (`#{member.user.id}`) until #{
-                  Helpers.datetime_to_human(expiry)
-                }"
+                "#{User.full_name(member.user)} (`#{member.user.id}`) until #{Helpers.datetime_to_human(expiry)}"
             )
 
-            "👌 user #{User.full_name(member.user)} will have nickname `#{nickname}` for #{
-              duration
-            }"
+            "👌 user #{User.full_name(member.user)} will have nickname `#{nickname}` for #{duration}"
 
           error ->
             Logger.error(fn ->
@@ -81,9 +77,7 @@ defmodule Bolt.Cogs.ForceNick do
         end
       else
         %Infraction{expires_at: expiry} ->
-          "🚫 there is already an active `forced_nick` infraction for that member expiring at #{
-            Helpers.datetime_to_human(expiry)
-          }"
+          "🚫 there is already an active `forced_nick` infraction for that member expiring at #{Helpers.datetime_to_human(expiry)}"
 
         error ->
           ErrorFormatters.fmt(msg, error)
