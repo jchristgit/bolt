@@ -11,7 +11,7 @@ defmodule Bolt.Consumer.MessageUpdate do
 
   @spec handle(Nostrum.Struct.Message.t()) :: :ok | :ignored
   def handle(%Message{content: content, guild_id: guild_id} = msg)
-      when content != "" and guild_id != nil do
+      when content != "" and content != nil and guild_id != nil do
     from_cache = MessageCache.get(msg.guild_id, msg.id, Bolt.MessageCache)
 
     embed = %Embed{
