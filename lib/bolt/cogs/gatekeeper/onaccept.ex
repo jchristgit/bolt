@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   @behaviour Nosedrum.Command
 
   alias Bolt.Converters
+  alias Bolt.GateKeeper.Actions
   alias Bolt.Schema.AcceptAction
   alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Nosedrum.Predicates
@@ -29,6 +30,10 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
+  def command(msg, []) do
+    Actions.command(msg, ["accept"])
+  end
+
   def command(msg, ["ignore"]) do
     {total_deleted, _} =
       Repo.delete_all(from(action in AcceptAction, where: action.guild_id == ^msg.guild_id))

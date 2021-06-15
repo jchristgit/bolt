@@ -3,6 +3,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
   @behaviour Nosedrum.Command
 
   alias Bolt.Converters
+  alias Bolt.GateKeeper.Actions
   alias Bolt.Schema.JoinAction
   alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Nosedrum.Predicates
@@ -46,6 +47,10 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
   def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
+  def command(msg, []) do
+    Actions.command(msg, ["join"])
+  end
+
   def command(msg, ["add", "role" | role_str]) do
     response =
       with {:ok, role} <- Converters.to_role(msg.guild_id, Enum.join(role_str, " ")),
