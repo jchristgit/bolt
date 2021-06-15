@@ -18,7 +18,7 @@ defmodule Bolt.CrowPlugins.NostrumCache do
       'graph_args -l 0',
       'graph_category bolt',
       'graph_vlabel items',
-      'channels.label channels',
+      'channels.label channels in cache',
       'channels.info Total number of channels held in the ChannelCache',
       'guilds.label guilds in cache',
       'guilds.info Total number of guilds held in the GuildCache',
