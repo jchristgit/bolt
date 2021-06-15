@@ -2,8 +2,8 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   @moduledoc false
   @behaviour Nosedrum.Command
 
+  alias Bolt.Cogs.GateKeeper.Actions
   alias Bolt.Converters
-  alias Bolt.GateKeeper.Actions
   alias Bolt.Schema.AcceptAction
   alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Nosedrum.Predicates
