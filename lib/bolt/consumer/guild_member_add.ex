@@ -22,7 +22,6 @@ defmodule Bolt.Consumer.GuildMemberAdd do
 
     check_active_temprole(guild_id, member)
     execute_join_actions(guild_id, member)
-    instrument(guild_id)
   end
 
   @spec check_active_temprole(Guild.id(), Guild.Member.t()) :: :ignored | ModLog.on_emit()
@@ -128,14 +127,6 @@ defmodule Bolt.Consumer.GuildMemberAdd do
 
       _error ->
         :ignored
-    end
-  end
-
-  @spec instrument(Guild.id()) :: :ok
-  defp instrument(guild_id) do
-    with {:ok, count} when count != nil <-
-           GuildCache.select_by(%{id: guild_id}, & &1.member_count) do
-      :ok = :prometheus_gauge.set(:bolt_guild_members, [guild_id], count)
     end
   end
 end

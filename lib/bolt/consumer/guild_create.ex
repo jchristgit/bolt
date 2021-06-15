@@ -9,7 +9,5 @@ defmodule Bolt.Consumer.GuildCreate do
     BotLog.emit(
       "📥 joined guild `#{guild.name}` (`#{guild.id}`), seeing #{guild.member_count} members"
     )
-
-    :ok = :prometheus_gauge.set(:bolt_guild_members, [guild.id], guild.member_count)
   end
 end
