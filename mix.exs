@@ -33,6 +33,9 @@ defmodule Bolt.MixProject do
       {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},
 
+      {:crow, "~> 0.1"},
+      {:crow_plugins, "~> 0.1"},
+
       # Miscellaneous
       {:timex, "~> 3.1"},
 

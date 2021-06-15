@@ -5,7 +5,6 @@ defmodule Bolt.Consumer.GuildMemberRemove do
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild
   import Ecto.Query, only: [from: 2]
 

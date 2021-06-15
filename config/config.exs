@@ -15,6 +15,16 @@ config :bolt,
     end),
   web_domain: System.get_env("WEB_DOMAIN")
 
+config :crow,
+  port: 4950,
+  plugins: [
+    CrowPlugins.BEAM.ContextSwitches,
+    CrowPlugins.BEAM.GarbageCollections,
+    CrowPlugins.BEAM.Memory,
+    CrowPlugins.BEAM.IO,
+    CrowPlugins.BEAM.SystemInfo
+  ]
+
 config :nosedrum,
   prefix: System.get_env("BOT_PREFIX") || "."
 

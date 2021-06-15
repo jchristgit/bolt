@@ -33,12 +33,7 @@ these commands.
 
 ## Monitoring
 
-Bolt runs a Prometheus metrics endpoint on port 8081, which supplies live BEAM
-runtime statistics along with application metrics from Bolt:
-
-- `bolt_guild_members` (gauge): amount of guild members by `guild_id`.
-- `bolt_guild_messages_total` (counter): message count by `guild_id` and
-  `channel_id`, bot messages excluded.
+Bolt runs a Munin node on port 4950.
 
 
 <!-- vim: set textwidth=80 sw=2 ts=2: -->
