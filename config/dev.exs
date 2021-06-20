@@ -1,4 +1,5 @@
 use Mix.Config
 
 config :logger,
-  level: :debug
+  level: :debug,
+  backends: [:console, Bolt.BotLogLoggerBackend]
