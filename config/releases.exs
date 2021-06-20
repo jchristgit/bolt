@@ -39,5 +39,8 @@ config :logger,
   level: :info,
   truncate: 16_384
 
+config :logger, :console,
+  format: "[$level] $message\n"
+
 config :porcelain,
   goon_warn_if_missing: false
