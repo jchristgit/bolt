@@ -21,7 +21,7 @@ defmodule Bolt.Cogs.ModLog.Set do
   def description,
     do: """
     Set the given `event` to be logged in `channel`.
-    `all` can be given in place of `event` in order to delete any existing configuration(s) and log all events to `channel`.
+    `ALL` can be given in place of `event` in order to delete any existing configuration(s) and log all events to `channel`.
     Requires the `MANAGE_GUILD` permission.
     """
 

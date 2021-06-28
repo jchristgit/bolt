@@ -116,3 +116,15 @@ Shows general statistics over the bot - for example, in how many guilds he is, h
 // Show bot statistics.
 .stats
 ```
+
+### `.uidrange`
+
+Displays users within a given range of user IDs. You need to have developer
+features enabled to be able to copy IDs in your client.
+
+Requires the `MANAGE_GUILD` permission.
+
+```js
+// Display all users within the given range
+.uidrange 192182304263634943 196989358165852161
+```
