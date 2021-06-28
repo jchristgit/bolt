@@ -121,6 +121,21 @@ Requires the `BAN_MEMBERS` permission.
 
 ?> Changed in version [`0.3.2`](changelog#v031): Now respects role hierarchy restrictions.
 
+### `.multiban [reason:str...] <user:snowflake|member...>`
+Bans multiple users at once with the given reason.
+
+This internally delegates to the `ban` command and runs it once for each user,
+and is useful to ban a number of users at a time during raids.
+Requires the `BAN_MEMBERS` permission.
+
+```js
+// Ban multiple users by snowflake permanently.
+.multiban 851567699847151697 851566723202678854 851570356154138664
+
+// Same as above, but provide a reason for each infraction.
+.multiban "automated bot" 851567699847151697 851566723202678854 851570356154138664
+```
+
 ### `.clean`
 Deletes a bunch of messages at once.
 Due to limitations of the Discord API, this command cannot delete messages older than 2 weeks, and will ignore any that it finds in the command invocation.
