@@ -134,7 +134,8 @@ defmodule Bolt.Consumer.Ready do
   def handle(data) do
     :ok = load_commands()
     BotLog.emit("⚡ Logged in and ready, seeing `#{length(data.guilds)}` guilds.")
-    :ok = Api.update_status(:online, "you | .help", 3)
+    prefix = Application.fetch_env!(:bolt, :prefix)
+    :ok = Api.update_status(:online, "you | #{prefix}help", 3)
   end
 
   defp load_commands do
