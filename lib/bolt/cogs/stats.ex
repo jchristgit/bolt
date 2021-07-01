@@ -31,8 +31,16 @@ defmodule Bolt.Cogs.Stats do
         %Field{
           name: "Guilds",
           value: """
-          **Total**: #{total_guilds}
-          **Avg. members**: #{div(Enum.sum(guild_member_counts), total_guilds)}
+          Total: #{total_guilds}
+          Users: #{Enum.sum(guild_member_counts)}
+          """,
+          inline: true
+        },
+        %Field{
+          name: "System",
+          value: """
+          Running on Elixir #{System.version()}
+          Metrics in [Munin](https://munin.jchri.st/spock/bolt/)
           """,
           inline: true
         }
