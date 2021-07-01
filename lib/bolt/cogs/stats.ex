@@ -7,7 +7,7 @@ defmodule Bolt.Cogs.Stats do
   alias Nostrum.Api
   alias Nostrum.Cache.{GuildCache, Me}
   alias Nostrum.Struct.Embed
-  alias Nostrum.Struct.Embed.{Field, Thumbnail}
+  alias Nostrum.Struct.Embed.{Field, Footer, Image, Thumbnail}
   alias Nostrum.Struct.User
 
   @impl true
@@ -45,6 +45,12 @@ defmodule Bolt.Cogs.Stats do
           inline: true
         }
       ],
+      image: %Image{
+        url: "https://munin.jchri.st/spock/bolt/nostrum_cache-month.png"
+      },
+      footer: %Footer{
+        text: "the graph above shows the discord objects seen by bolt, see munin for more"
+      },
       thumbnail: %Thumbnail{
         url: User.avatar_url(Me.get())
       }
