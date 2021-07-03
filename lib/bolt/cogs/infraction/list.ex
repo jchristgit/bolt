@@ -10,7 +10,6 @@ defmodule Bolt.Cogs.Infraction.List do
   alias Nostrum.Api
   alias Nostrum.Cache.Me
   alias Nostrum.Struct.Embed
-  alias Timex.Duration
   import Ecto.Query, only: [from: 2]
 
   @impl true
@@ -105,11 +104,11 @@ defmodule Bolt.Cogs.Infraction.List do
             """
             **User**: <@#{infr.user_id}>
             **Actor**: <@#{infr.actor_id}>
-            **Creation**: #{Timex.from_now(infr.inserted_at)}
+            **Creation**: <t:#{DateTime.to_unix(infr.inserted_at)}:R>
             """ <>
               if(
                 infr.expires_at != nil,
-                do: "**Duration**: #{format_duration(infr.inserted_at, infr.expires_at)}",
+                do: "**Expiration**: <t:#{DateTime.to_unix(infr.expires_at)}:R>",
                 else: ""
               ),
           inline: true
@@ -123,13 +122,5 @@ defmodule Bolt.Cogs.Infraction.List do
       end)
 
     Paginator.paginate_over(msg, base_embed, pages)
-  end
-
-  @spec format_duration(DateTime.t(), DateTime.t()) :: String.t()
-  defp format_duration(creation, expiry) do
-    creation
-    |> DateTime.diff(expiry)
-    |> Duration.from_seconds()
-    |> Timex.format_duration(:humanized)
   end
 end

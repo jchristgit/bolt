@@ -37,9 +37,6 @@ defmodule Bolt.MixProject do
       {:crow, "~> 0.1"},
       {:crow_plugins, "~> 0.1"},
 
-      # Miscellaneous
-      {:timex, "~> 3.1"},
-
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false}

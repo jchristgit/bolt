@@ -31,8 +31,7 @@ defmodule Bolt.Helpers do
   """
   @spec datetime_to_human(DateTime.t()) :: String.t()
   def datetime_to_human(dt) do
-    padded_minute = dt.minute |> Integer.to_string() |> String.pad_leading(2, "0")
-    "#{dt.day}.#{dt.month}.#{dt.year} #{dt.hour}:#{padded_minute} (#{Timex.from_now(dt)})"
+    "<t:#{DateTime.to_unix(dt)}:R>"
   end
 
   @doc "Try to return a member of the given guild ID with the given author ID."

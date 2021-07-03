@@ -9,7 +9,6 @@ defmodule Bolt.Cogs.Infraction.User do
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
-  alias Timex.Duration
   import Ecto.Query, only: [from: 2]
 
   @impl true
@@ -72,18 +71,36 @@ defmodule Bolt.Cogs.Infraction.User do
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
+  @spec format_relative_datetime(DateTime.t()) :: String.t()
+  defp format_relative_datetime(dt) do
+    unix_stamp = DateTime.to_unix(dt)
+    "<t:#{unix_stamp}:R>"
+  end
+
+  @spec format_expiry(DateTime) :: String.t()
+  @spec format_expiry(nil) :: String.t()
+  defp format_expiry(nil) do
+    ""
+  end
+
+  defp format_expiry(dt) do
+    now = DateTime.utc_now()
+
+    if DateTime.compare(now, dt) == :gt do
+      "(expired #{format_relative_datetime(dt)}) "
+    else
+      "(expires #{format_relative_datetime(dt)}) "
+    end
+  end
+
   @spec format_entry(Infraction) :: String.t()
   def format_entry(infr) do
     "[`#{infr.id}`] " <>
       "#{General.emoji_for_type(infr.type)} " <>
       if(infr.expires_at != nil and infr.active, do: "**", else: "") <>
-      "#{Timex.from_now(infr.inserted_at)} " <>
-      if(
-        infr.expires_at != nil,
-        do:
-          "(for #{infr.inserted_at |> DateTime.diff(infr.expires_at) |> Duration.from_seconds() |> Timex.format_duration(:humanized)}) ",
-        else: ""
-      ) <>
+      format_relative_datetime(infr.inserted_at) <>
+      " " <>
+      format_expiry(infr.expires_at) <>
       if(infr.expires_at != nil and infr.active, do: "**", else: "") <>
       if(infr.reason != nil, do: ": #{infr.reason}", else: "")
   end

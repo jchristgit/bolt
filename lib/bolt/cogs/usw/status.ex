@@ -9,7 +9,6 @@ defmodule Bolt.Cogs.USW.Status do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Field
-  alias Timex.Duration
   import Ecto.Query, only: [from: 2]
 
   @impl true
@@ -68,6 +67,29 @@ defmodule Bolt.Cogs.USW.Status do
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
 
+  # ...
+  @spec divmod(non_neg_integer(), non_neg_integer()) :: {non_neg_integer(), non_neg_integer()}
+  defp divmod(a, b) do
+    {div(a, b), rem(a, b)}
+  end
+
+  @spec maybe_tail(non_neg_integer(), String.t()) :: String.t()
+  defp maybe_tail(0, _tail), do: ""
+  defp maybe_tail(_n, tail), do: tail
+
+  @spec format_duration(non_neg_integer()) :: String.t()
+  defp format_duration(seconds) do
+    {days, day_rem} = divmod(seconds, 60 * 60 * 24)
+    {hours, hour_rem} = divmod(day_rem, 60 * 60)
+    {minutes, _minute_rem} = divmod(hour_rem, 60)
+
+    if days > 0 do
+      "#{days} days" <> maybe_tail(hours, " and #{hours} hours")
+    else
+      "#{hours} hours" <> maybe_tail(minutes, " and #{minutes} minutes")
+    end
+  end
+
   defp format_punishment_config(guild_id) do
     case Repo.get(USWPunishmentConfig, guild_id) do
       nil ->
@@ -79,10 +101,7 @@ defmodule Bolt.Cogs.USW.Status do
         punishment: "TEMPROLE",
         data: %{"role_id" => role_id}
       } ->
-        duration_string =
-          duration
-          |> Duration.from_seconds()
-          |> Timex.format_duration(:humanized)
+        duration_string = format_duration(duration)
 
         "configured punishment: `TEMPROLE` of role `#{role_id}` for #{duration_string}" <>
           ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
