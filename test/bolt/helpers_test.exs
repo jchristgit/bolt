@@ -23,8 +23,8 @@ defmodule BoltTest.Helpers do
 
   describe "Helpers.datetime_to_human/1" do
     test "humanizes datetime instances" do
-      assert "3.4.2019 14:04 " <> _rest = Helpers.datetime_to_human(~N[2019-04-03 14:04:24])
-      assert "20.12.2021 18:39 " <> _rest = Helpers.datetime_to_human(~N[2021-12-20 18:39:41])
+      assert "3.4.2019 14:04 " <> _rest = Helpers.datetime_to_human(~U[2019-04-03 14:04:24Z])
+      assert "20.12.2021 18:39 " <> _rest = Helpers.datetime_to_human(~U[2021-12-20 18:39:41Z])
     end
   end
 end
