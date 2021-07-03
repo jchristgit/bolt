@@ -33,8 +33,6 @@ config :nostrum,
     :guilds
   ]
 
-config :tzdata, :autoupdate, :disabled
-
 config :logger,
   level: :info,
   truncate: 16_384,
