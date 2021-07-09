@@ -38,12 +38,19 @@ defmodule Bolt.Cogs.Help do
   @impl true
   def predicates, do: []
 
+  @spec maybe_link_manual :: String.t()
+  defp maybe_link_manual do
+    case Application.get_env(:bolt, :web_domain) do
+      nil ->
+        ""
+
+      link ->
+        "An extensive manual is available at https://#{link}."
+    end
+  end
+
   @impl true
   def command(msg, []) do
-    online_manual_link =
-      Application.get_env(:bolt, :web_domain) ||
-        "127.0.0.1/i-didnt-configure-bolts-documentation-domain"
-
     embed = %Embed{
       title: "All commands",
       description:
@@ -51,15 +58,15 @@ defmodule Bolt.Cogs.Help do
         |> Map.keys()
         |> Enum.sort()
         |> Stream.map(&"`#{prefix()}#{&1}`")
-        |> (fn commands ->
-              """
-              #{Enum.join(commands, ", ")}
+        |> then(
+          &"""
+          #{Enum.join(&1, ", ")}
 
-              Want a full introduction? Check out `#{prefix()}guide`.
-              You can also join [bolt's server here](https://discord.gg/5REguKf).
-              An extensive manual is available at https://#{online_manual_link}.
-              """
-            end).(),
+          Want a full introduction? Check out `#{prefix()}guide`.
+          You can also join [bolt's server here](https://discord.gg/5REguKf).
+          #{maybe_link_manual()}
+          """
+        ),
       color: Constants.color_blue()
     }
 

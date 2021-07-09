@@ -9,9 +9,8 @@ variables are configurable, with the bold variables being required:
 
 - **`bolt_bot_token`**: The Discord bot token to use
 
-- `bolt_web_domain`: The domain at which Bolt's documentation is hosted. Bolt
-  expects a Munin master to run at `munin.{{ bolt_web_domain }}` and links to it
-  throughout various commands.
+- `bolt_web_domain`: The domain at which Bolt's documentation is hosted. Can be
+  nil.
 
 - `bolt_botlog_channel`: The channel ID to be used for logging bot events.
 
