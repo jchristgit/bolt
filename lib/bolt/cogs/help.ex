@@ -128,11 +128,11 @@ defmodule Bolt.Cogs.Help do
           {:ok, _msg} = Api.create_message(msg.channel_id, response)
       end
     else
-      [] ->
+      nil ->
         response = "🚫 no command group named `#{Helpers.clean_content(command_group)}` found"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
-      [{_name, _module}] ->
+      _module ->
         response =
           "🚫 that command has no subcommands, use" <>
             " `help #{command_group}` for information on it"
