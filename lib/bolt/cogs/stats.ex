@@ -46,7 +46,8 @@ defmodule Bolt.Cogs.Stats do
         }
       ],
       image: %Image{
-        url: "https://munin.jchri.st/spock/bolt/nostrum_cache-month.png"
+        url:
+          "https://munin.jchri.st/spock/bolt/nostrum_cache-month.png?_v=#{System.unique_integer()}"
       },
       footer: %Footer{
         text: "the graph above shows the discord objects seen by bolt, see munin for more"
