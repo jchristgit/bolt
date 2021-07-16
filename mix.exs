@@ -26,8 +26,7 @@ defmodule Bolt.MixProject do
     [
       # Discord interfacing
       {:nosedrum, github: "jchristgit/nosedrum"},
-      {:nostrum,
-       github: "Kraigie/nostrum", ref: "nostrum-guild-cache-i-am-ets-table", override: true},
+      {:nostrum, github: "Kraigie/nostrum", override: true},
 
       # PostgreSQL interfacing
       {:ecto_sql, "~> 3.0"},
