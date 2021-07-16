@@ -16,6 +16,7 @@ config :bolt,
   web_domain: System.get_env("WEB_DOMAIN")
 
 config :crow,
+  ip: {127, 0, 0, 1},
   port: 4950,
   plugins: [
     # Application-specific
