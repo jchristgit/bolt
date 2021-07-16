@@ -24,7 +24,7 @@ defmodule Bolt.BotLogLoggerBackend do
       )
       when node(group_leader) == node() and level == configured_level do
     app = Keyword.get(metadata, :application)
-    content = "#{@prefix}**#{app}**: ``#{message}``"
+    content = String.slice("#{@prefix}**#{app}**: ```\n#{message}", 0..1900) <> "\n```"
     BotLog.emit(content)
     {:ok, level}
   end
