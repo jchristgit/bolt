@@ -68,7 +68,7 @@ defmodule Bolt.Consumer.MessageUpdate do
   defp format_author(cached_message) do
     case UserCache.get(cached_message.author.id) do
       {:ok, author} -> "#{author.username}##{author.discriminator} (#{author.id})"
-      _ -> "uncached (`#{cached_message.author_id}`)"
+      _ -> "uncached (`#{cached_message.author.id}`)"
     end
   end
 end
