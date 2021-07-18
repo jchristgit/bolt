@@ -12,7 +12,6 @@ defmodule Bolt.USW do
   alias Bolt.USW.Deduplicator
   alias Bolt.USW.Escalator
   alias Bolt.USW.Rules
-  alias Ecto.Changeset
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Cache.Me
@@ -69,6 +68,26 @@ defmodule Bolt.USW do
     |> Enum.find(&(&1.() == :action))
   end
 
+  @spec calculate_expiry(pos_integer(), non_neg_integer(), escalator_enabled :: boolean()) ::
+          pos_integer()
+  defp calculate_expiry(duration, escalator_level, true),
+    do: duration + duration * escalator_level
+
+  defp calculate_expiry(duration, _escalator_level, false), do: duration
+
+  @spec maybe_bump_escalator(Snowflake.t(), pos_integer(), escalator_enabled :: boolean()) ::
+          {:ok, reference()} | :ok
+  defp maybe_bump_escalator(_user_id, _expiry_seconds, false), do: :ok
+
+  defp maybe_bump_escalator(user_id, expiry_seconds, true),
+    do: Escalator.bump(user_id, expiry_seconds * 1000 * 2)
+
+  @spec level_description(escalator_enabled :: boolean(), escalator_level :: non_neg_integer()) ::
+          String.t()
+  defp level_description(false, _), do: ""
+  defp level_description(true, 0), do: ""
+  defp level_description(true, level), do: "- escalation level #{level}"
+
   @spec execute_config(USWPunishmentConfig, User.t(), String.t()) ::
           (() -> {:ok, Message.t()} | Api.error() | :noop)
   defp execute_config(
@@ -82,63 +101,38 @@ defmodule Bolt.USW do
          user,
          description
        ) do
-    with false <- Deduplicator.contains?(user.id),
-         %User{id: my_id} <- Me.get(),
-         {:is_above, {:ok, true}} <- {:is_above, Helpers.is_above(guild_id, my_id, user.id)},
-         {:ok} <- Api.add_guild_member_role(guild_id, user.id, role_id) do
-      escalator_level = Escalator.level_for(user.id)
+    case Api.add_guild_member_role(guild_id, user.id, role_id) do
+      {:ok} ->
+        escalator_level = Escalator.level_for(user.id)
+        expiry_seconds = calculate_expiry(expiry_seconds, escalator_level, escalator_enabled)
+        Deduplicator.add(user.id, expiry_seconds * 1000)
+        level_string = level_description(escalator_enabled, escalator_level)
+        maybe_bump_escalator(user.id, expiry_seconds, escalator_enabled)
 
-      expiry_seconds =
-        if escalator_enabled do
-          expiry_seconds + expiry_seconds * escalator_level
-        else
-          expiry_seconds
-        end
+        infraction_map = %{
+          type: "temprole",
+          guild_id: guild_id,
+          user_id: user.id,
+          actor_id: Me.get().id,
+          reason: "(automod) #{description}#{level_string}",
+          expires_at:
+            DateTime.utc_now()
+            |> DateTime.to_unix()
+            |> Kernel.+(expiry_seconds)
+            |> DateTime.from_unix!(),
+          data: %{"role_id" => role_id}
+        }
 
-      Deduplicator.add(user.id, expiry_seconds * 1000)
+        {:ok, _event} = Handler.create(infraction_map)
 
-      level_string =
-        if escalator_enabled do
-          level_description =
-            if(escalator_level == 0, do: "", else: " - escalation level #{escalator_level}")
+        ModLog.emit(
+          guild_id,
+          "AUTOMOD",
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
+            " for #{expiry_seconds}s: #{description}#{level_string}"
+        )
 
-          Escalator.bump(user.id, expiry_seconds * 1000 * 2)
-          level_description
-        else
-          ""
-        end
-
-      infraction_map = %{
-        type: "temprole",
-        guild_id: guild_id,
-        user_id: user.id,
-        actor_id: Me.get().id,
-        reason: "(automod) #{description}" <> level_string,
-        expires_at:
-          DateTime.utc_now()
-          |> DateTime.to_unix()
-          |> Kernel.+(expiry_seconds)
-          |> DateTime.from_unix!(),
-        data: %{"role_id" => role_id}
-      }
-
-      {:ok, _event} = Handler.create(infraction_map)
-
-      ModLog.emit(
-        guild_id,
-        "AUTOMOD",
-        "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
-          " for #{expiry_seconds}s: #{description}" <> level_string
-      )
-
-      dm_user(guild_id, user)
-    else
-      # Deduplicator is active
-      true ->
-        Logger.debug("Deduplicator is active. Not applying temporary role.")
-
-      {:is_above, {:ok, false}} ->
-        Logger.debug("self is not above target user, ignoring USW breach")
+        dm_user(guild_id, user)
 
       {:error, %{status_code: status, message: %{"message" => reason}}} ->
         ModLog.emit(
@@ -146,15 +140,6 @@ defmodule Bolt.USW do
           "AUTOMOD",
           "attempted adding temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)})" <>
             " but got API error: #{reason} (status code #{status})"
-        )
-
-      {:error, %Changeset{} = _changeset} = error ->
-        ModLog.emit(
-          guild_id,
-          "AUTOMOD",
-          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
-            " but could not create an event to remove it after #{expiry_seconds}s:" <>
-            ErrorFormatters.fmt(nil, error)
         )
 
       error ->
@@ -167,14 +152,27 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec punish(Guild.id(), User.t(), String.t()) :: no_return()
+  @spec preflight_checks(USWPunishmentConfig.t(), User.t()) :: boolean()
+  defp preflight_checks(config, user) do
+    %User{id: my_id} = Me.get()
+    {:ok, bot_above_user} = Helpers.is_above(config.guild_id, my_id, user.id)
+    !Deduplicator.contains?(user.id) && bot_above_user
+  end
+
+  @spec punish(Guild.id(), User.t(), String.t()) :: :noop | {:ok, Message.t()}
   def punish(guild_id, user, description) do
     case Repo.get(USWPunishmentConfig, guild_id) do
       nil ->
         :noop
 
       config ->
-        execute_config(config, user, description)
+        case preflight_checks(config, user) do
+          true ->
+            execute_config(config, user, description)
+
+          false ->
+            :noop
+        end
     end
   end
 
