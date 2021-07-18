@@ -4,7 +4,7 @@ defmodule Bolt.Cogs.USW.Status do
   @behaviour Nosedrum.Command
 
   alias Nosedrum.Predicates
-  alias Bolt.{Constants, Paginator, Repo}
+  alias Bolt.{Constants, Humanizer, Paginator, Repo}
   alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -103,7 +103,9 @@ defmodule Bolt.Cogs.USW.Status do
       } ->
         duration_string = format_duration(duration)
 
-        "configured punishment: `TEMPROLE` of role `#{role_id}` for #{duration_string}" <>
+        human_role = Humanizer.human_role(guild_id, role_id)
+
+        "configured punishment: `TEMPROLE` of role #{human_role} for #{duration_string}" <>
           ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
     end
   end
