@@ -1,39 +1,44 @@
 defmodule Bolt.Events.Deserializer do
   @moduledoc "Deserializes JSONB data from rows from the `events` into Elixir functions."
 
+  alias Bolt.Humanizer
+  alias Bolt.ModLog
+  alias Bolt.Repo
   alias Bolt.Schema.Infraction
+  alias Nostrum.Api
 
   @spec deserialize(Infraction) :: (() -> any())
   def deserialize(%Infraction{
+        id: infraction_id,
         type: "temprole",
         guild_id: guild_id,
         user_id: user_id,
         data: %{"role_id" => role_id}
       }) do
     func = fn ->
-      alias Bolt.ModLog
-      alias Nostrum.Api
+      human_role = Humanizer.human_role(guild_id, role_id)
+      human_user = Humanizer.human_user(user_id)
 
       case Api.remove_guild_member_role(guild_id, user_id, role_id) do
         {:ok} ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
-            "removed temporary role `#{role_id}` from `#{user_id}`"
+            "removed temporary role #{human_role} from #{human_user} (##{infraction_id})"
           )
 
         {:error, %{message: %{"message" => reason}}} ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
-            "could NOT remove temporary role `#{role_id}` from `#{user_id}` (#{reason})"
+            "could NOT remove temporary role #{human_role} from #{human_user} (#{reason}, infraction ##{infraction_id})"
           )
 
         _error ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
-            "could NOT remove temporary role `#{role_id}` from `#{user_id}` (unexpected error)"
+            "could NOT remove temporary role #{human_role} from #{human_user} (unexpected error, infraction ##{infraction_id})"
           )
       end
     end
@@ -42,34 +47,34 @@ defmodule Bolt.Events.Deserializer do
   end
 
   def deserialize(%Infraction{
+        id: infraction_id,
         type: "tempban",
         guild_id: guild_id,
         user_id: user_id
       }) do
     func = fn ->
-      alias Bolt.ModLog
-      alias Nostrum.Api
+      human_user = Humanizer.human_user(user_id)
 
       case Api.remove_guild_ban(guild_id, user_id) do
         {:ok} ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
-            "removed temporary ban for `#{user_id}`"
+            "removed temporary ban for #{human_user} (##{infraction_id})"
           )
 
         {:error, %{message: %{"message" => reason}}} ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
-            "could NOT remove temporary ban for `#{user_id}` (#{reason})"
+            "could NOT remove temporary ban for #{human_user} (#{reason}, infraction ##{infraction_id})"
           )
 
         _err ->
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
-            "failed to remove temporary ban for `#{user_id}` (unexpected error)"
+            "failed to remove temporary ban for #{human_user} (unexpected error, infraction ##{infraction_id})"
           )
       end
     end
@@ -79,9 +84,6 @@ defmodule Bolt.Events.Deserializer do
 
   def deserialize(%Infraction{type: "forced_nick"} = infraction) do
     func = fn ->
-      alias Bolt.Repo
-      alias Bolt.Schema.Infraction
-
       changeset = Infraction.changeset(infraction, %{active: false})
       Repo.update(changeset)
     end
@@ -100,16 +102,15 @@ defmodule Bolt.Events.Deserializer do
       })
       when type in ["tempmute", "mute"] do
     func = fn ->
-      alias Bolt.ModLog
-      alias Nostrum.Api
+      human_user = Humanizer.human_user(user_id)
 
       modlog_message =
         case Api.remove_guild_member_role(guild_id, user_id, mute_role_id) do
           {:ok} ->
-            "user `#{user_id}` was unmuted (##{infraction_id})"
+            "user #{human_user} was unmuted (##{infraction_id})"
 
           {:error, %{message: %{"message" => reason}}} ->
-            "failed to unmute `#{user_id}`, got API error: #{reason} (infraction ##{infraction_id})"
+            "failed to unmute #{human_user}, got API error: #{reason} (infraction ##{infraction_id})"
         end
 
       ModLog.emit(
