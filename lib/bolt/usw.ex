@@ -7,6 +7,7 @@ defmodule Bolt.USW do
   alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Repo
+  alias Bolt.Schema.Infraction
   alias Bolt.Schema.USWPunishmentConfig
   alias Bolt.Schema.USWRuleConfig
   alias Bolt.USW.Deduplicator
@@ -123,13 +124,13 @@ defmodule Bolt.USW do
           data: %{"role_id" => role_id}
         }
 
-        {:ok, _event} = Handler.create(infraction_map)
+        {:ok, %Infraction{id: infraction_id}} = Handler.create(infraction_map)
 
         ModLog.emit(
           guild_id,
           "AUTOMOD",
           "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
-            " for #{expiry_seconds}s: #{description}#{level_string}"
+            " for #{expiry_seconds}s: #{description}#{level_string} (##{infraction_id})"
         )
 
         dm_user(guild_id, user)
