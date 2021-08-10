@@ -145,8 +145,20 @@ defmodule Bolt.Cogs.Guide do
 
       You can see the current configuration for USW on your guild using `usw status`.
       As always, use `help usw` if you need further help with this command.
+      """
+    },
+    %Embed{
+      title: "guide - gatekeeper",
+      description: """
+      bolt can automate assigning users roles or welcoming users when they join the server.
+      bolt also includes the customizable `accept` command.
 
-      The next page will explain how to us the tags feature.
+      The actions which should be triggered on either member join or `accept` invocation can be configured via the **gatekeeper** system. To use it, see:
+      - `gk onjoin` for configuring member join actions
+      - `gk onaccept` for configuring accept command actions
+      - `gk actions` for viewing configured actions
+
+      See the help pages for these commands for more information.
       """
     },
     %Embed{
