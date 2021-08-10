@@ -89,17 +89,12 @@ The following options can be given to customize the output:
 
 ### `.help [command:str]`
 Shows help for the given command or command group. When no command or command group is given, shows all available commands.
-`syntax` is special: It's not a regular command, and it's only accessible through the `.help` command. When you run `.help syntax`, Bolt will explain how to interpret command help.
-Aliased to `.man`.
 ```js
 // Show all available commands.
 .help
 
 // Show help for the given command or command group.
 .help tempban
-
-// Show the explanation for the way command help is written.
-.help syntax
 ```
 
 ### `.guide`
