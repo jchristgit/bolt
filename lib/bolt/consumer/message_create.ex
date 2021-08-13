@@ -26,8 +26,10 @@ defmodule Bolt.Consumer.MessageCreate do
           :ok
       end
 
-      MessageCache.consume(msg, Bolt.MessageCache)
-      USW.apply(msg)
+      if msg.guild_id != nil do
+        MessageCache.consume(msg, Bolt.MessageCache)
+        USW.apply(msg)
+      end
     end
   end
 end
