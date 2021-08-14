@@ -85,7 +85,7 @@ defmodule Bolt.Cogs.LastJoins do
               |> DateTime.from_iso8601()
               |> elem(1)
               |> DateTime.to_unix()
-              |> then(&"<t:#{&1}:R")
+              |> then(&"<t:#{&1}:R>")
 
             total_roles = length(member.roles)
 
