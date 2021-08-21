@@ -11,6 +11,7 @@ defmodule Bolt.ModLog do
     "AUTOMOD" => "🛡",
     "BOT_UPDATE" => "📄",
     "CHANNEL_CREATE" => "#⃣",
+    "CHANNEL_DELETE" => "🗑",
     "CHANNEL_UPDATE" => "♻",
     "CONFIG_UPDATE" => "⚙",
     "ERROR" => "❌",
