@@ -31,6 +31,7 @@ defmodule Bolt.Cogs.UidRange do
          {stop, ""} <- Integer.parse(to) do
       msg.guild_id
       |> find_matches(start, stop)
+      |> Enum.sort()
       |> display_matches(msg.channel_id)
     else
       :error ->
