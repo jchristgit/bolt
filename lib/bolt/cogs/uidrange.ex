@@ -19,12 +19,11 @@ defmodule Bolt.Cogs.UidRange do
     Display all users in the given inclusive range of snowflakes.
     Useful for finding accounts on the server that were created
     in a certain period.
-    Requires the `MANAGE_GUILD` permission.
     """
 
   @impl true
   def predicates,
-    do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
+    do: [&Predicates.guild_only/1]
 
   @impl true
   def command(msg, [from, to]) do

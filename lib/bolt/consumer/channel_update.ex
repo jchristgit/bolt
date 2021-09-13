@@ -39,8 +39,8 @@ defmodule Bolt.Consumer.ChannelUpdate do
   rescue
     err ->
       Logger.warning("Encountered channel update error for:")
-      Logger.warning("Old channel: #{inspect old_channel}")
-      Logger.warning("New channel: #{inspect new_channel}")
+      Logger.warning("Old channel: #{inspect(old_channel)}")
+      Logger.warning("New channel: #{inspect(new_channel)}")
       Logger.error(Exception.format(:error, err, __STACKTRACE__))
       reraise err, __STACKTRACE__
   end
