@@ -4,6 +4,7 @@ defmodule Bolt.Consumer.ChannelUpdate do
   alias Bolt.{Helpers, Humanizer, ModLog}
   alias Nostrum.Permission
   alias Nostrum.Struct.{Channel, Guild, Overwrite}
+  require Logger
 
   @spec handle(Channel.t(), Channel.t()) :: ModLog.on_emit()
   def handle(old_channel, new_channel) do
@@ -35,6 +36,13 @@ defmodule Bolt.Consumer.ChannelUpdate do
         )
       end
     end
+  rescue
+    err ->
+      Logger.warning("Encountered channel update error for:")
+      Logger.warning("Old channel: #{inspect old_channel}")
+      Logger.warning("New channel: #{inspect new_channel}")
+      Logger.error(Exception.format(:error, err, __STACKTRACE__))
+      reraise err, __STACKTRACE__
   end
 
   @spec describe_changes([String.t()], Channel.t(), Channel.t(), atom()) :: [String.t()]
