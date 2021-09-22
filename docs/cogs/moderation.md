@@ -173,18 +173,13 @@ Similar to the `clean` command, the `lastjoins` command supports special options
 for customizing the result:
 * `--no-roles`: Display only new members without any roles
 * `--roles`: Display only new members with any roles
-* `--no-messages`: Display only new members that have not sent any messages
-* `--messages`: Display only new members that have sent any messages
 * `--total`: The total amount of members to display, defaults to 5, maximum is 15
 
 ```js
 // display the 5 most recently joined members
 .lastjoins
 
-// display the 10 most recently joined members that have sent a message recently
-.lastjoins --messages --total 10
-
-// display the 15 most recently joined members without roles
+// display the 15 most recently joined members with no assigned roles
 .lastjoins --no-roles --total 15
 ```
 

@@ -54,7 +54,6 @@ defmodule Bolt.Consumer.Ready do
     "tempban" => Cogs.Tempban,
     "ban" => Cogs.Ban,
     "multiban" => Cogs.MultiBan,
-    "lastjoins" => Cogs.LastJoins,
 
     ## Infraction database operations
     "note" => Cogs.Note,
