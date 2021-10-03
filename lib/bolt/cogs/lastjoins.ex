@@ -8,7 +8,9 @@ defmodule Bolt.Cogs.LastJoins do
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.{Embed, User}
+  alias Nostrum.Struct.Embed
+  alias Nostrum.Struct.Guild.Member
+  alias Nostrum.Struct.User
 
   # The default number of members shown in the response.
   @default_shown 5
@@ -74,32 +76,10 @@ defmodule Bolt.Cogs.LastJoins do
           members
           |> Stream.reject(&(&1.joined_at == nil))
           |> Stream.reject(&(&1.user != nil and &1.user.bot))
-          |> Enum.sort_by(
-            &(&1.joined_at |> DateTime.from_iso8601() |> elem(1) |> DateTime.to_unix()),
-            &>=/2
-          )
+          |> Enum.sort_by(&joindate_to_unix/1, &>=/2)
           |> filter_by_options(msg.guild_id, options)
           |> apply_limit(limit)
-          |> Enum.map(fn member ->
-            joined_at_human =
-              member.joined_at
-              |> DateTime.from_iso8601()
-              |> elem(1)
-              |> DateTime.to_unix()
-              |> then(&"<t:#{&1}:R>")
-
-            total_roles = length(member.roles)
-
-            %Embed.Field{
-              name: User.full_name(member.user),
-              value: """
-              ID: `#{member.user.id}`
-              Joined: #{joined_at_human}
-              has #{total_roles} #{Helpers.pluralize(total_roles, "role", "roles")}
-              """,
-              inline: true
-            }
-          end)
+          |> Enum.map(&format_member/1)
 
         embed = %Embed{
           title: "recently joined members",
@@ -164,4 +144,34 @@ defmodule Bolt.Cogs.LastJoins do
   defp apply_limit(members, n) when n < 1, do: Enum.take(members, @default_shown)
   defp apply_limit(members, n) when n > @maximum_shown, do: Enum.take(members, @maximum_shown)
   defp apply_limit(members, n), do: Enum.take(members, n)
+
+  @spec format_member(Member.t()) :: Embed.Field.t()
+  defp format_member(member) do
+    joined_at_human =
+      member.joined_at
+      |> DateTime.from_iso8601()
+      |> elem(1)
+      |> DateTime.to_unix()
+      |> then(&"<t:#{&1}:R>")
+
+    total_roles = length(member.roles)
+
+    %Embed.Field{
+      name: User.full_name(member.user),
+      value: """
+      ID: `#{member.user.id}`
+      Joined: #{joined_at_human}
+      has #{total_roles} #{Helpers.pluralize(total_roles, "role", "roles")}
+      """,
+      inline: true
+    }
+  end
+
+  @spec joindate_to_unix(Member.t()) :: pos_integer()
+  defp joindate_to_unix(member) do
+    member.joined_at
+    |> DateTime.from_iso8601()
+    |> elem(1)
+    |> DateTime.to_unix()
+  end
 end
