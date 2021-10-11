@@ -22,6 +22,9 @@ defmodule Bolt.Consumer.MessageCreate do
         {:error, :predicate, {:error, reason}} ->
           Api.create_message(msg.channel_id, "❌ cannot evaluate permissions: #{reason}")
 
+        {:error, :predicate, {:noperm, reason}} ->
+          Api.create_message(msg.channel_id, reason)
+
         _ ->
           :ok
       end
