@@ -120,4 +120,10 @@ features enabled to be able to copy IDs in your client.
 ```js
 // Display all users within the given range
 .uidrange 192182304263634943 196989358165852161
+
+// Same as above, with inbetween "to" for clarity
+.uidrange 192182304263634943 to 196989358165852161
+
+// Display all users newer than the given snowflake
+.uidrange from 192182304263634943
 ```

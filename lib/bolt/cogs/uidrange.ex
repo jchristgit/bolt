@@ -11,14 +11,15 @@ defmodule Bolt.Cogs.UidRange do
   alias Nostrum.Struct.Embed
 
   @impl true
-  def usage, do: ["uidrange <from:snowflake> <to:snowflake>"]
+  def usage,
+    do: ["uidrange <from:snowflake> [to] <upper:snowflake>", "uidrange from <lower:snowflake>"]
 
   @impl true
   def description,
     do: """
     Display all users in the given inclusive range of snowflakes.
     Useful for finding accounts on the server that were created
-    in a certain period.
+    in a certain period, or for usage in combination with `banrange`.
     """
 
   @impl true
@@ -26,6 +27,23 @@ defmodule Bolt.Cogs.UidRange do
     do: [&Predicates.guild_only/1]
 
   @impl true
+  def command(msg, ["from", lower]) do
+    case Integer.parse(lower) do
+      {start, ""} ->
+        msg.guild_id
+        |> find_matches(start)
+        |> Enum.sort()
+        |> display_matches(msg.channel_id)
+
+      :error ->
+        Api.create_message(msg.channel_id, "🚫 invalid snowflake, sorry")
+    end
+  end
+
+  def command(msg, [from, "to", to]) do
+    command(msg, [from, to])
+  end
+
   def command(msg, [from, to]) do
     with {start, ""} <- Integer.parse(from),
          {stop, ""} <- Integer.parse(to) do
@@ -42,6 +60,16 @@ defmodule Bolt.Cogs.UidRange do
   def command(msg, _args) do
     response = "ℹ️ usage: `#{usage()}`"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  defp find_matches(guild_id, from) do
+    case GuildCache.get(guild_id) do
+      {:ok, guild} ->
+        Stream.filter(guild.members, fn {flake, _member} -> flake >= from end)
+
+      {:error, _why} = result ->
+        result
+    end
   end
 
   defp find_matches(guild_id, from, to) do
