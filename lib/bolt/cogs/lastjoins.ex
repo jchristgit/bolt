@@ -3,7 +3,7 @@ defmodule Bolt.Cogs.LastJoins do
 
   @behaviour Nosedrum.Command
 
-  alias Bolt.{Constants, Helpers, Parsers}
+  alias Bolt.{Constants, Helpers, Paginator, Parsers}
   alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nosedrum.Predicates
   alias Nostrum.Api
@@ -13,10 +13,13 @@ defmodule Bolt.Cogs.LastJoins do
   alias Nostrum.Struct.User
 
   # The default number of members shown in the response.
-  @default_shown 5
+  @default_shown 15
+
+  # Members shown per page.
+  @shown_per_page @default_shown
 
   # The maximum number of members shown in the response.
-  @maximum_shown 15
+  @maximum_shown @shown_per_page * 9
 
   @impl true
   def usage, do: ["lastjoins [options...]"]
@@ -30,17 +33,17 @@ defmodule Bolt.Cogs.LastJoins do
     The result of this command can be customized with the following options:
     `--no-roles`: Display only new members without any roles
     `--roles`: Display only new members with any roles
-    `--no-messages`: Display only new members that have not sent any messages
-    `--messages`: Display only new members that have sent any messages
     `--total`: The total amount of members to display, defaults to #{@default_shown}, maximum is #{@maximum_shown}
+
+    Returned members will be sorted by their account creation time.
 
     **Examples**:
     ```rs
-    // display the 5 most recently joined members
-    lastjoins
+    // display the #{@default_shown} most recently joined members
+    .lastjoins
 
-    // display the 10 most recently joined members that have not sent a message recently
-    lastjoins --messages --total 10
+    // display the 30 most recently joined members that do not have a role assigned
+    .lastjoins --total 10 --no-roles
     ```
     """
 
@@ -55,9 +58,6 @@ defmodule Bolt.Cogs.LastJoins do
         # --roles | --no-roles
         #   display only new members with or without roles
         roles: :boolean,
-        # --messages | --no-messages
-        #   display only new members that have not / have sent any messages
-        messages: :boolean,
         # --total <int>
         #   the total amount of users to display
         total: :integer
@@ -72,22 +72,23 @@ defmodule Bolt.Cogs.LastJoins do
       {:ok, members} ->
         {limit, options} = Keyword.pop_first(options, :total, 5)
 
-        fields =
+        pages =
           members
           |> Stream.reject(&(&1.joined_at == nil))
           |> Stream.reject(&(&1.user != nil and &1.user.bot))
           |> Enum.sort_by(&joindate_to_unix/1, &>=/2)
           |> filter_by_options(msg.guild_id, options)
           |> apply_limit(limit)
-          |> Enum.map(&format_member/1)
+          |> Stream.map(&format_member/1)
+          |> Stream.chunk_every(@shown_per_page)
+          |> Enum.map(&%Embed{fields: &1})
 
-        embed = %Embed{
-          title: "recently joined members",
-          color: Constants.color_blue(),
-          fields: fields
+        base_page = %Embed{
+          title: "Recently joined members",
+          color: Constants.color_blue()
         }
 
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+        Paginator.paginate_over(msg, base_page, pages)
 
       {:error, _reason} ->
         {:ok, _msg} = Api.create_message(msg.channel_id, "guild uncached, sorry")
