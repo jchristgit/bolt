@@ -35,10 +35,11 @@ defmodule Bolt.Moderation do
   Returns the created infraction with a string describing the banned user on
   success, or a user-facing error message on failure.
   """
-  @spec ban(Guild.id(), String.t(), User.t(), String.t()) ::
+  @spec ban(String.t(), Guild.id(), User.t(), String.t()) ::
           {:ok, Infraction.t(), String.t()} | {:error, String.t()}
-  def ban(guild_id, target, actor, reason) do
+  def ban(target, guild_id, actor, reason) do
     with {:ok, target_id, converted_user} <- Helpers.into_id(guild_id, target),
+         user_string = Humanizer.human_user(converted_user || target_id),
          infraction = %{
            type: "ban",
            guild_id: guild_id,
@@ -50,8 +51,6 @@ defmodule Bolt.Moderation do
          {:ok} <- Api.create_guild_ban(guild_id, target_id, 7),
          changeset <- Infraction.changeset(%Infraction{}, infraction),
          {:ok, created_infraction} <- Repo.insert(changeset) do
-      user_string = Humanizer.human_user(converted_user || target_id)
-
       ModLog.emit(
         guild_id,
         "INFRACTION_CREATE",
@@ -63,10 +62,12 @@ defmodule Bolt.Moderation do
       {:ok, created_infraction, user_string}
     else
       {:ok, false} ->
-        {:error, "🚫 you need to be above the target user in the role hierarchy"}
+        {:error, "🚫 you need to be above the target user in the role hierarchy", "`#{target}`"}
 
       error ->
-        {:error, ErrorFormatters.fmt(nil, error)}
+        # user_string always defined here, since failure
+        # of the defining line is caught above.
+        {:error, ErrorFormatters.fmt(nil, error), "`#{target}`"}
     end
   end
 

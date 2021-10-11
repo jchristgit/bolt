@@ -35,12 +35,12 @@ defmodule Bolt.Cogs.Ban do
   def command(msg, [target | reason_list]) do
     reason = Enum.join(reason_list, " ")
 
-    case Moderation.ban(msg.guild_id, target, msg.author, reason) do
+    case Moderation.ban(target, msg.guild_id, msg.author, reason) do
       {:ok, infraction, user_string} ->
         response = "👌 permanently banned #{user_string} (##{infraction.id})"
         Api.create_message!(msg.channel_id, response)
 
-      {:error, response} ->
+      {:error, response, _user} ->
         Api.create_message!(msg.channel_id, response)
     end
   end
