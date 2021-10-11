@@ -121,6 +121,30 @@ Requires the `BAN_MEMBERS` permission.
 
 ?> Changed in version [`0.3.2`](changelog#v031): Now respects role hierarchy restrictions.
 
+### `.banrange <lower:snowflake> [to] <upper:snowflake> [reason:str...]`
+
+Bans the given range of user IDs from the server. Similar to `multiban`, but
+delegates finding users to the bot. Use the `uidrange` command to find users
+that will be affected by this command. An alternative form for banning users
+without an upper bound is provided, see `from`.
+Requires the `BAN_MEMBERS` permission.
+```js
+// Permanently ban all members above the given ID.
+.multiban from 252908391075151874
+
+// Same as above, but provide a reason.
+.multiban from 252908391075151874 spammer bots
+
+// Ban all members within the given range
+.multiban 192182304263634945 to 455589479713865749
+
+// Same as above, but provide a reason
+.multiban 192182304263634945 to 455589479713865749 raid bots
+
+// Same as above, but with "to" omitted (optional)
+.multiban 192182304263634945 455589479713865749 raid bots
+```
+
 ### `.multiban [reason:str...] <user:snowflake|member...>`
 Bans multiple users at once with the given reason.
 
