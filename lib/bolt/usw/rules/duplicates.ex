@@ -23,9 +23,9 @@ defmodule Bolt.USW.Rules.Duplicates do
 
     if recent_duplicates >= limit do
       relevant_messages
-      |> Stream.dedup_by(& &1.author_id)
+      |> Stream.dedup_by(& &1.author.id)
       |> Enum.each(fn duplicated_message ->
-        case UserCache.get(duplicated_message.author_id) do
+        case UserCache.get(duplicated_message.author.id) do
           {:ok, user} ->
             USW.punish(
               msg.guild_id,
@@ -35,7 +35,7 @@ defmodule Bolt.USW.Rules.Duplicates do
 
           {:error, reason} ->
             Logger.warn(fn ->
-              "attempted applying USW punishment to #{duplicated_message.author_id}," <>
+              "attempted applying USW punishment to #{duplicated_message.author.id}," <>
                 " but the user was not found in the cache (error: #{reason})"
             end)
         end
