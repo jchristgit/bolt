@@ -33,15 +33,27 @@ defmodule Bolt.Consumer.GuildBanRemove do
       [] ->
         :noop
 
-      [active_ban_or_tempban] ->
-        {:ok, updated_infraction} = Handler.update(active_ban_or_tempban, %{active: false})
+      [%Infraction{type: "ban"} = infraction] ->
+        changeset = Infraction.changeset(infraction, %{active: false})
+        updated_infraction = Repo.update!(changeset)
 
         ModLog.emit(
           guild_id,
           "INFRACTION_UPDATE",
           "#{user.username}##{user.discriminator} (`#{user.id}`) was manually unbanned while a" <>
-            " #{updated_infraction.type} was active, the infraction (##{updated_infraction.id})" <>
+            " ban was active, the infraction (##{updated_infraction.id})" <>
             " has been set to inactive."
+        )
+
+      [%Infraction{type: "tempban"} = infraction] ->
+        {:ok, updated_infraction} = Handler.update(infraction, %{active: false})
+
+        ModLog.emit(
+          guild_id,
+          "INFRACTION_UPDATE",
+          "#{user.username}##{user.discriminator} (`#{user.id}`) was manually unbanned while a" <>
+            " tempban was active, infraction (##{updated_infraction.id})" <>
+            " has been set to inactive and bolt will not attempt to unban the user."
         )
     end
   end
