@@ -19,6 +19,8 @@ defmodule Bolt.Schema.Infraction do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{}
+
   @spec changeset(%__MODULE__{}, map()) :: Changeset.t()
   def changeset(event, params \\ %{}) do
     event

@@ -24,7 +24,7 @@ defmodule Bolt.Events.Handler do
             required(String.t()) => any()
           }
         }) ::
-          {:ok, Infraction}
+          {:ok, Infraction.t()}
           | {:error, String.t()}
   def create(infraction_map) do
     changeset = Infraction.changeset(%Infraction{}, infraction_map)
@@ -43,7 +43,7 @@ defmodule Bolt.Events.Handler do
     end
   end
 
-  @spec update(%Infraction{}, map()) :: {:ok, Infraction} | {:error, any()}
+  @spec update(Infraction.t(), map()) :: {:ok, Infraction} | {:error, any()}
   def update(infraction, changes_map) do
     changeset = Infraction.changeset(infraction, changes_map)
 
@@ -97,19 +97,11 @@ defmodule Bolt.Events.Handler do
 
   @impl true
   def handle_call({:create, infraction}, _from, timers) do
-    timers =
-      {infraction,
-       Process.send_after(
-         self(),
-         {:expired, infraction},
-         max(
-           DateTime.diff(infraction.expires_at, DateTime.utc_now(), :millisecond),
-           0
-         )
-       )}
-      |> (fn {infraction, timer} -> Map.put(timers, infraction.id, timer) end).()
-
-    {:reply, {:ok, infraction}, timers}
+    delta = DateTime.diff(infraction.expires_at, DateTime.utc_now(), :millisecond)
+    expiry_ms = max(delta, 0)
+    timer = Process.send_after(self(), {:expired, infraction}, expiry_ms)
+    updated_timers = Map.put(timers, infraction.id, timers)
+    {:reply, {:ok, infraction}, updated_timers}
   end
 
   @impl true

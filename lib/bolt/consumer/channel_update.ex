@@ -235,11 +235,9 @@ defmodule Bolt.Consumer.ChannelUpdate do
     "#{what} for #{format_overwrite_target(guild_id, overwrite)}:" <>
       (overwrite.allow
        |> Permission.from_bitset()
-       |> Enum.map(&"can #{&1}")
-       |> Enum.join(", ")) <>
+       |> Enum.map_join(", ", &"can #{&1}")) <>
       (overwrite.deny
        |> Permission.from_bitset()
-       |> Enum.map(&"can not #{&1}")
-       |> Enum.join(", "))
+       |> Enum.map_join(", ", &"can not #{&1}"))
   end
 end
