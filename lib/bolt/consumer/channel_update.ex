@@ -145,7 +145,7 @@ defmodule Bolt.Consumer.ChannelUpdate do
     )
     |> Map.values()
     |> Stream.map(&format_overwrite_diff(guild_id, &1))
-    |> Stream.reject(&(&1 == ""))
+    |> Enum.reject(&(&1 == ""))
   end
 
   # Describes the difference between two overwrites.
