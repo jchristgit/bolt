@@ -100,7 +100,7 @@ defmodule Bolt.Events.Handler do
     delta = DateTime.diff(infraction.expires_at, DateTime.utc_now(), :millisecond)
     expiry_ms = max(delta, 0)
     timer = Process.send_after(self(), {:expired, infraction}, expiry_ms)
-    updated_timers = Map.put(timers, infraction.id, timers)
+    updated_timers = Map.put(timers, infraction.id, timer)
     {:reply, {:ok, infraction}, updated_timers}
   end
 
