@@ -2,7 +2,9 @@ defmodule Bolt.CrowPlugins.NostrumCache do
   @moduledoc "Export Discord cache metadata to Munin."
   @behaviour Crow.Plugin
 
+  alias Nostrum.Cache.ChannelCache
   alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.UserCache
 
   @doc false
   @impl true
@@ -33,10 +35,13 @@ defmodule Bolt.CrowPlugins.NostrumCache do
   @impl true
   def values do
     [
-      'channels.value #{:ets.info(:channels)[:size]}',
-      'guilds.value #{Enum.count(GuildCache.all())}',
-      'members.value #{Enum.sum(GuildCache.select_all(&Enum.count(&1.members)))}',
-      'users.value #{:ets.info(:users)[:size]}'
+      'channels.value #{table_size(ChannelCache.ETS.tabname())}',
+      'guilds.value #{table_size(GuildCache.ETS.tabname())}',
+      'users.value #{table_size(UserCache.ETS.tabname())}'
     ]
+  end
+
+  defp table_size(name) do
+    :ets.info(name)[:size]
   end
 end
