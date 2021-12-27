@@ -52,4 +52,8 @@ defmodule Bolt.Humanizer do
   def human_user(%User{} = user) do
     escape_server_mentions("#{User.full_name(user)} (`#{user.id}`)")
   end
+
+  # Unknown format. Could be an invalid user ID,
+  # like `924370090923786341924367344933949440`
+  def human_user(user_id), do: "`#{user_id}`"
 end
