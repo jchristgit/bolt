@@ -101,10 +101,14 @@ Requires the `MANAGE_GUILD` permission.
 
 ### `.usw unset <rule:str>`
 Deactivate the given `rule` (case-insensitive).
+`all` can be used to delete all rules at once.
 Requires the `MANAGE_GUILD` permission.
 ```js
-// Disable the `BURST` rule
+// Delete the `BURST` rule
 .usw unset BURST
+
+// Delete all rules
+.usw unset all
 ```
 
 ?> Changed in version [`0.7.0`](docs/changelog#v070): Now logs to the modlog with `CONFIG_UPDATE`.

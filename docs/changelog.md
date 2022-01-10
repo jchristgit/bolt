@@ -7,6 +7,7 @@
 - add `.keeper actions` command
 - replace existing modlog channel when `.modlog set` is used for an already
   logged event
+- allow deleting all USW rules at once with `.usw unset all`
 
 # v0.11.2
 - support command loading and unloading at runtime through the `sudo` cog

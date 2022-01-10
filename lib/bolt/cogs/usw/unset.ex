@@ -10,6 +10,7 @@ defmodule Bolt.Cogs.USW.Unset do
   alias Bolt.Schema.USWRuleConfig
   alias Nosedrum.Predicates
   alias Nostrum.Api
+  import Ecto.Query, only: [from: 2]
 
   @impl true
   def usage, do: ["usw unset <rule:str>"]
@@ -19,6 +20,8 @@ defmodule Bolt.Cogs.USW.Unset do
     do: """
     Unsets configuration for the given rule, effectively disabling it.
 
+    All rules can be disabled at once by running `usw unset all`.
+
     Requires the `MANAGE_GUILD` permission.
     """
 
@@ -27,6 +30,34 @@ defmodule Bolt.Cogs.USW.Unset do
     do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_guild)]
 
   @impl true
+  def command(msg, ["all"]) do
+    query =
+      from(entry in USWRuleConfig,
+        where: entry.guild_id == ^msg.guild_id,
+        select: {entry.rule, entry.count, entry.interval}
+      )
+
+    case Repo.delete_all(query) do
+      {0, _deleted} ->
+        Api.create_message!(msg.channel_id, "🚫 no rules to delete")
+
+      {count, deleted} ->
+        postmortem =
+          deleted
+          |> Stream.map(fn {name, count, interval} -> "• `#{name}`: #{count} per #{interval}s" end)
+          |> Enum.join("\n")
+
+        ModLog.emit(
+          msg.guild_id,
+          "CONFIG_UPDATE",
+          "#{Humanizer.human_user(msg.author)} deleted the following USW rule(s):\n#{postmortem}"
+        )
+
+        response = "👌 deleted the following #{count} rule(s):\n#{postmortem}"
+        Api.create_message!(msg.channel_id, response)
+    end
+  end
+
   def command(msg, [rule]) do
     rule = String.upcase(rule)
 
