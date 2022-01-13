@@ -56,7 +56,7 @@ defmodule Bolt.Cogs.Kick do
             if(reason != "", do: " with reason `#{reason}`", else: "")
         )
 
-        response = "👌 kicked #{Humanizer.human_user(member.user)})"
+        response = "👌 kicked #{Humanizer.human_user(member.user)}"
 
         if reason != "" do
           response <> " with reason `#{Helpers.clean_content(reason)}`"
