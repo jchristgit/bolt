@@ -38,6 +38,9 @@ config :bolt, Bolt.Repo,
 
 config :nostrum,
   token: System.get_env("BOT_TOKEN"),
+  caches: %{
+    presences: Nostrum.Cache.PresenceCache.NoOp
+  },
   gateway_intents: [
     :direct_messages,
     :guild_bans,

@@ -45,7 +45,7 @@ defmodule Bolt.Cogs.ForceNick do
                user_id: member.user.id,
                active: true
              ),
-           {:ok} <- Api.modify_guild_member(msg.guild_id, member.user.id, nick: nickname) do
+           {:ok, _member} <- Api.modify_guild_member(msg.guild_id, member.user.id, nick: nickname) do
         infraction_map = %{
           type: "forced_nick",
           guild_id: msg.guild_id,

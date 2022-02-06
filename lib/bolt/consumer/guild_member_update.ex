@@ -156,7 +156,8 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
 
     with %Infraction{data: %{"nick" => forced_nick}} <- active_forcenick,
          false <- forced_nick == new_member.nick,
-         {:ok} <- Api.modify_guild_member(guild_id, new_member.user.id, nick: forced_nick) do
+         {:ok, _member} <-
+           Api.modify_guild_member(guild_id, new_member.user.id, nick: forced_nick) do
       ModLog.emit(
         guild_id,
         "INFRACTION_EVENTS",
