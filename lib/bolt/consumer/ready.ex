@@ -101,11 +101,15 @@ defmodule Bolt.Consumer.Ready do
     },
 
     ## Server filter management
-    # "filter" => %{
-    # "add" => Cogs.Filter.Add,
-    # "show" => Cogs.Filter.Show,
-    # "remove" => Cogs.Filter.Remove
-    # },
+    "ag" => %{
+      "list" => Cogs.ActionGroup.List,
+      "create" => Cogs.ActionGroup.Create,
+      "add" => Cogs.ActionGroup.Add,
+      "show" => Cogs.ActionGroup.Show,
+      "clear" => Cogs.ActionGroup.Clear,
+      "trigger" => Cogs.ActionGroup.Trigger,
+      "delete" => Cogs.ActionGroup.Delete
+    },
 
     ## Rule verification
     "accept" => Cogs.Accept,
@@ -118,6 +122,7 @@ defmodule Bolt.Consumer.Ready do
   }
 
   @aliases %{
+    "actiongroup" => Map.fetch!(@commands, "ag"),
     "gatekeeper" => Map.fetch!(@commands, "keeper"),
     "ginfo" => Map.fetch!(@commands, "guildinfo"),
     "gk" => Map.fetch!(@commands, "keeper"),

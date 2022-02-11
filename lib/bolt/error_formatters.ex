@@ -14,6 +14,7 @@ defmodule Bolt.ErrorFormatters do
   def fmt(_msg, {:error, reason}) when is_bitstring(reason), do: "❌ error: #{reason}"
 
   def fmt(_msg, {:error, %Changeset{} = changeset}) do
+    # doesn't work for nested changeset errors
     error_map =
       changeset
       |> Changeset.traverse_errors(fn {msg, opts} ->

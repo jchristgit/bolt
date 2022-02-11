@@ -4,12 +4,12 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
 
   alias Bolt.Cogs.GateKeeper.Actions
   alias Bolt.Converters
+  alias Bolt.Gatekeeper
   alias Bolt.Schema.AcceptAction
   alias Bolt.{ErrorFormatters, ModLog, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
-  import Ecto.Query, only: [from: 2]
 
   @impl true
   def usage, do: ["keeper onaccept <action...>"]
@@ -35,8 +35,7 @@ defmodule Bolt.Cogs.GateKeeper.OnAccept do
   end
 
   def command(msg, ["ignore"]) do
-    {total_deleted, _} =
-      Repo.delete_all(from(action in AcceptAction, where: action.guild_id == ^msg.guild_id))
+    {total_deleted, _} = Gatekeeper.clear_actions(msg.guild_id, :accept)
 
     response =
       if total_deleted == 0 do
