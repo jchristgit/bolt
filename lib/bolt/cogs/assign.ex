@@ -121,7 +121,7 @@ defmodule Bolt.Cogs.Assign do
                msg.guild_id,
                &Map.get(&1.members, msg.author.id)
              ),
-           {:ok} <-
+           {:ok, _member} <-
              Api.modify_guild_member(msg.guild_id, msg.author.id,
                roles: Enum.uniq(member.roles ++ Enum.map(selected_self_assignable_roles, & &1.id))
              ) do

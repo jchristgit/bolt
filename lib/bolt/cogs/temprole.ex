@@ -59,10 +59,10 @@ defmodule Bolt.Cogs.Temprole do
            [] <- Repo.all(query),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            {:ok} <-
-             Api.modify_guild_member(
+             Api.add_guild_member_role(
                msg.guild_id,
                member.user.id,
-               roles: Enum.uniq(member.roles ++ [role.id])
+               role.id
              ),
            infraction_map <- %{
              type: "temprole",
