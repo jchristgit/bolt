@@ -19,24 +19,17 @@ defmodule Bolt.Action.DeleteVanityUrl do
   end
 
   def run(_options, %{guild_id: guild_id, audit_log_reason: reason}) do
-    cache_entry = GuildCache.get(guild_id)
-    IO.inspect(elem(cache_entry, 0), label: "entry 0")
-    IO.inspect(elem(cache_entry, 1).__struct__, label: "entry 1 struct")
-    with guild <- cache_entry,
-         {:ok, guild} <- cache_entry,
-         %Nostrum.Struct.Guild{} <- guild,
-         %Guild{} <- guild,
-         %Guild{vanity_url_code: code} <- guild,
-         %Guild{vanity_url_code: code} when not is_nil(code) <- guild,
-         {:ok, %Guild{vanity_url_code: nil}} <-
-           Api.modify_guild(guild_id, [vanity_url_code: nil], reason) do
+    with {:cache, {:ok, %Guild{vanity_url_code: code}}} when not is_nil(code) <-
+           {:cache, GuildCache.get(guild_id)},
+         {:api, {:ok, %Guild{vanity_url_code: nil}}} <-
+           {:api, Api.modify_guild(guild_id, [vanity_url_code: nil], reason)} do
       ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
     else
-      {:ok, %Guild{vanity_url_code: nil}} ->
+      {:cache, {:ok, %Guild{vanity_url_code: nil}}} ->
         # We don't have a vanity URL, our job is done
         :ok
 
-      {:error, _reason} ->
+      {:api, {:error, _reason}} ->
         ModLog.emit(guild_id, "ERROR", "failed to delete vanity URLs due to Discord API error")
     end
   end
