@@ -1,6 +1,7 @@
 * [Introduction](/)
 * [Documentation syntax](documentation_syntax)
 * Functionality
+  * [Action groups](cogs/action_groups)
   * [Antispam](cogs/antispam)
   * [Gatekeeper](cogs/gatekeeper)
   * [Infractions](cogs/infractions)

@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## v0.12.0
 - added the `.lastjoins` command
 - support `now` for duration specificatoins
 - `infr expiry` is now relative to the current time
@@ -8,8 +10,11 @@
 - replace existing modlog channel when `.modlog set` is used for an already
   logged event
 - allow deleting all USW rules at once with `.usw unset all`
+- added support for action groups: a way to create reusable logic for various
+  other bolt commands
+- lots of internal code refactoring & performance improvements
 
-# v0.11.2
+## v0.11.2
 - support command loading and unloading at runtime through the `sudo` cog
 - prevent `role` alias to `roleinfo` from shadowing `role [subcommand]`
 - display more specific error when `.assign` cannot find command author in guild
