@@ -25,6 +25,8 @@ defmodule Bolt.Schema.ModLogConfig do
       ## BOT EVENTS
       # automod events
       "AUTOMOD",
+      # self-assignable role system logging
+      "SELF_ASSIGNABLE_ROLES",
       # bot was updated
       "BOT_UPDATE",
       # guild configuration update
