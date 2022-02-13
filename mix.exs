@@ -9,7 +9,8 @@ defmodule Bolt.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       preferred_cli_env: [coveralls: :test],
-      aliases: aliases()
+      aliases: aliases(),
+      test_coverage: [summary: [threshold: 0]]
     ]
   end
 
