@@ -29,7 +29,8 @@ defmodule Bolt.Action.DeleteVanityUrl do
         # We don't have a vanity URL, our job is done
         :ok
 
-      {:api, {:error, _reason}} ->
+      {:api, {:error, reason}} ->
+        IO.inspect(reason, label: "why")
         ModLog.emit(guild_id, "ERROR", "failed to delete vanity URLs due to Discord API error")
     end
   end
