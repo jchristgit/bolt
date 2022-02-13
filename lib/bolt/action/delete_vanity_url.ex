@@ -19,10 +19,11 @@ defmodule Bolt.Action.DeleteVanityUrl do
   end
 
   def run(_options, %{guild_id: guild_id, audit_log_reason: reason}) do
-    cached_guild = GuildCache.get(guild_id)
-    IO.inspect(cached_guild, label: "cached guild")
-
-    with {:ok, %Guild{vanity_url_code: code}} when is_bitstring(code) <- cached_guild,
+    with {:ok, guild} <- GuildCache.get(guild_id),
+         %Nostrum.Struct.Guild{} <- guild,
+         %Guild{} <- guild,
+         %Guild{vanity_url_code: code} <- guild,
+         %Guild{vanity_url_code: code} when not is_nil(code) <- guild,
          {:ok, %Guild{vanity_url_code: nil}} <-
            Api.modify_guild(guild_id, [vanity_url_code: nil], reason) do
       ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
