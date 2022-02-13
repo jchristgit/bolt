@@ -43,13 +43,24 @@ defmodule Bolt.Cogs.ActionGroup.Trigger do
           allowed_mentions: :none
         )
 
+        group
+        |> Actions.run_group(context)
+        |> report_run_result(msg.channel_id)
+
         Actions.run_group(group, context)
-        Api.create_message!(msg.channel_id, content: "👌 action group run done")
     end
   end
 
   def command(msg, _args) do
     response = "ℹ️ usage: `#{hd(usage())}`"
     Api.create_message!(msg.channel_id, response)
+  end
+
+  defp report_run_result(:aborted, channel_id) do
+    Api.create_message!(channel_id, content: "⚠️ run aborted due to deduplication")
+  end
+
+  defp report_run_result(_result, channel_id) do
+    Api.create_message!(channel_id, content: "👌 action group run done")
   end
 end

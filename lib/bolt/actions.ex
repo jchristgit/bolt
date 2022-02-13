@@ -94,14 +94,24 @@ defmodule Bolt.Actions do
     %{guild_id: guild_id}
   end
 
-  @spec run_group(ActionGroup.t(), context()) :: any()
+  @spec run_group(ActionGroup.t(), context()) :: :aborted | any()
   def run_group(group, %{guild_id: guild_id} = context) do
-    ModLog.emit(guild_id, "AUTOMOD", "starting action group `#{group.name}`")
+    maybe_acquire_lock(group, fn ->
+      ModLog.emit(guild_id, "AUTOMOD", "starting action group `#{group.name}`")
 
-    group_context =
-      Map.put(context, :audit_log_reason, "action group run for group #{group.name}")
+      group_context =
+        Map.put(context, :audit_log_reason, "action group run for group #{group.name}")
 
-    Enum.each(group.actions, & &1.module.__struct__.run(&1.module, group_context))
-    ModLog.emit(guild_id, "AUTOMOD", "finished run of action group `#{group.name}`")
+      Enum.each(group.actions, & &1.module.__struct__.run(&1.module, group_context))
+      ModLog.emit(guild_id, "AUTOMOD", "finished run of action group `#{group.name}`")
+    end)
+  end
+
+  defp maybe_acquire_lock(%ActionGroup{deduplicate: false}, fun) do
+    fun.()
+  end
+
+  defp maybe_acquire_lock(%ActionGroup{deduplicate: true, guild_id: guild_id, name: name}, fun) do
+    :global.trans({{name, guild_id}, self()}, fun, [node()], 0)
   end
 end
