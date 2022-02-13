@@ -10,8 +10,9 @@ defmodule Bolt.Schema.Action do
   schema "action" do
     field :module, PolymorphicEmbed,
       types: [
+        clear_gatekeeper_actions: Action.ClearGatekeeperActions,
         delete_invites: Action.DeleteInvites,
-        clear_gatekeeper_actions: Action.ClearGatekeeperActions
+        delete_vanity_url: Action.DeleteVanityUrl
       ],
       on_type_not_found: :raise,
       on_replace: :update
