@@ -7,6 +7,7 @@ defmodule Bolt.Action.DeleteVanityUrl do
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild
   import Ecto.Changeset
+  require Logger
   use Ecto.Schema
 
   embedded_schema do
@@ -18,7 +19,10 @@ defmodule Bolt.Action.DeleteVanityUrl do
   end
 
   def run(_options, %{guild_id: guild_id, audit_log_reason: reason}) do
-    with {:ok, %Guild{vanity_url_code: code}} when is_bitstring(code) <- GuildCache.get(guild_id),
+    cached_guild = GuildCache.get(guild_id)
+    IO.inspect(cached_guild, label: "cached guild")
+
+    with {:ok, %Guild{vanity_url_code: code}} when is_bitstring(code) <- cached_guild,
          {:ok, %Guild{vanity_url_code: nil}} <-
            Api.modify_guild(guild_id, [vanity_url_code: nil], reason) do
       ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
@@ -29,6 +33,9 @@ defmodule Bolt.Action.DeleteVanityUrl do
 
       {:error, _reason} ->
         ModLog.emit(guild_id, "ERROR", "failed to delete vanity URLs due to Discord API error")
+
+      other ->
+        Logger.error("got #{inspect(other)} instead of guild")
     end
   end
 
