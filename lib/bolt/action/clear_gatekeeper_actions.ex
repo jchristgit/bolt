@@ -1,4 +1,5 @@
 defmodule Bolt.Action.ClearGatekeeperActions do
+  @moduledoc "Clear any actions that are configured in gatekeeper."
   @behaviour Bolt.Action
 
   alias Bolt.Gatekeeper

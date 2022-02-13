@@ -1,4 +1,5 @@
 defmodule Bolt.Action.DeleteInvites do
+  @moduledoc "Delete all of the guilds' invites."
   @behaviour Bolt.Action
 
   alias Bolt.ModLog

@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.12
+      image: elixir:1.13
       
     services:
       postgres:

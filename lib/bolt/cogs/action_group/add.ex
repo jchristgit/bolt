@@ -5,8 +5,8 @@ defmodule Bolt.Cogs.ActionGroup.Add do
 
   alias Bolt.Actions
   alias Bolt.ErrorFormatters
-  alias Bolt.Schema.ActionGroup
   alias Bolt.ModLog
+  alias Bolt.Schema.ActionGroup
   alias Nosedrum.Predicates
   alias Nostrum.Api
   import Bolt.Humanizer, only: [human_user: 1]
@@ -61,6 +61,7 @@ defmodule Bolt.Cogs.ActionGroup.Add do
       case Actions.add_guild_group_action(msg.guild_id, name, action) do
         {:ok, %ActionGroup{actions: actions}} ->
           action_description = to_string(List.last(actions).module)
+
           ModLog.emit(
             msg.guild_id,
             "CONFIG_UPDATE",

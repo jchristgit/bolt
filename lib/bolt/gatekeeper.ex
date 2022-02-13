@@ -8,12 +8,12 @@ defmodule Bolt.Gatekeeper do
 
   @spec clear_actions(Guild.id(), :accept | :join) :: {integer(), nil}
   def clear_actions(guild_id, :accept) do
-    from(action in AcceptAction, where: action.guild_id == ^guild_id)
-    |> Repo.delete_all()
+    query = from(action in AcceptAction, where: action.guild_id == ^guild_id)
+    Repo.delete_all(query)
   end
 
   def clear_actions(guild_id, :join) do
-    from(action in JoinAction, where: action.guild_id == ^guild_id)
-    |> Repo.delete_all()
+    query = from(action in JoinAction, where: action.guild_id == ^guild_id)
+    Repo.delete_all(query)
   end
 end

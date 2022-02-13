@@ -9,7 +9,7 @@ bolt_postgres_pool_size: 2
 bolt_repository_url: https://github.com/jchristgit/bolt
 # git reference
 bolt_version: master
-bolt_release_version: 0.11.2
+bolt_release_version: 0.12.0
 bolt_checkout_directory: /usr/local/src/bolt
 
 bolt_cookie: "{{ lookup('password', 'secrets/' + ansible_nodename + '/bolt/erlang.cookie') }}"

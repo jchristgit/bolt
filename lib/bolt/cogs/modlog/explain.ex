@@ -29,7 +29,8 @@ defmodule Bolt.Cogs.ModLog.Explain do
 
     ## COMMAND EVENTS
     "MESSAGE_CLEAN" => "Emitted when a moderator invokes `clean`. Attaches the deleted messages.",
-    "SELF_ASSIGNABLE_ROLES" => "Emitted when bolt assigns or unassigns a role as part of the self-assignable role system.",
+    "SELF_ASSIGNABLE_ROLES" =>
+      "Emitted when bolt assigns or unassigns a role as part of the self-assignable role system.",
 
     ## GATEWAY EVENTS
     "MESSAGE_EDIT" => """
