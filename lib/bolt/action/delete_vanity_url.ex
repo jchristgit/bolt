@@ -19,7 +19,10 @@ defmodule Bolt.Action.DeleteVanityUrl do
   end
 
   def run(_options, %{guild_id: guild_id, audit_log_reason: reason}) do
-    with {:ok, guild} <- GuildCache.get(guild_id),
+    cache_entry = GuildCache.get(guild_id)
+    IO.inspect(elem(cache_entry, 1), label: "entry 1")
+    IO.inspect(elem(cache_entry, 2).__struct__, label: "entry 2 struct")
+    with {:ok, guild} <- cache_entry,
          %Nostrum.Struct.Guild{} <- guild,
          %Guild{} <- guild,
          %Guild{vanity_url_code: code} <- guild,
