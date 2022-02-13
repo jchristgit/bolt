@@ -46,7 +46,7 @@ defmodule Bolt.Cogs.Unassign do
            {:ok} <- Api.remove_guild_member_role(msg.guild_id, msg.author.id, role.id) do
         ModLog.emit(
           msg.guild_id,
-          "AUTOMOD",
+          "SELF_ASSIGNABLE_ROLES",
           "removed the self-assignable role `#{role.name}` from" <>
             " #{User.full_name(msg.author)} (`#{msg.author.id}`)"
         )

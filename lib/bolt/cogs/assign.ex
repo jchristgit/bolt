@@ -39,7 +39,7 @@ defmodule Bolt.Cogs.Assign do
            {:ok} <- Api.add_guild_member_role(msg.guild_id, msg.author.id, role.id) do
         ModLog.emit(
           msg.guild_id,
-          "AUTOMOD",
+          "SELF_ASSIGNABLE_ROLES",
           "gave #{Humanizer.human_user(msg.author)}" <>
             " the self-assignable role #{Humanizer.human_role(msg.guild_id, role.id)}"
         )
@@ -134,7 +134,7 @@ defmodule Bolt.Cogs.Assign do
 
         ModLog.emit(
           msg.guild_id,
-          "AUTOMOD",
+          "SELF_ASSIGNABLE_ROLES",
           "gave #{Humanizer.human_user(msg.author)}" <>
             " the self-assignable roles #{added_role_list}"
         )
