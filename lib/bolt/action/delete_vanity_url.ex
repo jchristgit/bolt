@@ -22,7 +22,7 @@ defmodule Bolt.Action.DeleteVanityUrl do
     with {:cache, {:ok, %Guild{vanity_url_code: code}}} when not is_nil(code) <-
            {:cache, GuildCache.get(guild_id)},
          {:api, {:ok}} <-
-           {:api, Api.request(:delete, "/guild/#{guild_id}/vanity-url")} do
+           {:api, Api.request(:delete, "/guilds/#{guild_id}/vanity-url")} do
       ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
     else
       {:cache, {:ok, %Guild{vanity_url_code: nil}}} ->
