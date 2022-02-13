@@ -5,7 +5,6 @@ defmodule Bolt.Action.DeleteVanityUrl do
   alias Bolt.ModLog
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Struct.Guild
   import Ecto.Changeset
   use Ecto.Schema
 
@@ -18,12 +17,12 @@ defmodule Bolt.Action.DeleteVanityUrl do
   end
 
   def run(_options, %{guild_id: guild_id, audit_log_reason: reason}) do
-    with {:ok, %Guild{vanity_url_code: code}} when is_bitstring(code) <- GuildCache.get(guild_id),
-         {:ok, %Guild{vanity_url_code: nil}} <-
+    with {:ok, %{vanity_url_code: code}} when is_bitstring(code) <- GuildCache.get(guild_id),
+         {:ok, %{vanity_url_code: nil}} <-
            Api.modify_guild(guild_id, [vanity_url_code: nil], reason) do
       ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
     else
-      {:ok, %Guild{vanity_url_code: nil}} ->
+      {:ok, %{vanity_url_code: nil}} ->
         # We don't have a vanity URL, our job is done
         :ok
 
