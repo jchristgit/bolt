@@ -7,10 +7,16 @@ For example, one might want to log message edits and deletes in one channel, but
 Events are dispatched to their configured mod logs.
 Which log to dispatch to is configured via the `.modlog set` command, explained below.
 Bolt knows the following events:
+
 - `AUTOMOD`
 
   Emitted by automatic moderator actions caused by the bot.
   Self-assignable roles and USW actions will pop this event.
+
+- `SELF_ASSIGNABLE_ROLES`
+
+  Emitted when a member assigns or unassigns a role that was made
+  self-assignable.
 
 - `BOT_UPDATE`
 
