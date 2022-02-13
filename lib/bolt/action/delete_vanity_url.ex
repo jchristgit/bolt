@@ -18,11 +18,20 @@ defmodule Bolt.Action.DeleteVanityUrl do
   end
 
   def run(_options, %{guild_id: guild_id, audit_log_reason: reason}) do
-    with {:ok, %Guild{vanity_url_code: code}} when is_bitstring(code) <- GuildCache.get(guild_id),
-         {:ok, %Guild{vanity_url_code: nil}} <-
-           Api.modify_guild(guild_id, [vanity_url_code: nil], reason) do
-      ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
-    else
+    case GuildCache.get(guild_id) do
+      {:ok, %Guild{vanity_url_code: code}} when not is_nil(code) ->
+        case Api.modify_guild(guild_id, [vanity_url_code: nil], reason) do
+          {:ok, %Guild{vanity_url_code: nil}} ->
+            ModLog.emit(guild_id, "AUTOMOD", "deleted vanity URL `#{code}` as part of action")
+
+          {:error, _reason} ->
+            ModLog.emit(
+              guild_id,
+              "ERROR",
+              "failed to delete vanity URLs due to Discord API error"
+            )
+        end
+
       {:ok, %Guild{vanity_url_code: nil}} ->
         # We don't have a vanity URL, our job is done
         :ok
@@ -30,6 +39,7 @@ defmodule Bolt.Action.DeleteVanityUrl do
       {:error, _reason} ->
         ModLog.emit(guild_id, "ERROR", "failed to delete vanity URLs due to Discord API error")
     end
+  else
   end
 
   defimpl String.Chars do
