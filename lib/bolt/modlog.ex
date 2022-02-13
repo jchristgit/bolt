@@ -28,7 +28,8 @@ defmodule Bolt.ModLog do
     "MESSAGE_CLEAN" => "🗑",
     "MESSAGE_DELETE" => "🗑",
     "MESSAGE_EDIT" => "🖊",
-    "SELF_ASSIGNABLE_ROLES" => "🎽"
+    "SELF_ASSIGNABLE_ROLES" => "🎽",
+    "USER_UPDATE" => "♻"
   }
 
   @typedoc "The return type used by `emit`. Set as a type for convenience."
