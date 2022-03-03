@@ -19,7 +19,7 @@ defmodule Bolt.Cogs.Sudo.Guilds do
           value: """
           ID: `#{&1.id}`
           member count: `#{&1.member_count}`
-          joined at: #{&1.joined_at |> DateTime.from_iso8601() |> elem(1) |> Helpers.datetime_to_human()}
+          joined at: #{Helpers.datetime_to_human(&1.joined_at)}
           """,
           inline: true
         }
