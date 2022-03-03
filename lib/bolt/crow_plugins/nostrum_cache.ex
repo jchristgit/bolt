@@ -37,6 +37,7 @@ defmodule Bolt.CrowPlugins.NostrumCache do
     [
       'channels.value #{table_size(ChannelCache.ETS.tabname())}',
       'guilds.value #{table_size(GuildCache.ETS.tabname())}',
+      'members.value #{Enum.sum(GuildCache.select_all(&Enum.count(&1.members)))}',
       'users.value #{table_size(UserCache.ETS.tabname())}'
     ]
   end
