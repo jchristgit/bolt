@@ -47,11 +47,6 @@ defmodule Bolt.Cogs.GuildInfo do
           inline: true
         },
         %Embed.Field{
-          name: "Voice region",
-          value: guild.region,
-          inline: true
-        },
-        %Embed.Field{
           name: "Features",
           value:
             (fn ->
