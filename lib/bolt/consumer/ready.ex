@@ -69,9 +69,7 @@ defmodule Bolt.Consumer.Ready do
       "set" => Cogs.ModLog.Set,
       "unset" => Cogs.ModLog.Unset,
       "events" => Cogs.ModLog.Events,
-      "explain" => Cogs.ModLog.Explain,
-      "mute" => Cogs.ModLog.Mute,
-      "unmute" => Cogs.ModLog.Unmute
+      "explain" => Cogs.ModLog.Explain
     },
 
     ## Spam wall management

@@ -60,8 +60,6 @@ defmodule Bolt.Cogs.Guide do
 
       Otherwise, if you want more fine-grained configuration, use `modlog set <event> <logchannel>`. Known events can be seen by using `modlog events`, and you can ask bolt to explain an event to you by using `modlog explain <event>`.
 
-      To mute the modlog temporarily, use `modlog mute`. Note that this will not persist across restarts by the bot. Use `modlog unmute` to unmute it again.
-
       It is recommended to at least enable the mod log for the following events:
       • `AUTOMOD`: automatic moderator actions the bot takes (when configured)
       • `BOT_UPDATE`: important bot updates
