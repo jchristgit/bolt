@@ -43,12 +43,17 @@ defmodule Bolt.ModLog do
   `Nostrum.Api.create_message/2` call is returned.
   """
   @spec emit(
-          Guild.id(),
+          Guild.id() | nil,
           String.t(),
           String.t(),
           Keyword.t()
         ) :: on_emit()
-  def emit(guild_id, event, content, opts \\ []) do
+  def emit(guild_id, event, content, opts \\ [])
+
+  # Ignore modlog events that did not take part on a guild.
+  def emit(nil, _event, _content, _opts), do: :noop
+
+  def emit(guild_id, event, content, opts) do
     case Repo.get_by(ModLogConfig, guild_id: guild_id, event: event) do
       %ModLogConfig{channel_id: channel_id} ->
         event_emoji = Map.get(@event_emoji, event, "?")
