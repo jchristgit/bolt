@@ -109,6 +109,11 @@ defmodule Bolt.Consumer.Ready do
       "delete" => Cogs.ActionGroup.Delete
     },
 
+    ## Starboard management
+    "starboard" => %{
+      "configure" => Cogs.Starboard.Configure
+    },
+
     ## Rule verification
     "accept" => Cogs.Accept,
 

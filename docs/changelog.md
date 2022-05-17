@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- added starboards, see the `.starboard config` command
 
 ## v0.12.0
 - added the `.lastjoins` command

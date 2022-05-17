@@ -9,5 +9,6 @@
   * [Moderation](cogs/moderation)
   * [Modlog](cogs/modlog)
   * [Self-assignable roles](cogs/self_assignable_roles)
+  * [Tags](cogs/starboard)
   * [Tags](cogs/tags)
 * [Changelog](changelog)
