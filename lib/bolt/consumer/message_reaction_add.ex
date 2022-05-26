@@ -1,7 +1,7 @@
 defmodule Bolt.Consumer.MessageReactionAdd do
   @moduledoc "Handles the `MESSAGE_REACTION_ADD` event."
 
-  alias Bolt.Paginatorolt.Starboard
+  alias Bolt.Paginator
   alias Bolt.Starboard
   alias Nostrum.Struct.Event.MessageReactionAdd
 
