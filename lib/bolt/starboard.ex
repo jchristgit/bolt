@@ -74,18 +74,7 @@ defmodule Bolt.Starboard do
         {:ok, created_message} =
           Api.create_message(starboard_channel_id,
             content: textual_content,
-            embeds: [
-              %Embed{
-                author: %Embed.Author{
-                  icon_url: User.avatar_url(message.author),
-                  name: "#{message.author.username}##{message.author.discriminator}",
-                  url:
-                    "https://discord.com/channels/#{guild_id}/#{message.channel_id}/#{message.id}"
-                },
-                color: Constants.color_yellow(),
-                description: message.content
-              }
-            ]
+            embeds: [starboard_embed_for_message(message)]
           )
 
         message = %{
@@ -98,6 +87,32 @@ defmodule Bolt.Starboard do
         changeset = StarboardMessage.changeset(%StarboardMessage{}, message)
         Repo.insert!(changeset)
     end
+  end
+
+  defp starboard_embed_for_message(message) do
+    %Embed{
+      author: %Embed.Author{
+        icon_url: User.avatar_url(message.author),
+        name: "#{message.author.username}##{message.author.discriminator}",
+        url:
+          "https://discord.com/channels/#{message.guild_id}/#{message.channel_id}/#{message.id}"
+      },
+      color: Constants.color_yellow(),
+      description: message.content
+    }
+    |> maybe_add_image(message)
+  end
+
+  defp maybe_add_image(embed, %Message{attachments: [attachment]}) do
+    if String.ends_with?(attachment.filename, ".png") do
+      Embed.put_image(embed, attachment.url)
+    else
+      embed
+    end
+  end
+
+  defp maybe_add_image(embed, _message) do
+    embed
   end
 
   @doc """
