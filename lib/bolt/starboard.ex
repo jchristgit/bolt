@@ -103,7 +103,7 @@ defmodule Bolt.Starboard do
   end
 
   defp maybe_add_image(embed, %Message{attachments: [attachment]}) do
-    if String.ends_with?(attachment.filename, ".png") do
+    if String.ends_with?(attachment.filename, [".png", ".jpg", ".jpeg"]) do
       Embed.put_image(embed, attachment.url)
     else
       embed
