@@ -61,7 +61,7 @@ defmodule Bolt.Starboard do
   @doc """
   Create or update the starboard message for the given message & star count in the given starboard channel.
   """
-  @spec create_or_update_starboard_message(Channel.id(), Guild.id(), Message.id(), pos_integer()) ::
+  @spec create_or_update_starboard_message(Channel.id(), Guild.id(), Message.t(), pos_integer()) ::
           any()
   def create_or_update_starboard_message(starboard_channel_id, guild_id, message, star_count) do
     textual_content = "⭐ **#{star_count}** in <##{message.channel_id}>"
@@ -74,7 +74,7 @@ defmodule Bolt.Starboard do
         {:ok, created_message} =
           Api.create_message(starboard_channel_id,
             content: textual_content,
-            embeds: [starboard_embed_for_message(message)]
+            embeds: [starboard_embed_for_message(guild_id, message)]
           )
 
         message = %{
@@ -89,13 +89,12 @@ defmodule Bolt.Starboard do
     end
   end
 
-  defp starboard_embed_for_message(message) do
+  defp starboard_embed_for_message(guild_id, message) do
     %Embed{
       author: %Embed.Author{
         icon_url: User.avatar_url(message.author),
         name: "#{message.author.username}##{message.author.discriminator}",
-        url:
-          "https://discord.com/channels/#{message.guild_id}/#{message.channel_id}/#{message.id}"
+        url: "https://discord.com/channels/#{guild_id}/#{message.channel_id}/#{message.id}"
       },
       color: Constants.color_yellow(),
       description: message.content
