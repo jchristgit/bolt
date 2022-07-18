@@ -31,7 +31,7 @@ defmodule Bolt.MixProject do
 
       # PostgreSQL interfacing
       {:ecto_sql, "~> 3.0"},
-      {:polymorphic_embed, "~> 1.9"},
+      {:polymorphic_embed, "~> 2.0"},
       {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},
 
