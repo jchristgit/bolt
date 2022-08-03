@@ -5,7 +5,7 @@ defmodule Bolt.Cogs.Infraction.List do
 
   alias Bolt.Cogs.Infraction.General
   alias Bolt.Schema.Infraction
-  alias Bolt.{Constants, Paginator, Repo}
+  alias Bolt.{Constants, Humanizer, Paginator, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.Me
@@ -102,8 +102,8 @@ defmodule Bolt.Cogs.Infraction.List do
             "##{infr.id} #{General.emoji_for_type(infr.type)} #{if infr.expires_at != nil and infr.active, do: "(active)", else: ""}",
           value:
             """
-            **User**: <@#{infr.user_id}>
-            **Actor**: <@#{infr.actor_id}>
+            **User**: #{Humanizer.human_user(infr.user_id)}
+            **Actor**: #{Humanizer.human_user(infr.actor_id)}
             **Creation**: <t:#{DateTime.to_unix(infr.inserted_at)}:R>
             """ <>
               if(
