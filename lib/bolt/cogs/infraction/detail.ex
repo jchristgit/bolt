@@ -45,6 +45,23 @@ defmodule Bolt.Cogs.Infraction.Detail do
     end
   end
 
+  @spec add_reason(Embed.t(), String.t() | nil) :: Embed.t()
+  def add_reason(embed, nil) do
+    add_reason(embed, "(empty reason)")
+  end
+
+  def add_reason(embed, reason) do
+    if String.length(reason) > 1024 do
+      Map.put(embed, :description, reason)
+    else
+      Map.put(
+        embed,
+        :fields,
+        List.insert_at(embed.fields, 5, %Field{name: "Reason", value: reason, inline: true})
+      )
+    end
+  end
+
   @spec format_detail(Message.t(), Infraction) :: Embed.t()
   defp format_detail(msg, infraction) do
     %Embed{
@@ -100,17 +117,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
         }
       end
     )
-    |> add_field_if(
-      infraction.reason != nil,
-      5,
-      fn ->
-        %Field{
-          name: "Reason",
-          value: if(infraction.reason != "", do: infraction.reason, else: "(empty reason)"),
-          inline: true
-        }
-      end
-    )
+    |> add_reason(infraction.reason)
   end
 
   @impl true
