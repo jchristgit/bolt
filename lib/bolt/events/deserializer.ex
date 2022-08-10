@@ -6,6 +6,7 @@ defmodule Bolt.Events.Deserializer do
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
+  require Logger
 
   @spec deserialize(Infraction) :: (() -> any())
   def deserialize(%Infraction{
@@ -70,7 +71,8 @@ defmodule Bolt.Events.Deserializer do
             "could NOT remove temporary ban for #{human_user} (#{reason}, infraction ##{infraction_id})"
           )
 
-        _err ->
+        err ->
+          Logger.error("Failed to remove tempban (infr #{infraction_id}): #{inspect err}")
           ModLog.emit(
             guild_id,
             "INFRACTION_EVENTS",
