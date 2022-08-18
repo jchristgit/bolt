@@ -223,7 +223,7 @@ defmodule Bolt.Consumer.ChannelUpdate do
 
   @spec format_overwrite_target(Guild.id(), Overwrite.t()) :: String.t()
   def format_overwrite_target(guild_id, overwrite) do
-    if overwrite.type == "role" do
+    if overwrite.type == 0 do
       "role #{Humanizer.human_role(guild_id, overwrite.id)}"
     else
       "user #{Humanizer.human_user(overwrite.id)}"
