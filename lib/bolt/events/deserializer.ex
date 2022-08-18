@@ -72,7 +72,8 @@ defmodule Bolt.Events.Deserializer do
           )
 
         err ->
-          Logger.error("Failed to remove tempban (infr #{infraction_id}): #{inspect err}")
+          Logger.error("Failed to remove tempban (infr #{infraction_id}): #{inspect(err)}")
+
           ModLog.emit(
             guild_id,
             "ERROR",
