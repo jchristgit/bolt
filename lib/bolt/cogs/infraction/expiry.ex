@@ -21,7 +21,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   @impl true
   def description,
     do: """
-    Update the expiration date of the given infraction ID, relative to its creation date.
+    Update the expiration date of the given infraction ID, relative to now.
     This is only applicable to timed (temporary) infractions that have not expired yet.
     Requires the `MANAGE_GUILD` permission.
     """
