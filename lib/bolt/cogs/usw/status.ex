@@ -107,6 +107,16 @@ defmodule Bolt.Cogs.USW.Status do
 
         "configured punishment: `TEMPROLE` of role #{human_role} for #{duration_string}" <>
           ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
+
+      %USWPunishmentConfig{
+        duration: duration,
+        escalate: escalate,
+        punishment: "TIMEOUT"
+      } ->
+        duration_string = format_duration(duration)
+
+        "configured punishment: `TIMEOUT` for #{duration_string}" <>
+          ", automatic punishment escalation is " <> if escalate, do: "enabled", else: "disabled"
     end
   end
 end

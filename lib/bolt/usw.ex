@@ -153,6 +153,68 @@ defmodule Bolt.USW do
     end
   end
 
+  defp execute_config(
+         %USWPunishmentConfig{
+           guild_id: guild_id,
+           escalate: escalator_enabled,
+           punishment: "TIMEOUT",
+           duration: expiry_seconds
+         },
+         user,
+         description
+       ) do
+    now = DateTime.utc_now()
+    timeout_until = DateTime.add(now, expiry_seconds)
+
+    case Api.modify_guild_member(guild_id, user.id, communication_disabled_until: timeout_until) do
+      {:ok, _member} ->
+        escalator_level = Escalator.level_for(user.id)
+        expiry_seconds = calculate_expiry(expiry_seconds, escalator_level, escalator_enabled)
+        Deduplicator.add(user.id, expiry_seconds * 1000)
+        level_string = level_description(escalator_enabled, escalator_level)
+        maybe_bump_escalator(user.id, expiry_seconds, escalator_enabled)
+
+        infraction = %{
+          type: "timeout",
+          guild_id: guild_id,
+          user_id: user.id,
+          actor_id: Me.get().id,
+          reason: "(automod) #{description}#{level_string}",
+          expires_at: timeout_until,
+          data: %{}
+        }
+
+        changeset = Infraction.changeset(%Infraction{}, infraction)
+
+        {:ok, %Infraction{id: infraction_id}} = Repo.insert(changeset)
+
+        ModLog.emit(
+          guild_id,
+          "AUTOMOD",
+          "timed out user #{Humanizer.human_user(user)}" <>
+            " for #{expiry_seconds}s: #{description}#{level_string} (##{infraction_id})"
+        )
+
+        dm_user(guild_id, user)
+
+      {:error, %{status_code: status, response: %{message: reason}}} ->
+        ModLog.emit(
+          guild_id,
+          "AUTOMOD",
+          "attempted timing out #{Humanizer.human_user(user)})" <>
+            " but got API error: #{reason} (status code #{status})"
+        )
+
+      error ->
+        ModLog.emit(
+          guild_id,
+          "AUTOMOD",
+          "timed out #{Humanizer.human_user(user)} " <>
+            "but got an unexpected error: #{ErrorFormatters.fmt(nil, error)}"
+        )
+    end
+  end
+
   @spec preflight_checks(USWPunishmentConfig.t(), User.t()) :: boolean()
   defp preflight_checks(config, user) do
     %User{id: my_id} = Me.get()

@@ -18,6 +18,7 @@ defmodule Bolt.Cogs.USW.Punish do
 
     Existing punishments:
     • `temprole <role:role> <duration:duration>`: Temporarily `role` for `duration`. This can be useful to mute members temporarily.
+    • `timeout <duration:duration>`: Time out the target user for `duration`. Uses Discord's native timeout functionality.
 
     Requires the `MANAGE_GUILD` permission.
     """
@@ -47,6 +48,32 @@ defmodule Bolt.Cogs.USW.Punish do
                on_conflict: :replace_all
              ) do
         "👌 punishment is now applying temporary role `#{role.name}` for" <>
+          " #{total_seconds} seconds"
+      else
+        {:error, reason} ->
+          "🚫 error: #{Helpers.clean_content(reason)}"
+      end
+
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, ["timeout", duration]) do
+    response =
+      with {:ok, total_seconds} <- Parsers.duration_string_to_seconds(duration),
+           new_config <- %{
+             guild_id: msg.guild_id,
+             duration: total_seconds,
+             punishment: "TIMEOUT",
+             data: %{}
+           },
+           changeset <- USWPunishmentConfig.changeset(%USWPunishmentConfig{}, new_config),
+           {:ok, _config} <-
+             Repo.insert(
+               changeset,
+               conflict_target: [:guild_id],
+               on_conflict: :replace_all
+             ) do
+        "👌 punishment is now timing out users for" <>
           " #{total_seconds} seconds"
       else
         {:error, reason} ->

@@ -17,7 +17,8 @@ defmodule Bolt.Cogs.Infraction.General do
     "softban" => "🔨☁",
     "tempban" => "🔨⏲",
     "ban" => "🔨",
-    "unban" => "🤝"
+    "unban" => "🤝",
+    "timeout" => "⏱️"
   }
 
   @spec emoji_for_type(String.t()) :: String.t()

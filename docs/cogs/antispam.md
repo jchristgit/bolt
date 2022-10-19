@@ -57,6 +57,10 @@ An overly strict configuration *will* punish innocent members.
   and removes it after `duration`. Creates an infraction in the infraction database.
   For example, to apply a role called 'Muted' for 15 minutes, use `.usw punish temprole Muted 15m`.
 
+- `timeout <duration:duration>`
+
+  The new and Discord-native way of muting users over the built-in timeout functionality.
+
 
 ## Automatic punishment escalation
 Bolt includes the ability to automatically escalate punishment on repeated offenders.
@@ -119,8 +123,8 @@ Configures the punishment applied when a message violates one of the configured 
 See [Punishments](#punishments) for details.
 Requires the `MANAGE_GUILD` permission.
 ```js
-// Punish offenders with the temporary role 'Muted' for 10 minutes.
-.usw punish temprole Muted 10m
+// Punish offenders by timing them out for 10 minutes
+.usw punish timeout 10m
 ```
 
 

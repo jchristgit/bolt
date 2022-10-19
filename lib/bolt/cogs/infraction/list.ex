@@ -99,7 +99,7 @@ defmodule Bolt.Cogs.Infraction.List do
       |> Stream.map(fn infr ->
         %Embed.Field{
           name:
-            "##{infr.id} #{General.emoji_for_type(infr.type)} #{if infr.expires_at != nil and infr.active, do: "(active)", else: ""}",
+            "##{infr.id} #{General.emoji_for_type(infr.type)} #{if Infraction.is_active?(infr), do: "(active)", else: ""}",
           value:
             """
             **User**: #{Humanizer.human_user(infr.user_id)}

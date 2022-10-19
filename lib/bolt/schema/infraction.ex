@@ -40,4 +40,11 @@ defmodule Bolt.Schema.Infraction do
       message: "must be set for timed infractions"
     )
   end
+
+  # This must be differentiated because bolt may be late in processing the event queue.
+  def is_active?(%__MODULE__{type: "timeout", expires_at: expiry}),
+    do: DateTime.compare(expiry, DateTime.utc_now()) != :lt
+
+  def is_active?(%__MODULE__{active: active, expires_at: expiry}) when expiry != nil, do: active
+  def is_active?(%__MODULE__{}), do: false
 end

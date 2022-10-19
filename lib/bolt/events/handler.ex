@@ -70,7 +70,8 @@ defmodule Bolt.Events.Handler do
     query =
       from(
         infr in Infraction,
-        where: infr.active and not is_nil(infr.expires_at),
+        # Timeout expiry is done by Discord
+        where: infr.active and not is_nil(infr.expires_at) and infr.type != "timeout",
         select: infr
       )
 

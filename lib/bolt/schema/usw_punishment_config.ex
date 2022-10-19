@@ -24,7 +24,8 @@ defmodule Bolt.Schema.USWPunishmentConfig do
   @spec existing_punishments :: [String.t()]
   def existing_punishments do
     [
-      "TEMPROLE"
+      "TEMPROLE",
+      "TIMEOUT"
     ]
   end
 end

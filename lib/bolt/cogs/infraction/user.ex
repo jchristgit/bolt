@@ -97,11 +97,19 @@ defmodule Bolt.Cogs.Infraction.User do
   def format_entry(infr) do
     "[`#{infr.id}`] " <>
       "#{General.emoji_for_type(infr.type)} " <>
-      if(infr.expires_at != nil and infr.active, do: "**", else: "") <>
+      format_surrounding_markup_for_active_infractions(infr) <>
       format_relative_datetime(infr.inserted_at) <>
       " " <>
       format_expiry(infr.expires_at) <>
-      if(infr.expires_at != nil and infr.active, do: "**", else: "") <>
+      format_surrounding_markup_for_active_infractions(infr) <>
       if(infr.reason != nil, do: ": #{infr.reason}", else: "")
+  end
+
+  defp format_surrounding_markup_for_active_infractions(infr) do
+    if Infraction.is_active?(infr) do
+      "**"
+    else
+      ""
+    end
   end
 end

@@ -2,6 +2,7 @@
 
 ## Unreleased
 - added starboards, see the `.starboard config` command
+- added support for discord-native timeouts as USW punishments
 
 ## v0.12.0
 - added the `.lastjoins` command

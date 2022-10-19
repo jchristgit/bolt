@@ -37,12 +37,8 @@ defmodule Bolt.Cogs.Infraction.Expiry do
            infraction when infraction != nil <-
              Repo.get_by(Infraction, id: id, guild_id: msg.guild_id),
            {:ok, offset_seconds} <- Parsers.duration_string_to_seconds(new_expiry),
-           updated_expiry <-
-             DateTime.utc_now()
-             |> DateTime.to_unix()
-             |> Kernel.+(offset_seconds)
-             |> DateTime.from_unix!(),
-           {:ok, updated_infraction} <- Handler.update(infraction, %{expires_at: updated_expiry}) do
+           updated_expiry <- DateTime.add(DateTime.utc_now(), offset_seconds),
+           {:ok, updated_infraction} <- update_expiry(infraction, updated_expiry) do
         emit_log(msg, infraction, updated_infraction, offset_seconds)
 
         expiry_string =
@@ -90,4 +86,34 @@ defmodule Bolt.Cogs.Infraction.Expiry do
           "to #{Helpers.datetime_to_human(new_infraction.expires_at)}, " <>
           "was #{Helpers.datetime_to_human(old_infraction.expires_at)}"
       )
+
+  # Requires a special branch as Discord expires this automatically
+  defp update_expiry(
+         %Infraction{
+           guild_id: guild_id,
+           user_id: user_id,
+           type: "timeout",
+           expires_at: old_expiry
+         } = infraction,
+         new_expiry
+       ) do
+    with now <- DateTime.utc_now(),
+         {:expired?, false} <- {:expired?, DateTime.compare(old_expiry, now) == :lt},
+         {:api, {:ok, _member}} <-
+           {:api,
+            Api.modify_guild_member(guild_id, user_id, communication_disabled_until: new_expiry)} do
+      changeset = Infraction.changeset(infraction, %{expires_at: new_expiry})
+      Repo.update(changeset)
+    else
+      {:expired?, true} ->
+        {:error, "infraction already expired"}
+
+      {:api, errtuple} ->
+        errtuple
+    end
+  end
+
+  defp update_expiry(infraction, new_expiry) do
+    Handler.update(infraction, %{expires_at: new_expiry})
+  end
 end
