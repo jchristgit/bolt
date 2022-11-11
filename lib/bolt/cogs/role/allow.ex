@@ -24,7 +24,7 @@ defmodule Bolt.Cogs.Role.Allow do
 
     **Examples**:
     ```rs
-    // allow self-assginment of the 'Movie Nighter' role
+    // allow self-assignment of the 'Movie Nighter' role
     role allow movie nighter
     ```
     """

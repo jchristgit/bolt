@@ -15,7 +15,7 @@ defmodule Bolt.Cogs.Guide do
 
       First off, keep in mind you can always invoke this command using `guide`, and if you want help for commands themselves, use `help <command>`.
       For subcommands (e.g. `infr list`), you can also view detailed help, e.g. `help infr list`.
-      Commands documented here have their prefix ommitted.
+      Commands documented here have their prefix omitted.
 
       To navigate through this guide, use the buttons below.
       """
@@ -116,7 +116,7 @@ defmodule Bolt.Cogs.Guide do
       • `role allow <role>` to make a role self-assignable
       • `role deny <role>` to remove a role from the self-assignable roles
       Use `help role` if you want further information on these commands.
-      These configuration commands will be logged under `CONFIG_UDPATE`.
+      These configuration commands will be logged under `CONFIG_UPDATE`.
 
       Users can then interact with the self-assignable roles using the following:
       • `lsar` to list all self-assignable roles
