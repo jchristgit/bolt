@@ -30,7 +30,7 @@ Sets actions to be executed when a member runs `.accept`.
 **Valid actions**:
 - `add role <role:role...>`
 
-  Adds the given `role` to members runnin `.accept`.
+  Adds the given `role` to members running `.accept`.
   If the member already has the role, nothing happens.
   Other errors are logged to the mod log with the event `ERROR`.
 

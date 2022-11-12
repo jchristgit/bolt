@@ -54,7 +54,7 @@ defmodule Bolt.Paginator do
       )
 
     # Add the navigator reactions to the embed.
-    # Sleep shortly inbetween to respect ratelimits.
+    # Sleep shortly in between to respect ratelimits.
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "⬅")
     Process.sleep(250)
     {:ok} = Api.create_reaction(original_msg.channel_id, msg.id, "➡")
