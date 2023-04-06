@@ -13,8 +13,8 @@ ExecStart=/bin/sh {{ bolt_directory }}/current/bin/bolt start
 WorkingDirectory={{ bolt_directory }}/current
 EnvironmentFile=/etc/opt/bolt/bolt.env
 
-MemoryHigh=180M
-MemoryMax=200M
+MemoryHigh=480M
+MemoryMax=500M
 RemainAfterExit=no
 Restart=on-failure
 RestartSec=5
