@@ -1,19 +1,4 @@
 ---
-- name: install the erlang solutions apt key
-  apt_key:
-    id: 434975BD900CCBE4F7EE1B1ED208507CA14F4FCA
-    url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
-    state: present
-  tags:
-    - role::bolt
-
-- name: install the erlang solutions apt repository
-  apt_repository:
-    repo: deb https://packages.erlang-solutions.com/debian {{ ansible_distribution_release }} contrib
-    state: present
-  tags:
-    - role::bolt
-
 - name: install elixir and erlang dependencies
   apt:
     name:
