@@ -123,6 +123,7 @@ defmodule Bolt.Starboard do
     with %StarboardConfig{channel_id: starboard_channel_id, min_stars: min_stars} <-
            Repo.get_by(StarboardConfig, guild_id: guild_id),
          {:ok, message} <- Api.get_channel_message(channel_id, message_id),
+         {:bot_authored, false} <- {:bot_authored, message.author.bot},
          star_reaction when star_reaction != nil <-
            Enum.find(message.reactions, &(&1.emoji.name == "⭐")),
          true <-
@@ -135,6 +136,9 @@ defmodule Bolt.Starboard do
         star_reaction.count
       )
     else
+      {:bot_authored, true} ->
+        {:error, :bot_authored_message}
+
       {:error, _reason} = result ->
         result
 
