@@ -154,4 +154,9 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
 
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
   end
+
+  def command(msg, _) do
+    response = "ℹ️ usage: `#{usage()}`"
+    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+  end
 end
