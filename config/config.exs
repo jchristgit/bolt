@@ -48,7 +48,8 @@ config :nostrum,
     :guild_message_reactions,
     :guild_messages,
     :guild_presences,
-    :guilds
+    :guilds,
+    :message_content,
   ]
 
 # This configuration is loaded before any dependency and is restricted

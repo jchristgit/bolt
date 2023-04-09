@@ -150,6 +150,13 @@ defmodule Bolt.Consumer.Ready do
   defp load_commands do
     [@commands, @aliases]
     |> Stream.concat()
-    |> Enum.each(fn {name, cog} -> CommandStorage.add_command([name], cog) end)
+    |> Enum.each(fn {name, cog} ->
+      case is_map(cog) do
+        # It's a command with subcommands
+        true -> Enum.each(cog, fn {subname, module} -> CommandStorage.add_command([name, subname], module) end)
+        # It's a plain command
+        false -> CommandStorage.add_command([name], cog)
+      end
+    end)
   end
 end
