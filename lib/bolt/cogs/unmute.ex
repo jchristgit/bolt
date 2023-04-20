@@ -4,7 +4,6 @@ defmodule Bolt.Cogs.Unmute do
 
   alias Bolt.Converters
   alias Bolt.ErrorFormatters
-  alias Bolt.Events.Handler
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
@@ -36,14 +35,14 @@ defmodule Bolt.Cogs.Unmute do
                infr in Infraction,
                where:
                  infr.guild_id == ^msg.guild_id and infr.user_id == ^member.user.id and
-                   infr.type == "mute" and infr.active
+                   infr.type == "timeout" and infr.expires_at > ^DateTime.utc_now()
              ),
            mute_infraction when mute_infraction != nil <- Repo.one(mute_query),
-           {:ok} <-
-             Api.remove_guild_member_role(
+           {:ok, _modified_member} <-
+             Api.modify_guild_member(
                mute_infraction.guild_id,
                mute_infraction.user_id,
-               Map.get(mute_infraction.data, "role_id")
+               communication_disabled_until: nil
              ),
            {:ok, updated_infraction} <- expire_mute(mute_infraction) do
         ModLog.emit(
@@ -71,18 +70,9 @@ defmodule Bolt.Cogs.Unmute do
   end
 
   @spec expire_mute(Infraction) :: {:ok, Infraction} | {:error, String.t() | Changeset.t()}
-  defp expire_mute(infraction)
-
-  # Untimed mute, not registered in the event handler.
-  defp expire_mute(%Infraction{expires_at: nil} = infraction) do
+  defp expire_mute(infraction) do
     infraction
     |> Infraction.changeset(%{active: false})
     |> Repo.update()
-  end
-
-  # Timed mute, registered in the events handler.
-  # We need to stop the timer to prevent bolt from attempting to remove the role by itself.
-  defp expire_mute(infraction) do
-    Handler.update(infraction, %{active: false})
   end
 end

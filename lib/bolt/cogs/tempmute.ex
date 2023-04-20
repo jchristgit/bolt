@@ -2,14 +2,11 @@ defmodule Bolt.Cogs.Tempmute do
   @moduledoc false
   @behaviour Nosedrum.Command
 
-  alias Bolt.Converters
-  alias Bolt.ErrorFormatters
-  alias Bolt.Events.Handler
-  alias Bolt.Schema.{Infraction, MuteRole}
-  alias Bolt.{Helpers, ModLog, Parsers, Repo}
+  alias Bolt.Moderation
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Struct.User
+  import Bolt.Parsers, only: [human_future_date: 1]
+  import Bolt.Helpers, only: [datetime_to_human: 1]
 
   @impl true
   def usage, do: ["tempmute <user:member> <duration:duration> [reason:str...]"]
@@ -18,7 +15,7 @@ defmodule Bolt.Cogs.Tempmute do
   def description,
     do: """
     Temporarily mutes the given `user` by applying the configured mute role.
-    Requires the `MANAGE_MESSAGES` permission.
+    Requires the `MODERATE_MEMBERS` permission.
 
     ```rs
     // Mute @Dude#0007 for 2 days and 12 hours.
@@ -30,64 +27,27 @@ defmodule Bolt.Cogs.Tempmute do
     """
 
   @impl true
-  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_messages)]
+  def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:moderate_members)]
 
   @impl true
   def command(msg, [user_str, duration | reason_list]) do
-    reason = Enum.join(reason_list, " ")
+    raw_reason = Enum.join(reason_list, " ")
+    reason = if raw_reason != "", do: raw_reason, else: nil
 
-    response =
-      with {:ok, member} <- Converters.to_member(msg.guild_id, user_str),
-           nil <-
-             Repo.get_by(Infraction,
-               guild_id: msg.guild_id,
-               user_id: member.user.id,
-               type: "tempmute",
-               active: true
-             ),
-           %MuteRole{role_id: mute_role_id} <- Repo.get(MuteRole, msg.guild_id),
-           {:ok, expiry} <- Parsers.human_future_date(duration),
-           {:ok} <- Api.add_guild_member_role(msg.guild_id, member.user.id, mute_role_id),
-           infraction_map <- %{
-             type: "tempmute",
-             guild_id: msg.guild_id,
-             actor_id: msg.author.id,
-             user_id: member.user.id,
-             expires_at: expiry,
-             reason: if(reason != "", do: reason, else: nil),
-             data: %{
-               "role_id" => mute_role_id
-             }
-           },
-           {:ok, _struct} <- Handler.create(infraction_map) do
-        ModLog.emit(
-          msg.guild_id,
-          "INFRACTION_CREATE",
-          "#{User.full_name(msg.author)} has temporarily muted #{User.full_name(member.user)} " <>
-            "(`#{member.user.id}`) until #{Helpers.datetime_to_human(expiry)}" <>
-            if(reason != "", do: " (``#{reason}``)", else: "")
-        )
+    with {:ok, expiry} <- human_future_date(duration),
+         {:ok, infraction, user_string} <-
+           Moderation.timeout(user_str, msg.guild_id, msg.author, reason, expiry) do
+      response =
+        "👌 timed out #{user_string} until #{datetime_to_human(expiry)} (##{infraction.id})"
 
-        base_response =
-          "👌 #{User.full_name(member.user)} is now muted until #{Helpers.datetime_to_human(expiry)}"
+      Api.create_message!(msg.channel_id, response)
+    else
+      {:error, response, _user} ->
+        Api.create_message!(msg.channel_id, response)
 
-        if reason do
-          base_response <> " (`#{reason}`)"
-        else
-          base_response
-        end
-      else
-        nil ->
-          "🚫 no mute role is set up on this server"
-
-        %Infraction{id: active_id} ->
-          "🚫 that user is already muted (##{active_id})"
-
-        error ->
-          ErrorFormatters.fmt(msg, error)
-      end
-
-    {:ok, _msg} = Api.create_message(msg.channel_id, response)
+      {:error, response} ->
+        Api.create_message!(msg.channel_id, response)
+    end
   end
 
   def command(msg, _args) do
