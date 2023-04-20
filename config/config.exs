@@ -49,7 +49,7 @@ config :nostrum,
     :guild_messages,
     :guild_presences,
     :guilds,
-    :message_content,
+    :message_content
   ]
 
 # This configuration is loaded before any dependency and is restricted
