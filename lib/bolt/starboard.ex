@@ -64,7 +64,7 @@ defmodule Bolt.Starboard do
   @spec create_or_update_starboard_message(Channel.id(), Guild.id(), Message.t(), pos_integer()) ::
           any()
   def create_or_update_starboard_message(starboard_channel_id, guild_id, message, star_count) do
-    textual_content = "⭐ **#{star_count}** in <##{message.channel_id}>"
+    textual_content = "⭐ **#{star_count}** at #{Message.to_url(message)}"
 
     case Repo.get_by(StarboardMessage, guild_id: guild_id, message_id: message.id) do
       %StarboardMessage{starboard_message_id: starboard_message_id} ->
