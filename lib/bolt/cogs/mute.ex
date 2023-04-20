@@ -12,9 +12,9 @@ defmodule Bolt.Cogs.Mute do
   @impl true
   def description,
     do: """
-    Mutes the given `user` with the built-in timeout.
+    Times out the given `user` for a day.
     The user can be unmuted by using `.unmute`.
-    To apply a temporary mute, use `.tempmute`.
+    To apply a temporary timeout, use `.tempmute`.
     Requires the `MODERATE_MEMBERS` permission.
 
     ```rs
