@@ -29,7 +29,8 @@ config :nostrum,
     :guild_message_reactions,
     :guild_messages,
     :guild_presences,
-    :guilds
+    :guilds,
+    :message_content
   ]
 
 config :logger,
