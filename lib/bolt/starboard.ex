@@ -64,7 +64,9 @@ defmodule Bolt.Starboard do
   @spec create_or_update_starboard_message(Channel.id(), Guild.id(), Message.t(), pos_integer()) ::
           any()
   def create_or_update_starboard_message(starboard_channel_id, guild_id, message, star_count) do
-    textual_content = "⭐ **#{star_count}** at #{Message.to_url(message)}"
+    # Discord doesn't send us the guild_id in the message here, so add it ourselves.
+    jump_link = "https://discord.com/channels/#{guild_id}/#{message.channel_id}/#{message.id}"
+    textual_content = "⭐ **#{star_count}** at #{jump_link}"
 
     case Repo.get_by(StarboardMessage, guild_id: guild_id, message_id: message.id) do
       %StarboardMessage{starboard_message_id: starboard_message_id} ->
@@ -74,7 +76,7 @@ defmodule Bolt.Starboard do
         {:ok, created_message} =
           Api.create_message(starboard_channel_id,
             content: textual_content,
-            embeds: [starboard_embed_for_message(guild_id, message)]
+            embeds: [starboard_embed_for_message(message, jump_link)]
           )
 
         message = %{
@@ -89,12 +91,12 @@ defmodule Bolt.Starboard do
     end
   end
 
-  defp starboard_embed_for_message(guild_id, message) do
+  defp starboard_embed_for_message(message, jump_link) do
     %Embed{
       author: %Embed.Author{
         icon_url: User.avatar_url(message.author),
         name: "#{message.author.username}##{message.author.discriminator}",
-        url: "https://discord.com/channels/#{guild_id}/#{message.channel_id}/#{message.id}"
+        url: jump_link
       },
       color: Constants.color_yellow(),
       description: message.content
