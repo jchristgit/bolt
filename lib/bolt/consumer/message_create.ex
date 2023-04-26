@@ -10,8 +10,6 @@ defmodule Bolt.Consumer.MessageCreate do
   alias Nostrum.Api
   alias Nostrum.Struct.Message
 
-  @rrd_enabled Application.compile_env(:bolt, :rrd_directory) != nil
-
   @spec handle(Message.t()) :: :ok | nil
   def handle(msg) do
     unless msg.author.bot do
@@ -42,7 +40,7 @@ defmodule Bolt.Consumer.MessageCreate do
     MessageCache.consume(msg, Bolt.MessageCache)
     USW.apply(msg)
 
-    if @rrd_enabled do
+    if RRD.enabled?() do
       {:ok, _response} = RRD.count_channel_message(msg.guild_id, msg.channel_id)
     end
   end
