@@ -4,7 +4,7 @@ defmodule Bolt.RRD do
   require Logger
 
   @ds_name "messages"
-  @create_rras [
+  @create_rra_cmdline [
     # Average value over 30 minutes, stored for the past 24 hours
     "RRA:AVERAGE:0.5:30m:24h",
     # Average value over 1 hour, stored for the past 14 days
@@ -14,7 +14,6 @@ defmodule Bolt.RRD do
     # Average value over 1 week, stored for the past 5 years
     "RRA:AVERAGE:0.5:1w:#{52 * 5}w"
   ]
-  @create_rra_cmdline Enum.join(@create_rras, " ")
 
   use GenServer
 
@@ -33,9 +32,14 @@ defmodule Bolt.RRD do
 
   def create_channel_messages(guild_id, channel_id)
       when is_integer(guild_id) and is_integer(channel_id) do
-    command(
-      "create #{guild_messages_rrd(guild_id, channel_id)} --no-overwrite DS:#{@ds_name}:ABSOLUTE:1d:0:U #{@create_rra_cmdline}"
-    )
+    command([
+      "create",
+      guild_messages_rrd(guild_id, channel_id),
+      "--step",
+      "5m",
+      "--no-overwrite",
+      "DS:#{@ds_name}:ABSOLUTE:30m:0:U" | @create_rra_cmdline
+    ])
   end
 
   def count_channel_message(guild_id, channel_id)
@@ -77,6 +81,18 @@ defmodule Bolt.RRD do
     else
       result
     end
+  end
+
+  defp quote_arg("-" <> _rest = arg), do: arg
+  defp quote_arg(arg), do: "'#{arg}'"
+
+  def command(content) when is_list(content) do
+    quoted_command =
+      content
+      |> Stream.map(&quote_arg/1)
+      |> Enum.join(" ")
+
+    GenServer.call(__MODULE__, {:command, quoted_command})
   end
 
   def command(content) do
