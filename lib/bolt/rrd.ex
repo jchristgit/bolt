@@ -102,7 +102,7 @@ defmodule Bolt.RRD do
 
   def handle_continue(directory, nil) do
     Process.flag(:trap_exit, true)
-    executable = Application.get_env(:bolt, :rrd_executable, "/usr/bin/rrdtool")
+    executable = Application.get_env(:bolt, :rrd_executable) || "/usr/bin/rrdtool"
 
     port =
       Port.open({:spawn_executable, executable}, [
