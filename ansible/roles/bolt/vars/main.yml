@@ -4,4 +4,4 @@ bolt_base_apt_dependencies:
   - erlang-dev
   - erlang-eunit
   - erlang-parsetools
-bolt_apt_dependencies: "{{ bolt_base_apt_dependencies + ternary(bolt_enable_rrd, ['rrdtool'], []) }}"
+bolt_apt_dependencies: "{{ bolt_base_apt_dependencies if not bolt_enable_rrd else (bolt_base_apt_dependencies + ['rrdtool']) }}"
