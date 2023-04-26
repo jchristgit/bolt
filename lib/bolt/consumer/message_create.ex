@@ -3,11 +3,14 @@ defmodule Bolt.Consumer.MessageCreate do
 
   @nosedrum_storage_implementation Nosedrum.Storage.ETS
 
+  alias Bolt.RRD
   alias Bolt.USW
   alias Nosedrum.Invoker.Split, as: CommandInvoker
   alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nostrum.Api
   alias Nostrum.Struct.Message
+
+  @rrd_enabled Application.compile_env(:bolt, :rrd_directory) != nil
 
   @spec handle(Message.t()) :: :ok | nil
   def handle(msg) do
@@ -29,10 +32,18 @@ defmodule Bolt.Consumer.MessageCreate do
           :ok
       end
 
-      if msg.guild_id != nil do
-        MessageCache.consume(msg, Bolt.MessageCache)
-        USW.apply(msg)
-      end
+      postprocess(msg)
+    end
+  end
+
+  defp postprocess(%Message{guild_id: nil}), do: :ok
+
+  defp postprocess(msg) do
+    MessageCache.consume(msg, Bolt.MessageCache)
+    USW.apply(msg)
+
+    if @rrd_enabled do
+      {:ok, _response} = RRD.count_channel_message(msg.guild_id, msg.channel_id)
     end
   end
 end

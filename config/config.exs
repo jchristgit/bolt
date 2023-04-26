@@ -6,6 +6,8 @@ config :bolt,
   botlog_channel: System.get_env("BOTLOG_CHANNEL"),
   ecto_repos: [Bolt.Repo],
   prefix: System.get_env("BOT_PREFIX") || ".",
+  rrd_executable: System.get_env("RRD_EXECUTABLE") || nil,
+  rrd_directory: if(System.get_env("RRD_EXECUTABLE"), do: "/tmp", else: nil),
   superusers:
     (System.get_env("SUPERUSERS") || "")
     |> String.split(":", trim: true)

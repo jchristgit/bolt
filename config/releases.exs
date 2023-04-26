@@ -1,9 +1,18 @@
 import Config
 
+defp join_path(envvar, appendix) do
+  case System.get_env(envvar) do
+    nil -> nil
+    content -> content <> appendix
+  end
+end
+
 config :bolt,
   botlog_channel: System.get_env("BOTLOG_CHANNEL"),
   ecto_repos: [Bolt.Repo],
   prefix: System.get_env("BOT_PREFIX") || ".",
+  # STATE_DIRECTORY is set by systemd for the `StateDirectory` option.
+  rrd_directory: join_path("STATE_DIRECTORY", "/rrd"),
   superusers:
     (System.get_env("SUPERUSERS") || "")
     |> String.split(":", trim: true)

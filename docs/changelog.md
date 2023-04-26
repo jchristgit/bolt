@@ -4,6 +4,8 @@
 - added starboards, see the `.starboard config` command
 - added support for discord-native timeouts as USW punishments
 - use discord-native timeouts for the mute commands
+- track long-term (up to 5 years) statistics of message counts by channel:
+  commands to display this data nicely are coming soon
 
 ## v0.12.0
 - added the `.lastjoins` command

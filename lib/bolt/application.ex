@@ -31,6 +31,9 @@ defmodule Bolt.Application do
       # Supervises the Uncomplicated Spam Wall processes.
       Bolt.USWSupervisor,
 
+      # Manages the bolt <-> rrdtool connection.
+      Bolt.RRD,
+
       # Supervises Discord Gateway event consumers.
       Bolt.ConsumerSupervisor
     ]

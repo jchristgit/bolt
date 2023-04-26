@@ -1,9 +1,11 @@
 defmodule Bolt.Consumer.Ready do
   @moduledoc "Handles the `READY` event."
 
+  alias Bolt.BotLog
+  alias Bolt.Cogs
   alias Nosedrum.Storage.ETS, as: CommandStorage
-  alias Bolt.{BotLog, Cogs}
   alias Nostrum.Api
+  require Logger
 
   @infraction_group %{
     "detail" => Cogs.Infraction.Detail,

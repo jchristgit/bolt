@@ -58,6 +58,12 @@ defmodule Bolt.Cogs.Sudo do
     Unload.command(msg, args)
   end
 
+  def command(msg, ["rrdstats" | args]) do
+    alias Bolt.Cogs.Sudo.RRDStats
+
+    RRDStats.command(msg, args)
+  end
+
   def command(msg, _args) do
     response = "🚫 unknown subcommand"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)

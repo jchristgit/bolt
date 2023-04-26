@@ -1,21 +1,32 @@
 ---
+# Database connection settings.
 bolt_postgres_database: bolt
 bolt_postgres_user: bolt
 bolt_postgres_host: localhost
-bolt_postgres_password: "{{ lookup('password', 'secrets/' + ansible_nodename + '/postgres/users/' + bolt_postgres_user + '/password') }}"
-
+# Larger installations will need a higher value,
+# you can set this lower to keep memory usage from PostgreSQL
+# worker processes at a low amount.
 bolt_postgres_pool_size: 2
+# You probably want to use Ansible vault for this.
+bolt_postgres_password: "{{ lookup('password', 'secrets/' + ansible_nodename + '/postgres/users/' + bolt_postgres_user + '/password') }}"
+bolt_pgsql_url: ecto://{{ bolt_postgres_user }}:{{ bolt_postgres_password }}@{{ bolt_postgres_host }}/{{ bolt_postgres_database }}?pool_size={{ bolt_postgres_pool_size }}
 
+# The URL at which to clone bolt via `git`.
 bolt_repository_url: https://github.com/jchristgit/bolt
-# git reference
+# The version to check out. Can be a branch, tag, or commit.
 bolt_version: master
-bolt_release_version: 0.12.0
-bolt_checkout_directory: /usr/local/src/bolt
 
+# The cookie to deploy bolt with, if distribution is enabled.
 bolt_cookie: "{{ lookup('password', 'secrets/' + ansible_nodename + '/bolt/erlang.cookie') }}"
+
+# The OS user to create for running bolt.
 bolt_service_user: bolt
+
+# In which directory to clone the repository, build the release,
+# and manage the deployment.
 bolt_directory: /opt/bolt
 
-bolt_pgsql_url: ecto://{{ bolt_postgres_user }}:{{ bolt_postgres_password }}@{{ bolt_postgres_host }}/{{ bolt_postgres_database }}?pool_size={{ bolt_postgres_pool_size }}
+# Whether to enable bolt's RRD functionality.
+bolt_enable_rrd: true
 
 # vim: sw=2 ts=2:

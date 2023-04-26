@@ -1,23 +1,10 @@
 # Ansible deployment files
 
 If you feel like deploying bolt, you can use the provided ansible roles, mainly
-the `bolt` role.  Deployment is done through a Docker container.  The following
-variables are configurable, with the bold variables being required:
+the `bolt` role.  Deployment is done through an Erlang release. At the very
+least, the `bolt_bot_token` variable is required. The rest of the variables is
+documented in the [role defaults](./roles/bolt/defaults/main.yml).
 
-- **`bolt_postgres_password`**: Password to use for authenticating with
-  PostgreSQL.
-
-- **`bolt_bot_token`**: The Discord bot token to use
-
-- `bolt_web_domain`: The domain at which Bolt's documentation is hosted. Can be
-  unset, in which case no manual links will be sent from bolt.
-
-- `bolt_botlog_channel`: The channel ID to be used for logging bot events.
-
-- `bolt_superusers`: A colon-separated list of user IDs that may use the `sudo`
-  command.
-
-Migrations are not handled automatically. The simplest way to run these is to
-`remote_console` into a live instance and call Ecto.
+Migrations are handled automatically.
 
 <!-- vim: set textwidth=80 sw=2 ts=2: -->

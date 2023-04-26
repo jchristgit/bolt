@@ -1,11 +1,7 @@
 ---
-- name: install elixir and erlang dependencies
+- name: install apt dependencies
   apt:
-    name:
-      - elixir
-      - erlang-dev
-      - erlang-eunit
-      - erlang-parsetools
+    name: "{{ bolt_apt_dependencies }}"
     state: present
   tags:
     - role::bolt
