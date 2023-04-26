@@ -30,7 +30,7 @@ defmodule Bolt.Predicates do
       )
 
       {
-        :error,
+        :noperm,
         "🚫 #{User.full_name(msg.author)} is not in the sudoers file." <>
           " This incident will be reported."
       }
