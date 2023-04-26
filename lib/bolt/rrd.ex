@@ -51,6 +51,9 @@ defmodule Bolt.RRD do
       {:ok, _timings} = result ->
         result
 
+      {:error, :timeout} = result ->
+        result
+
       {:error, reason} = result ->
         if String.contains?(reason, "No such file or directory") do
           {:ok, _} = exists_ok(create_guilds_directory())
