@@ -138,16 +138,4 @@ defmodule Bolt.RRD do
   def handle_info({_port, {:exit_status, status}}, state) do
     {:stop, {:rrd_exit, status}, state}
   end
-
-  def terminate({:shutdown, {:rrd_exit, _status}}, _port) do
-  end
-
-  def terminate(_reason, nil) do
-  end
-
-  def terminate(_reason, port) do
-    # best-effort cleanup
-    Port.command(port, "quit\n")
-    Port.close(port)
-  end
 end
