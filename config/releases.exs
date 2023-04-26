@@ -1,18 +1,10 @@
 import Config
 
-defp join_path(envvar, appendix) do
-  case System.get_env(envvar) do
-    nil -> nil
-    content -> content <> appendix
-  end
-end
-
 config :bolt,
   botlog_channel: System.get_env("BOTLOG_CHANNEL"),
   ecto_repos: [Bolt.Repo],
   prefix: System.get_env("BOT_PREFIX") || ".",
-  # STATE_DIRECTORY is set by systemd for the `StateDirectory` option.
-  rrd_directory: join_path("STATE_DIRECTORY", "/rrd"),
+  # rrd_directory: is set below
   superusers:
     (System.get_env("SUPERUSERS") || "")
     |> String.split(":", trim: true)
@@ -21,6 +13,12 @@ config :bolt,
       value
     end),
   web_domain: System.get_env("WEB_DOMAIN")
+
+# STATE_DIRECTORY is exported by systemd when we set the `StateDirectory` option.
+case System.get_env("STATE_DIRECTORY") do
+  nil -> nil
+  directory -> config :bolt, :rrd_directory, directory <> "/rrd"
+end
 
 config :nosedrum,
   prefix: System.get_env("BOT_PREFIX") || "."
