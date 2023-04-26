@@ -17,7 +17,9 @@ config :bolt,
 # STATE_DIRECTORY is exported by systemd when we set the `StateDirectory` option.
 case System.get_env("STATE_DIRECTORY") do
   nil -> nil
-  directory -> config :bolt, :rrd_directory, directory <> "/rrd"
+  directory ->
+    config :bolt,
+      :rrd_directory, List.last(String.split(directory, ":"))
 end
 
 config :nosedrum,

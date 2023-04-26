@@ -10,8 +10,8 @@ After=postgresql.service network-online.target
 User={{ bolt_service_user }}
 ExecStart=/bin/sh {{ bolt_directory }}/current/bin/bolt start
 
-# used for rrd files
-StateDirectory=bolt
+# NOTE: The last path is used as the RRD destination path, see `config/releases.exs`.
+StateDirectory=bolt bolt/rrd
 
 WorkingDirectory={{ bolt_directory }}/current
 EnvironmentFile=/etc/opt/bolt/bolt.env
@@ -32,6 +32,8 @@ PrivateDevices=true
 PrivateTmp=true
 PrivateUsers=true
 ProtectControlGroups=true
+ProtectClock=true
+ProtectKernelLogs=true
 ProtectHome=true
 ProtectKernelModules=true
 ProtectKernelTunables=true
