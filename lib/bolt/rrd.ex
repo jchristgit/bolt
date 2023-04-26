@@ -48,7 +48,7 @@ defmodule Bolt.RRD do
         result
 
       {:error, reason} = result ->
-        if String.ends_with?(reason, "No such file or directory\n") do
+        if String.contains?(reason, "No such file or directory") do
           {:ok, _} = exists_ok(create_guilds_directory())
           {:ok, _} = exists_ok(create_guild(guild_id))
           {:ok, _} = exists_ok(create_guild_channels(guild_id))
@@ -125,9 +125,15 @@ defmodule Bolt.RRD do
 
       {^port, {:data, result}} ->
         {_, lines} = List.pop_at(String.split(result, "\n"), -1)
-        "OK " <> message = Enum.at(lines, -1)
-        {_, output} = List.pop_at(lines, -1)
-        {:reply, {:ok, message, output}, port}
+        {status, lines} = List.pop_at(lines, -1)
+
+        case status do
+          "OK " <> message ->
+            {:reply, {:ok, message, lines}, port}
+
+          "ERROR: " <> message ->
+            {:reply, {:error, message}, port}
+        end
     after
       4000 ->
         {:reply, {:error, :timeout}, port}
