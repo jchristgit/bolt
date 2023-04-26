@@ -34,7 +34,7 @@ defmodule Bolt.RRD do
   def create_channel_messages(guild_id, channel_id)
       when is_integer(guild_id) and is_integer(channel_id) do
     command(
-      "create #{guild_messages_rrd(guild_id, channel_id)} --no-overwrite DS:#{@ds_name}:ABSOLUTE:7d:1:U #{@create_rra_cmdline}"
+      "create #{guild_messages_rrd(guild_id, channel_id)} --no-overwrite DS:#{@ds_name}:ABSOLUTE:1d:0:U #{@create_rra_cmdline}"
     )
   end
 
