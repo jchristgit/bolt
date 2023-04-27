@@ -4,9 +4,10 @@ defmodule Bolt.RRD do
   require Logger
 
   @ds_name "messages"
+  @messages_step_size "1h"
   @create_rra_cmdline [
-    # Average value over 1 hour, stored for the past 14 days
-    "RRA:AVERAGE:0.5:1h:14d",
+    # Average value over the step size, stored for the past 14 days
+    "RRA:AVERAGE:0.5:#{@messages_step_size}:14d",
     # Average value over 1 day, stored for the past 6 months
     "RRA:AVERAGE:0.5:1d:6M",
     # Average value over 1 week, stored for the past 5 years
@@ -34,7 +35,7 @@ defmodule Bolt.RRD do
       "create",
       guild_messages_rrd(guild_id, channel_id),
       "--step",
-      "5m",
+      @messages_step_size,
       "--no-overwrite",
       "DS:#{@ds_name}:ABSOLUTE:15m:U:U" | @create_rra_cmdline
     ])
