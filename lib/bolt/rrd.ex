@@ -60,7 +60,7 @@ defmodule Bolt.RRD do
           {:ok, _} = exists_ok(create_channel_messages(guild_id, channel_id))
           Logger.debug("Created messages RRD for guild #{guild_id}, channel #{channel_id}")
           # Don't recurse here.
-          command(cmdline)
+          command(cmdline, timeout)
         else
           result
         end
