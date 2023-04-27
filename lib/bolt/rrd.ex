@@ -5,8 +5,6 @@ defmodule Bolt.RRD do
 
   @ds_name "messages"
   @create_rra_cmdline [
-    # Average value over 30 minutes, stored for the past 24 hours
-    "RRA:AVERAGE:0.5:30m:24h",
     # Average value over 1 hour, stored for the past 14 days
     "RRA:AVERAGE:0.5:1h:14d",
     # Average value over 1 day, stored for the past 6 months
