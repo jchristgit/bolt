@@ -38,7 +38,7 @@ defmodule Bolt.RRD do
       "--step",
       "5m",
       "--no-overwrite",
-      "DS:#{@ds_name}:ABSOLUTE:30m:0:U" | @create_rra_cmdline
+      "DS:#{@ds_name}:ABSOLUTE:15m:U:U" | @create_rra_cmdline
     ])
   end
 
