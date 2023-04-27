@@ -42,10 +42,10 @@ defmodule Bolt.RRD do
     ])
   end
 
-  def count_channel_message(guild_id, channel_id)
+  def count_channel_message(guild_id, channel_id, timeout \\ 10_000)
       when is_integer(guild_id) and is_integer(channel_id) do
     cmdline = "update #{guild_messages_rrd(guild_id, channel_id)} N:1"
-    response = command(cmdline)
+    response = command(cmdline, timeout)
 
     case response do
       {:ok, _timings} = result ->
@@ -89,17 +89,19 @@ defmodule Bolt.RRD do
   defp quote_arg("-" <> _rest = arg), do: arg
   defp quote_arg(arg), do: "'#{arg}'"
 
-  def command(content) when is_list(content) do
+  def command(content), do: command(content, 5_000)
+
+  def command(content, timeout) when is_list(content) do
     quoted_command =
       content
       |> Stream.map(&quote_arg/1)
       |> Enum.join(" ")
 
-    GenServer.call(__MODULE__, {:command, quoted_command})
+    GenServer.call(__MODULE__, {:command, quoted_command, timeout - 1_000}, timeout)
   end
 
-  def command(content) do
-    GenServer.call(__MODULE__, {:command, content})
+  def command(content, timeout) do
+    GenServer.call(__MODULE__, {:command, content, timeout - 1_000}, timeout)
   end
 
   def enabled? do
@@ -132,7 +134,7 @@ defmodule Bolt.RRD do
     {:noreply, port}
   end
 
-  def handle_call({:command, content}, _from, port) do
+  def handle_call({:command, content, timeout}, _from, port) do
     Port.command(port, content <> "\n")
 
     receive do
@@ -154,9 +156,15 @@ defmodule Bolt.RRD do
             {:reply, {:error, message}, port}
         end
     after
-      4000 ->
+      timeout ->
         {:reply, {:error, :timeout}, port}
     end
+  end
+
+  def handle_info({port, {:data, "OK " <> _rest}}, port) do
+    # we got a reply but the client is no longer waiting for it.
+    # since the reply is an OK, we are OK with it.
+    {:noreply, port}
   end
 
   def handle_info({_port, {:exit_status, status}}, state) do
