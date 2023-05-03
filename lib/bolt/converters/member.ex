@@ -3,7 +3,8 @@ defmodule Bolt.Converters.Member do
 
   alias Bolt.Helpers
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
+  alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Member
   alias Nostrum.Struct.Snowflake
 
@@ -78,19 +79,23 @@ defmodule Bolt.Converters.Member do
   end
 
   @spec find_by_name_and_discrim(
-          [Member.t()],
+          Enumerable.t(),
           String.t(),
           pos_integer()
         ) :: {:ok, Member.t()} | {:error, String.t()}
   defp find_by_name_and_discrim(members, name, discrim) do
-    result =
-      Enum.find(
-        Map.values(members),
-        {
+    error_result = {
           :error,
           "there is no member named `#{Helpers.clean_content(name)}##{discrim}` on this guild"
-        },
-        &(&1.user.username == name and &1.user.discriminator == discrim)
+        }
+    result =
+      Enum.find(
+        members,
+        error_result,
+        fn %{user_id: user_id} ->
+          user = UserCache.get(user_id)
+          user.username == name and user.discriminator == discrim
+        end
       )
 
     case result do
@@ -142,15 +147,10 @@ defmodule Bolt.Converters.Member do
         {:error, reason}
 
       {:error, _why} ->
-        case GuildCache.get(guild_id) do
-          {:ok, %{members: members}} ->
-            case text_to_name_and_discrim(text) do
-              {name, discrim} -> find_by_name_and_discrim(members, name, discrim)
-              :error -> find_by_name(members, text)
-            end
-
-          {:error, _reason} ->
-            {:error, "this guild is not in the cache, cannot find any members"}
+        members = MemberCache.get(guild_id)
+        case text_to_name_and_discrim(text) do
+          {name, discrim} -> find_by_name_and_discrim(members, name, discrim)
+          :error -> find_by_name(members, text)
         end
     end
   end

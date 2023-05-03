@@ -7,7 +7,8 @@ defmodule Bolt.Cogs.LastJoins do
   alias Nosedrum.MessageCache.Agent, as: MessageCache
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
+  alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild.Member
   alias Nostrum.Struct.User
@@ -67,18 +68,22 @@ defmodule Bolt.Cogs.LastJoins do
 
   @impl true
   def command(msg, {options, _args, []}) do
-    # we can avoid copying around things we don't care about by just selecting the members here
-    case GuildCache.select(msg.guild_id, &Map.values(&1.members)) do
-      {:ok, members} ->
-        {limit, options} = Keyword.pop_first(options, :total, 5)
+    {limit, options} = Keyword.pop_first(options, :total, @default_shown)
+    total_members = MemberCache.get(msg.guild_id) |> Enum.count()
 
+    most_recent_members =
+      msg.guild_id
+      |> MemberCache.get()
+      |> filter_by_options(msg.guild_id, options)
+      |> sort_by_limit(& &1.joined_at, sanitize_limit(limit))
+
+    case most_recent_members do
+      [] ->
+        {:ok, _msg} = Api.create_message(msg.channel_id, "guild uncached, sorry")
+
+      members ->
         pages =
           members
-          |> Stream.reject(&(&1.joined_at == nil))
-          |> Stream.reject(&(&1.user != nil and &1.user.bot))
-          |> Enum.sort_by(&joindate_to_unix/1, &>=/2)
-          |> filter_by_options(msg.guild_id, options)
-          |> apply_limit(limit)
           |> Stream.map(&format_member/1)
           |> Stream.chunk_every(@shown_per_page)
           |> Enum.map(&%Embed{fields: &1})
@@ -89,9 +94,6 @@ defmodule Bolt.Cogs.LastJoins do
         }
 
         Paginator.paginate_over(msg, base_page, pages)
-
-      {:error, _reason} ->
-        {:ok, _msg} = Api.create_message(msg.channel_id, "guild uncached, sorry")
     end
   end
 
@@ -142,25 +144,20 @@ defmodule Bolt.Cogs.LastJoins do
     members
   end
 
-  defp apply_limit(members, n) when n < 1, do: Enum.take(members, @default_shown)
-  defp apply_limit(members, n) when n > @maximum_shown, do: Enum.take(members, @maximum_shown)
-  defp apply_limit(members, n), do: Enum.take(members, n)
+  defp sanitize_limit(n) when n < 1, do: @default_shown
+  defp sanitize_limit(n) when n > @maximum_shown, do: @maximum_shown
+  defp sanitize_limit(n), do: n
 
   @spec format_member(Member.t()) :: Embed.Field.t()
   defp format_member(member) do
-    joined_at_human =
-      member.joined_at
-      |> DateTime.from_iso8601()
-      |> elem(1)
-      |> DateTime.to_unix()
-      |> then(&"<t:#{&1}:R>")
-
+    joined_at_human = "<t:#{member.joined_at}:R>"
     total_roles = length(member.roles)
+    user = UserCache.get!(member.user_id)
 
     %Embed.Field{
-      name: User.full_name(member.user),
+      name: User.full_name(user),
       value: """
-      ID: `#{member.user.id}`
+      ID: `#{member.user_id}`
       Joined: #{joined_at_human}
       has #{total_roles} #{Helpers.pluralize(total_roles, "role", "roles")}
       """,
@@ -168,11 +165,24 @@ defmodule Bolt.Cogs.LastJoins do
     }
   end
 
-  @spec joindate_to_unix(Member.t()) :: pos_integer()
-  defp joindate_to_unix(member) do
-    member.joined_at
-    |> DateTime.from_iso8601()
-    |> elem(1)
-    |> DateTime.to_unix()
+  defp sort_by_limit(stream, key_fn, limit) do
+    stream
+    |> Enum.reduce({:gb_trees.empty(), 0, 0}, fn item, {tree, smallest, size} ->
+      case key_fn.(item) do
+        key when key > smallest and size >= limit ->
+          {_smallest, _value, new_tree} = :gb_trees.take_smallest(tree)
+          {:gb_trees.insert(key, item, new_tree), key, size}
+
+        key when size < limit ->
+          {:gb_trees.insert(key, item, tree), key, size + 1}
+
+        key ->
+          {tree, smallest, size}
+      end
+    end)
+    |> elem(0)
+    |> :gb_trees.to_list()
+    |> Enum.reverse()
+    |> Enum.map(&elem(&1, 1))
   end
 end

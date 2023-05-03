@@ -2,7 +2,7 @@ defmodule Bolt.Consumer.UserUpdate do
   @moduledoc "Handles the `USER_UPDATE` event."
 
   alias Bolt.{Helpers, Humanizer, ModLog}
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.User
 
   @spec handle(User.t(), User.t()) :: ModLog.on_emit()
@@ -20,11 +20,12 @@ defmodule Bolt.Consumer.UserUpdate do
     unless diff_description == "" do
       log_message = "#{Humanizer.human_user(old_user)} #{diff_description}"
 
-      GuildCache.all()
-      |> Stream.filter(&Map.has_key?(&1.members, new_user.id))
+      new_user.id
+      |> MemberCache.by_user()
+      |> Stream.map(fn {guild_id, _member} -> guild_id end)
       |> Enum.each(
         &ModLog.emit(
-          &1.id,
+          &1,
           "USER_UPDATE",
           log_message
         )

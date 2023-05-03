@@ -14,7 +14,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
       from(
         infr in Infraction,
         where:
-          infr.guild_id == ^guild_id and infr.active and infr.user_id == ^member.user.id and
+          infr.guild_id == ^guild_id and infr.active and infr.user_id == ^member.user_id and
             infr.type in ["tempmute", "mute", "temprole"],
         select: infr.id
       )
@@ -31,7 +31,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
     ModLog.emit(
       guild_id,
       "GUILD_MEMBER_REMOVE",
-      "#{Humanizer.human_user(member.user)} has left"
+      "#{Humanizer.human_user(member.user_id)} has left"
     )
   end
 

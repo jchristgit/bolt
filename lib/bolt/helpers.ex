@@ -117,8 +117,10 @@ defmodule Bolt.Helpers do
   @doc """
   Replace `@everyone` and `@here` mentions with their harmless variants
   """
-  @spec clean_content(String.t()) :: String.t()
-  def clean_content(content) do
+  @spec clean_content(boolean() | String.t()) :: String.t()
+  def clean_content(true), do: "true"
+  def clean_content(false), do: "false"
+  def clean_content(content) when is_binary(content) do
     content
     |> String.replace("@everyone", "@\u200Beveryone")
     |> String.replace("@here", "@\u200Bhere")

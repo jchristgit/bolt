@@ -10,12 +10,12 @@ defmodule Bolt.Consumer.GuildMemberAdd do
 
   @spec handle(Guild.id(), Guild.Member.t()) :: {:ok, Message.t()}
   def handle(guild_id, member) do
-    creation_datetime = Snowflake.creation_time(member.user.id)
+    creation_datetime = Snowflake.creation_time(member.user_id)
 
     ModLog.emit(
       guild_id,
       "GUILD_MEMBER_ADD",
-      "#{Humanizer.human_user(member.user)} has joined " <>
+      "#{Humanizer.human_user(member.user_id)} has joined " <>
         "- account created #{Helpers.datetime_to_human(creation_datetime)}"
     )
 
@@ -29,7 +29,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
       from(
         infr in Infraction,
         where:
-          infr.guild_id == ^guild_id and infr.user_id == ^member.user.id and
+          infr.guild_id == ^guild_id and infr.user_id == ^member.user_id and
             infr.type == "temprole" and infr.expires_at > ^DateTime.utc_now(),
         select: infr
       )

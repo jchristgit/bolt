@@ -40,7 +40,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
       ModLog.emit(
         guild_id,
         "GUILD_MEMBER_UPDATE",
-        "#{Humanizer.human_user(new_member.user)} #{diff_string}"
+        "#{Humanizer.human_user(new_member.user_id)} #{diff_string}"
       )
     end
   end
@@ -109,7 +109,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
            from(
              infr in Infraction,
              where:
-               infr.guild_id == ^guild_id and infr.user_id == ^new_member.user.id and infr.active and
+               infr.guild_id == ^guild_id and infr.user_id == ^new_member.user_id and infr.active and
                  fragment("data->'role_id' = ?", ^removed_role_id) and infr.type == "temprole",
              limit: 1,
              select: infr
@@ -142,7 +142,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
     active_forcenick =
       Repo.get_by(Infraction,
         guild_id: guild_id,
-        user_id: new_member.user.id,
+        user_id: new_member.user_id,
         active: true,
         type: "forced_nick"
       )
@@ -157,7 +157,7 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
     with %Infraction{data: %{"nick" => forced_nick}} <- active_forcenick,
          false <- forced_nick == new_member.nick,
          {:ok, _member} <-
-           Api.modify_guild_member(guild_id, new_member.user.id, nick: forced_nick) do
+           Api.modify_guild_member(guild_id, new_member.user_id, nick: forced_nick) do
       ModLog.emit(
         guild_id,
         "INFRACTION_EVENTS",
