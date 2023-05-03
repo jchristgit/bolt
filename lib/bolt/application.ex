@@ -34,8 +34,8 @@ defmodule Bolt.Application do
       # Manages the bolt <-> rrdtool connection.
       Bolt.RRD,
 
-      # Supervises Discord Gateway event consumers.
-      Bolt.ConsumerSupervisor
+      # Handles Discord Gateway events.
+      Bolt.Consumer
     ]
 
     options = [strategy: :rest_for_one, name: Bolt.Supervisor]

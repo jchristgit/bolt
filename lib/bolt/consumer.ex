@@ -25,12 +25,6 @@ defmodule Bolt.Consumer do
 
   use Nostrum.Consumer
 
-  @spec start_link :: Supervisor.on_start()
-  def start_link do
-    Consumer.start_link(__MODULE__, max_restarts: 0)
-  end
-
-  @impl true
   @spec handle_event(Nostrum.Consumer.event()) :: any()
   def handle_event({:CHANNEL_CREATE, new_channel, _ws_state}) do
     ChannelCreate.handle(new_channel)
