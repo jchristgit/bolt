@@ -60,6 +60,7 @@ config :bolt, Bolt.Repo,
 
 config :nostrum,
   token: System.get_env("BOT_TOKEN"),
+  request_guild_members: true,
   caches: %{
     presences: Nostrum.Cache.PresenceCache.NoOp
   },
@@ -69,7 +70,6 @@ config :nostrum,
     :guild_members,
     :guild_message_reactions,
     :guild_messages,
-    :guild_presences,
     :guilds,
     :message_content
   ]
