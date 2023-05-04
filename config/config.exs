@@ -24,10 +24,30 @@ config :crow,
     # Application-specific
     Bolt.CrowPlugins.NostrumCache,
     # General runtime information
+    CrowPlugins.BEAM.Atoms,
     CrowPlugins.BEAM.ContextSwitches,
+    {CrowPlugins.BEAM.ETS,
+     name: 'nostrum_caches',
+     mode: :memory,
+     tables: [
+       :nostrum_channels,
+       :nostrum_guilds,
+       # :nostrum_members,
+       :nostrum_users,
+     ]},
+    {CrowPlugins.BEAM.ETS,
+     name: 'nostrum_caches',
+     mode: :items,
+     tables: [
+       :nostrum_channels,
+       :nostrum_guilds,
+       # :nostrum_members,
+       :nostrum_users,
+     ]},
     CrowPlugins.BEAM.GarbageCollections,
-    CrowPlugins.BEAM.Memory,
     CrowPlugins.BEAM.IO,
+    CrowPlugins.BEAM.Memory,
+    CrowPlugins.BEAM.Reductions,
     CrowPlugins.BEAM.SystemInfo
   ]
 
