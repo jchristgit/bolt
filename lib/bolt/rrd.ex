@@ -166,6 +166,12 @@ defmodule Bolt.RRD do
     {:noreply, port}
   end
 
+  # rrdtool stopped by SIGTERM. this is fine.
+  # systemd does this at shutdown (unless we set KillMode=mixed).
+  def handle_info({_port, {:exit_status, 128 + 15}}, state) do
+    {:stop, :normal, state}
+  end
+
   def handle_info({_port, {:exit_status, status}}, state) do
     {:stop, {:rrd_exit, status}, state}
   end
