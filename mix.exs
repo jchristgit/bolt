@@ -37,7 +37,7 @@ defmodule Bolt.MixProject do
 
       # Monitoring (CAW CAW CAW)
       {:crow, "~> 0.2"},
-      {:crow_plugins, github: "jchristgit/crow_plugins", ref: "io-area-graph"},
+      {:crow_plugins, github: "jchristgit/crow_plugins"},
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

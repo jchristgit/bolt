@@ -6,7 +6,7 @@
   "cowlib": {:hex, :cowlib, "2.12.0", "58b73b75bee32295a3e2cb37cd73d7b41e8b0c9c9a235869e6bfcce3fc1a63aa", [:make, :rebar3], [], "hexpm", "fa8a335b7c61263317c6214676cfb8c448ae9c36bad3d98df9cb166265940fd1"},
   "credo": {:hex, :credo, "1.7.0", "6119bee47272e85995598ee04f2ebbed3e947678dee048d10b5feca139435f75", [:mix], [{:bunt, "~> 0.2.1", [hex: :bunt, repo: "hexpm", optional: false]}, {:file_system, "~> 0.2.8", [hex: :file_system, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm", "6839fcf63d1f0d1c0f450abc8564a57c43d644077ab96f2934563e68b8a769d7"},
   "crow": {:hex, :crow, "0.2.0", "471e45b212e2a434b9e3da837e306e8b9844ccebd569a05265a2089fc778d1ff", [:mix], [], "hexpm", "3ed2c57916233c0dde6b53b6e3ed9d9b30f17f175e5fb54aa346b74983f15229"},
-  "crow_plugins": {:git, "https://github.com/jchristgit/crow_plugins.git", "abdeafe4783f971fdf3ce74c7008d1cc1aeb0bc6", [ref: "io-area-graph"]},
+  "crow_plugins": {:git, "https://github.com/jchristgit/crow_plugins.git", "d0e56ac808069187c52436426516b30349162346", []},
   "curve25519": {:hex, :curve25519, "1.0.4", "e570561b832c29b3ce4fd8b9fcd9c9546916188860568f1c1fc9428d7cb00894", [:mix], [], "hexpm", "1a068bf9646e7067bf6aa5bf802b404002734e09bb5300f098109df03e31f9f5"},
   "db_connection": {:hex, :db_connection, "2.5.0", "bb6d4f30d35ded97b29fe80d8bd6f928a1912ca1ff110831edcd238a1973652c", [:mix], [{:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "c92d5ba26cd69ead1ff7582dbb860adeedfff39774105a4f1c92cbb654b55aa2"},
   "decimal": {:hex, :decimal, "2.1.1", "5611dca5d4b2c3dd497dec8f68751f1f1a54755e8ed2a966c2633cf885973ad6", [:mix], [], "hexpm", "53cfe5f497ed0e7771ae1a475575603d77425099ba5faef9394932b35020ffcc"},
