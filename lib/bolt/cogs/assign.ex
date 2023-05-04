@@ -7,7 +7,7 @@ defmodule Bolt.Cogs.Assign do
   alias Bolt.{Converters, ErrorFormatters, Helpers, Humanizer, ModLog, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   require Logger
 
   @impl true
@@ -116,11 +116,7 @@ defmodule Bolt.Cogs.Assign do
       "🚫 no valid roles to be given - if you meant to assign a single role, " <>
         "check your spelling. errors:\n#{errors |> Stream.map(&"• #{&1}") |> Enum.join("\n")}"
     else
-      with {:ok, member} when member != nil <-
-             GuildCache.select(
-               msg.guild_id,
-               &Map.get(&1.members, msg.author.id)
-             ),
+      with {:ok, member} <- MemberCache.get(msg.guild_id, msg.author.id),
            {:ok, _member} <-
              Api.modify_guild_member(msg.guild_id, msg.author.id,
                roles: Enum.uniq(member.roles ++ Enum.map(selected_self_assignable_roles, & &1.id))

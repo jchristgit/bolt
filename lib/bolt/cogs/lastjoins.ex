@@ -69,7 +69,6 @@ defmodule Bolt.Cogs.LastJoins do
   @impl true
   def command(msg, {options, _args, []}) do
     {limit, options} = Keyword.pop_first(options, :total, @default_shown)
-    total_members = MemberCache.get(msg.guild_id) |> Enum.count()
 
     most_recent_members =
       msg.guild_id
@@ -176,7 +175,7 @@ defmodule Bolt.Cogs.LastJoins do
         key when size < limit ->
           {:gb_trees.insert(key, item, tree), key, size + 1}
 
-        key ->
+        _key ->
           {tree, smallest, size}
       end
     end)

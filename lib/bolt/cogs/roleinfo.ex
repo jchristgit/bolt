@@ -6,7 +6,7 @@ defmodule Bolt.Cogs.RoleInfo do
   alias Bolt.{Converters, Helpers}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Snowflake
   alias Nostrum.Struct.Guild.Role
   alias Nostrum.Struct.{Embed, Guild}
@@ -93,15 +93,9 @@ defmodule Bolt.Cogs.RoleInfo do
 
   @spec count_role_members(Role.id(), Guild.id()) :: String.t()
   defp count_role_members(role_id, guild_id) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        guild.members
-        |> Map.values()
-        |> Enum.count(&(role_id in &1.roles))
-        |> Integer.to_string()
-
-      _error ->
-        "*unknown, guild not cached*"
-    end
+    guild_id
+    |> MemberCache.get()
+    |> Enum.count(&(role_id in &1.roles))
+    |> Integer.to_string()
   end
 end

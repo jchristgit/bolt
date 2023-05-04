@@ -7,7 +7,7 @@ defmodule Bolt.Cogs.UidRange do
   alias Bolt.Paginator
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.Embed
 
   @impl true
@@ -63,23 +63,15 @@ defmodule Bolt.Cogs.UidRange do
   end
 
   defp find_matches(guild_id, from) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        Stream.filter(guild.members, fn {flake, _member} -> flake >= from end)
-
-      {:error, _why} = result ->
-        result
-    end
+    guild_id
+    |> MemberCache.get()
+    |> Stream.filter(fn %{user_id: id} -> id >= from end)
   end
 
   defp find_matches(guild_id, from, to) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        Stream.filter(guild.members, fn {flake, _member} -> flake in from..to end)
-
-      {:error, _why} = result ->
-        result
-    end
+    guild_id
+    |> MemberCache.get()
+    |> Stream.filter(fn %{user_id: id} -> id in from..to end)
   end
 
   defp display_matches({:error, why}, where) do

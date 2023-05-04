@@ -5,7 +5,7 @@ defmodule Bolt.Cogs.Infraction.User do
 
   alias Bolt.Cogs.Infraction.General
   alias Nosedrum.Predicates
-  alias Bolt.{Constants, Helpers, Paginator, Repo}
+  alias Bolt.{Constants, Helpers, Humanizer, Paginator, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
@@ -41,7 +41,7 @@ defmodule Bolt.Cogs.Infraction.User do
 
         queryset = Repo.all(query)
 
-        user_string = General.format_user(msg.guild_id, user_id)
+        user_string = Humanizer.human_user(user_id)
 
         base_embed = %Embed{
           title: "Infractions for #{user_string}",

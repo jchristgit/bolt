@@ -32,7 +32,7 @@ config :crow,
      tables: [
        :nostrum_channels,
        :nostrum_guilds,
-       # :nostrum_members,
+       :nostrum_members,
        :nostrum_users
      ]},
     {CrowPlugins.BEAM.ETS,
@@ -41,7 +41,7 @@ config :crow,
      tables: [
        :nostrum_channels,
        :nostrum_guilds,
-       # :nostrum_members,
+       :nostrum_members,
        :nostrum_users
      ]},
     CrowPlugins.BEAM.GarbageCollections,

@@ -5,12 +5,11 @@ defmodule Bolt.Cogs.Infraction.Detail do
 
   alias Bolt.Cogs.Infraction.General
   alias Nosedrum.Predicates
-  alias Bolt.{Constants, Helpers, Repo}
+  alias Bolt.{Constants, Helpers, Humanizer, Repo}
   alias Bolt.Schema.Infraction
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.{Field, Footer}
-  alias Nostrum.Struct.Message
 
   @spec add_specific_fields(Embed.t(), Infraction) :: Embed.t()
   defp add_specific_fields(embed, %Infraction{type: "temprole", data: data}) do
@@ -62,15 +61,15 @@ defmodule Bolt.Cogs.Infraction.Detail do
     end
   end
 
-  @spec format_detail(Message.t(), Infraction) :: Embed.t()
-  defp format_detail(msg, infraction) do
+  @spec format_detail(Infraction) :: Embed.t()
+  defp format_detail(infraction) do
     %Embed{
       title: "Infraction ##{infraction.id}",
       color: Constants.color_blue(),
       fields: [
         %Field{
           name: "User",
-          value: General.format_user(msg.guild_id, infraction.user_id),
+          value: Humanizer.human_user(infraction.user_id),
           inline: true
         },
         %Field{
@@ -86,7 +85,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
         }
       ],
       footer: %Footer{
-        text: "authored by #{General.format_user(msg.guild_id, infraction.actor_id)}"
+        text: "authored by #{Humanizer.human_user(infraction.actor_id)}"
       }
     }
     |> add_specific_fields(infraction)
@@ -139,7 +138,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
     with {id, _} <- Integer.parse(maybe_id),
          infraction when infraction != nil <-
            Repo.get_by(Infraction, id: id, guild_id: msg.guild_id) do
-      embed = format_detail(msg, infraction)
+      embed = format_detail(infraction)
       {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
     else
       nil ->

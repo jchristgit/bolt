@@ -5,7 +5,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
   alias Bolt.Schema.{Infraction, JoinAction}
   alias Nostrum.Api
   alias Nostrum.Snowflake
-  alias Nostrum.Struct.{Guild, Message, User}
+  alias Nostrum.Struct.{Guild, Message}
   import Ecto.Query, only: [from: 2]
 
   @spec handle(Guild.id(), Guild.Member.t()) :: {:ok, Message.t()}
@@ -43,14 +43,14 @@ defmodule Bolt.Consumer.GuildMemberAdd do
           # credo:disable-for-next-line Credo.Check.Refactor.Nesting
           case Api.add_guild_member_role(
                  guild_id,
-                 member.user.id,
+                 member.user_id,
                  temprole_infraction.data["role_id"]
                ) do
             {:ok} ->
               ModLog.emit(
                 guild_id,
                 "INFRACTION_EVENTS",
-                "member #{Humanizer.human_user(member.user)} with active temprole" <>
+                "member #{Humanizer.human_user(member.user_id)} with active temprole" <>
                   " (#{Humanizer.human_role(guild_id, temprole_infraction.data["role_id"])}) rejoined, temporary role was reapplied"
               )
 
@@ -58,7 +58,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
               ModLog.emit(
                 guild_id,
                 "INFRACTION_EVENTS",
-                "member #{Humanizer.human_user(member.user)} with active temprole" <>
+                "member #{Humanizer.human_user(member.user_id)} with active temprole" <>
                   " rejoined, but failed to reapply role: `#{reason}`"
               )
           end
@@ -84,7 +84,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
          guild_id,
          member
        ) do
-    case Api.add_guild_member_role(guild_id, member.user.id, role_id) do
+    case Api.add_guild_member_role(guild_id, member.user_id, role_id) do
       {:ok} ->
         :ok
 
@@ -92,7 +92,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
         ModLog.emit(
           guild_id,
           "ERROR",
-          "tried adding role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(member.user)} " <>
+          "tried adding role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(member.user_id)} " <>
             "but got an API error: #{reason} (status code #{status})"
         )
     end
@@ -106,7 +106,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
          _guild_id,
          member
        ) do
-    text = String.replace(template, "{mention}", User.mention(member.user))
+    text = String.replace(template, "{mention}", Guild.Member.mention(member))
 
     Api.create_message(target_channel, text)
   end
@@ -116,9 +116,9 @@ defmodule Bolt.Consumer.GuildMemberAdd do
          _guild_id,
          member
        ) do
-    text = String.replace(template, "{mention}", User.mention(member.user))
+    text = String.replace(template, "{mention}", Guild.Member.mention(member))
 
-    case Api.create_dm(member.user.id) do
+    case Api.create_dm(member.user_id) do
       {:ok, dm_channel} ->
         Api.create_message(dm_channel.id, text)
 
