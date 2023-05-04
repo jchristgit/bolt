@@ -8,13 +8,13 @@ defmodule Bolt.CrowPlugins.NostrumCache do
 
   @doc false
   @impl true
-  def name do
+  def name(_opts) do
     'nostrum_cache'
   end
 
   @doc false
   @impl true
-  def config do
+  def config(_opts) do
     [
       'graph_title Nostrum cache contents',
       'graph_args -l 0',
@@ -33,7 +33,7 @@ defmodule Bolt.CrowPlugins.NostrumCache do
 
   @doc false
   @impl true
-  def values do
+  def values(_opts) do
     [
       'channels.value #{table_size(ChannelCache.ETS.tabname())}',
       'guilds.value #{table_size(GuildCache.ETS.tabname())}',
@@ -43,6 +43,6 @@ defmodule Bolt.CrowPlugins.NostrumCache do
   end
 
   defp table_size(name) do
-    :ets.info(name)[:size]
+    :ets.info(name, :size)
   end
 end

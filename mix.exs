@@ -36,8 +36,8 @@ defmodule Bolt.MixProject do
       {:postgrex, "~> 0.14"},
 
       # Monitoring (CAW CAW CAW)
-      {:crow, "~> 0.1"},
-      {:crow_plugins, "~> 0.1"},
+      {:crow, "~> 0.2"},
+      {:crow_plugins, "~> 0.2"},
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
