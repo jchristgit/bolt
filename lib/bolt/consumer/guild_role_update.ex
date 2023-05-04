@@ -51,27 +51,22 @@ defmodule Bolt.Consumer.GuildRoleUpdate do
     old_value = Map.get(old_role, key)
     new_value = Map.get(new_role, key)
 
-    if old_value != new_value do
-      cond do
-        new_value === true ->
-          diff_list ++ ["now #{key}"]
+    cond do
+      old_value == new_value ->
+        diff_list
 
-        new_value === false ->
-          diff_list ++ ["no longer #{key}"]
+      new_value === true ->
+        diff_list ++ ["now #{key}"]
 
-        true ->
-          description =
-            if key == :name do
-              "name updated from `#{Helpers.clean_content(old_value)}` " <>
-                "to `#{Helpers.clean_content(new_value)}`"
-            else
-              "#{Atom.to_string(key)} updated from `#{old_value}` to `#{new_value}`"
-            end
+      new_value === false ->
+        diff_list ++ ["no longer #{key}"]
 
-          diff_list ++ [description]
-      end
-    else
-      diff_list
+      true ->
+        description =
+          "#{key} updated from `#{Helpers.clean_content(to_string(old_value))}` " <>
+            "to `#{Helpers.clean_content(to_string(new_value))}`"
+
+        diff_list ++ [description]
     end
   end
 end

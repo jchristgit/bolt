@@ -97,8 +97,7 @@ defmodule Bolt.Cogs.RoleInfo do
       {:ok, guild} ->
         guild.members
         |> Map.values()
-        |> Enum.filter(&(role_id in &1.roles))
-        |> Enum.count()
+        |> Enum.count(&(role_id in &1.roles))
         |> Integer.to_string()
 
       _error ->

@@ -21,7 +21,7 @@ defmodule Bolt.USW.Rules.Burst do
     if total_recents >= limit do
       USW.punish(
         msg.guild_id,
-        msg.author,
+        msg.author.id,
         "sending #{total_recents} messages in #{interval}s"
       )
 

@@ -21,7 +21,7 @@ defmodule Bolt.USW.Rules.Mentions do
     if recent_mentions >= limit do
       USW.punish(
         msg.guild_id,
-        msg.author,
+        msg.author.id,
         "sending #{recent_mentions} user mentions in #{interval}s"
       )
 

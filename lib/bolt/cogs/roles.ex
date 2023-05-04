@@ -74,14 +74,7 @@ defmodule Bolt.Cogs.Roles do
     reverse = Keyword.get(parsed, :reverse)
 
     if sort_by in ["members", "name", "position"] do
-      chunker = fn all_roles ->
-        all_roles
-        |> Enum.sort_by(&sort_key(sort_by, &1, msg.guild_id), get_sorter(sort_by, reverse))
-        |> Stream.map(&display_role(compact, mention_roles, &1))
-        |> Stream.chunk_every(if(compact, do: 50, else: 15))
-        |> Stream.map(&Enum.join(&1, if(compact, do: ", ", else: "\n")))
-        |> Enum.map(&%Embed{description: &1})
-      end
+      chunker = make_chunker(sort_by, msg.guild_id, reverse, compact, mention_roles)
 
       title =
         if parsed in [[], [compact: true]],
@@ -160,4 +153,15 @@ defmodule Bolt.Cogs.Roles do
   defp display_role(true, false, role), do: role.name
   defp display_role(false, true, role), do: "`#{role.id}` - #{Role.mention(role)}"
   defp display_role(false, false, role), do: "`#{role.id}` - #{role.name}"
+
+  defp make_chunker(sort_by, guild_id, reverse, compact, mention_roles) do
+    fn all_roles ->
+      all_roles
+      |> Enum.sort_by(&sort_key(sort_by, &1, guild_id), get_sorter(sort_by, reverse))
+      |> Stream.map(&display_role(compact, mention_roles, &1))
+      |> Stream.chunk_every(if(compact, do: 50, else: 15))
+      |> Stream.map(&Enum.join(&1, if(compact, do: ", ", else: "\n")))
+      |> Enum.map(&%Embed{description: &1})
+    end
+  end
 end

@@ -27,7 +27,7 @@ defmodule Bolt.USW.Rules.Links do
     if recent_links >= limit do
       USW.punish(
         msg.guild_id,
-        msg.author,
+        msg.author.id,
         "sending #{recent_links} links in #{interval}s"
       )
 

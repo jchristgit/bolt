@@ -77,29 +77,29 @@ defmodule Bolt.Parsers do
         |> String.codepoints()
         # Thanks to https://github.com/jos-b
         # for coming up with this smart solution.
-        |> Enum.reduce("", fn char, acc ->
-          if char in @single_digit_numbers do
-            acc <> char
-          else
-            acc <> char <> " "
-          end
-        end)
+        |> Enum.reduce("", &accumulate_duration_blocks/2)
         |> String.split()
         |> Enum.map(&seconds/1)
 
       case Enum.find(parsed_seconds, &match?({:error, _}, &1)) do
-        {:error, _reason} = res ->
-          res
-
-        nil ->
-          total_seconds =
-            parsed_seconds
-            |> Stream.map(fn {:ok, seconds} -> seconds end)
-            |> Enum.sum()
-
-          {:ok, total_seconds}
+        {:error, _reason} = res -> res
+        nil -> {:ok, sum_parsed_seconds(parsed_seconds)}
       end
     end
+  end
+
+  defp accumulate_duration_blocks(char, acc) do
+    if char in @single_digit_numbers do
+      acc <> char
+    else
+      acc <> char <> " "
+    end
+  end
+
+  defp sum_parsed_seconds(parsed) do
+    parsed
+    |> Stream.map(fn {:ok, seconds} -> seconds end)
+    |> Enum.sum()
   end
 
   @doc """

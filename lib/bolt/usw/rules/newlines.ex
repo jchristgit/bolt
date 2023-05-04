@@ -26,7 +26,7 @@ defmodule Bolt.USW.Rules.Newlines do
     if recent_newlines >= limit do
       USW.punish(
         msg.guild_id,
-        msg.author,
+        msg.author.id,
         "sending #{recent_newlines} newlines in #{interval}s"
       )
 

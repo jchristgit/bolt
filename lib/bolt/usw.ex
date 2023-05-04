@@ -89,7 +89,7 @@ defmodule Bolt.USW do
   defp level_description(true, 0), do: ""
   defp level_description(true, level), do: "- escalation level #{level}"
 
-  @spec execute_config(USWPunishmentConfig, User.t(), String.t()) ::
+  @spec execute_config(USWPunishmentConfig, User.id(), String.t()) ::
           (() -> {:ok, Message.t()} | Api.error() | :noop)
   defp execute_config(
          %USWPunishmentConfig{
@@ -99,21 +99,21 @@ defmodule Bolt.USW do
            data: %{"role_id" => role_id},
            duration: expiry_seconds
          },
-         user,
+         user_id,
          description
        ) do
-    case Api.add_guild_member_role(guild_id, user.id, role_id) do
+    case Api.add_guild_member_role(guild_id, user_id, role_id) do
       {:ok} ->
-        escalator_level = Escalator.level_for(user.id)
+        escalator_level = Escalator.level_for(user_id)
         expiry_seconds = calculate_expiry(expiry_seconds, escalator_level, escalator_enabled)
-        Deduplicator.add(user.id, expiry_seconds * 1000)
+        Deduplicator.add(user_id, expiry_seconds * 1000)
         level_string = level_description(escalator_enabled, escalator_level)
-        maybe_bump_escalator(user.id, expiry_seconds, escalator_enabled)
+        maybe_bump_escalator(user_id, expiry_seconds, escalator_enabled)
 
         infraction_map = %{
           type: "temprole",
           guild_id: guild_id,
-          user_id: user.id,
+          user_id: user_id,
           actor_id: Me.get().id,
           reason: "(automod) #{description}#{level_string}",
           expires_at:
@@ -129,17 +129,17 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)}" <>
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user_id)}" <>
             " for #{expiry_seconds}s: #{description}#{level_string} (##{infraction_id})"
         )
 
-        dm_user(guild_id, user)
+        dm_user(guild_id, user_id)
 
       {:error, %{status_code: status, message: %{"message" => reason}}} ->
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "attempted adding temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)})" <>
+          "attempted adding temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user_id)})" <>
             " but got API error: #{reason} (status code #{status})"
         )
 
@@ -147,7 +147,7 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user)} " <>
+          "added temporary role #{Humanizer.human_role(guild_id, role_id)} to #{Humanizer.human_user(user_id)} " <>
             "but got an unexpected error: #{ErrorFormatters.fmt(nil, error)}"
         )
     end
@@ -160,24 +160,24 @@ defmodule Bolt.USW do
            punishment: "TIMEOUT",
            duration: expiry_seconds
          },
-         user,
+         user_id,
          description
        ) do
     now = DateTime.utc_now()
     timeout_until = DateTime.add(now, expiry_seconds)
 
-    case Api.modify_guild_member(guild_id, user.id, communication_disabled_until: timeout_until) do
+    case Api.modify_guild_member(guild_id, user_id, communication_disabled_until: timeout_until) do
       {:ok, _member} ->
-        escalator_level = Escalator.level_for(user.id)
+        escalator_level = Escalator.level_for(user_id)
         expiry_seconds = calculate_expiry(expiry_seconds, escalator_level, escalator_enabled)
-        Deduplicator.add(user.id, expiry_seconds * 1000)
+        Deduplicator.add(user_id, expiry_seconds * 1000)
         level_string = level_description(escalator_enabled, escalator_level)
-        maybe_bump_escalator(user.id, expiry_seconds, escalator_enabled)
+        maybe_bump_escalator(user_id, expiry_seconds, escalator_enabled)
 
         infraction = %{
           type: "timeout",
           guild_id: guild_id,
-          user_id: user.id,
+          user_id: user_id,
           actor_id: Me.get().id,
           reason: "(automod) #{description}#{level_string}",
           expires_at: timeout_until,
@@ -191,17 +191,17 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "timed out user #{Humanizer.human_user(user)}" <>
+          "timed out user #{Humanizer.human_user(user_id)}" <>
             " for #{expiry_seconds}s: #{description}#{level_string} (##{infraction_id})"
         )
 
-        dm_user(guild_id, user)
+        dm_user(guild_id, user_id)
 
       {:error, %{status_code: status, response: %{message: reason}}} ->
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "attempted timing out #{Humanizer.human_user(user)})" <>
+          "attempted timing out #{Humanizer.human_user(user_id)})" <>
             " but got API error: #{reason} (status code #{status})"
         )
 
@@ -209,29 +209,29 @@ defmodule Bolt.USW do
         ModLog.emit(
           guild_id,
           "AUTOMOD",
-          "timed out #{Humanizer.human_user(user)} " <>
+          "timed out #{Humanizer.human_user(user_id)} " <>
             "but got an unexpected error: #{ErrorFormatters.fmt(nil, error)}"
         )
     end
   end
 
-  @spec preflight_checks(USWPunishmentConfig.t(), User.t()) :: boolean()
-  defp preflight_checks(config, user) do
+  @spec preflight_checks(USWPunishmentConfig.t(), User.id()) :: boolean()
+  defp preflight_checks(config, user_id) do
     %User{id: my_id} = Me.get()
-    {:ok, bot_above_user} = Helpers.is_above(config.guild_id, my_id, user.id)
-    !Deduplicator.contains?(user.id) && bot_above_user
+    {:ok, bot_above_user} = Helpers.is_above(config.guild_id, my_id, user_id)
+    !Deduplicator.contains?(user_id) && bot_above_user
   end
 
-  @spec punish(Guild.id(), User.t(), String.t()) :: :noop | {:ok, Message.t()}
-  def punish(guild_id, user, description) do
+  @spec punish(Guild.id(), User.id(), String.t()) :: :noop | {:ok, Message.t()}
+  def punish(guild_id, user_id, description) do
     case Repo.get(USWPunishmentConfig, guild_id) do
       nil ->
         :noop
 
       config ->
-        case preflight_checks(config, user) do
+        case preflight_checks(config, user_id) do
           true ->
-            execute_config(config, user, description)
+            execute_config(config, user_id, description)
 
           false ->
             :noop
@@ -239,9 +239,9 @@ defmodule Bolt.USW do
     end
   end
 
-  @spec dm_user(Guild.id(), User.t()) :: :noop | {:ok, Message.t()} | Api.Error
-  defp dm_user(guild_id, user) do
-    case Api.create_dm(user.id) do
+  @spec dm_user(Guild.id(), User.id()) :: :noop | {:ok, Message.t()} | Api.Error
+  defp dm_user(guild_id, user_id) do
+    case Api.create_dm(user_id) do
       {:ok, dm} ->
         guild_desc =
           case GuildCache.select(guild_id, & &1.name) do

@@ -4,7 +4,6 @@ defmodule Bolt.USW.Rules.Duplicates do
 
   alias Bolt.USW
   alias Nosedrum.MessageCache.Agent, as: MessageCache
-  alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Snowflake
   require Logger
 
@@ -22,24 +21,11 @@ defmodule Bolt.USW.Rules.Duplicates do
     recent_duplicates = length(relevant_messages)
 
     if recent_duplicates >= limit do
+      reason = "sending #{recent_duplicates} duplicated messages in #{interval}s"
+
       relevant_messages
       |> Stream.dedup_by(& &1.author.id)
-      |> Enum.each(fn duplicated_message ->
-        case UserCache.get(duplicated_message.author.id) do
-          {:ok, user} ->
-            USW.punish(
-              msg.guild_id,
-              user,
-              "sending #{recent_duplicates} duplicated messages in #{interval}s"
-            )
-
-          {:error, reason} ->
-            Logger.warn(fn ->
-              "attempted applying USW punishment to #{duplicated_message.author.id}," <>
-                " but the user was not found in the cache (error: #{reason})"
-            end)
-        end
-      end)
+      |> Enum.each(&USW.punish(msg.guild_id, &1, reason))
 
       :action
     else
