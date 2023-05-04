@@ -8,7 +8,7 @@ defmodule Bolt.Cogs.Tag.Info do
   alias Bolt.{Helpers, Repo}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.{Embed, User}
   import Ecto.Query, only: [from: 2]
 
@@ -48,8 +48,8 @@ defmodule Bolt.Cogs.Tag.Info do
 
       [tag] ->
         creator_string =
-          case GuildCache.select(msg.guild_id, &Map.get(&1.members, tag.author_id)) do
-            {:ok, author} when author != nil -> User.mention(author.user)
+          case MemberCache.get(msg.guild_id, tag.author_id) do
+            {:ok, author} -> User.mention(author.user)
             _error -> "unknown user (`#{tag.author_id}`)"
           end
 

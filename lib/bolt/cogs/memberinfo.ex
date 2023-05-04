@@ -6,7 +6,7 @@ defmodule Bolt.Cogs.MemberInfo do
   alias Bolt.{Converters, Helpers}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Snowflake
   alias Nostrum.Struct.{Embed, User}
 
@@ -72,17 +72,13 @@ defmodule Bolt.Cogs.MemberInfo do
 
   @impl true
   def command(msg, "") do
-    with {:ok, guild} <- GuildCache.get(msg.guild_id),
-         member when member != nil <- Map.get(guild.members, msg.author.id) do
-      embed = format_member_info(msg.guild_id, member)
-      {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
-    else
-      nil ->
-        response = "❌ failed to find you in this guild's members - that's a bit weird"
-        {:ok, _msg} = Api.create_message(msg.channel_id, response)
+    case MemberCache.get(msg.guild_id, msg.author.id) do
+      {:ok, member} ->
+        embed = format_member_info(msg.guild_id, member)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
 
-      {:error, reason} ->
-        response = "❌ error: #{Helpers.clean_content(reason)}"
+      {:error, _reason} ->
+        response = "❌ failed to find you in this guild's members - that's a bit weird"
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
     end
   end

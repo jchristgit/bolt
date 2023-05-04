@@ -4,6 +4,7 @@ defmodule Bolt.Helpers do
   alias Bolt.Converters
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Guild.{Member, Role}
   alias Nostrum.Struct.User
@@ -40,31 +41,14 @@ defmodule Bolt.Helpers do
           User.id()
         ) :: {:ok, Member.t()} | {:error, String.t()}
   def get_member(guild_id, author_id) do
-    case GuildCache.get(guild_id) do
-      {:ok, guild} ->
-        case Map.get(
-               guild.members,
-               author_id,
-               {
-                 :error,
-                 "there is no member with ID #{author_id} in this guild"
-               }
-             ) do
-          {:error, reason} -> {:error, reason}
-          member -> {:ok, member}
-        end
+    case MemberCache.get(guild_id, author_id) do
+      {:ok, _member} = result ->
+        result
 
       {:error, _reason} ->
         case Api.get_guild_member(guild_id, author_id) do
-          {:ok, member} ->
-            {:ok, member}
-
-          {:error, _why} ->
-            {
-              :error,
-              "This guild is not in the cache, and no " <>
-                "member with the ID #{author_id} could be found"
-            }
+          {:ok, _member} = result -> result
+          {:error, _why} -> {:error, "member not be found in cache nor via the API"}
         end
     end
   end
@@ -120,6 +104,7 @@ defmodule Bolt.Helpers do
   @spec clean_content(boolean() | String.t()) :: String.t()
   def clean_content(true), do: "true"
   def clean_content(false), do: "false"
+
   def clean_content(content) when is_binary(content) do
     content
     |> String.replace("@everyone", "@\u200Beveryone")
@@ -138,7 +123,7 @@ defmodule Bolt.Helpers do
 
       :error ->
         case Converters.to_member(guild_id, text) do
-          {:ok, member} -> {:ok, member.user.id, member.user}
+          {:ok, member} -> {:ok, member.user_id, nil}
           {:error, _} = error -> error
         end
     end

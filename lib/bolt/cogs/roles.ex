@@ -7,6 +7,7 @@ defmodule Bolt.Cogs.Roles do
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild.Role
 
@@ -126,16 +127,9 @@ defmodule Bolt.Cogs.Roles do
   @spec sort_key(sort_by :: String.t(), role :: Role.t(), guild_id :: Guild.id()) ::
           non_neg_integer() | String.t()
   defp sort_key("members", role, guild_id) do
-    selector = fn guild ->
-      guild.members
-      |> Map.values()
-      |> Enum.count(&(role.id in &1.roles))
-    end
-
-    case GuildCache.select(guild_id, selector) do
-      {:ok, count} -> count
-      {:error, _why} -> role.name
-    end
+    guild_id
+    |> MemberCache.get()
+    |> Enum.count(&(role.id in &1.roles))
   end
 
   defp sort_key("name", role, _guild_id), do: role.name

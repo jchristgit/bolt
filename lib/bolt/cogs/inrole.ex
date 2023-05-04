@@ -1,12 +1,13 @@
 defmodule Bolt.Cogs.InRole do
   @moduledoc "Shows members in the given role."
+  @maximum_fetched 500
 
   @behaviour Nosedrum.Command
 
   alias Bolt.{Constants, Converters, ErrorFormatters, Paginator}
   alias Nosedrum.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.{Embed, User}
 
   @impl true
@@ -16,6 +17,8 @@ defmodule Bolt.Cogs.InRole do
   def description,
     do: """
     Show members in the given role. The converter is case-insensitive.
+
+    The command is capped to show at most #{@maximum_fetched} members.
 
     **Example**:
     ```rs
@@ -37,34 +40,34 @@ defmodule Bolt.Cogs.InRole do
   end
 
   def command(msg, role_string) do
-    with {:ok, role} <- Converters.to_role(msg.guild_id, role_string, true),
-         {:ok, members} <-
-           GuildCache.select(
-             msg.guild_id,
-             fn guild ->
-               guild.members
-               |> Map.values()
-               |> Enum.filter(&(role.id in &1.roles))
-             end
-           ) do
-      base_embed = %Embed{
-        title: "Members with role `#{role.name}` (`#{length(members)}` total)",
-        color: Constants.color_blue()
-      }
+    case Converters.to_role(msg.guild_id, role_string, true) do
+      {:ok, role} ->
+        members =
+          msg.guild_id
+          |> MemberCache.get_with_users()
+          |> Stream.filter(fn {member, _user} -> role.id in member.roles end)
 
-      pages =
-        members
-        |> Enum.sort_by(&String.downcase(&1.user.username))
-        |> Stream.map(&"#{User.full_name(&1.user)} (#{User.mention(&1.user)})")
-        |> Stream.chunk_every(25)
-        |> Enum.map(fn mention_chunk ->
-          %Embed{
-            description: Enum.join(mention_chunk, ", ")
-          }
-        end)
+        base_embed = %Embed{
+          title: "Members with role `#{role.name}` (`#{length(members)}` total)",
+          color: Constants.color_blue()
+        }
 
-      Paginator.paginate_over(msg, base_embed, pages)
-    else
+        pages =
+          members
+          |> Enum.take(@maximum_fetched)
+          |> Enum.sort_by(fn {_member, user} -> String.downcase(user.username) end)
+          |> Stream.map(fn {_member, user} ->
+            "#{User.full_name(user)} (#{User.mention(user)})"
+          end)
+          |> Stream.chunk_every(25)
+          |> Enum.map(fn mention_chunk ->
+            %Embed{
+              description: Enum.join(mention_chunk, ", ")
+            }
+          end)
+
+        Paginator.paginate_over(msg, base_embed, pages)
+
       error ->
         response = ErrorFormatters.fmt(msg, error)
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
