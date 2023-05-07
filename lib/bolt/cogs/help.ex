@@ -51,7 +51,7 @@ defmodule Bolt.Cogs.Help do
   end
 
   @impl true
-  def command(%Message{channel_id: channel_id, content: "man"}, []) do
+  def command(%Message{channel_id: channel_id, content: ".man"}, []) do
     Api.create_message!(channel_id, "What manual page do you want?")
   end
 
