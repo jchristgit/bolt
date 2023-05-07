@@ -30,19 +30,19 @@ config :crow,
      name: 'nostrum_caches',
      mode: :memory,
      tables: [
-       :nostrum_channels,
-       :nostrum_guilds,
+       :nostrum_users,
        :nostrum_members,
-       :nostrum_users
+       :nostrum_guilds,
+       :nostrum_channels
      ]},
     {CrowPlugins.BEAM.ETS,
      name: 'nostrum_caches',
      mode: :items,
      tables: [
-       :nostrum_channels,
-       :nostrum_guilds,
+       :nostrum_users,
        :nostrum_members,
-       :nostrum_users
+       :nostrum_guilds,
+       :nostrum_channels
      ]},
     CrowPlugins.BEAM.GarbageCollections,
     CrowPlugins.BEAM.IO,
