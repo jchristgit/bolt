@@ -7,6 +7,7 @@ defmodule Bolt.Cogs.Help do
   alias Nosedrum.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
+  alias Nostrum.Struct.Message
 
   @spec prefix() :: String.t()
   defp prefix, do: Application.fetch_env!(:bolt, :prefix)
@@ -50,6 +51,10 @@ defmodule Bolt.Cogs.Help do
   end
 
   @impl true
+  def command(%Message{content: "man"}, []) do
+    Api.create_message!("What manual page do you want?")
+  end
+
   def command(msg, []) do
     embed = %Embed{
       title: "All commands",
