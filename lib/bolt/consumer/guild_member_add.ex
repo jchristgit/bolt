@@ -5,7 +5,8 @@ defmodule Bolt.Consumer.GuildMemberAdd do
   alias Bolt.Schema.{Infraction, JoinAction}
   alias Nostrum.Api
   alias Nostrum.Snowflake
-  alias Nostrum.Struct.{Guild, Message, User}
+  alias Nostrum.Struct.{Guild, Message}
+  alias Nostrum.Struct.Guild.Member
   import Ecto.Query, only: [from: 2]
 
   @spec handle(Guild.id(), Guild.Member.t()) :: {:ok, Message.t()}
@@ -106,7 +107,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
          _guild_id,
          member
        ) do
-    text = String.replace(template, "{mention}", User.mention(member.user))
+    text = String.replace(template, "{mention}", Member.mention(member))
 
     Api.create_message(target_channel, text)
   end
@@ -116,7 +117,7 @@ defmodule Bolt.Consumer.GuildMemberAdd do
          _guild_id,
          member
        ) do
-    text = String.replace(template, "{mention}", User.mention(member.user))
+    text = String.replace(template, "{mention}", Member.mention(member))
 
     case Api.create_dm(member.user.id) do
       {:ok, dm_channel} ->
