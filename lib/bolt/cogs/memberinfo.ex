@@ -7,22 +7,20 @@ defmodule Bolt.Cogs.MemberInfo do
   alias Nosedrum.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.MemberCache
+  alias Nostrum.Cache.UserCache
   alias Nostrum.Snowflake
-  alias Nostrum.Struct.{Embed, User}
+  alias Nostrum.Struct.{Embed, Guild, User}
 
-  @spec format_member_info(Nostrum.Struct.Snowflake.t(), Guild.Member.t()) :: Nostrum.Embed.t()
+  @spec format_member_info(Guild.t(), Guild.Member.t()) :: Nostrum.Embed.t()
   defp format_member_info(guild_id, member) do
-    join_datetime =
-      member.joined_at
-      |> DateTime.from_iso8601()
-      |> elem(1)
-
-    creation_datetime = Snowflake.creation_time(member.user.id)
+    join_datetime = DateTime.from_unix!(member.joined_at)
+    creation_datetime = Snowflake.creation_time(member.user_id)
+    user = UserCache.get!(member.user_id)
 
     embed = %Embed{
-      title: "#{member.user.username}##{member.user.discriminator}",
+      title: "#{user.username}##{user.discriminator}",
       fields: [
-        %Embed.Field{name: "ID", value: "`#{member.user.id}`", inline: true},
+        %Embed.Field{name: "ID", value: "`#{user.id}`", inline: true},
         %Embed.Field{name: "Total roles", value: "#{length(member.roles)}", inline: true},
         %Embed.Field{
           name: "Joined this Guild",
@@ -35,7 +33,7 @@ defmodule Bolt.Cogs.MemberInfo do
           inline: true
         }
       ],
-      thumbnail: %Embed.Thumbnail{url: User.avatar_url(member.user)}
+      thumbnail: %Embed.Thumbnail{url: User.avatar_url(user)}
     }
 
     case Helpers.top_role_for(guild_id, member.user.id) do
