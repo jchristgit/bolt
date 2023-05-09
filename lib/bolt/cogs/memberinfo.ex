@@ -36,7 +36,7 @@ defmodule Bolt.Cogs.MemberInfo do
       thumbnail: %Embed.Thumbnail{url: User.avatar_url(user)}
     }
 
-    case Helpers.top_role_for(guild_id, member.user.id) do
+    case Helpers.top_role_for(guild_id, member.user_id) do
       {:error, reason} ->
         Embed.put_field(embed, "Roles", "*#{reason}*")
 
