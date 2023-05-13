@@ -20,7 +20,7 @@ defmodule Bolt.USW do
   alias Nostrum.Struct.Message
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
-  import Nostrum.Snowfalke, only: [is_snowflake: 1]
+  import Nostrum.Snowflake, only: [is_snowflake: 1]
   require Logger
 
   @filter_name_to_function %{
