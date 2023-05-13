@@ -20,6 +20,7 @@ defmodule Bolt.USW do
   alias Nostrum.Struct.Message
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]
+  import Nostrum.Snowfalke, only: [is_snowflake: 1]
   require Logger
 
   @filter_name_to_function %{
@@ -223,7 +224,8 @@ defmodule Bolt.USW do
   end
 
   @spec punish(Guild.id(), User.id(), String.t()) :: :noop | {:ok, Message.t()}
-  def punish(guild_id, user_id, description) do
+  def punish(guild_id, user_id, description)
+      when is_snowflake(guild_id) and is_snowflake(user_id) do
     case Repo.get(USWPunishmentConfig, guild_id) do
       nil ->
         :noop
