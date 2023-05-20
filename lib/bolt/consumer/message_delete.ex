@@ -9,13 +9,18 @@ defmodule Bolt.Consumer.MessageDelete do
   import Nostrum.Struct.Embed
 
   @spec handle(Channel.id(), Guild.id(), Message.id()) :: {:ok, Message.t()}
-  def handle(_channel_id, guild_id, msg_id) do
+  def handle(channel_id, guild_id, msg_id) do
     cached_message = MessageCache.get(guild_id, msg_id, Bolt.MessageCache)
-    log(cached_message)
+    log(cached_message, channel_id, guild_id, msg_id)
   end
 
   @spec log(Message.t()) :: {:ok, Message.t()}
-  def log(message) do
+  def log(message) when message != nil do
+    log(message, message.channel_id, message.guild_id, message.id)
+  end
+
+  @spec log(Message.t(), Channel.id(), Guild.id(), Message.id()) :: {:ok, Message.t()}
+  def log(message, channel_id, guild_id, msg_id) do
     embed =
       %Embed{
         color: Constants.color_red(),
@@ -23,9 +28,9 @@ defmodule Bolt.Consumer.MessageDelete do
           %Embed.Field{
             name: "Metadata",
             value: """
-            Channel: <##{message.channel_id}>
-            Creation: #{message.id |> Snowflake.creation_time() |> Helpers.datetime_to_human()}
-            Message ID: #{message.id}
+            Channel: <##{channel_id}>
+            Creation: #{msg_id |> Snowflake.creation_time() |> Helpers.datetime_to_human()}
+            Message ID: #{msg_id}
             """,
             inline: true
           }
@@ -34,7 +39,7 @@ defmodule Bolt.Consumer.MessageDelete do
       |> add_content(message)
       |> add_author(message)
 
-    ModLog.emit_embed(message.guild_id, "MESSAGE_DELETE", embed)
+    ModLog.emit_embed(guild_id, "MESSAGE_DELETE", embed)
   end
 
   @spec add_content(Embed.t(), Message.t() | nil) :: Embed.t()
