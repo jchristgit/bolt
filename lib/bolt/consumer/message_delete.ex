@@ -34,7 +34,7 @@ defmodule Bolt.Consumer.MessageDelete do
       |> add_content(message)
       |> add_author(message)
 
-    ModLog.emit_embed(msg.guild_id, "MESSAGE_DELETE", embed)
+    ModLog.emit_embed(message.guild_id, "MESSAGE_DELETE", embed)
   end
 
   @spec add_content(Embed.t(), Message.t() | nil) :: Embed.t()

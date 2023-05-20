@@ -17,8 +17,9 @@ defmodule Bolt.Consumer.GuildBanAdd do
         }) :: :noop | ModLog.on_emit()
   def handle(guild_id, %{user: user}) do
     {:ok, recents} = MessageCache.recent_in_guild(guild_id, :infinity, Bolt.MessageCache)
+
     recents
-    |> Stream.filter(& &1.author.id == user.id)
+    |> Stream.filter(&(&1.author.id == user.id))
     |> Enum.each(&MessageDelete.log/1)
 
     ModLog.emit(
