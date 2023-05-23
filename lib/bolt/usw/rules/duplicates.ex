@@ -25,7 +25,7 @@ defmodule Bolt.USW.Rules.Duplicates do
 
       relevant_messages
       |> Stream.dedup_by(& &1.author.id)
-      |> Enum.each(&USW.punish(msg.guild_id, &1, reason))
+      |> Enum.each(&USW.punish(&1.guild_id, &1.author.id, reason))
 
       :action
     else
