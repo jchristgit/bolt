@@ -35,9 +35,10 @@ defmodule Bolt.MixProject do
       {:jason, "~> 1.0"},
       {:postgrex, "~> 0.14"},
 
-      # Monitoring (CAW CAW CAW)
+      # Operations
       {:crow, "~> 0.2"},
       {:crow_plugins, github: "jchristgit/crow_plugins"},
+      {:castle, "~> 0.3"},
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
