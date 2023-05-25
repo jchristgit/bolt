@@ -1,11 +1,12 @@
 defmodule Bolt.Cogs.Assign do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Schema.SelfAssignableRoles
-  alias Bolt.{Converters, ErrorFormatters, Helpers, Humanizer, ModLog, Repo}
-  alias Nosedrum.Predicates
+  alias Bolt.{ErrorFormatters, Helpers, Humanizer, ModLog, Repo}
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.MemberCache
   require Logger
@@ -34,7 +35,7 @@ defmodule Bolt.Cogs.Assign do
   def command(msg, [role_name]) do
     response =
       with roles_row when roles_row != nil <- Repo.get(SelfAssignableRoles, msg.guild_id),
-           {:ok, role} <- Converters.to_role(msg.guild_id, role_name, true),
+           {:ok, role} <- Converters.to_role(role_name, msg.guild_id, true),
            true <- role.id in roles_row.roles,
            {:ok} <- Api.add_guild_member_role(msg.guild_id, msg.author.id, role.id) do
         ModLog.emit(
@@ -68,7 +69,7 @@ defmodule Bolt.Cogs.Assign do
       roles_row ->
         # Let's check if there's a multi-word role matching the arguments...
         maybe_multi_word_name = Enum.join(args, " ")
-        conversion_result = Converters.to_role(msg.guild_id, maybe_multi_word_name, true)
+        conversion_result = Converters.to_role(maybe_multi_word_name, msg.guild_id, true)
 
         if match?({:ok, _role}, conversion_result) do
           # If yes, we only have a single role we care about,
@@ -77,7 +78,7 @@ defmodule Bolt.Cogs.Assign do
           command(msg, [maybe_multi_word_name])
         else
           # Otherwise, assume we got a list of roles to assign.
-          converted_roles = Enum.map(args, &Converters.to_role(msg.guild_id, &1, true))
+          converted_roles = Enum.map(args, &Converters.to_role(&1, msg.guild_id, true))
           response = assign_converted(msg, converted_roles, roles_row.roles)
           {:ok, _msg} = Api.create_message(msg.channel_id, response)
         end

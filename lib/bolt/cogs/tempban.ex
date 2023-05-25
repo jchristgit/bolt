@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.Tempban do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
 
   alias Bolt.{
     ErrorFormatters,

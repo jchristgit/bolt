@@ -18,10 +18,10 @@ defmodule Bolt.Humanizer do
   @spec human_role(Guild.id(), Role.id()) :: String.t()
   @spec human_role(Guild.id(), Role.t()) :: String.t()
   def human_role(guild_id, role_id) when is_snowflake(role_id) do
-    case GuildCache.select_by([id: guild_id], &Map.get(&1.roles, role_id)) do
-      {:ok, role} when role != nil ->
-        human_role(nil, role)
-
+    with {:ok, guild} <- GuildCache.get(guild_id),
+         {:ok, role} <- Map.get(guild.roles, role_id) do
+      human_role(nil, role)
+    else
       _other ->
         "`#{role_id}`"
     end

@@ -1,6 +1,6 @@
 defmodule Bolt.Cogs.Guide do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Constants
   alias Bolt.Paginator

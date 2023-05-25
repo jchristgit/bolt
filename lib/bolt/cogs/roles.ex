@@ -1,30 +1,23 @@
 defmodule Bolt.Cogs.Roles do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.{Constants, Helpers, Paginator}
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
-  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild.Role
 
   @spec get_role_list(Nostrum.Struct.Snowflake.t()) :: {:ok, [Role.t()]} | {:error, String.t()}
   defp get_role_list(guild_id) do
-    case GuildCache.select(guild_id, &Map.values(&1.roles)) do
-      {:ok, _roles} = result ->
-        result
-
-      {:error, _reason} ->
-        case Api.get_guild_roles(guild_id) do
-          {:ok, _roles} = result ->
-            result
-
-          {:error, _api_error} ->
-            {:error, "Couldn't look up guild from either the cache or the API"}
-        end
+    with {:ok, guild} <- GuildCache.get(guild_id),
+         {:ok, _roles} = result <- Map.fetch(guild, :roles) do
+      result
+    else
+      _error ->
+        {:error, "Couldn't look up guild from the cache"}
     end
   end
 
@@ -127,9 +120,7 @@ defmodule Bolt.Cogs.Roles do
   @spec sort_key(sort_by :: String.t(), role :: Role.t(), guild_id :: Guild.id()) ::
           non_neg_integer() | String.t()
   defp sort_key("members", role, guild_id) do
-    guild_id
-    |> MemberCache.get()
-    |> Enum.count(&(role.id in &1.roles))
+    :bolt_member_qlc.total_role_members(guild_id, role.id)
   end
 
   defp sort_key("name", role, _guild_id), do: role.name

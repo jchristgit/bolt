@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Infraction.Expiry do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
@@ -11,7 +11,7 @@ defmodule Bolt.Cogs.Infraction.Expiry do
   alias Bolt.Parsers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   require Logger
 

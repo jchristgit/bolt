@@ -1,16 +1,16 @@
 defmodule Bolt.Cogs.Clean do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Parsers
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.Mapping.ChannelGuild
+  alias Nostrum.Cache.ChannelGuildMapping
   alias Nostrum.Struct.Message
   alias Nostrum.Struct.User
 
@@ -208,7 +208,7 @@ defmodule Bolt.Cogs.Clean do
   defp apply_filter(messages, :user, user, _guild_id) when is_bitstring(user) do
     [%Message{channel_id: channel_id}] = Enum.take(messages, 1)
 
-    with {:ok, guild_id} <- ChannelGuild.get_guild(channel_id),
+    with guild_id when guild_id != nil <- ChannelGuildMapping.get(channel_id),
          {:ok, snowflake} <- parse_snowflake(guild_id, user) do
       filtered = Stream.filter(messages, &(&1.author.id == snowflake))
       {:ok, filtered}

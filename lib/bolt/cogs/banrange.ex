@@ -1,13 +1,12 @@
 defmodule Bolt.Cogs.BanRange do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Constants
   alias Bolt.Moderation
   alias Bolt.Paginator
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Guild
   alias Nostrum.Struct.Message
@@ -53,8 +52,7 @@ defmodule Bolt.Cogs.BanRange do
     case Integer.parse(lower) do
       {start, ""} ->
         msg.guild_id
-        |> MemberCache.get()
-        |> Stream.filter(fn %{user_id: id} -> id >= start end)
+        |> :bolt_member_qlc.ids_above(start)
         |> execute(msg.guild_id, msg.author, reason)
         |> display(msg)
 
@@ -75,8 +73,7 @@ defmodule Bolt.Cogs.BanRange do
     with {start, ""} <- Integer.parse(lower),
          {stop, ""} <- Integer.parse(upper) do
       msg.guild_id
-      |> MemberCache.get()
-      |> Stream.filter(fn %{user_id: id} -> id >= start and id <= stop end)
+      |> :bolt_member_qlc.ids_within(start, stop)
       |> execute(msg.guild_id, msg.author, reason)
       |> display(msg)
     else

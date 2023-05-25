@@ -20,9 +20,8 @@ defmodule Bolt.Consumer.UserUpdate do
     unless diff_description == "" do
       log_message = "#{Humanizer.human_user(old_user)} #{diff_description}"
 
-      new_user.id
-      |> MemberCache.by_user()
-      |> Stream.map(fn {guild_id, _member} -> guild_id end)
+      []
+      |> MemberCache.fold_by_user(new_user.id, fn {guild_id, _member}, acc -> [guild_id | acc] end)
       |> Enum.each(
         &ModLog.emit(
           &1,

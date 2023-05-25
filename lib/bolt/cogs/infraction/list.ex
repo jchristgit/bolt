@@ -1,12 +1,12 @@
 defmodule Bolt.Cogs.Infraction.List do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Cogs.Infraction.General
   alias Bolt.Schema.Infraction
   alias Bolt.{Constants, Humanizer, Paginator, Repo}
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.Me
   alias Nostrum.Struct.Embed

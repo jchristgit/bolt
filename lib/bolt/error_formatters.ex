@@ -13,6 +13,9 @@ defmodule Bolt.ErrorFormatters do
 
   def fmt(_msg, {:error, reason}) when is_bitstring(reason), do: "❌ error: #{reason}"
 
+  def fmt(_msg, {:error, {:not_found, {:by, kind, _query, _options}}}),
+    do: "🚫 nothing found matching your input (tried searching by #{kind})"
+
   def fmt(_msg, {:error, %Changeset{} = changeset}) do
     # doesn't work for nested changeset errors
     error_map =

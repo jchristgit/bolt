@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.Tag.Delete do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.{Helpers, Repo}
   alias Bolt.Schema.Tag
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.Message
   alias Nostrum.Struct.User

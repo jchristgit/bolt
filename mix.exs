@@ -4,7 +4,7 @@ defmodule Bolt.MixProject do
   def project do
     [
       app: :bolt,
-      version: "0.12.0",
+      version: "0.13.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -26,8 +26,8 @@ defmodule Bolt.MixProject do
   defp deps do
     [
       # Discord interfacing
-      {:nostrum, "~> 0.7"},
-      {:nosedrum, "~> 0.5"},
+      {:nostrum, github: "Kraigie/nostrum", override: true},
+      {:nosedrum, github: "jchristgit/nosedrum"},
 
       # PostgreSQL interfacing
       {:ecto_sql, "~> 3.0"},

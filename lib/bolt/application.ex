@@ -20,7 +20,7 @@ defmodule Bolt.Application do
 
       # Handles timed events of infractions.
       {Bolt.Events.Handler, name: Bolt.Events.Handler},
-      Nosedrum.Storage.ETS,
+      Nosedrum.TextCommand.Storage.ETS,
 
       # Allows for embed pagination.
       {Bolt.Paginator, name: Bolt.Paginator},

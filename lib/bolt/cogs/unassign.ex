@@ -1,10 +1,11 @@
 defmodule Bolt.Cogs.Unassign do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, ErrorFormatters, Helpers, ModLog, Repo}
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
+  alias Bolt.{ErrorFormatters, Helpers, ModLog, Repo}
   alias Bolt.Schema.SelfAssignableRoles
   alias Nostrum.Api
   alias Nostrum.Struct.User
@@ -41,7 +42,7 @@ defmodule Bolt.Cogs.Unassign do
   def command(msg, role_name) do
     response =
       with roles_row when roles_row != nil <- Repo.get(SelfAssignableRoles, msg.guild_id),
-           {:ok, role} <- Converters.to_role(msg.guild_id, role_name, true),
+           {:ok, role} <- Converters.to_role(role_name, msg.guild_id, true),
            true <- role.id in roles_row.roles,
            {:ok} <- Api.remove_guild_member_role(msg.guild_id, msg.author.id, role.id) do
         ModLog.emit(

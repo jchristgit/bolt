@@ -3,7 +3,7 @@ defmodule Bolt.Consumer.Ready do
 
   alias Bolt.BotLog
   alias Bolt.Cogs
-  alias Nosedrum.Storage.ETS, as: CommandStorage
+  alias Nosedrum.TextCommand.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   require Logger
 

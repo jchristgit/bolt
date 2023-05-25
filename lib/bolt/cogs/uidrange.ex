@@ -1,13 +1,13 @@
 defmodule Bolt.Cogs.UidRange do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Constants
   alias Bolt.ErrorFormatters
   alias Bolt.Paginator
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.MemberCache
+  alias Nostrum.Cache.UserCache
   alias Nostrum.Struct.Embed
 
   @impl true
@@ -63,15 +63,11 @@ defmodule Bolt.Cogs.UidRange do
   end
 
   defp find_matches(guild_id, from) do
-    guild_id
-    |> MemberCache.get()
-    |> Stream.filter(fn %{user_id: id} -> id >= from end)
+    :bolt_member_qlc.ids_above(guild_id, from)
   end
 
   defp find_matches(guild_id, from, to) do
-    guild_id
-    |> MemberCache.get()
-    |> Stream.filter(fn %{user_id: id} -> id in from..to end)
+    :bolt_member_qlc.ids_within(guild_id, from, to)
   end
 
   defp display_matches({:error, why}, where) do
@@ -86,8 +82,9 @@ defmodule Bolt.Cogs.UidRange do
     |> paginate(where)
   end
 
-  defp format_entry({snowflake, member}) do
-    "- `#{snowflake}` (#{member.user.username}##{member.user.discriminator})"
+  defp format_entry({snowflake, _member}) do
+    user = UserCache.get!(snowflake)
+    "- `#{snowflake}` (#{user.username}##{user.discriminator})"
   end
 
   defp format_chunk(chunk) do

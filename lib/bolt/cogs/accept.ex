@@ -1,12 +1,12 @@
 defmodule Bolt.Cogs.Accept do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.AcceptAction
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   import Ecto.Query, only: [from: 2]
 

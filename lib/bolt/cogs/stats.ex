@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.Stats do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Constants
   alias Nostrum.Api
-  alias Nostrum.Cache.{GuildCache, Me}
+  alias Nostrum.Cache.Me
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.{Field, Footer, Image, Thumbnail}
   alias Nostrum.Struct.User
@@ -21,8 +21,8 @@ defmodule Bolt.Cogs.Stats do
 
   @impl true
   def command(msg, []) do
-    total_guilds = GuildCache.all() |> Enum.count()
-    guild_member_counts = GuildCache.select_all(fn guild -> guild.member_count end)
+    total_guilds = :bolt_guild_qlc.count()
+    guild_member_counts = :bolt_guild_qlc.total_member_count()
 
     response = %Embed{
       title: "Statistics",
@@ -32,7 +32,7 @@ defmodule Bolt.Cogs.Stats do
           name: "Guilds",
           value: """
           Total: #{total_guilds}
-          Users: #{Enum.sum(guild_member_counts)}
+          Users: #{guild_member_counts}
           """,
           inline: true
         },

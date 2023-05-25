@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+
+## v0.13.0
+
 - added starboards, see the `.starboard config` command
 - added support for discord-native timeouts as USW punishments
 - use discord-native timeouts for the mute commands

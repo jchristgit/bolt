@@ -1,10 +1,11 @@
 defmodule Bolt.Cogs.Kick do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, ErrorFormatters, Helpers, Humanizer, ModLog, Repo, Schema.Infraction}
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
+  alias Bolt.{ErrorFormatters, Helpers, Humanizer, ModLog, Repo, Schema.Infraction}
   alias Nostrum.Api
   require Logger
 

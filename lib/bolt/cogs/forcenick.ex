@@ -1,12 +1,13 @@
 defmodule Bolt.Cogs.ForceNick do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
+  alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.Schema.Infraction
-  alias Bolt.{Converters, ErrorFormatters}
   alias Bolt.{Helpers, ModLog, Parsers, Repo}
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   require Logger

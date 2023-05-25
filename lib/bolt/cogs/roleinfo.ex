@@ -1,12 +1,12 @@
 defmodule Bolt.Cogs.RoleInfo do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.{Converters, Helpers}
-  alias Nosedrum.Predicates
+  alias Bolt.Helpers
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.MemberCache
   alias Nostrum.Snowflake
   alias Nostrum.Struct.Guild.Role
   alias Nostrum.Struct.{Embed, Guild}
@@ -94,8 +94,7 @@ defmodule Bolt.Cogs.RoleInfo do
   @spec count_role_members(Role.id(), Guild.id()) :: String.t()
   defp count_role_members(role_id, guild_id) do
     guild_id
-    |> MemberCache.get()
-    |> Enum.count(&(role_id in &1.roles))
+    |> :bolt_member_qlc.total_role_members(role_id)
     |> Integer.to_string()
   end
 end

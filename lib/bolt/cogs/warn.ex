@@ -1,16 +1,16 @@
 defmodule Bolt.Cogs.Warn do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Helpers
   alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
 

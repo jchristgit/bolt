@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.Tag.Raw do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Repo
   alias Bolt.Schema.Tag
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   import Ecto.Query, only: [from: 2]
 

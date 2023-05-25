@@ -1,12 +1,12 @@
 defmodule Bolt.Cogs.Tag.Info do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Constants
   alias Bolt.Schema.Tag
   alias Bolt.{Helpers, Repo}
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.{Embed, User}

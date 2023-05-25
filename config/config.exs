@@ -22,7 +22,6 @@ config :crow,
   port: 4950,
   plugins: [
     # Application-specific
-    Bolt.CrowPlugins.NostrumCache,
     # General runtime information
     CrowPlugins.BEAM.Atoms,
     CrowPlugins.BEAM.ContextSwitches,

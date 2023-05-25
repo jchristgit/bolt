@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.Tempmute do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Moderation
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   import Bolt.Parsers, only: [human_future_date: 1]
   import Bolt.Helpers, only: [datetime_to_human: 1]

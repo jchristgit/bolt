@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.Mute do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Cogs.Tempmute
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
 
   @impl true

@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.ModLog.Status do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Bolt.{Constants, Paginator, Repo}
   alias Bolt.Schema.ModLogConfig
   alias Nostrum.Api

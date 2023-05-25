@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.Role.Mute do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.Schema.MuteRole
   alias Bolt.{ErrorFormatters, ModLog, Repo}
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.User
@@ -38,11 +38,8 @@ defmodule Bolt.Cogs.Role.Mute do
   def command(msg, []) do
     response =
       with %MuteRole{role_id: role_id} <- Repo.get(MuteRole, msg.guild_id),
-           {:ok, role} <-
-             GuildCache.select(
-               msg.guild_id,
-               &Map.get(&1.roles, role_id)
-             ) do
+           {:ok, guild} <- GuildCache.get(msg.guild_id),
+           {:ok, role} <- Map.get(guild.roles, role_id) do
         if role == nil do
           "ℹ️ mute role is currently set to an unknown role, does it exist?"
         else

@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Sudo.Load do
   @moduledoc "Load a command."
 
-  alias Nosedrum.Storage.ETS, as: CommandStorage
+  alias Nosedrum.TextCommand.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Nostrum.Struct.User
   require Logger

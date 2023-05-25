@@ -1,10 +1,10 @@
 defmodule Bolt.Cogs.MultiBan do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Cogs.Ban
   alias Bolt.Helpers
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
 
   @impl true

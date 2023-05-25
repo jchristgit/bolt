@@ -1,9 +1,8 @@
 defmodule Bolt.Cogs.Temprole do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.Events.Handler
   alias Bolt.Helpers
@@ -12,7 +11,8 @@ defmodule Bolt.Cogs.Temprole do
   alias Bolt.Parsers
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   import Ecto.Query, only: [from: 2]
 

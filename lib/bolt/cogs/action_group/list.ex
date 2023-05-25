@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.ActionGroup.List do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Actions
   alias Bolt.Schema.ActionGroup
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
 
   @impl true

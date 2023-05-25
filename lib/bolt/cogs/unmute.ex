@@ -1,14 +1,14 @@
 defmodule Bolt.Cogs.Unmute do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.Infraction
   alias Ecto.Changeset
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.User
   import Ecto.Query, only: [from: 2]

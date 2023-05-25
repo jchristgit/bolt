@@ -1,15 +1,15 @@
 defmodule Bolt.Cogs.Role.Allow do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.Helpers
   alias Bolt.Humanizer
   alias Bolt.ModLog
   alias Bolt.Repo
   alias Bolt.Schema.SelfAssignableRoles
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
 
   @impl true
@@ -44,7 +44,7 @@ defmodule Bolt.Cogs.Role.Allow do
 
   def command(msg, role_name) do
     response =
-      case Converters.to_role(msg.guild_id, role_name, true) do
+      case Converters.to_role(role_name, msg.guild_id, true) do
         {:ok, role} ->
           existing_row = Repo.get(SelfAssignableRoles, msg.guild_id)
 

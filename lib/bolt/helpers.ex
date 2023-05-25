@@ -1,7 +1,7 @@
 defmodule Bolt.Helpers do
   @moduledoc "Various helpers used throughout the bot."
 
-  alias Bolt.Converters
+  alias Nosedrum.Converters
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Cache.MemberCache

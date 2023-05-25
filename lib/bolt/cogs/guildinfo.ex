@@ -1,10 +1,10 @@
 defmodule Bolt.Cogs.GuildInfo do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.{Constants, Helpers}
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Snowflake

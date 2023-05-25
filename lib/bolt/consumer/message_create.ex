@@ -1,12 +1,12 @@
 defmodule Bolt.Consumer.MessageCreate do
   @moduledoc "Handles the `MESSAGE_CREATE` gateway event."
 
-  @nosedrum_storage_implementation Nosedrum.Storage.ETS
+  @nosedrum_storage_implementation Nosedrum.TextCommand.Storage.ETS
 
   alias Bolt.RRD
   alias Bolt.USW
-  alias Nosedrum.Invoker.Split, as: CommandInvoker
   alias Nosedrum.MessageCache.Agent, as: MessageCache
+  alias Nosedrum.TextCommand.Invoker.Split, as: CommandInvoker
   alias Nostrum.Api
   alias Nostrum.Struct.Message
 

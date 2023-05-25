@@ -1,15 +1,15 @@
 defmodule Bolt.Cogs.Starboard.Configure do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.Converters
   alias Bolt.ErrorFormatters
   alias Bolt.ModLog
   alias Bolt.Starboard
-  import Bolt.Humanizer, only: [human_user: 1]
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
+  import Bolt.Humanizer, only: [human_user: 1]
 
   @impl true
   def usage, do: ["starboard configure <channel:textchannel> [min_stars=5]"]

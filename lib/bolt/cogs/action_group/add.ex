@@ -1,13 +1,13 @@
 defmodule Bolt.Cogs.ActionGroup.Add do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Actions
   alias Bolt.ErrorFormatters
   alias Bolt.ModLog
   alias Bolt.Schema.ActionGroup
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   import Bolt.Humanizer, only: [human_user: 1]
 

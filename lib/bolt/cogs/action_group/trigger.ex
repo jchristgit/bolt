@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.ActionGroup.Trigger do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Actions
   alias Bolt.ModLog
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   import Bolt.Humanizer, only: [human_user: 1]
 

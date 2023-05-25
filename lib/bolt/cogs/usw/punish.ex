@@ -1,10 +1,11 @@
 defmodule Bolt.Cogs.USW.Punish do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
-  alias Bolt.{Converters, Helpers, Parsers, Repo}
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
+  alias Bolt.{Helpers, Parsers, Repo}
   alias Bolt.Schema.USWPunishmentConfig
   alias Nostrum.Api
 

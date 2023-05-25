@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.Tag do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
 
   @impl true
   def usage,

@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Sudo.Unload do
   @moduledoc "Unload a command, command group, or command alias."
 
-  alias Nosedrum.Storage.ETS, as: CommandStorage
+  alias Nosedrum.TextCommand.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Nostrum.Struct.User
   require Logger

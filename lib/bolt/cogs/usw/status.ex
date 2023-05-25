@@ -1,9 +1,9 @@
 defmodule Bolt.Cogs.USW.Status do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Bolt.{Constants, Humanizer, Paginator, Repo}
   alias Bolt.Schema.{USWPunishmentConfig, USWRuleConfig}
   alias Nostrum.Api

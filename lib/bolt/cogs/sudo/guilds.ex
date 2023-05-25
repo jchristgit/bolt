@@ -12,7 +12,8 @@ defmodule Bolt.Cogs.Sudo.Guilds do
   @spec command(Nostrum.Struct.Message.t(), [String.t()]) :: {:ok, Nostrum.Struct.Message.t()}
   def command(msg, []) do
     pages =
-      GuildCache.all()
+      []
+      |> GuildCache.fold(fn guild, acc -> [guild | acc] end)
       |> Stream.map(
         &%Field{
           name: &1.name,

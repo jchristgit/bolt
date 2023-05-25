@@ -2,12 +2,12 @@ defmodule Bolt.Cogs.InRole do
   @moduledoc "Shows members in the given role."
   @maximum_fetched 500
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.{Constants, Converters, ErrorFormatters, Paginator}
-  alias Nosedrum.Predicates
+  alias Bolt.{Constants, ErrorFormatters, Paginator}
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
-  alias Nostrum.Cache.MemberCache
   alias Nostrum.Struct.{Embed, User}
 
   @impl true
@@ -42,10 +42,7 @@ defmodule Bolt.Cogs.InRole do
   def command(msg, role_string) do
     case Converters.to_role(msg.guild_id, role_string, true) do
       {:ok, role} ->
-        members =
-          msg.guild_id
-          |> MemberCache.get_with_users()
-          |> Stream.filter(fn {member, _user} -> role.id in member.roles end)
+        members = :bolt_member_qlc.role_members(msg.guild_id, role.id)
 
         base_embed = %Embed{
           title: "Members with role `#{role.name}` (`#{length(members)}` total)",

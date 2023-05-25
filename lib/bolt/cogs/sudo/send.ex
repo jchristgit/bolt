@@ -1,7 +1,7 @@
 defmodule Bolt.Cogs.Sudo.Send do
   @moduledoc false
 
-  alias Bolt.Converters
+  alias Nosedrum.Converters
   alias Nostrum.Api
   alias Nostrum.Snowflake
   alias Nostrum.Struct.Message

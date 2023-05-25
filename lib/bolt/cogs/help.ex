@@ -1,10 +1,10 @@
 defmodule Bolt.Cogs.Help do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.{Constants, Helpers}
-  alias Nosedrum.Storage.ETS, as: CommandStorage
+  alias Nosedrum.TextCommand.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Message

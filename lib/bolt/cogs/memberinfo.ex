@@ -1,10 +1,11 @@
 defmodule Bolt.Cogs.MemberInfo do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
-  alias Bolt.{Converters, Helpers}
-  alias Nosedrum.Predicates
+  alias Bolt.Helpers
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Cache.MemberCache
   alias Nostrum.Cache.UserCache

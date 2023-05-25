@@ -1,11 +1,12 @@
 defmodule Bolt.Cogs.Lsar do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Schema.SelfAssignableRoles
-  alias Bolt.{Constants, Converters, Paginator, Repo}
-  alias Nosedrum.Predicates
+  alias Bolt.{Constants, Paginator, Repo}
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
   alias Nostrum.Struct.Embed.Footer
@@ -17,7 +18,7 @@ defmodule Bolt.Cogs.Lsar do
     roles
     |> Stream.map(&Integer.to_string/1)
     |> Stream.map(fn role_id ->
-      case Converters.to_role(msg.guild_id, role_id) do
+      case Converters.to_role(role_id, msg.guild_id) do
         {:ok, role} -> "• #{role.name} (#{Role.mention(role)})"
         {:error, _reason} -> "• unknown role (`#{role_id}`)"
       end

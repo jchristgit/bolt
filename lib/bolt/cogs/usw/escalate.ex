@@ -1,11 +1,11 @@
 defmodule Bolt.Cogs.USW.Escalate do
   @moduledoc false
 
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Repo
   alias Bolt.Schema.USWPunishmentConfig
-  alias Nosedrum.Predicates
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
 
   @impl true

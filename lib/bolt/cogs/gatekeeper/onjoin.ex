@@ -1,13 +1,13 @@
 defmodule Bolt.Cogs.GateKeeper.OnJoin do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Nosedrum.TextCommand
 
   alias Bolt.Cogs.GateKeeper.Actions
-  alias Bolt.Converters
   alias Bolt.Gatekeeper
   alias Bolt.Schema.JoinAction
   alias Bolt.{ErrorFormatters, ModLog, Repo}
-  alias Nosedrum.Predicates
+  alias Nosedrum.Converters
+  alias Nosedrum.TextCommand.Predicates
   alias Nostrum.Api
   alias Nostrum.Struct.{Channel, User}
   require Logger
