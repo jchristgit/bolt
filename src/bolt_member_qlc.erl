@@ -27,13 +27,10 @@ recent_joins_q(RequestedGuildId, ShouldHaveRoles) ->
         true -> 1;
         false -> 0
     end,
-    Q = qlc:q([{Member, map_get(joined_at, Member)}
+    qlc:q([Member
                || {{GuildId, _MemberId}, Member} <- ?CACHE:query_handle(),
                   GuildId =:= RequestedGuildId,
-                  length(map_get(roles, Member)) >= RoleLengthMin
-              ]),
-    Q2 = qlc:keysort(2, Q, [{order, descending}]),
-    qlc:q([Member || {Member, _JoinedAt} <- Q2]).
+                  length(map_get(roles, Member)) >= RoleLengthMin]).
 
 
 %% @doc Return members of the given role on the given guild.
