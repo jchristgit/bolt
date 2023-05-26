@@ -30,7 +30,7 @@ config :crow,
      mode: :memory,
      tables: [
        :nostrum_users,
-       :nostrum_members,
+       :nostrum_guild_members,
        :nostrum_guilds,
        :nostrum_channels
      ]},
@@ -39,7 +39,7 @@ config :crow,
      mode: :items,
      tables: [
        :nostrum_users,
-       :nostrum_members,
+       :nostrum_guild_members,
        :nostrum_guilds,
        :nostrum_channels
      ]},
