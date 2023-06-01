@@ -10,6 +10,9 @@ After=postgresql.service network-online.target
 User={{ bolt_service_user }}
 ExecStart=/bin/sh {{ bolt_directory }}/current/bin/bolt start
 
+Type=notify
+WatchdogSec=10s
+
 # NOTE: The last path is used as the RRD destination path, see `config/releases.exs`.
 StateDirectory=bolt bolt/rrd
 
