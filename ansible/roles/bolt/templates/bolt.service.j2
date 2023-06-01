@@ -50,7 +50,7 @@ RestrictSUIDSGID=true
 # Allow the release entry point to create temporary files in here.
 ReadWritePaths={{ deploy_helper.new_release_path }}
 RemoveIPC=true
-RestrictAddressFamilies=AF_INET
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 RestrictNamespaces=true
 RestrictRealtime=true
 SystemCallArchitectures=native
