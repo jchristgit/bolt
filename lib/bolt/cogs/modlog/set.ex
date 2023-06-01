@@ -32,7 +32,7 @@ defmodule Bolt.Cogs.ModLog.Set do
   @impl true
   def command(msg, ["all", channel]) do
     response =
-      with {:ok, channel} <- Converters.to_channel(msg.guild_id, channel),
+      with {:ok, channel} <- Converters.to_channel(channel, msg.guild_id),
            query <- from(config in ModLogConfig, where: config.guild_id == ^msg.guild_id),
            {total_deleted, _maybe_deleted_rows} <- Repo.delete_all(query),
            new_configs <-
@@ -70,7 +70,7 @@ defmodule Bolt.Cogs.ModLog.Set do
     event = String.upcase(event)
 
     response =
-      with {:ok, channel} <- Converters.to_channel(msg.guild_id, channel),
+      with {:ok, channel} <- Converters.to_channel(channel, msg.guild_id),
            config_map <- %{
              guild_id: msg.guild_id,
              channel_id: channel.id,

@@ -53,7 +53,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
 
   def command(msg, ["add", "role" | role_str]) do
     response =
-      with {:ok, role} <- Converters.to_role(msg.guild_id, Enum.join(role_str, " ")),
+      with {:ok, role} <- Converters.to_role(Enum.join(role_str, " "), msg.guild_id),
            action_map <- %{
              guild_id: msg.guild_id,
              action: "add_role",
@@ -128,7 +128,7 @@ defmodule Bolt.Cogs.GateKeeper.OnJoin do
 
   def command(msg, ["send", template, "to", channel_str]) do
     response =
-      with {:ok, channel} <- Converters.to_channel(msg.guild_id, channel_str),
+      with {:ok, channel} <- Converters.to_channel(channel_str, msg.guild_id),
            action_map <- %{
              guild_id: msg.guild_id,
              action: "send_guild",

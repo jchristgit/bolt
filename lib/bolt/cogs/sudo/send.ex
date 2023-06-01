@@ -9,7 +9,7 @@ defmodule Bolt.Cogs.Sudo.Send do
   @spec command(Message.t(), [String.t()]) :: {:ok, Message.t()}
   def command(msg, [channel_or_snowflake | content_list]) do
     channel_id =
-      case Converters.to_channel(msg.guild_id, channel_or_snowflake) do
+      case Converters.to_channel(channel_or_snowflake, msg.guild_id) do
         {:ok, channel} -> channel.id
         {:error, _} -> Snowflake.cast!(channel_or_snowflake)
       end

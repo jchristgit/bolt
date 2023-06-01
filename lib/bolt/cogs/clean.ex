@@ -184,7 +184,7 @@ defmodule Bolt.Cogs.Clean do
   defp parse_channel(_guild_id, nil, default_id), do: {:ok, default_id}
 
   defp parse_channel(guild_id, passed_channel, _default_id) do
-    case Converters.to_channel(guild_id, passed_channel) do
+    case Converters.to_channel(passed_channel, guild_id) do
       {:ok, channel} -> {:ok, channel.id}
       {:error, reason} -> {:error, "could not parse `channel` argument: #{reason}"}
     end

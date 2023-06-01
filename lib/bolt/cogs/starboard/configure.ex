@@ -37,7 +37,7 @@ defmodule Bolt.Cogs.Starboard.Configure do
   end
 
   def command(msg, [raw_channel, min_stars]) do
-    with {:ok, channel} <- Converters.to_channel(msg.guild_id, raw_channel),
+    with {:ok, channel} <- Converters.to_channel(raw_channel, msg.guild_id),
          {:ok, _config} <-
            Starboard.configure(msg.guild_id, channel.id, min_stars) do
       ModLog.emit(
