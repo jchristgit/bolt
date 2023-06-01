@@ -39,6 +39,7 @@ defmodule Bolt.MixProject do
       {:crow, "~> 0.2"},
       {:crow_plugins, github: "jchristgit/crow_plugins"},
       {:castle, "~> 0.3"},
+      {:systemd, "~> 0.6"},
 
       # Linting
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

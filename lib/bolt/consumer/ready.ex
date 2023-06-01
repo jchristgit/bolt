@@ -147,6 +147,7 @@ defmodule Bolt.Consumer.Ready do
     BotLog.emit("⚡ Logged in and ready, seeing `#{length(data.guilds)}` guilds.")
     prefix = Application.fetch_env!(:bolt, :prefix)
     :ok = Api.update_status(:online, "you | #{prefix}help", 3)
+    :systemd.notify(:ready)
   end
 
   defp load_commands do
