@@ -110,7 +110,8 @@ defmodule Bolt.Cogs.Assign do
     errors =
       converted_roles
       |> Stream.filter(&match?({:error, _reason}, &1))
-      |> Enum.map(&elem(&1, 1))
+      |> Stream.map(&elem(&1, 1))
+      |> Enum.map(&format_error/1)
       |> Kernel.++(not_selfassignable_errors)
 
     if Enum.empty?(selected_self_assignable_roles) do
@@ -139,9 +140,11 @@ defmodule Bolt.Cogs.Assign do
         if Enum.empty?(errors) do
           "👌 gave you the role(s) #{added_role_list}"
         else
+          nice_errors = Enum.map(errors, &format_error/1)
+
           """
           👌 gave you the role(s) #{added_role_list}, but could not give you the others:
-          #{errors |> Stream.map(&"• #{&1}") |> Enum.join("\n")}
+          #{nice_errors |> Stream.map(&"• #{&1}") |> Enum.join("\n")}
           """
         end
       else
@@ -153,4 +156,10 @@ defmodule Bolt.Cogs.Assign do
       end
     end
   end
+
+  defp format_error({:not_found, {:by, :name, name, [:case_insensitive]}}) do
+    "no role named `#{Helpers.clean_content(name)}` not found (case-insensitive)"
+  end
+
+  defp format_error(error), do: error
 end
