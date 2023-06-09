@@ -4,11 +4,12 @@ defmodule Bolt.MixProject do
   def project do
     [
       app: :bolt,
-      version: "0.13.0",
+      version: "0.14.0-alpha.1+#{git_version()}",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       preferred_cli_env: [coveralls: :test],
+      releases: releases(),
       aliases: aliases(),
       test_coverage: [summary: [threshold: 0]]
     ]
@@ -47,9 +48,24 @@ defmodule Bolt.MixProject do
     ]
   end
 
+  defp releases do
+    [
+      bolt: [
+        include_executables_for: [:unix],
+        steps: [&Forecastle.pre_assemble/1, :assemble, &Forecastle.post_assemble/1]
+      ]
+    ]
+  end
+
   defp aliases do
     [
       test: ["ecto.migrate --quiet", "test --no-start"]
     ]
+  end
+
+  defp git_version do
+    "ref: " <> where = File.read!(".git/HEAD")
+    commit = File.read!(".git/#{String.trim_trailing(where)}")
+    String.slice(commit, 0..5)
   end
 end
