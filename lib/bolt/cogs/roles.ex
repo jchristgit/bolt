@@ -142,6 +142,7 @@ defmodule Bolt.Cogs.Roles do
   defp make_chunker(sort_by, guild_id, reverse, compact, mention_roles) do
     fn all_roles ->
       all_roles
+      |> Stream.map(fn {_id, role} -> role end)
       |> Enum.sort_by(&sort_key(sort_by, &1, guild_id), get_sorter(sort_by, reverse))
       |> Stream.map(&display_role(compact, mention_roles, &1))
       |> Stream.chunk_every(if(compact, do: 50, else: 15))
