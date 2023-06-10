@@ -47,10 +47,9 @@
 - name: set up the deployment directory
   become: true
   become_user: "{{ bolt_service_user }}"
-  deploy_helper:
-    release: "{{ bolt_release | default(omit) }}"
+  file:
     path: "{{ bolt_directory }}"
-    state: present
+    state: directory
   tags:
     - role::bolt
 
@@ -58,13 +57,12 @@
   become: true
   become_user: "{{ bolt_service_user }}"
   git:
-    dest: "{{ deploy_helper.shared_path }}/repository"
+    dest: "{{ bolt_directory }}"
     repo: "{{ bolt_repository_url }}"
     version: "{{ bolt_version }}"
     umask: '0077'
   tags:
     - role::bolt
-    - git
   notify:
     - restart bolt
 
@@ -73,7 +71,7 @@
   become_user: "{{ bolt_service_user }}"
   shell: umask 077 && exec /usr/bin/mix do local.hex --force, local.rebar --force, deps.get --only prod
   args:
-    chdir: "{{ deploy_helper.shared_path }}/repository"
+    chdir: "{{ bolt_directory }}"
   tags:
     - role::bolt
   register: bolt_command_mix_deps_get
@@ -84,13 +82,13 @@
 - name: build a release
   become: true
   become_user: "{{ bolt_service_user }}"
-  shell: umask 077 && exec /usr/bin/nice /usr/bin/mix release --overwrite
+  shell: umask 077 && exec /usr/bin/nice /usr/bin/mix release
   args:
-    chdir: "{{ deploy_helper.shared_path }}/repository"
+    chdir: "{{ bolt_directory }}"
   tags:
     - role::bolt
   register: bolt_command_mix_release
-  changed_when: "'Compiling' in bolt_command_mix_release.stdout"
+  changed_when: "'Release created' in bolt_command_mix_release.stdout"
   environment:
     MIX_ENV: prod
 
@@ -99,7 +97,7 @@
   become_user: "{{ bolt_service_user }}"
   command: /usr/bin/mix ecto.migrate --all
   args:
-    chdir: "{{ deploy_helper.shared_path }}/repository"
+    chdir: "{{ bolt_directory }}"
   tags:
     - role::bolt
   register: bolt_command_ecto_migrate
@@ -108,27 +106,7 @@
     PGSQL_URL: "{{ bolt_pgsql_url }}"
   changed_when: "'Migrated' in bolt_command_ecto_migrate.stdout"
 
-- name: copy release to current release directory
-  become: true
-  become_user: "{{ bolt_service_user }}"
-  copy:
-    src: "{{ deploy_helper.shared_path }}/repository/_build/prod/rel/bolt/"
-    remote_src: true
-    dest: "{{ deploy_helper.new_release_path }}"
-  tags:
-    - role::bolt
-
-- name: finalize the release
-  become: true
-  become_user: "{{ bolt_service_user }}"
-  deploy_helper:
-    path: "{{ bolt_directory }}"
-    release: "{{ deploy_helper.new_release }}"
-    state: finalize
-  tags:
-    - role::bolt
-
-- name: ensure the configuration directory is present
+- name: create the configuration directory
   file:
     path: /etc/opt/bolt
     owner: root #"{{ bolt_service_user }}"
@@ -139,7 +117,7 @@
     - role::bolt
     - configuration
 
-- name: ensure the environment file is up-to-date
+- name: template the environment file
   become: yes
   template:
     src: bolt.env.j2
@@ -153,7 +131,7 @@
   notify:
     - restart bolt
 
-- name: ensure the systemd service is up-to-date
+- name: template the systemd service
   become: yes
   template:
     src: bolt.service.j2
@@ -175,5 +153,17 @@
     enabled: true
   tags:
     - role::bolt
+
+# - name: upgrade the release
+#   block:
+#     - name: obtain the known releases
+#       command: _build/dev/rel/bolt/bin/bolt releases
+#       args:
+#         chdir: "{{ bolt_directory }}"
+#       tags:
+#         - role::bolt
+#       register: bolt_command_releases
+#       environment:
+#         RELEASE_COOKIE: "{{ bolt_cookie }}"
 
 # vim: sw=2 ts=2:

@@ -8,7 +8,7 @@ After=postgresql.service network-online.target
 
 [Service]
 User={{ bolt_service_user }}
-ExecStart=/bin/sh {{ bolt_directory }}/current/bin/bolt start
+ExecStart=/bin/sh {{ bolt_directory }}/_build/prod/rel/bolt/bin/bolt start
 
 Type=notify
 WatchdogSec=10s
