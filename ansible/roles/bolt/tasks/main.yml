@@ -28,10 +28,10 @@
     - role::bolt
     - postgres
 
-- name: ensure the bolt user is up-to-date
+- name: create the bolt service user
   user:
     name: "{{ bolt_service_user }}"
-    home: "{{ bolt_directory }}"
+    home: "{{ bolt_base_directory }}"
     system: true
     state: present
   tags:
@@ -39,16 +39,17 @@
 
 - name: make the bolt directory only readable for bolt
   file:
-    path: "{{ bolt_directory }}"
+    path: "{{ bolt_base_directory }}"
     mode: 0700
   tags:
     - role::bolt
 
 - name: set up the deployment directory
-  become: true
-  become_user: "{{ bolt_service_user }}"
   file:
     path: "{{ bolt_directory }}"
+    owner: "{{ bolt_service_user }}"
+    group: root
+    mode: 0700
     state: directory
   tags:
     - role::bolt

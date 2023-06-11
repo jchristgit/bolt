@@ -16,7 +16,7 @@ WatchdogSec=10s
 # NOTE: The last path is used as the RRD destination path, see `config/releases.exs`.
 StateDirectory=bolt bolt/rrd
 
-WorkingDirectory={{ bolt_directory }}/current
+WorkingDirectory={{ bolt_directory }}
 EnvironmentFile=/etc/opt/bolt/bolt.env
 
 MemoryHigh=180M
@@ -47,8 +47,7 @@ ProtectKernelTunables=true
 ProtectProc=true
 ProtectSystem=strict
 RestrictSUIDSGID=true
-# Allow the release entry point to create temporary files in here.
-ReadWritePaths={{ deploy_helper.new_release_path }}
+ReadWritePaths={{ bolt_directory }}/_build/prod/rel/bolt/
 RemoveIPC=true
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 RestrictNamespaces=true

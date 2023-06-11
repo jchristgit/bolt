@@ -22,9 +22,12 @@ bolt_cookie: "{{ lookup('password', 'secrets/' + ansible_nodename + '/bolt/erlan
 # The OS user to create for running bolt.
 bolt_service_user: bolt
 
+# Base directory below which to place bolt service user files.
+bolt_base_directory: /opt/bolt
+
 # In which directory to clone the repository, build the release,
 # and manage the deployment.
-bolt_directory: /opt/bolt
+bolt_directory: "{{ bolt_base_directory }}/project"
 
 # Whether to enable bolt's RRD functionality.
 bolt_enable_rrd: true
