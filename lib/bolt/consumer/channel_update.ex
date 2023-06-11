@@ -83,6 +83,10 @@ defmodule Bolt.Consumer.ChannelUpdate do
         old_value == "" ->
           diff_list ++ ["#{key} added ``#{Helpers.clean_content(new_value)}``"]
 
+        new_value == "" and old_value == nil ->
+          # I Love Types!
+          diff_list
+
         new_value == "" ->
           diff_list ++ ["#{key} removed (was ``#{Helpers.clean_content(old_value)}``)"]
 
