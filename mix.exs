@@ -64,8 +64,13 @@ defmodule Bolt.MixProject do
   end
 
   defp git_version do
-    "ref: " <> where = File.read!(".git/HEAD")
-    commit = File.read!(".git/#{String.trim_trailing(where)}")
-    String.slice(commit, 0..5)
+    case File.read!(".git/HEAD") do
+      "ref: " <> where ->
+        commit = File.read!(".git/#{String.trim_trailing(where)}")
+        String.slice(commit, 0..5)
+
+      hash ->
+        String.slice(String.trim_trailing(hash), 0..5)
+    end
   end
 end
