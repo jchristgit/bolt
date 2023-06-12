@@ -39,6 +39,3 @@ config :logger,
   backends: [:console, Bolt.BotLogLoggerBackend]
 
 config :logger, :console, format: "[$level] $message\n"
-
-config :porcelain,
-  goon_warn_if_missing: false
