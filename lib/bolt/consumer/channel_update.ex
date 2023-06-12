@@ -66,43 +66,40 @@ defmodule Bolt.Consumer.ChannelUpdate do
   end
 
   # Describe what changed for this channel, if different.
+  # credo:disable-for-next-line
   defp describe_changes(diff_list, old_channel, new_channel, key) do
     old_value = Map.get(old_channel, key)
     new_value = Map.get(new_channel, key)
 
-    # Did this value update?
-    if old_value != new_value do
-      # If yes, describe the change in a human-friendly way.
-      cond do
-        new_value === true ->
-          diff_list ++ ["now #{key}"]
+    cond do
+      old_value == new_value ->
+        diff_list
 
-        new_value === false ->
-          diff_list ++ ["no longer #{key}"]
+      new_value == "" and old_value == nil ->
+        # I Love Types!
+        diff_list
 
-        old_value == "" ->
-          diff_list ++ ["#{key} added ``#{Helpers.clean_content(new_value)}``"]
+      new_value === true ->
+        diff_list ++ ["now #{key}"]
 
-        new_value == "" and old_value == nil ->
-          # I Love Types!
-          diff_list
+      new_value === false ->
+        diff_list ++ ["no longer #{key}"]
 
-        new_value == "" ->
-          diff_list ++ ["#{key} removed (was ``#{Helpers.clean_content(old_value)}``)"]
+      old_value == "" ->
+        diff_list ++ ["#{key} added ``#{Helpers.clean_content(new_value)}``"]
 
-        is_bitstring(old_value) and is_bitstring(new_value) ->
-          diff_list ++
-            [
-              "#{key} updated from ``#{Helpers.clean_content(old_value)}`` " <>
-                "to ``#{Helpers.clean_content(new_value)}``"
-            ]
+      new_value == "" ->
+        diff_list ++ ["#{key} removed (was ``#{Helpers.clean_content(old_value)}``)"]
 
-        true ->
-          diff_list ++ ["#{key} updated from ``#{old_value}`` to ``#{new_value}``"]
-      end
-    else
-      # If no, return the list of changes unomdified.
-      diff_list
+      is_bitstring(old_value) and is_bitstring(new_value) ->
+        diff_list ++
+          [
+            "#{key} updated from ``#{Helpers.clean_content(old_value)}`` " <>
+              "to ``#{Helpers.clean_content(new_value)}``"
+          ]
+
+      true ->
+        diff_list ++ ["#{key} updated from ``#{old_value}`` to ``#{new_value}``"]
     end
   end
 
