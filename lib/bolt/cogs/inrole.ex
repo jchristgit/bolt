@@ -40,7 +40,7 @@ defmodule Bolt.Cogs.InRole do
   end
 
   def command(msg, role_string) do
-    case Converters.to_role(msg.guild_id, role_string, true) do
+    case Converters.to_role(role_string, msg.guild_id, true) do
       {:ok, role} ->
         members = :bolt_member_qlc.role_members(msg.guild_id, role.id)
 

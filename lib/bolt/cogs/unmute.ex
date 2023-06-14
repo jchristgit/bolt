@@ -29,7 +29,7 @@ defmodule Bolt.Cogs.Unmute do
   @impl true
   def command(msg, user_list) when user_list != [] do
     response =
-      with {:ok, member} <- Converters.to_member(msg.guild_id, Enum.join(user_list, " ")),
+      with {:ok, member} <- Converters.to_member(Enum.join(user_list, " "), msg.guild_id),
            mute_query <-
              from(
                infr in Infraction,

@@ -34,7 +34,7 @@ defmodule Bolt.Cogs.RoleInfo do
   end
 
   def command(msg, role) do
-    case Converters.to_role(msg.guild_id, role, true) do
+    case Converters.to_role(role, msg.guild_id, true) do
       {:ok, matching_role} ->
         embed = format_role_info(matching_role, msg.guild_id)
         {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)

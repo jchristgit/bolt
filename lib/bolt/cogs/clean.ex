@@ -261,7 +261,7 @@ defmodule Bolt.Cogs.Clean do
       _error ->
         # Otherwise, assume it's a string describing a guild member,
         # so let's ask the converter to find us the matching member.
-        case Converters.to_member(guild_id, user_string) do
+        case Converters.to_member(user_string, guild_id) do
           {:ok, member} ->
             {:ok, member.user.id}
 

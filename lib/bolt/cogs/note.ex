@@ -35,7 +35,7 @@ defmodule Bolt.Cogs.Note do
   @impl true
   def command(msg, [user | note_list]) do
     response =
-      with {:ok, member} <- Converters.to_member(msg.guild_id, user),
+      with {:ok, member} <- Converters.to_member(user, msg.guild_id),
            note when note != "" <- Enum.join(note_list, " "),
            infraction = %{
              type: "note",

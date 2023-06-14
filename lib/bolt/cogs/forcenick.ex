@@ -38,7 +38,7 @@ defmodule Bolt.Cogs.ForceNick do
 
     response =
       with {:ok, expiry} <- Parsers.human_future_date(duration),
-           {:ok, member} <- Converters.to_member(msg.guild_id, user),
+           {:ok, member} <- Converters.to_member(user, msg.guild_id),
            nil <-
              Repo.get_by(Infraction,
                type: "forced_nick",

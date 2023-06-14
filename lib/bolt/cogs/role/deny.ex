@@ -44,7 +44,7 @@ defmodule Bolt.Cogs.Role.Deny do
 
   def command(msg, role_name) do
     response =
-      case Converters.to_role(msg.guild_id, role_name, true) do
+      case Converters.to_role(role_name, msg.guild_id, true) do
         {:ok, role} ->
           existing_row = Repo.get(SelfAssignableRoles, msg.guild_id)
 

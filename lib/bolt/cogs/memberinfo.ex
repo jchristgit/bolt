@@ -83,7 +83,7 @@ defmodule Bolt.Cogs.MemberInfo do
   end
 
   def command(msg, maybe_member) do
-    case Converters.to_member(msg.guild_id, maybe_member) do
+    case Converters.to_member(maybe_member, msg.guild_id) do
       {:ok, fetched_member} ->
         embed = format_member_info(msg.guild_id, fetched_member)
         {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)

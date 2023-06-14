@@ -44,8 +44,8 @@ defmodule Bolt.Cogs.Temprole do
   def command(msg, [user, role, duration | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
-           {:ok, member} <- Converters.to_member(msg.guild_id, user),
-           {:ok, role} <- Converters.to_role(msg.guild_id, role),
+           {:ok, member} <- Converters.to_member(user, msg.guild_id),
+           {:ok, role} <- Converters.to_role(role, msg.guild_id),
            query <-
              from(
                infr in Infraction,

@@ -79,7 +79,7 @@ defmodule Bolt.Cogs.Role.Mute do
     role_str = Enum.join(role_str_list, " ")
 
     response =
-      with {:ok, role} <- Converters.to_role(msg.guild_id, role_str),
+      with {:ok, role} <- Converters.to_role(role_str, msg.guild_id),
            mute_role_map <- %{
              guild_id: msg.guild_id,
              role_id: role.id

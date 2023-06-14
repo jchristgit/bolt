@@ -31,7 +31,7 @@ defmodule Bolt.Cogs.USW.Punish do
   @impl true
   def command(msg, ["temprole", role, duration]) do
     response =
-      with {:ok, role} <- Converters.to_role(msg.guild_id, role),
+      with {:ok, role} <- Converters.to_role(role, msg.guild_id),
            {:ok, total_seconds} <- Parsers.duration_string_to_seconds(duration),
            new_config <- %{
              guild_id: msg.guild_id,

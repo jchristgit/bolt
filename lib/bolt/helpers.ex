@@ -122,7 +122,7 @@ defmodule Bolt.Helpers do
         {:ok, value, nil}
 
       :error ->
-        case Converters.to_member(guild_id, text) do
+        case Converters.to_member(text, guild_id) do
           {:ok, member} -> {:ok, member.user_id, nil}
           {:error, _} = error -> error
         end

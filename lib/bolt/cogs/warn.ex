@@ -38,7 +38,7 @@ defmodule Bolt.Cogs.Warn do
   def command(msg, [user | reason_list]) do
     response =
       with reason when reason != "" <- Enum.join(reason_list, " "),
-           {:ok, member} <- Converters.to_member(msg.guild_id, user),
+           {:ok, member} <- Converters.to_member(user, msg.guild_id),
            infraction <- %{
              type: "warning",
              guild_id: msg.guild_id,

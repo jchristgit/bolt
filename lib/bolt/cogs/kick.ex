@@ -37,7 +37,7 @@ defmodule Bolt.Cogs.Kick do
   def command(msg, [user | reason_list]) do
     response =
       with reason <- Enum.join(reason_list, " "),
-           {:ok, member} <- Converters.to_member(msg.guild_id, user),
+           {:ok, member} <- Converters.to_member(user, msg.guild_id),
            {:ok, true} <- Helpers.is_above(msg.guild_id, msg.author.id, member.user.id),
            {:ok} <- Api.remove_guild_member(msg.guild_id, member.user.id),
            infraction <- %{
