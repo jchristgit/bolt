@@ -5,7 +5,7 @@ defmodule Bolt.MixProject do
     [
       app: :bolt,
       version: "0.14.0-alpha.1+#{git_version()}",
-      elixir: "~> 1.13",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       preferred_cli_env: [coveralls: :test],
