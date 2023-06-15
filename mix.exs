@@ -27,7 +27,7 @@ defmodule Bolt.MixProject do
   defp deps do
     [
       # Discord interfacing
-      {:nostrum, github: "Th3-M4jor/nostrum", ref: "fix-reconnect-requests", override: true},
+      {:nostrum, github: "Kraigie/nostrum", override: true},
       {:nosedrum, "~> 0.6.0-rc1"},
 
       # PostgreSQL interfacing
