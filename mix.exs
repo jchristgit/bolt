@@ -51,8 +51,8 @@ defmodule Bolt.MixProject do
   defp releases do
     [
       bolt: [
-        include_executables_for: [:unix]
-        # steps: [&Forecastle.pre_assemble/1, :assemble, &Forecastle.post_assemble/1]
+        include_executables_for: [:unix],
+        steps: [&Forecastle.pre_assemble/1, :assemble, &Forecastle.post_assemble/1]
       ]
     ]
   end
