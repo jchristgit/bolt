@@ -34,7 +34,7 @@ these commands.
 ## Monitoring
 
 Bolt runs a Munin node on port 4950. Metrics can be seen here:
-https://munin.jchri.st/spock/bolt/index.html
+https://munin.jchri.st/jchri.st/spock/bolt/index.html
 
 
 <!-- vim: set textwidth=80 sw=2 ts=2: -->
