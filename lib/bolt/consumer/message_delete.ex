@@ -11,7 +11,10 @@ defmodule Bolt.Consumer.MessageDelete do
   @spec handle(Channel.id(), Guild.id(), Message.id()) :: {:ok, Message.t()}
   def handle(channel_id, guild_id, msg_id) do
     cached_message = MessageCache.get(guild_id, msg_id, Bolt.MessageCache)
-    log(cached_message, channel_id, guild_id, msg_id)
+
+    unless cached_message == nil do
+      log(cached_message, channel_id, guild_id, msg_id)
+    end
   end
 
   @spec log(Message.t()) :: {:ok, Message.t()}
@@ -24,6 +27,7 @@ defmodule Bolt.Consumer.MessageDelete do
     embed =
       %Embed{
         color: Constants.color_red(),
+        description: message.content,
         fields: [
           %Embed.Field{
             name: "Metadata",
@@ -36,19 +40,9 @@ defmodule Bolt.Consumer.MessageDelete do
           }
         ]
       }
-      |> add_content(message)
       |> add_author(message)
 
     ModLog.emit_embed(guild_id, "MESSAGE_DELETE", embed)
-  end
-
-  @spec add_content(Embed.t(), Message.t() | nil) :: Embed.t()
-  defp add_content(embed, nil) do
-    put_description(embed, "*unknown, message not in cache*")
-  end
-
-  defp add_content(embed, cached_msg) do
-    put_description(embed, cached_msg.content)
   end
 
   @spec add_author(Embed.t(), Message.t() | nil) :: Embed.t()
