@@ -36,4 +36,10 @@ defmodule Bolt.Predicates do
       }
     end
   end
+
+  @doc "Checks whether the message was sent in a direct message"
+  def dm_only(%{guild_id: nil} = msg), do: {:ok, msg}
+
+  def dm_only(%{guild_id: _}),
+    do: {:noperm, "🚫 This command can only be used in direct messages."}
 end

@@ -124,6 +124,9 @@ defmodule Bolt.Consumer.Ready do
 
     ## Easter eggs
     "ed" => Cogs.Ed
+
+    ## bolt ARS (automatic redact subsystem)
+    # "autoredact" => Cogs.Autoredact
   }
 
   @aliases %{
@@ -139,6 +142,7 @@ defmodule Bolt.Consumer.Ready do
     "member" => Map.fetch!(@commands, "memberinfo"),
     "minfo" => Map.fetch!(@commands, "memberinfo"),
     "rinfo" => Map.fetch!(@commands, "roleinfo")
+    # "unpermanent" => Map.fetch!(@commands, "autoredact"),
   }
 
   @spec handle(map()) :: :ok

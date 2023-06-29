@@ -31,6 +31,9 @@ defmodule Bolt.Application do
       # Supervises the Uncomplicated Spam Wall processes.
       Bolt.USWSupervisor,
 
+      # Supervises bolt's auto-redact worker processes.
+      Bolt.Redact.Supervisor,
+
       # Manages the bolt <-> rrdtool connection.
       Bolt.RRD,
 

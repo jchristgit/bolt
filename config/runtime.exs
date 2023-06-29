@@ -32,10 +32,3 @@ config :bolt, Bolt.Repo,
 
 config :nostrum,
   token: System.get_env("BOT_TOKEN")
-
-config :logger,
-  level: :info,
-  truncate: 16_384,
-  backends: [:console, Bolt.BotLogLoggerBackend]
-
-config :logger, :console, format: "[$level] $message\n"

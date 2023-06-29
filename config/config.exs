@@ -50,6 +50,12 @@ config :crow,
     CrowPlugins.BEAM.SystemInfo
   ]
 
+config :logger,
+  truncate: 16_384,
+  backends: [:console, Bolt.BotLogLoggerBackend]
+
+config :logger, :console, format: "[$level] $message\n"
+
 config :nosedrum,
   prefix: System.get_env("BOT_PREFIX") || "."
 

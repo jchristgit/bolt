@@ -64,6 +64,13 @@ defmodule Bolt.Cogs.Sudo do
     RRDStats.command(msg, args)
   end
 
+  def command(msg, ["autoredact" | args]) do
+    alias Bolt.Cogs.Autoredact
+
+    # beta phase
+    Autoredact.command(msg, args)
+  end
+
   def command(msg, _args) do
     response = "🚫 unknown subcommand"
     {:ok, _msg} = Api.create_message(msg.channel_id, response)
