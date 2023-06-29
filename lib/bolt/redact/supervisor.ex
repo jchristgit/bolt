@@ -14,7 +14,7 @@ defmodule Bolt.Redact.Supervisor do
       # Ingest messages into the pending list
       Bolt.Redact.IngestSupervisor,
       # Delete messages in the pending list as configured
-      {DynamicSupervisor, name: Bolt.Redact.DeleteSupervisor},
+      Bolt.Redact.Deleter,
       {Bolt.Redact.Starter, name: Bolt.Redact.Starter}
     ]
 
@@ -22,7 +22,7 @@ defmodule Bolt.Redact.Supervisor do
     Supervisor.init(children, options)
   end
 
-  def configure_ingestor(maybe_ingestion_state, channel_id, [config | _] = configs) do
+  def configure_ingestor(maybe_ingestion_state, channel_id, [_config | _] = configs) do
     ingestion_worker =
       Ingestor.child_spec(maybe_ingestion_state, channel_id, configs, [
         {:global, {Ingestor, channel_id}}

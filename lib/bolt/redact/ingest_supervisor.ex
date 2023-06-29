@@ -1,4 +1,6 @@
 defmodule Bolt.Redact.IngestSupervisor do
+  @moduledoc "Supervises redact message ingestion workers"
+
   use DynamicSupervisor
 
   def start_link(init_arg) do

@@ -73,11 +73,7 @@ defmodule Bolt.Cogs.Autoredact do
               "ℹ️  no configuration set up"
 
             info ->
-              pretty_exclusions =
-                info.config.excluded_channels
-                |> Stream.map(&"  \\- <##{&1}>")
-                |> Enum.join("\n")
-                |> then(&if(&1 == "", do: "    \\- (none)"))
+              pretty_exclusions = format_exclusions(info.config.excluded_channels)
 
               """
               ℹ️  **auto redact config** for `#{guild_id}`
@@ -140,6 +136,13 @@ defmodule Bolt.Cogs.Autoredact do
 
   defp do_parse_excluded_channels([]) do
     []
+  end
+
+  def format_exclusions(exclusions) do
+    exclusions
+    |> Stream.map(&"  \\- <##{&1}>")
+    |> Enum.join("\n")
+    |> then(&if(&1 == "", do: "    \\- (none)"))
   end
 
   def find_invalid_channels(channel_ids, guild) do

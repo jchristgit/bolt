@@ -1,9 +1,10 @@
 defmodule Bolt.Redact.Starter do
   @moduledoc "Starts up the redact subsystem worker processes"
 
-  alias Bolt.Repo
   alias Bolt.Redact
+  alias Bolt.Repo
   alias Bolt.Schema.RedactConfig
+  alias Nostrum.ConsumerGroup
   import Ecto.Query, only: [from: 2]
   require Logger
   use GenServer, restart: :transient
@@ -17,7 +18,7 @@ defmodule Bolt.Redact.Starter do
   end
 
   def handle_continue(:ok, state) do
-    :ok = Nostrum.ConsumerGroup.join()
+    :ok = ConsumerGroup.join()
 
     receive do
       {:event, {:READY, _, _}} -> :ok
@@ -25,7 +26,7 @@ defmodule Bolt.Redact.Starter do
       10_000 -> :ok
     end
 
-    :ok = :pg.leave(Nostrum.ConsumerGroup, :consumers, self())
+    :ok = :pg.leave(ConsumerGroup, :consumers, self())
     # Make sure cache is actually full.... jesus christ, this is hacky
     :timer.sleep(5_000)
 

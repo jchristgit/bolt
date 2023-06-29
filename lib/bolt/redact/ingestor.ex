@@ -4,9 +4,11 @@ defmodule Bolt.Redact.Ingestor do
   @behaviour :gen_statem
 
   alias Bolt.Repo
-  alias Bolt.Schema.RedactConfig
   alias Bolt.Schema.RedactChannelIngestionState, as: IngestionState
+  alias Bolt.Schema.RedactConfig
   alias Bolt.Schema.RedactPendingMessage, as: PendingMessage
+  alias Ecto.Changeset
+  alias Nostrum.Api
   alias Nostrum.Snowflake
   alias Nostrum.Struct.Message
   require Logger
@@ -93,7 +95,7 @@ defmodule Bolt.Redact.Ingestor do
           ingestion: ingestion
         } = data
       ) do
-    case Nostrum.Api.get_channel_messages(channel, 100, {:after, after_id}) do
+    case Api.get_channel_messages(channel, 100, {:after, after_id}) do
       {:ok, descending_messages} ->
         case descending_messages do
           [] ->
@@ -116,13 +118,9 @@ defmodule Bolt.Redact.Ingestor do
               |> Enum.sort_by(& &1.message_id)
 
             {:ok, updated_ingestion} =
-              Repo.transaction(fn ->
-                {_inserted, _} = Repo.insert_all(PendingMessage, relevant_messages)
-                insert_or_update_ingestion!(ingestion, channel, latest.id)
-              end)
+              update_ingestion(relevant_messages, ingestion, channel, latest.id)
 
-            actions =
-              {:timeout, 0, {:load_more, updated_ingestion.last_processed_message_id}}
+            actions = {:timeout, 0, {:load_more, updated_ingestion.last_processed_message_id}}
 
             {:keep_state, %{data | ingestion: updated_ingestion}, actions}
         end
@@ -144,6 +142,13 @@ defmodule Bolt.Redact.Ingestor do
     :timer.seconds(now - creation)
   end
 
+  defp update_ingestion(relevant_messages, ingestion, channel, latest_id) do
+    Repo.transaction(fn ->
+      {_inserted, _} = Repo.insert_all(PendingMessage, relevant_messages)
+      insert_or_update_ingestion!(ingestion, channel, latest_id)
+    end)
+  end
+
   defp insert_or_update_ingestion!(nil, channel_id, latest_id) do
     ingestion = %IngestionState{}
 
@@ -157,7 +162,7 @@ defmodule Bolt.Redact.Ingestor do
   end
 
   defp insert_or_update_ingestion!(ingestion, _channel_id, latest_id) do
-    changeset = Ecto.Changeset.change(ingestion, last_processed_message_id: latest_id)
+    changeset = Changeset.change(ingestion, last_processed_message_id: latest_id)
     Repo.update!(changeset)
   end
 

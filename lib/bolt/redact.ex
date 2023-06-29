@@ -5,8 +5,8 @@ defmodule Bolt.Redact do
 
   alias Bolt.Redact
   alias Bolt.Repo
-  alias Bolt.Schema.RedactConfig
   alias Bolt.Schema.RedactChannelIngestionState, as: IngestionState
+  alias Bolt.Schema.RedactConfig
   alias Bolt.Schema.RedactPendingMessage, as: PendingMessage
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild
