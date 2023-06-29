@@ -62,7 +62,7 @@ defmodule Bolt.Redact.Deleter do
         end
 
         message_ids = Enum.map(messages, fn {_channel, message} -> message end)
-        delete_query = from(m in PendingMessage, where: m.id in ^message_ids)
+        delete_query = from(m in PendingMessage, where: m.message_id in ^message_ids)
         {deleted, _} = Repo.delete_all(delete_query)
         deleted
       end)
