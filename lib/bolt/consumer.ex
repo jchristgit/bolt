@@ -5,6 +5,7 @@ defmodule Bolt.Consumer do
     ChannelCreate,
     ChannelDelete,
     ChannelUpdate,
+    GuildAuditLogEntryCreate,
     GuildBanAdd,
     GuildBanRemove,
     GuildCreate,
@@ -16,7 +17,6 @@ defmodule Bolt.Consumer do
     GuildRoleDelete,
     GuildRoleUpdate,
     MessageCreate,
-    MessageDelete,
     MessageReactionAdd,
     MessageUpdate,
     Ready,
@@ -26,6 +26,10 @@ defmodule Bolt.Consumer do
   use Nostrum.Consumer
 
   @spec handle_event(Nostrum.Consumer.event()) :: any()
+  def handle_event({:GUILD_AUDIT_LOG_ENTRY_CREATE, entry, _ws_state}) do
+    GuildAuditLogEntryCreate.handle(entry)
+  end
+
   def handle_event({:CHANNEL_CREATE, new_channel, _ws_state}) do
     ChannelCreate.handle(new_channel)
   end
@@ -44,12 +48,6 @@ defmodule Bolt.Consumer do
 
   def handle_event({:MESSAGE_UPDATE, msg, _ws_state}) do
     MessageUpdate.handle(msg)
-  end
-
-  def handle_event(
-        {:MESSAGE_DELETE, %{channel_id: channel_id, guild_id: guild_id, id: msg_id}, _ws_state}
-      ) do
-    MessageDelete.handle(channel_id, guild_id, msg_id)
   end
 
   def handle_event({:GUILD_BAN_ADD, {guild_id, partial_member}, _ws_state}) do
@@ -104,6 +102,6 @@ defmodule Bolt.Consumer do
     UserUpdate.handle(old_user, new_user)
   end
 
-  def handle_event(_data) do
+  def handle_event(_event) do
   end
 end
