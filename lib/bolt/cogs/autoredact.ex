@@ -142,7 +142,7 @@ defmodule Bolt.Cogs.Autoredact do
     exclusions
     |> Stream.map(&"  \\- <##{&1}>")
     |> Enum.join("\n")
-    |> then(&if(&1 == "", do: "    \\- (none)"))
+    |> then(&if(&1 == "", do: "    \\- (none)", else: &1))
   end
 
   def find_invalid_channels(channel_ids, guild) do
