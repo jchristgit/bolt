@@ -130,7 +130,7 @@ defmodule Bolt.Cogs.Autoredact do
         {:error, "bad channel id #{clean_content(to_string(channel))}"}
 
       {:ok, channel_id} ->
-        [channel_id | parse_excluded_channels(channels)]
+        [channel_id | do_parse_excluded_channels(channels)]
     end
   end
 
