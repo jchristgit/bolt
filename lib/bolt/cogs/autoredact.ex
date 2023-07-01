@@ -146,6 +146,6 @@ defmodule Bolt.Cogs.Autoredact do
   end
 
   def find_invalid_channels(channel_ids, guild) do
-    {:invalid_channels, Enum.filter(channel_ids, &Map.has_key?(guild.channels, &1))}
+    {:invalid_channels, Enum.reject(channel_ids, &Map.has_key?(guild.channels, &1))}
   end
 end
