@@ -52,8 +52,7 @@ config :crow,
 
 config :logger,
   truncate: 16_384,
-  backends: [:console, Bolt.BotLogLoggerBackend],
-  level: :debug
+  backends: [:console, Bolt.BotLogLoggerBackend]
 
 config :logger, :console, format: "[$level] $message\n"
 
