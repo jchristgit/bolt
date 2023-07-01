@@ -87,7 +87,7 @@ defmodule Bolt.Redact do
     end
   end
 
-  def configure_workers(config) do
+  defp configure_workers(config) do
     channels = relevant_channels(config.guild_id, [])
 
     configs_query =
@@ -118,7 +118,11 @@ defmodule Bolt.Redact do
   """
   def configure_guild_workers(configs, channel_ids) do
     Enum.map(channel_ids, fn channel ->
-      configure_channel_workers(Enum.reject(configs, &(channel in &1.excluded_channels)), channel)
+      relevant_configs = Enum.reject(configs, &(channel in &1.excluded_channels))
+
+      unless relevant_configs == [] do
+        configure_channel_workers(relevant_configs, channel)
+      end
     end)
   end
 
