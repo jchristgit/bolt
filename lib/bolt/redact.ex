@@ -36,14 +36,9 @@ defmodule Bolt.Redact do
       )
 
     case insertion_result do
-      {:ok, config} ->
+      {:ok, config} = result ->
         start_results = configure_workers(config)
-
-        if Enum.all?(start_results, &match?({:ok, _pid}, &1)) do
-          {:ok, config}
-        else
-          {:error, "not all workers started"}
-        end
+        Enum.find(start_results, result, &match?({:ok, _pid}, &1))
 
       other ->
         other
