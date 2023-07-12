@@ -72,7 +72,7 @@ defmodule Bolt.Redact.Deleter do
         Logger.debug("No more items to delete in this chunk, napping")
         {:next_state, :napping, data, {:state_timeout, :timer.minutes(30), :wake}}
 
-      _more ->
+      @items_to_delete_per_chunk ->
         {:keep_state_and_data, {:next_event, :internal, :next_chunk}}
     end
   end
