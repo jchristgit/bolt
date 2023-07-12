@@ -12,6 +12,8 @@ defmodule Bolt.Redact.Deleter do
   require Logger
 
   @items_to_delete_per_chunk 5
+  @naptime_between_full_chunks :timer.seconds(10)
+  @naptime_waiting_for_next_chunk :timer.minutes(30)
 
   def child_spec(opts) do
     %{
@@ -70,10 +72,10 @@ defmodule Bolt.Redact.Deleter do
     case num_deleted do
       number when number < @items_to_delete_per_chunk ->
         Logger.debug("No more items to delete in this chunk, napping")
-        {:next_state, :napping, data, {:state_timeout, :timer.minutes(30), :wake}}
+        {:next_state, :napping, data, {:state_timeout, @naptime_waiting_for_next_chunk, :wake}}
 
       @items_to_delete_per_chunk ->
-        {:keep_state_and_data, {:next_event, :internal, :next_chunk}}
+        {:next_state, :napping, data, {:state_timeout, @naptime_between_full_chunks, :wake}}
     end
   end
 
