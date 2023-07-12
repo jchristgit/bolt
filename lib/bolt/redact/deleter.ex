@@ -11,7 +11,7 @@ defmodule Bolt.Redact.Deleter do
   import Nostrum.Constants, only: [discord_epoch: 0]
   require Logger
 
-  @items_to_delete_per_chunk 20
+  @items_to_delete_per_chunk 5
 
   def child_spec(opts) do
     %{
