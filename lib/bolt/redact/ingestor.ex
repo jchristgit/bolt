@@ -114,7 +114,6 @@ defmodule Bolt.Redact.Ingestor do
                   config_id: Map.get(author_configs, &1.author.id)
                 }
               )
-              |> Enum.reject(&(&1.config_id == nil))
               |> Enum.sort_by(& &1.message_id)
 
             {:ok, updated_ingestion} =
