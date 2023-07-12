@@ -18,7 +18,7 @@ defmodule Bolt.Redact.Deleter do
       id: __MODULE__,
       start: {__MODULE__, :start_link, [opts]},
       type: :worker,
-      restart: :permanent,
+      restart: :temporary,
       shutdown: 500
     }
   end
