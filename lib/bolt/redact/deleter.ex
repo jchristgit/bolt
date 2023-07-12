@@ -58,7 +58,7 @@ defmodule Bolt.Redact.Deleter do
         messages = Repo.all(query)
 
         for {channel_id, message_id} <- messages do
-          Api.delete_message!(channel_id, message_id)
+          :gone = delete_message(channel_id, message_id)
         end
 
         message_ids = Enum.map(messages, fn {_channel, message} -> message end)
@@ -79,5 +79,15 @@ defmodule Bolt.Redact.Deleter do
 
   def napping(:state_timeout, :wake, data) do
     {:next_state, :deleting, data, {:next_event, :internal, :next_chunk}}
+  end
+
+  defp delete_message(channel_id, message_id) do
+    case Api.delete_message(channel_id, message_id) do
+      {:ok} ->
+        :gone
+
+      {:error, %{status_code: 404, response: %{message: "Unknown Message"}}} ->
+        :gone
+    end
   end
 end
