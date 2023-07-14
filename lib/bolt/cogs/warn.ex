@@ -42,7 +42,7 @@ defmodule Bolt.Cogs.Warn do
            infraction <- %{
              type: "warning",
              guild_id: msg.guild_id,
-             user_id: member.user.id,
+             user_id: member.user_id,
              actor_id: msg.author.id,
              reason: reason
            },
