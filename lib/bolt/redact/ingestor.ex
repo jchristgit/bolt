@@ -99,7 +99,7 @@ defmodule Bolt.Redact.Ingestor do
       {:ok, descending_messages} ->
         case descending_messages do
           [] ->
-            actions = {:timeout, @catchup_until, :load_more}
+            actions = {:timeout, @catchup_until, {:load_more, after_id}}
             Logger.debug("Reached end of channel #{channel}, napping")
             {:keep_state_and_data, actions}
 
