@@ -2,6 +2,12 @@
 
 A Discord guild moderation bot for managing large servers.
 
+## Project status
+
+Due to highly questionable privacy practices from Discord's side, bolt, in its
+Discord bot form, is no longer actively maintained.
+
+
 ## Running locally
 
 **Initial setup**:
