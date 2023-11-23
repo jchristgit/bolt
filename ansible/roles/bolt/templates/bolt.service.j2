@@ -5,6 +5,8 @@ Description=discord guild moderation bot
 Documentation={{ bolt_repository_url }}
 Requires=postgresql.service network-online.target
 After=postgresql.service network-online.target
+StartLimitIntervalSec=90s
+StartLimitBurst=3
 
 [Service]
 User={{ bolt_service_user }}
