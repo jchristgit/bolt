@@ -83,7 +83,7 @@
 - name: build a release
   become: true
   become_user: "{{ bolt_service_user }}"
-  shell: umask 077 && exec /usr/bin/nice /usr/bin/mix release
+  shell: umask 077 && exec /usr/bin/nice /usr/bin/mix release --overwrite
   args:
     chdir: "{{ bolt_directory }}"
   tags:
