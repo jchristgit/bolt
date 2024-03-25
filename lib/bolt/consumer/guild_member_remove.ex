@@ -44,7 +44,7 @@ defmodule Bolt.Consumer.GuildMemberRemove do
     ModLog.emit(
       guild_id,
       "GUILD_MEMBER_REMOVE",
-      "#{Humanizer.human_user(member.user)} has left " <>
+      "#{Humanizer.human_user(member.user_id)} has left " <>
         "- had #{length(active_infractions)} active infraction(s) (#{infraction_ids})"
     )
   end
