@@ -106,7 +106,7 @@ defmodule Bolt.Cogs.Infraction.User do
   end
 
   defp format_surrounding_markup_for_active_infractions(infr) do
-    if Infraction.is_active?(infr) do
+    if Infraction.active?(infr) do
       "**"
     else
       ""

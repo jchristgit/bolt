@@ -219,7 +219,7 @@ defmodule Bolt.USW do
   @spec preflight_checks(USWPunishmentConfig.t(), User.id()) :: boolean()
   defp preflight_checks(config, user_id) do
     %User{id: my_id} = Me.get()
-    {:ok, bot_above_user} = Helpers.is_above(config.guild_id, my_id, user_id)
+    {:ok, bot_above_user} = Helpers.above?(config.guild_id, my_id, user_id)
     !Deduplicator.contains?(user_id) && bot_above_user
   end
 

@@ -19,7 +19,7 @@ defmodule Bolt.Cogs.Sudo do
     """
 
   @impl true
-  def predicates, do: [&Predicates.is_superuser?/1]
+  def predicates, do: [&Predicates.superuser?/1]
 
   @impl true
   def command(msg, ["guilds" | args]) do

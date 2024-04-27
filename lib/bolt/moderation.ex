@@ -48,7 +48,7 @@ defmodule Bolt.Moderation do
            expires_at: expiry,
            reason: if(reason != "", do: reason, else: nil)
          },
-         {:ok, true} <- Helpers.is_above(guild_id, actor.id, target_id),
+         {:ok, true} <- Helpers.above?(guild_id, actor.id, target_id),
          # Okay, technically it isn't permanent, but by that time humanity
          # will either be eradicated or has found better problems anyways, so
          {:ok, _member} <-
@@ -110,7 +110,7 @@ defmodule Bolt.Moderation do
            actor_id: actor.id,
            reason: if(reason != "", do: reason, else: nil)
          },
-         {:ok, true} <- Helpers.is_above(guild_id, actor.id, target_id),
+         {:ok, true} <- Helpers.above?(guild_id, actor.id, target_id),
          {:ok} <- Api.create_guild_ban(guild_id, target_id, 7),
          changeset <- Infraction.changeset(%Infraction{}, infraction),
          {:ok, created_infraction} <- Repo.insert(changeset) do

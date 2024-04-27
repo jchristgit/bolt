@@ -15,7 +15,7 @@ defmodule Bolt.Consumer.ChannelDelete do
           _ -> "unknown channel type"
         end
 
-      if Starboard.is_starboard_channel?(channel.guild_id, channel.id) do
+      if Starboard.starboard_channel?(channel.guild_id, channel.id) do
         Starboard.delete_data(channel.guild_id, channel.id)
 
         ModLog.emit(

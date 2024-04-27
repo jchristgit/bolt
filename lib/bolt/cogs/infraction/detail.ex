@@ -108,7 +108,7 @@ defmodule Bolt.Cogs.Infraction.Detail do
           name: "Expiry",
           value:
             if(
-              Infraction.is_active?(infraction),
+              Infraction.active?(infraction),
               do: "#{Helpers.datetime_to_human(infraction.expires_at)}",
               else: "#{Helpers.datetime_to_human(infraction.expires_at)} *(inactive)*"
             ),

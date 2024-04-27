@@ -42,9 +42,9 @@ defmodule Bolt.Schema.Infraction do
   end
 
   # This must be differentiated because bolt may be late in processing the event queue.
-  def is_active?(%__MODULE__{type: "timeout", expires_at: expiry}),
+  def active?(%__MODULE__{type: "timeout", expires_at: expiry}),
     do: DateTime.compare(expiry, DateTime.utc_now()) != :lt
 
-  def is_active?(%__MODULE__{active: active, expires_at: expiry}) when expiry != nil, do: active
-  def is_active?(%__MODULE__{}), do: false
+  def active?(%__MODULE__{active: active, expires_at: expiry}) when expiry != nil, do: active
+  def active?(%__MODULE__{}), do: false
 end

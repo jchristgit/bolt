@@ -49,7 +49,7 @@ defmodule Bolt.Cogs.Tempban do
     response =
       with reason <- Enum.join(reason_list, " "),
            {:ok, user_id, converted_user} <- Helpers.into_id(msg.guild_id, user),
-           {:ok, true} <- Helpers.is_above(msg.guild_id, msg.author.id, user_id),
+           {:ok, true} <- Helpers.above?(msg.guild_id, msg.author.id, user_id),
            {:ok, expiry} <- Parsers.human_future_date(duration),
            query <-
              from(

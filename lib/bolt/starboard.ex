@@ -32,8 +32,8 @@ defmodule Bolt.Starboard do
   Return whether the given channel on the given guild
   is configured as a starboard channel.
   """
-  @spec is_starboard_channel?(Guild.id(), Channel.id()) :: boolean()
-  def is_starboard_channel?(guild_id, channel_id) do
+  @spec starboard_channel?(Guild.id(), Channel.id()) :: boolean()
+  def starboard_channel?(guild_id, channel_id) do
     query =
       from(sc in StarboardConfig, where: sc.guild_id == ^guild_id and sc.channel_id == ^channel_id)
 

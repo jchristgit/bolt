@@ -8,8 +8,8 @@ defmodule Bolt.Predicates do
   alias Nostrum.Struct.User
 
   @doc "Checks that the message author is in the superuser list."
-  @spec is_superuser?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
-  def is_superuser?(msg) do
+  @spec superuser?(Message.t()) :: {:ok, Message.t()} | {:error, String.t()}
+  def superuser?(msg) do
     if msg.author.id in Application.fetch_env!(:bolt, :superusers) do
       BotLog.emit(
         "🔓 #{Humanizer.human_user(msg.author)} passed the root user check" <>
