@@ -31,8 +31,7 @@ config :crow,
      tables: [
        :nostrum_users,
        :nostrum_guild_members,
-       :nostrum_guilds,
-       :nostrum_channels
+       :nostrum_guilds
      ]},
     {CrowPlugins.BEAM.ETS,
      name: 'nostrum_caches',
@@ -40,8 +39,7 @@ config :crow,
      tables: [
        :nostrum_users,
        :nostrum_guild_members,
-       :nostrum_guilds,
-       :nostrum_channels
+       :nostrum_guilds
      ]},
     CrowPlugins.BEAM.GarbageCollections,
     CrowPlugins.BEAM.IO,
