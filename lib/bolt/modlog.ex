@@ -12,16 +12,16 @@ defmodule Bolt.ModLog do
     "BOT_UPDATE" => "📄",
     "CHANNEL_CREATE" => "#⃣",
     "CHANNEL_DELETE" => "🗑",
-    "CHANNEL_UPDATE" => "♻",
-    "CONFIG_UPDATE" => "⚙",
+    "CHANNEL_UPDATE" => "♻️",
+    "CONFIG_UPDATE" => "♻️",
     "ERROR" => "❌",
     "GUILD_BAN_ADD" => "🔨",
     "GUILD_BAN_REMOVE" => "🤝",
     "GUILD_MEMBER_ADD" => "📥",
     "GUILD_MEMBER_REMOVE" => "📤",
-    "GUILD_MEMBER_UPDATE" => "♻",
+    "GUILD_MEMBER_UPDATE" => "♻️",
     "GUILD_ROLE_DELETE" => "🚮",
-    "GUILD_ROLE_UPDATE" => "♻",
+    "GUILD_ROLE_UPDATE" => "♻️",
     "INFRACTION_CREATE" => "📟",
     "INFRACTION_EVENTS" => "⏲",
     "INFRACTION_UPDATE" => "🖋",
@@ -29,7 +29,7 @@ defmodule Bolt.ModLog do
     "MESSAGE_DELETE" => "🗑",
     "MESSAGE_EDIT" => "🖊",
     "SELF_ASSIGNABLE_ROLES" => "🎽",
-    "USER_UPDATE" => "♻"
+    "USER_UPDATE" => "♻️"
   }
 
   @typedoc "The return type used by `emit`. Set as a type for convenience."
