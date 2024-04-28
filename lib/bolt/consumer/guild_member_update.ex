@@ -30,8 +30,6 @@ defmodule Bolt.Consumer.GuildMemberUpdate do
   def perform_regular_modlog(guild_id, old_member, new_member) do
     diff_string =
       []
-      |> describe_if_changed(guild_id, old_member, new_member, :deaf)
-      |> describe_if_changed(guild_id, old_member, new_member, :mute)
       |> describe_if_changed(guild_id, old_member, new_member, :nick)
       |> describe_if_changed(guild_id, old_member, new_member, :roles)
       |> Enum.join(", ")
