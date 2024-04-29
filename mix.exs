@@ -27,8 +27,8 @@ defmodule Bolt.MixProject do
   defp deps do
     [
       # Discord interfacing
-      {:nostrum, github: "Kraigie/nostrum", override: true},
-      {:nosedrum, "~> 0.6"},
+      # {:nostrum, github: "Kraigie/nostrum", override: true},
+      {:nosedrum, github: "jchristgit/nosedrum", override: true},
 
       # PostgreSQL interfacing
       {:ecto_sql, "~> 3.0"},
