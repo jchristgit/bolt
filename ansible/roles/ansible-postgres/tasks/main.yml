@@ -1,7 +1,0 @@
----
-- name: ensure ansible postgres dependencies are installed
-  apt:
-    name:
-      - libpq-dev
-      - python3-psycopg3
-    state: present

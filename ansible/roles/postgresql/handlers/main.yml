@@ -1,8 +1,0 @@
----
-- name: restart the postgresql cluster
-  service:
-    name: postgresql@{{ postgresql_version }}-main
-    state: restarted
-  tags:
-    - role::postgresql
-    - role::postgresql::restart
