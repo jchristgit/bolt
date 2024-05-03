@@ -23,7 +23,7 @@ defmodule Bolt.ModLog do
     "GUILD_ROLE_DELETE" => "🚮",
     "GUILD_ROLE_UPDATE" => "♻️",
     "INFRACTION_CREATE" => "📟",
-    "INFRACTION_EVENTS" => "⏲",
+    "INFRACTION_EVENTS" => "⏲️",
     "INFRACTION_UPDATE" => "🖋",
     "MESSAGE_CLEAN" => "🗑",
     "MESSAGE_DELETE" => "🗑",
