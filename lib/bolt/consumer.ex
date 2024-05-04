@@ -103,7 +103,4 @@ defmodule Bolt.Consumer do
   def handle_event({:USER_UPDATE, {old_user, new_user}, _ws_state}) do
     UserUpdate.handle(old_user, new_user)
   end
-
-  def handle_event(_data) do
-  end
 end
