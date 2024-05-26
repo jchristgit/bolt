@@ -3,6 +3,7 @@
 -export([recent_joins_q/2]).
 
 -define(CACHE, 'Elixir.Nostrum.Cache.MemberCache').
+-define(USER_CACHE, 'Elixir.Nostrum.Cache.UserCache').
 -include_lib("stdlib/include/qlc.hrl").
 
 %% @doc Return member IDs on the given guild above the given `LowerEnd'.
@@ -35,10 +36,12 @@ recent_joins_q(RequestedGuildId, ShouldHaveRoles) ->
 
 %% @doc Return members of the given role on the given guild.
 role_members(GuildId, RoleId) ->
-    Q = qlc:q([Member
-               || {{ThisGuildId, _MemberId}, Member} <- ?CACHE:query_handle(),
+    Q = qlc:q([{Member, User}
+               || {{ThisGuildId, MemberId}, Member} <- ?CACHE:query_handle(),
                   ThisGuildId =:= GuildId,
-                  lists:member(RoleId, map_get(roles, Member))
+                  lists:member(RoleId, map_get(roles, Member)),
+                  {UserId, User} <- ?USER_CACHE:query_handle(),
+                  UserId =:= MemberId
               ]),
     eval(Q).
 
